@@ -191,7 +191,7 @@ async function scenario(name, srvUrl, browser) {
   const png = shotOk ? fs.readFileSync(shot) : Buffer.alloc(0);
   const sample = new Set(); for (let i = 0; i < png.length; i += 97) sample.add(png[i]);
   // In layers mode the game draws into the projection layer's texture, so the page canvas is blank by design.
-  const layersMode = name === 'vr' && (await page.evaluate(() => !!(window.__gtXR && window.__gtXR.shim)));
+  const layersMode = name.startsWith('vr') && (await page.evaluate(() => !!(window.__gtXR && window.__gtXR.shim)));
   if (shotOk && layersMode) console.log(`  NOTE  screenshot blank by design in layers mode (${sample.size} distinct sampled bytes; the XR frames check above covers rendering)`);
   else if (shotOk) expect('screenshot is not a blank frame', sample.size > 40, `${sample.size} distinct sampled bytes, saved ${path.relative(root, shot)}`);
 
