@@ -538,3 +538,19 @@ VR-entry fix; each item is for discussion first.
     the up-front capture and relying on the hide-time capture (context loss
     without a hide event is the only case it covers).
 
+46. **On-device loading breakdown (3.15.14, author's log), 8.2 s from page
+    start to the projection layer:** start 541, kiosks 684, player 1223,
+    companions 111, townsfolk 104+97+88+44+61+573+493+585+44+111+488 (2.7 s),
+    creatures 519, pickups 99, batching 145, placing 614, shaders 8 slices
+    64+16+15+16+16+17+18+16 (0.18 s), first draw 847, effects 17, textures
+    (the canvas capture) 792, the rest under 60 ms each. So the Quest's time
+    is JavaScript world-building (procedural models for the player, five
+    heavy townsfolk at about 0.5 s each, creatures, kiosks), not shader
+    compilation. Cutting it means building models faster or building fewer
+    before the handover (deferred builds for NPCs that start far away), which
+    is content-risky; recorded as the T12 lead. The texture capture at 0.8 s
+    is the one cheap cut if it is ever needed. Panel: the author found the
+    3.6 m / 2.6 m panel (about 40 degrees) still "much too close"; it is a
+    size problem, not a distance one: 3.15.15 uses 1.8 x 0.9 m at 4 m (about
+    25 degrees), 0.2 m below the eye line.
+

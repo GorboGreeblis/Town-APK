@@ -34,15 +34,13 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D6 | Mushroom fix confirmed: 17/17 return-home scenarios pass at real-time simulation | 2026-10-26 |
 | D7 | Visit system verified: host/visitor visits complete and interrupted (out, meet, back) all end with Mushroom on his desk at height | 2026-10-26 |
 
-## Resume point (2026-10-26, night)
+## Resume point (2026-10-26, late)
 
-- 3.15.13 built and posted: layers loading screen promoted (author confirmed the
-  experiment: no black bars, no drop-in stall), panel at 3.6 m, B16, label "GREEBLIS TOWN".
-  Awaiting the author's check of the panel distance on 3.15.13; standard tier on the
-  final asset running (`tools/.runs/std_v13.log`), full tier still to run on the final build.
-- Open: B12 Event flash unconfirmed (author has not run the Event); hitch probe shows
-  the Event's props are built at the gathering phase (28 objects, 46 ms headless), a
-  candidate for a boot-time pre-build via `BP.preview(0)` then hide (not done: `pose`
-  side effects need checking); first pickup still creates 14 textures/52 geometries
-  (batcher re-merge), 24 ms headless. T12 boot profile with textures; T13 graphical
-  pass; T14 soak; T15 tools/docs; T4 store upload (no earlier upload, package name free).
+- 3.15.15 posted: loading panel about 25 degrees (author found 40 degrees too big); no
+  black bars, no loading issues on 3.15.14 per the author. Full tier running on 3.15.15
+  (`tools/.runs/full_v15.log`): record in TEST_PLAN, then a new draft PR.
+- T12 lead (NOTES 46): on-device loading is 8.2 s of JavaScript world-building
+  (townsfolk 2.7 s, player 1.2 s, first draw 0.85 s, kiosks 0.7 s, capture 0.8 s);
+  shaders only 0.18 s. Options: faster procedural model code, or deferring far NPCs'
+  builds past the handover (content risk; needs the author's view).
+- Awaiting: author's sharpness verdict on the `sharp` experiment; B12 Event flash check.
