@@ -127,3 +127,33 @@ VR-entry fix; each item is for discussion first.
     SwiftShader even with the framebuffer clamped to 320 px, so behaviour
     scenarios run with large frame deltas (about 0.35 s). Results are valid
     for logic, not for timing precision or frame-rate claims.
+
+## Mushroom stuck: root cause and fix (round 2)
+
+22. **Reproduced in the harness** (`tools/test_npc_home.js`, fake VR
+    session): placed 6 m behind his kiosk, Mushroom walked straight at the
+    front waypoint, pinned himself against the back wall, the stuck detector
+    fired and re-planned, and the re-plan sent him straight through the wall
+    again, forever. The off-screen teleport never fires while the player is
+    within 12 m or looking at him. Several other "failures" in the first run
+    were only the software renderer slowing the simulation (fixed in the
+    harness by skipping draw calls).
+23. **Root cause.** `F.segBlocked`, the navigator's wall test, skipped a
+    building entirely when both ends of a segment were inside the building's
+    clearance margin (about 1 m for Mushroom). Beside or behind his kiosk,
+    both his position and the front waypoint are inside that margin, so the
+    kiosk was invisible to the router and the "path" went through the wall.
+    The same test also marked any segment that merely ended inside the margin
+    as blocked, so the waypoint was unreachable by the proper route and the
+    router fell back to the straight line.
+24. **Why it is rare and why it looks like the safety net.** He only leaves
+    the desk for visits and the garden event; walking back along the front
+    is fine. The trap needs an interrupted visit or a return that starts
+    beside or behind the kiosk (the post-visit `drop` path navigates straight
+    at the desk). Then the safety net is what the player sees failing.
+25. **Fix (applied by `tools/apply_entry_fix.py`, GAME_FIXES):** when either
+    end of a segment is within a building's margin, test against the real
+    hull instead of the enlarged one, and still ignore the building when both
+    ends are inside it (walking indoors). Routes now go around the kiosk to
+    the front waypoints, then the normal hop onto the desk follows. One
+    function changed, no behaviour change away from buildings.

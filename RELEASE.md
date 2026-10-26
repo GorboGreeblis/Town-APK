@@ -70,7 +70,7 @@ and look at **Distribution → Builds**:
    prompts (USB debugging, file access). Then:
    ```sh
    adb devices                      # the headset should show as "device"
-   adb install -r dist/GreeblisTown-v3.15-release.apk
+   adb install -r GreeblisTown-release.apk
    ```
 4. Launch it: in the headset Library choose the **Unknown Sources** filter (or
    the Apps list) and open **Greeblis Town**.
@@ -121,7 +121,7 @@ once to enter VR.
    Command-line alternative with `ovr-platform-util`:
    ```sh
    ovr-platform-util upload-quest-build --app-id 1441937125658740 \
-     --app-secret YOUR_APP_SECRET --apk dist/GreeblisTown-v3.15-release.apk \
+     --app-secret YOUR_APP_SECRET --apk GreeblisTown-release.apk \
      --channel ALPHA
    ```
    (The app secret is under the app's **API** page. Keep it private.)

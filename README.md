@@ -99,7 +99,7 @@ What cannot be tested here: the actual launch on a headset. Sideload and
 confirm that the app goes straight into VR:
 
 ```sh
-adb install -r android/app/build/outputs/apk/release/app-release.apk
+adb install -r GreeblisTown-release.apk
 adb logcat -s GreeblisServer GreeblisLauncher TwaLauncher TWALauncherActivity
 ```
 
@@ -110,7 +110,7 @@ adb logcat -s GreeblisServer GreeblisLauncher TwaLauncher TWALauncherActivity
   earlier upload used a different package name, change `applicationId` in
   `android/app/build.gradle` to match before building.
 - Bump `versionCode` in `android/app/build.gradle` for every upload.
-- Upload `app-release.apk` through the Meta Horizon Developer Dashboard
+- Upload `GreeblisTown-release.apk` (repository root) through the Meta Horizon Developer Dashboard
   (or `ovr-platform-util upload-quest-build`).
 - `tools/check_apk.sh` reproduces the manifest, signature, SDK-level, size
   and 64-bit checks from the VRC document.

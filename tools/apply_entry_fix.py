@@ -61,7 +61,30 @@ EDITS = [
     ),
 ]
 
-for old, new in EDITS:
+# ---------------------------------------------------------------------------
+# Gameplay fixes (approved bug fixes; see NOTES.md for the investigation).
+# ---------------------------------------------------------------------------
+GAME_FIXES = [
+    # Mushroom stuck beside/behind his kiosk. The navigator's segment test
+    # ignored a building entirely whenever BOTH ends of the segment lay inside
+    # the building's clearance margin, so a route from a spot beside the kiosk
+    # to the front waypoint (both within ~1 m of the walls) was reported clear
+    # and he walked into the wall for good. The fix: when either end is within
+    # the margin, test the segment against the real hull instead (and still
+    # ignore the building when both ends are inside it, i.e. walking indoors).
+    (
+        'segBlocked(x0,z0,x1,z1,n){for(const B of this.buildings){if(this.inHull(B,x0,z0,n)&&this.inHull(B,x1,z1,n))continue;'
+        'const[ax,az]=this.local(B,x0,z0),[bx,bz]=this.local(B,x1,z1),h=B.hull,dx=bx-ax,dz=bz-az;let t0=0,t1=1;'
+        'const clip=(p,q)=>{if(Math.abs(p)<1e-9)return q>=0;const r=q/p;return p<0?r>t1?!1:(r>t0&&(t0=r),!0):r<t0?!1:(r<t1&&(t1=r),!0)};'
+        'if(clip(-dx,ax-(h[0]-n))&&clip(dx,h[2]+n-ax)&&clip(-dz,az-(h[1]-n))&&clip(dz,h[3]+n-az)&&t0<=t1)return!0}return!1}',
+        'segBlocked(x0,z0,x1,z1,n){for(const B of this.buildings){let m=n;if(this.inHull(B,x0,z0,n)||this.inHull(B,x1,z1,n)){if(this.inHull(B,x0,z0)&&this.inHull(B,x1,z1))continue;m=0}'
+        'const[ax,az]=this.local(B,x0,z0),[bx,bz]=this.local(B,x1,z1),h=B.hull,dx=bx-ax,dz=bz-az;let t0=0,t1=1;'
+        'const clip=(p,q)=>{if(Math.abs(p)<1e-9)return q>=0;const r=q/p;return p<0?r>t1?!1:(r>t0&&(t0=r),!0):r<t0?!1:(r<t1&&(t1=r),!0)};'
+        'if(clip(-dx,ax-(h[0]-m))&&clip(dx,h[2]+m-ax)&&clip(-dz,az-(h[1]-m))&&clip(dz,h[3]+m-az)&&t0<=t1)return!0}return!1}',
+    ),
+]
+
+for old, new in EDITS + GAME_FIXES:
     n = html.count(old)
     if n != 1:
         sys.exit(f"ERROR: anchor found {n} times (expected 1): {old[:80]!r}")
@@ -70,10 +93,10 @@ for old, new in EDITS:
 if verify:
     current = dst.read_bytes() if dst.exists() else b""
     if current == html.encode("utf-8"):
-        print(f"VERIFY OK: {dst} == {src} + {len(EDITS)} entry-fix edits, nothing else")
+        print(f"VERIFY OK: {dst} == {src} + {len(EDITS)} entry-fix edits + {len(GAME_FIXES)} gameplay fixes, nothing else")
         sys.exit(0)
-    sys.exit(f"VERIFY FAILED: {dst} is not the original plus the {len(EDITS)} entry-fix edits")
+    sys.exit(f"VERIFY FAILED: {dst} is not the original plus the {len(EDITS)} entry-fix edits and {len(GAME_FIXES)} gameplay fixes")
 
 dst.parent.mkdir(parents=True, exist_ok=True)
 dst.write_text(html, encoding="utf-8")
-print(f"wrote {dst} ({len(html.encode('utf-8'))} bytes, {len(EDITS)} edits)")
+print(f"wrote {dst} ({len(html.encode('utf-8'))} bytes, {len(EDITS)} entry edits + {len(GAME_FIXES)} gameplay fixes)")

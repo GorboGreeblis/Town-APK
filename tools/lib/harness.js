@@ -18,7 +18,8 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..', '..');
-const HOOK_NAMES = ['It', 'JGP', 'F', 'E', 'lo', 'Be', 'De', 't', 'At', 'B', 'Re', 'uo', 'C', 'Kt', 'le', 'ce', 'we', 'G', 'Ut', 'O', 'me', 'bt', 'ue', 'Dbt', '_t', 'qt', 'jt'];
+const HOOK_NAMES = ['It', 'JGP', 'F', 'E', 'lo', 'Be', 'De', 't', 'At', 'B', 'Re', 'uo', 'C', 'Kt', 'le', 'ce', 'we', 'G', 'Ut', 'O', 'me', 'bt', 'ue', 'Dbt', '_t', 'qt', 'jt',
+  'ne', 'oe', 'st', 'fe', 'xe', 'yo', 'Nt', 'ke', 'Ge', 'Ho', 'LIB', 'ARTS', 'VIGS', 'BP', 'JAZZ', 'gemTrade', 'shopText', 'battleText', 'Bulb', 'Eo'];
 const UA = 'Mozilla/5.0 (X11; Linux x86_64; Quest 3) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/35.0 Chrome/128.0 VR Safari/537.36';
 
 function hooked(file) {
@@ -50,8 +51,13 @@ function serve(body) {
  *   world is built and waits until the game renders XR frames. NPC behaviour,
  *   pickups and input only run while the game is presenting, so almost every
  *   behaviour test needs this. vr: false leaves the game on its 2D gate.
+ *   fastSim: true (default) replaces the renderer's draw call with a no-op once
+ *   presenting. Software GL manages ~3 fps and the game clamps its time step
+ *   at 0.1 s, so with drawing the simulation runs at about a quarter of real
+ *   time; without it the loop runs at full rate and timings are realistic.
+ *   Screenshots are blank in this mode; use fastSim: false for visual checks.
  */
-async function boot({ file = path.join(root, 'android/app/src/main/assets/index.html'), vr = true, timeoutMs = 300000 } = {}) {
+async function boot({ file = path.join(root, 'android/app/src/main/assets/index.html'), vr = true, fastSim = true, timeoutMs = 300000 } = {}) {
   const srv = await serve(hooked(path.resolve(file)));
   const url = `http://127.0.0.1:${srv.address().port}/`;
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--autoplay-policy=no-user-gesture-required'] });
@@ -69,6 +75,7 @@ async function boot({ file = path.join(root, 'android/app/src/main/assets/index.
     await page.evaluate(() => window.__fakeXR.fire());
     await page.waitForFunction(() => window.__fakeXR.frames > 5, null, { timeout: 60000 });
     presentS = (Date.now() - t0) / 1000;
+    if (fastSim) await page.evaluate(() => { const O = window.__dbg.O; O.__realRender = O.render; O.render = () => {}; });
   }
   const bootS = (Date.now() - t0) / 1000;
   return {

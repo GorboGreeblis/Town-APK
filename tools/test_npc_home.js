@@ -88,6 +88,8 @@ const observe = ({ id, maxS, standY }) => new Promise((resolve) => {
     { name: 'front 6 m, PLAYER BLOCKING the doorway for 15 s', npc: local(6, 0), player: local(3.0, 0), unblockAfter: 15 },
     { name: 'inside the back of the kiosk (local 0,-2) with player far: teleport allowed', npc: local(-2.0, 0), player: local(40, 0), far: true },
     { name: 'on the desk already but at ground level (y=0)', npc: local(0, 0), player: local(7, 0) },
+    { name: 'interrupted visit: straight nav to home from behind 6 m (drop path)', npc: local(-6, 0), player: local(-9, 3), navHome: true },
+    { name: 'interrupted visit: straight nav to home from right side 3 m (drop path)', npc: local(0, 3.6), player: local(6, 4), navHome: true },
   ];
 
   const results = [];
@@ -108,6 +110,7 @@ const observe = ({ id, maxS, standY }) => new Promise((resolve) => {
         h.gcNavHome = true;
       }
       if (sc.forceStuck) { h.gcWant = 1; h.gcBlk = 1.3; }
+      if (sc.navHome) { D.Be(h, h.home.x, h.home.z, D.Re.t); h.gcNavHome = true; }
       if (sc.unblockAfter) setTimeout(() => { D.At.position.set(sc.player[0] + 9, D.At.position.y, sc.player[1] + 3); }, sc.unblockAfter * 1000);
       const observe = eval('(' + observeSrc + ')');
       return observe({ id, maxS, standY });
