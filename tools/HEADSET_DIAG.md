@@ -96,3 +96,16 @@ What to watch: no black bars while turning the head during loading (the panel
 should stay put in the world), a clean switch into the town, and the picture
 quality in the town compared with 3.15.12.
 
+## What to read in a 3.15.19 log
+
+- `boot slices ms: ...`: the total from `start` to `textures` is the loading time.
+  3.15.14 measured 8.2 s; the march change (NOTES 49) and the build-time probe
+  points (the `textures` slice, 792 ms before) should bring it near 6 s. The five
+  heavy `townsfolk` entries were 573/493/585/488 ms; expect roughly half.
+- `projection layer live, scale 1, msaa 4` at the handover (native start), then
+  `projection layer swapped to scale 1.1` and `... 1.2` a few seconds apart while
+  frames stay under budget; a later `swapped to scale 1.1` or `1` means the
+  governor stepped down under load (normal in the garden Event). No black frame
+  should accompany any of these.
+- `entry failed`, `loader ... failed`, `[xr-enter]`, `[boot]`: must be absent.
+
