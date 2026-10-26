@@ -45,5 +45,8 @@ Living list. Done items move to the bottom with the date. Bugs live in
   full tier on 3.15.19: `tools/.runs/full_v19.log`.
 - Awaiting the author's full run: panel size, no black frame on scale steps, sharper
   gallery painting, Event flash (B12).
-- Focus now: performance (author). T12 lead (NOTES 46): loading is 8.2 s of JavaScript
-  world-building; in-game: hitch probe clean except first pickup (~15-24 ms headless).
+- Performance: the blob-body march (NOTES 49) halves the character builds; the next
+  device log will say where loading landed (expected near 6 s). What remains is the player
+  build (~1.1 s), first draw (~0.85 s), asset decode (~0.45 s), kiosks (~0.5 s): no further
+  cut without content changes. In-game: hitch probe clean (worst 37 ms headless at Event
+  start), soak 10 min clean.
