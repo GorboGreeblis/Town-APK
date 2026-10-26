@@ -393,3 +393,24 @@ VR-entry fix; each item is for discussion first.
     errors. The server and the harness serve `/tex/*`; the APK grew from 3 to
     about 12 MB.
 
+39. **B13, the loading screen must keep up with the head.** The author saw black
+    bars when turning the head during loading. The loader drew its panel as a
+    normal WebXR projection layer, so it could only submit a frame between boot
+    slices, and the longest slices (kiosk builders, the library, a shader-compile
+    chunk) block the main thread for hundreds of milliseconds; the compositor
+    then re-projects the last frame and rotation exposes its edges. Finer
+    slicing cannot fix that (single builder functions are that long), so
+    3.15.11 moves the loading screen to the compositor: with the `layers`
+    feature, `XRWebGLBinding` provides a cube layer (64x64 sky-colour faces, all
+    around) and a quad layer (the 1024x512 title/progress panel, 2.2 x 1.1 m,
+    2.2 m ahead in `local` space). Their textures are filled from the page
+    (once for the cube, on progress changes for the quad, both inside the
+    session's rAF via `getSubImage`), and the browser re-renders the layers
+    every vsync with current head tracking whether or not the page is busy,
+    so there are no stale frames and the OS keeps receiving frames. When the
+    game takes the session, `__gtXR.stop()` clears the layers and three.js
+    sets its own base layer. If the binding or a layer call fails, the loader
+    falls back to the previous projection drawing. The headless fake XR has no
+    layers, so the harness exercises the fallback; the layers path needs the
+    headset.
+
