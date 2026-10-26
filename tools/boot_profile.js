@@ -17,7 +17,14 @@ const fakexr = fs.readFileSync(path.join(__dirname, 'fakexr.js'), 'utf8');
   const anchor = 'gcEB.ready=!0;';
   if (!html.includes(anchor)) throw new Error('anchor not found (use the patched asset)');
   html = html.replace(anchor, anchor + 'window.__readyAt=performance.now();');
-  const server = http.createServer((req, res) => { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(html); });
+  const texDir = path.join(root, 'tools/android/app/src/main/assets/tex');
+  const server = http.createServer((req, res) => {
+    if (req.url.startsWith('/tex/')) {   // pre-rendered textures, as the APK serves them
+      const name = path.basename(req.url.split('?')[0]); const f = path.join(texDir, name);
+      if (!/^[\w.-]+$/.test(name) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); }
+      const data = fs.readFileSync(f); res.writeHead(200, { 'content-type': name.endsWith('.json') ? 'application/json' : 'image/png', 'content-length': data.length }); return res.end(data);
+    }
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(html); });
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   const url = `http://127.0.0.1:${server.address().port}/`;
   const UA = 'Mozilla/5.0 (X11; Linux x86_64; Quest 3) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/35.0 Chrome/128.0 VR Safari/537.36';
