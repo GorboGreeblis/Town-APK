@@ -25,9 +25,13 @@ run "loopback server harness"               "$ROOT/tools/test_server.sh"
 if [ $QUICK -eq 0 ]; then
   run "VR entry (headless Chromium, all scenarios)" node "$ROOT/tools/test_entry.js" "$ROOT/android/app/src/main/assets/index.html" all
   run "release parity (compressed build unpacks to the source)" node "$ROOT/tools/test_parity.js"
+  run "runtime play test (2D frame loop + polyfilled VR session)" node "$ROOT/tools/test_play.js" "$ROOT/android/app/src/main/assets/index.html" all 20
+  run "NPC return-home reproduction (Mushroom)" node "$ROOT/tools/test_npc_home.js" "$ROOT/android/app/src/main/assets/index.html" drifter 45
 else
   skip "VR entry (headless Chromium)" "--quick"; skip "release parity" "--quick"
+  skip "runtime play test" "--quick"; skip "NPC return-home reproduction" "--quick"
 fi
+run "dialogue spell-check (informational unless it crashes)" sh -c "python3 '$ROOT/tools/spellcheck_dialogue.py' '$ROOT/tools/uncompressed.html' | tail -n +1 >/dev/null"
 if [ -f "$APK" ]; then run "APK store-rules check" "$ROOT/tools/check_apk.sh" "$APK"; else skip "APK store-rules check" "no APK built"; fi
 
 echo; echo "=== SUMMARY ==="; printf "$SUMMARY\n"

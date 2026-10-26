@@ -78,3 +78,35 @@ VR-entry fix; each item is for discussion first.
     joins are accounted for. The APK is built from the uncompressed source,
     so it is "on par" with the release in content, but anyone wanting a
     byte-identical guarantee would need the original minifier pipeline.
+
+## From general testing (round 2)
+
+14. **Android lint** (`gradle lintRelease`) reports 11 warnings, none
+    affecting the Quest build: launcher icon fills its square (cosmetic),
+    redundant activity label, fixed landscape orientation (intended for a VR
+    launcher), `allowBackup` deprecation note, `compileSdk 35` available, the
+    splash bitmap sits in the density-less `drawable/` folder (fine for a
+    single image), and one "Fatal" `ExpiredTargetSdkVersion` that is a Google
+    Play rule (target 33+). Meta's VRC wants 32-34 for immersive apps and
+    Meta's own PWA template uses 32, so targetSdk stays 32. Raising it to 34
+    would silence lint and is low risk for this app; discuss.
+15. **Loopback server leniency.** A request line with no path (`GET` alone)
+    is served as `/` instead of answered 400. Harmless (only the Quest
+    Browser talks to it), noted for completeness; the harness documents the
+    behaviour rather than failing on it.
+
+## Content review (round 2)
+
+16. **Hennrick grammar.** His campfire line reads "Sometimes worry that doing
+    these things will alter the timeline…" and is missing its subject
+    ("Sometimes I worry…"). Entity id `gratelet`, field `campfire`. Not
+    changed; one-word fix when approved.
+17. **Hennrick and the field office.** The only line of his that touches the
+    subject is "These joints were built for fieldwork, not a desk." The line
+    "See anything glowing in the sky, you report it to this office." belongs
+    to the Sheriff (Mushroom, id `drifter`). The Field Office building itself
+    carries no text. If a specific line is wrong, point at it and it goes on
+    this list.
+18. **Spelling.** `tools/spellcheck_dialogue.py` finds no misspellings in the
+    421 prose strings. Everything it flags is a name or deliberate sound
+    (Goomp, Backpacka, Appterix, Cobourg) or font/engine text.

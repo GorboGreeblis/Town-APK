@@ -1,0 +1,151 @@
+#!/usr/bin/env node
+/**
+ * Reproduction harness for NPC "return home" behaviour, built for the Mushroom
+ * (entity id "drifter"): the only character whose home is raised (a kiosk desk,
+ * standY 1.545) and who has to walk two front waypoints and then hop up.
+ *
+ * It runs the real game in headless Chromium (2D mode, real frame loop), with a
+ * debug hook injected into a TEMPORARY copy of the game that exposes the
+ * closure-scoped objects (It, JGP, F, lo, Be, De, t, At, B, Re). The shipped
+ * game is not touched.
+ *
+ * For each scenario it places the NPC (and the player, who is kept within
+ * 12 m so the off-screen teleport rescue is disabled unless stated), lets the
+ * game run, and records whether and when the NPC reaches home at desk height,
+ * plus any teleports, re-plans (gcStuckN) and oscillation.
+ *
+ * Usage: node tools/test_npc_home.js [file.html] [npcId] [maxSeconds]
+ * Exit 1 if any scenario fails to get the NPC home.
+ */
+const { chromium } = require('playwright');
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+
+const root = path.resolve(__dirname, '..');
+const file = path.resolve(process.argv[2] || path.join(root, 'android/app/src/main/assets/index.html'));
+const NPC = process.argv[3] || 'drifter';
+const MAX_S = Number(process.argv[4] || 45);
+const outDir = path.join(root, 'tools', '.runs');
+fs.mkdirSync(outDir, { recursive: true });
+
+// Test-only debug hook, inserted right after the world is built.
+let html = fs.readFileSync(file, 'utf8');
+const anchor = 'gcEB.ready=!0;';
+if (!html.includes(anchor)) throw new Error('anchor not found; is this the patched asset?');
+const hook = 'window.__dbg={};' + ['It', 'JGP', 'F', 'lo', 'Be', 'De', 't', 'At', 'B', 'Re', 'uo', 'C']
+  .map((n) => `try{window.__dbg.${n}=${n}}catch(e){}`).join('');
+html = Buffer.from(html.replace(anchor, anchor + hook));
+
+function serve() {
+  return new Promise((resolve) => {
+    const srv = http.createServer((req, res) => {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': html.length });
+      res.end(html);
+    });
+    srv.listen(0, '127.0.0.1', () => resolve(srv));
+  });
+}
+
+// Runs inside the page: frame-locked observer of one NPC.
+const observe = ({ id, maxS, standY }) => new Promise((resolve) => {
+  const D = window.__dbg, h = D.It.byId[id];
+  const home = h.def.at, trace = [];
+  let last = null, teleports = 0, t0 = performance.now(), maxStuck = 0, maxY = 0, rePlans = 0, lastStuckN = h.gcStuckN || 0;
+  const dist = () => Math.hypot(h.group.position.x - home[0], h.group.position.z - home[1]);
+  const tick = () => {
+    const p = h.group.position, now = (performance.now() - t0) / 1000;
+    if (last && Math.hypot(p.x - last.x, p.z - last.z) > 2) teleports++;
+    last = { x: p.x, z: p.z };
+    maxStuck = Math.max(maxStuck, h.gcStuckN || 0); maxY = Math.max(maxY, p.y);
+    if ((h.gcStuckN || 0) > lastStuckN) rePlans++; lastStuckN = h.gcStuckN || 0;
+    if (trace.length === 0 || now - trace[trace.length - 1].t >= 0.5) {
+      trace.push({ t: +now.toFixed(1), x: +p.x.toFixed(2), z: +p.z.toFixed(2), y: +p.y.toFixed(2), d: +dist().toFixed(2),
+        goHome: !!h.goHome, nav: h.gcNav ? h.gcNav.length : 0, vbk: h.vbk, stuckN: h.gcStuckN || 0, blk: +((h.gcBlk || 0).toFixed(2)), moving: !!h.moving, held: !!h.held, near: !!h.nearPlayer });
+    }
+    const homeNow = dist() < 0.15 && Math.abs(p.y - standY) < 0.08 && !h.goHome;
+    if (homeNow && now > 0.5) return resolve({ ok: true, t: +now.toFixed(1), teleports, maxStuck, rePlans, maxY: +maxY.toFixed(2), trace, final: trace[trace.length - 1] });
+    if (now > maxS) return resolve({ ok: false, t: +now.toFixed(1), teleports, maxStuck, rePlans, maxY: +maxY.toFixed(2), trace, final: { x: +p.x.toFixed(2), z: +p.z.toFixed(2), y: +p.y.toFixed(2), d: +dist().toFixed(2), goHome: !!h.goHome, nav: h.gcNav ? h.gcNav.length : 0, vbk: h.vbk, stuckN: h.gcStuckN || 0 } });
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+});
+
+(async () => {
+  const srv = await serve();
+  const url = `http://127.0.0.1:${srv.address().port}/`;
+  const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
+  const ctx = await browser.newContext({ userAgent: 'Mozilla/5.0 (X11; Linux x86_64; Quest 3) OculusBrowser/35.0 Chrome/128.0 VR', viewport: { width: 1280, height: 720 } });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(String(e).split('\n')[0]));
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().split('\n')[0]); });
+  await page.goto(url, { waitUntil: 'load', timeout: 300000 });
+  await page.waitForFunction(() => window.__dbg && window.__dbg.It, null, { timeout: 300000 });
+
+  const info = await page.evaluate((id) => {
+    const D = window.__dbg, h = D.It.byId[id];
+    if (!h) return { error: 'no such npc: ' + id + '; ids: ' + Object.keys(D.It.byId).join(',') };
+    return { name: h.def.name, at: h.def.at, via: h.def.via, standY: h.def.pattern && h.def.pattern[1] && h.def.pattern[1].y || 0, bodyR: h.bodyR,
+      pos: [h.group.position.x, h.group.position.y, h.group.position.z], player: [D.At.position.x, D.At.position.z], hooks: Object.keys(D) };
+  }, NPC);
+  if (info.error) { console.log(info.error); process.exit(2); }
+  console.log(`${info.name} (${NPC}): home=${JSON.stringify(info.at)} via=${JSON.stringify(info.via)} standY=${info.standY} start=${JSON.stringify(info.pos.map((v) => +v.toFixed(2)))} hooks=${info.hooks.join(',')}`);
+
+  // Kiosk-local frame from home (desk, local (0,.72)) and via[0] (local (0,2)): forward = via[0]-home.
+  const [hx, hz] = info.at, [vx, vz] = info.via[0];
+  const fl = Math.hypot(vx - hx, vz - hz), fx = (vx - hx) / fl, fz = (vz - hz) / fl, rx = fz, rz = -fx;
+  const local = (f, r) => [hx + fx * f + rx * r, hz + fz * f + rz * r];       // f: forward (out the front), r: right
+
+  const scenarios = [
+    { name: 'inside kiosk, 1.0 m in front of desk (hop only)', npc: local(1.0, 0), player: local(7, 0) },
+    { name: 'at inner waypoint (local 0,2)', npc: local(1.28, 0), player: local(7, 0) },
+    { name: 'just outside the front (2.6 m)', npc: local(2.6, 0), player: local(7, 0) },
+    { name: 'front 5 m', npc: local(5, 0), player: local(8, 3) },
+    { name: 'front 8 m', npc: local(8, 0), player: local(9, 4) },
+    { name: 'right side 3 m (through the wall line)', npc: local(0, 3.6), player: local(6, 4) },
+    { name: 'left side 3 m', npc: local(0, -3.6), player: local(6, -4) },
+    { name: 'behind the kiosk 3 m', npc: local(-3.2, 0), player: local(-7, 2) },
+    { name: 'behind the kiosk 6 m', npc: local(-6, 0), player: local(-9, 3) },
+    { name: 'diagonal 5 m', npc: local(3.5, 3.5), player: local(7, 5) },
+    { name: 'front 5 m, nav return (garden-event style goHome)', npc: local(5, 0), player: local(8, 3), navReturn: true },
+    { name: 'front 5 m, forced stuck re-plan (De safety net)', npc: local(5, 0), player: local(8, 3), forceStuck: true },
+    { name: 'front 6 m, PLAYER BLOCKING the doorway for 15 s', npc: local(6, 0), player: local(3.0, 0), unblockAfter: 15 },
+    { name: 'inside the back of the kiosk (local 0,-2) with player far: teleport allowed', npc: local(-2.0, 0), player: local(40, 0), far: true },
+    { name: 'on the desk already but at ground level (y=0)', npc: local(0, 0), player: local(7, 0) },
+  ];
+
+  const results = [];
+  for (const sc of scenarios) {
+    const r = await page.evaluate(async ({ id, sc, maxS, standY, observeSrc }) => {
+      const D = window.__dbg, h = D.It.byId[id];
+      // Reset NPC state.
+      h.group.position.set(sc.npc[0], 0, sc.npc[1]);
+      h.home.set(h.def.at[0], h.home.y, h.def.at[1]);
+      Object.assign(h, { vbk: -1, goHome: false, gcNavHome: false, gcNav: null, gcStuckN: 0, gcBlk: 0, dest: null, busy: null, visiting: false, held: false, nearPlayer: false, moving: false, trek: false });
+      // Player placement (also moves the 2D camera, which the De visibility check uses).
+      D.At.position.set(sc.player[0], D.At.position.y, sc.player[1]);
+      if (D.B && D.B.position) { D.B.position.set(sc.player[0], 1.7, sc.player[1]); D.B.lookAt(h.def.at[0], 1.2, h.def.at[1]); }
+      if (sc.navReturn) {
+        const via = h.def.via, now = D.Re.t;
+        D.Be(h, via[via.length - 1][0], via[via.length - 1][1], now);
+        h.gcNav.push(...via.slice(0, -1).reverse().map((w) => [w[0], w[1]]), [h.home.x, h.home.z]);
+        h.gcNavHome = true;
+      }
+      if (sc.forceStuck) { h.gcWant = 1; h.gcBlk = 1.3; }
+      if (sc.unblockAfter) setTimeout(() => { D.At.position.set(sc.player[0] + 9, D.At.position.y, sc.player[1] + 3); }, sc.unblockAfter * 1000);
+      const observe = eval('(' + observeSrc + ')');
+      return observe({ id, maxS, standY });
+    }, { id: NPC, sc, maxS: MAX_S, standY: info.standY, observeSrc: observe.toString() });
+    results.push({ scenario: sc.name, ...r });
+    const f = r.final;
+    console.log(`  ${r.ok ? 'PASS' : 'FAIL'}  ${sc.name}: ${r.ok ? 'home in ' + r.t + 's' : 'NOT home after ' + r.t + 's'}; teleports=${r.teleports} rePlans=${r.rePlans} maxStuckN=${r.maxStuck} maxY=${r.maxY}; final d=${f.d} y=${f.y} goHome=${f.goHome} nav=${f.nav} vbk=${f.vbk}`);
+  }
+  fs.writeFileSync(path.join(outDir, `npc_home_${NPC}.json`), JSON.stringify({ info, results, errors }, null, 1));
+  const failed = results.filter((r) => !r.ok).length;
+  console.log(`page errors: ${errors.length}${errors.length ? ' | ' + errors.slice(0, 3).join(' | ') : ''}`);
+  console.log(`traces written to tools/.runs/npc_home_${NPC}.json`);
+  console.log(failed ? `NPC HOME TEST: ${failed} scenario(s) did not get home` : 'NPC HOME TEST PASSED');
+  await browser.close(); srv.close();
+  process.exit(failed ? 1 : 0);
+})().catch((e) => { console.error('NPC HOME TEST ERROR', e); process.exit(1); });
