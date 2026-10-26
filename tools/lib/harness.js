@@ -56,8 +56,10 @@ function serve(body) {
  *   at 0.1 s, so with drawing the simulation runs at about a quarter of real
  *   time; without it the loop runs at full rate and timings are realistic.
  *   Screenshots are blank in this mode; use fastSim: false for visual checks.
+ *   noVisits: true (default) parks the random visit scheduler; test_visits forces
+ *   its own pairs through JGP.visitAt, which still works.
  */
-async function boot({ file = path.join(root, 'android/app/src/main/assets/index.html'), vr = true, fastSim = true, timeoutMs = 300000 } = {}) {
+async function boot({ file = path.join(root, 'android/app/src/main/assets/index.html'), vr = true, fastSim = true, noVisits = true, timeoutMs = 300000 } = {}) {
   const srv = await serve(hooked(path.resolve(file)));
   const url = `http://127.0.0.1:${srv.address().port}/`;
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--autoplay-policy=no-user-gesture-required'] });
@@ -76,6 +78,9 @@ async function boot({ file = path.join(root, 'android/app/src/main/assets/index.
     await page.waitForFunction(() => window.__fakeXR.frames > 5, null, { timeout: 60000 });
     presentS = (Date.now() - t0) / 1000;
     if (fastSim) await page.evaluate(() => { const O = window.__dbg.O; O.__realRender = O.render; O.render = () => {}; });
+    // Hold the random visit scheduler so NPCs under test are not whisked away
+    // to visit someone (tests that need visits force a pair with JGP.visitAt).
+    if (noVisits) await page.evaluate(() => { const D = window.__dbg; D.JGP.visitAt(D.Re.t + 1e6); });
   }
   const bootS = (Date.now() - t0) / 1000;
   return {

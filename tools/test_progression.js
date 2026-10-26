@@ -111,6 +111,10 @@ const LONG = process.argv.includes('--long');
   // ---- pizza
   const pizza = await page.evaluate(async () => {
     const D = window.__dbg, Kt = D.Kt; const out = { snacksBefore: !!Kt.rewards.snacks };
+    // Let the previous (library) dialogue finish first; the phone call opens its own box.
+    const tw = performance.now();
+    while (D.qt.isOpen && performance.now() - tw < 40000) await new Promise((r) => setTimeout(r, 200));
+    out.dialogueClearedInS = +((performance.now() - tw) / 1000).toFixed(1);
     try { D.ue.call(); } catch (e) { out.threw = String(e); }
     const t0 = performance.now();
     while (!D.ue.courier && performance.now() - t0 < 20000) await new Promise((r) => setTimeout(r, 300));
