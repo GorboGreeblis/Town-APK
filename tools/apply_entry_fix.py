@@ -122,6 +122,25 @@ GAME_FIXES = [
         'clear=(ax,az,bx,bz)=>{const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,bz-az)/.3));',
         'clear=(ax,az,bx,bz)=>{if(F.segBlocked(ax,az,bx,bz,.3))return!1;const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,bz-az)/.3));',
     ),
+    # B11: Nextessa (the pizza courier) pinned against the Ancient. Inside the
+    # church she walked straight at the player; when the player stood on the far
+    # side of the Ancient, the Ancient's solid part blocked the line and nothing
+    # re-routed her (and the same straight line pinned her on the way out).
+    # Add a detour helper: if the church-local segment crosses the Ancient's box
+    # (plus her radius), walk around its front corners first. Used for the
+    # approach and for the exit path.
+    (
+        'mark=()=>{kx=i.x,kz=i.z,kt=u},planIn',
+        'mark=()=>{kx=i.x,kz=i.z,kt=u},segRect=(ax,az,bx,bz,R)=>{let t0=0,t1=1;const dx=bx-ax,dz=bz-az,cl=(p,q)=>{if(0===p)return q>=0;const r=q/p;if(p<0){if(r>t1)return!1;r>t0&&(t0=r)}else{if(r<t0)return!1;r<t1&&(t1=r)}return!0};return cl(-dx,ax-R[0])&&cl(dx,R[2]-ax)&&cl(-dz,az-R[1])&&cl(dz,R[3]-az)},detour=(ax,az,bx,bz)=>{if(!cb||!JGP.slug||!JGP.slug.ent)return[];const mg=.8*rr+.25,[sx,sz]=F.local(cb,JGP.slug.ent.home.x,JGP.slug.ent.home.z),AB=cb.parts.find((R=>sx>R[0]&&sx<R[2]&&sz>R[1]&&sz<R[3]));if(!AB)return[];const[ax2,az2]=F.local(cb,ax,az),[bx2,bz2]=F.local(cb,bx,bz),X=[AB[0]-mg,AB[1]-mg,AB[2]+mg,AB[3]+mg],same=Math.sign(ax2||1)===Math.sign(bx2||1),endIn=bx2>X[0]&&bx2<X[2]&&bz2>X[1]&&bz2<X[3];if(same&&endIn||!segRect(ax2,az2,bx2,bz2,X))return[];const fz=X[3]+.3,cx=s2=>s2>0?X[2]+.3:X[0]-.3,c1=[cx(Math.sign(ax2||1)),fz],c2=[cx(Math.sign(bx2||1)),fz];return(same?[c1]:[c1,c2]).map((([x,z])=>F.world(cb,x,z)))},planIn',
+    ),
+    (
+        'planOut=()=>{const v=sv();wp=v.way.slice().reverse().concat([v.out]),wi=0,we=!0,kn=0,n.inside="church",n.wallNear=!1,mark()}',
+        'planOut=()=>{const v=sv(),lw=v.way[v.way.length-1];wp=detour(i.x,i.z,lw[0],lw[1]).concat(v.way.slice().reverse(),[v.out]),wi=0,we=!0,kn=0,n.inside="church",n.wallNear=!1,mark()}',
+    ),
+    (
+        'else{const t=l.x-i.x,c=l.z-i.z,h=Math.hypot(t,c);if(h>o.stopDist+.001&&!n.wallNear&&"playing"===jt.top){const t=Math.min(h-o.stopDist,o.speed*e),a=it(i,l,!1);',
+        'else{const t=l.x-i.x,c=l.z-i.z,h=Math.hypot(t,c),dv=me0&&plr&&h>o.stopDist+.001&&"playing"===jt.top?detour(i.x,i.z,l.x,l.z):[];if(dv.length)wp=dv,wi=0,we=!1,kn=0,mark(),n.moving=!0,r="arriving";else if(h>o.stopDist+.001&&!n.wallNear&&"playing"===jt.top){const t=Math.min(h-o.stopDist,o.speed*e),a=it(i,l,!1);',
+    ),
 ]
 
 for old, new in EDITS + GAME_FIXES:
