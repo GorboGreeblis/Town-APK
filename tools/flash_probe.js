@@ -48,7 +48,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     for (const k in byPhase) { const a = byPhase[k]; const wm = med(a.map((f) => f.white)), dm = med(a.map((f) => f.diff));
       out.phases[k] = { frames: a.length, meanLum: +med(a.map((f) => f.mean)).toFixed(1), whiteMedian: wm, whiteMax: Math.max(...a.map((f) => f.white)), diffMedian: dm, diffMax: Math.max(...a.map((f) => f.diff)),
         anomalies: a.filter((f) => f.white > wm * 2 + 40 || f.diff > dm * 3 + Math.round(W * H * 0.01)).map((f) => ({ t: f.t, white: f.white, diff: f.diff, mean: f.mean })).slice(0, 8) }; }
-    out.governor = { level: D.Ge.level, sos: D.Ge.sos, rebuilds: D.Ge.rebuilds }; out.batches = D.Eo ? undefined : undefined;
+    out.governor = D.Ge ? { level: D.Ge.level, sos: D.Ge.sos, rebuilds: D.Ge.rebuilds } : null;
     return out;
   });
   console.log(JSON.stringify(r, null, 1));

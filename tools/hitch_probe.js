@@ -45,7 +45,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     // 7. garden Event start (Stone + Seeds + Snacks, then the pillar)
     await measure('garden Event start', async () => { Kt.rewards.stone = true; Kt.rewards.seeds = true; Kt.rewards.snacks = true; D.oe.open(); await wait(200); const yes = (D._t.state && D._t.state.items || []).find((i) => i.label === 'Yes'); if (yes) yes.onClick(); const t0 = performance.now(); while (!D.me.active && performance.now() - t0 < 10000) await wait(200); if (!D.me.active) throw new Error('event did not start'); }, 6000);
     out.duringEvent = await (async () => { const n0 = samples.length; await wait(8000); const w = samples.slice(n0).sort((a, b) => a - b); return { p50: +w[Math.floor(w.length / 2)].toFixed(1), p99: +w[Math.floor(w.length * 0.99)].toFixed(1), frames: w.length }; })();
-    out.atEnd = snap(); out.governor = { level: D.Ge.level, sos: D.Ge.sos, rebuilds: D.Ge.rebuilds, emaMs: +D.Ge.ema.toFixed(1) };
+    out.atEnd = snap(); out.governor = D.Ge ? { level: D.Ge.level, sos: D.Ge.sos, rebuilds: D.Ge.rebuilds, emaMs: +D.Ge.ema.toFixed(1) } : null;
     return out;
   });
   console.log(JSON.stringify(r, null, 1));
