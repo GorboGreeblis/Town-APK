@@ -93,7 +93,7 @@
                 android:value="300" />
             <meta-data
                 android:name="android.support.customtabs.trusted.FILE_PROVIDER_AUTHORITY"
-                android:value="com.gorbogreeblis.greeblistown.fileprovider" />
+                android:value="com.montgummery.greeblis.fileprovider" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -109,7 +109,7 @@
         <!-- Hands the splash image to the browser (same mechanism as Meta's PWA template). -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.gorbogreeblis.greeblistown.fileprovider"
+            android:authorities="com.montgummery.greeblis.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

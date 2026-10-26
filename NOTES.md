@@ -20,7 +20,7 @@ VR-entry fix; each item is for discussion first.
    acceptable.
 3. **Package name and key.** If a build was ever uploaded to app
    1441937125658740 before, its package name and signing key are locked in.
-   The APK here uses `com.gorbogreeblis.greeblistown` and a fresh key.
+   The APK here uses `com.montgummery.greeblis` and a fresh key.
 
 ## Possible store-review flags
 

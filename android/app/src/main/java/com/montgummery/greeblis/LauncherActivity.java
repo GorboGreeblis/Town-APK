@@ -1,4 +1,4 @@
-package com.gorbogreeblis.greeblistown;
+package com.montgummery.greeblis;
 
 import android.net.Uri;
 import android.os.Bundle;

@@ -1,4 +1,4 @@
-package com.gorbogreeblis.greeblistown;
+package com.montgummery.greeblis;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;

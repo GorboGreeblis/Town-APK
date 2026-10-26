@@ -16,13 +16,13 @@ if (keystorePropsFile.exists()) {
 }
 
 android {
-    namespace 'com.gorbogreeblis.greeblistown'
+    namespace 'com.montgummery.greeblis'
     compileSdk 34
 
     defaultConfig {
         // Must stay identical across every build uploaded to the Meta Quest Store
         // (VRC.Quest.Packaging.1 wants it to reflect the title and developer).
-        applicationId 'com.gorbogreeblis.greeblistown'
+        applicationId 'com.montgummery.greeblis'
         // VRC.Quest.Packaging.4: minSdk 29-34, targetSdk 32-34 for immersive apps.
         minSdk 29
         targetSdk 32
