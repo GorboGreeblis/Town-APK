@@ -123,8 +123,9 @@ const file = process.argv[2];
   await inputs([ctl('left', [0, 0, 0, -1]), ctl('right', [0, 0, 0, 0])]);
   await new Promise((r) => setTimeout(r, 3000));
   await inputs([ctl('left', [0, 0, 0, 0]), ctl('right', [0, 0, 0, 0])]);
-  const r1 = await page.evaluate(() => Math.hypot(window.__dbg.At.position.x, window.__dbg.At.position.z));
-  expect(`park bounds: walking outward from ${bnd.r0} m stops at the clearing edge (${r1.toFixed(1)} m, limit ${bnd.R})`, r1 <= bnd.R + 0.3 && r1 >= bnd.r0 - 0.5);
+  const pb = await page.evaluate(() => { const D = window.__dbg, t = D.t; return { x: +D.At.position.x.toFixed(1), z: +D.At.position.z.toFixed(1), half: t.parkHalf, south: t.parkSouth }; });
+  const insidePark = Math.abs(pb.x) <= pb.half + 0.3 && pb.z >= -pb.half - 0.3 && pb.z <= pb.south + 0.3;
+  expect(`park bounds: walking outward for 3 s stays inside the park rectangle (ended at ${pb.x},${pb.z}; |x|<=${pb.half}, ${-pb.half}<=z<=${pb.south})`, insidePark && Math.hypot(pb.x, pb.z) >= bnd.r0 - 0.5, JSON.stringify(pb));
 
   mark('menu');
   // Controller pick + menu: put a townsperson on the right controller's ray 2.5 m ahead, press select, choose "Talk".
