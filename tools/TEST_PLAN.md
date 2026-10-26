@@ -121,7 +121,11 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | --- | --- | --- |
 | Compressed release build carries the same content as the APK source | `test_parity.js` | done |
 
-## Latest results (3.15.7/3.15.8 asset, headless harness)
+## Latest results (3.15.10/3.15.11 asset, headless harness)
+
+Full tier on 3.15.10 (all fixes, pre-rendered textures): **all stages pass** (entry fix verify, server harness incl. ETag/304, spell-check, APK check, VR entry wiring, runtime 120 s, world incl. B2 rescue and 20/20 routes, input 12/12, progression incl. garden event, visits all, courier, return-home all 17, release parity). 3.15.11 differs only in the head-script loader (compositor layers); play and entry tests pass on it; full tier running.
+
+### Earlier (3.15.7/3.15.8)
 
 Standard tier on 3.15.7: all stages pass except the world routes check (2/20 random routes clipped the shop corner at their final leg), fixed as B4r in 3.15.8 (world test 20/20 afterwards). Entry test rewritten for the page-start request and the in-VR loading screen; play test passes in 2D and fake VR.
 
