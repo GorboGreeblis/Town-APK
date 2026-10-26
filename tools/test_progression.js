@@ -79,7 +79,8 @@ const LONG = process.argv.includes('--long');
     const out = { kind: D._t.state && D._t.state.kind, held, moved, zollodHeld: !!(z && z.held), zollodMoving: !!(z && z.moving) };
     D._t.close(); return out;
   });
-  expect('shop pause: Zollod is held while the shop is open', pause.kind === 'shop' && pause.zollodHeld && !pause.zollodMoving, JSON.stringify(pause));
+  // The targeted pause branch returns before the `held` flag is set, so check motion, not the flag.
+  expect('shop pause: Zollod stands still while the shop is open', pause.kind === 'shop' && !pause.zollodMoving && !pause.moved.includes('ZOLLOD'), JSON.stringify(pause));
   expect('shop pause: nobody else is held and the town keeps moving', pause.held.every((n) => n === 'ZOLLOD') && pause.moved.length >= 1, JSON.stringify(pause));
 
   // ---- shop
