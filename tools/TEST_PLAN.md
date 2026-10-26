@@ -129,5 +129,5 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | world: 20/20 routes, hulls, bounds, pickups + regrow, watchdog (Fortizmo home in 63 s) | PASS |
 | courier/Ancient (B11), left and right | PASS; entry-only build reproduces the bug |
 | Mushroom return-home 17/17, visits 6/6 | PASS |
-| garden event (`--long`), release parity, full tier | not yet run on the final build |
+| full tier (`run_tests.sh --full`) on 3.15.6: entry, server, spell-check, APK check, VR entry, runtime 120 s, input, progression incl. garden event, visits (all), courier, return-home (all), release parity | PASS except world: 2/20 random routes clipped the shop corner by 0.3 m / 0.02 m (B4 residual, cosmetic) |
 
