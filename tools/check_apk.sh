@@ -61,6 +61,9 @@ else
   note "no native code at all (pure Java + bundled HTML, same as Meta's own PWA packages)"
 fi
 echo
+echo "Runtime requirements"
+check "android.permission.INTERNET declared (loopback server needs it)" "$(printf '%s\n' "$BADGING" | grep -q "uses-permission: name='android.permission.INTERNET'" && echo 1 || echo 0)"
+echo
 echo "Immersive launch wiring"
 check "horizonos.pwa.APP_MODE = immersive" "$(printf '%s\n' "$XMLTREE" | awk '/horizonos.pwa.APP_MODE/{f=1} f&&/immersive/{x=1} END{print x?1:0}')"
 check "DEFAULT_URL points at loopback" "$(printf '%s\n' "$XMLTREE" | awk '/customtabs.trusted.DEFAULT_URL/{f=1} f&&/127.0.0.1/{x=1} END{print x?1:0}')"

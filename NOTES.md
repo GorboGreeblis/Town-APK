@@ -165,3 +165,17 @@ VR-entry fix; each item is for discussion first.
     height with his stand height restored, so the visit system's hop-down /
     hop-up bookkeeping is sound; the earlier "moved home but never jumped"
     sighting is consistent with the wall-pinning case (fixed).
+
+27. **Headset launch crash (3.15.1) and fix.** The author's logcat shows
+    `SuperNotCalledException: LauncherActivity did not call through to
+    super.onCreate()` three times in a row at 03:47 on 10-26, each right after
+    the launcher process started: the app never showed anything. Cause: the
+    loopback server could not bind because the manifest lacked
+    `android.permission.INTERNET` (needed for any socket on Android), and the
+    launcher's error path finished the activity without calling
+    `super.onCreate()`, which Android treats as a crash. 3.15.2 declares the
+    permission, always calls `super.onCreate()`, and skips the browser launch
+    when the server is down (showing a toast instead). The same log also holds
+    two `StackOverflowError` crashes from 10-24 in the earlier
+    `com.greeblis.greeblistown` package (a previous packaging attempt), which
+    are unrelated to this project.

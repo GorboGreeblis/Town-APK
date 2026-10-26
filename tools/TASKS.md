@@ -7,7 +7,7 @@ Living list. Done items move to the bottom with the date. Bugs live in
 
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
-| T2 | Safe release build: `GreeblisTown-release.apk` (versionCode 2, 3.15.1) is at the repository root and passes `check_apk.sh`; smoke pass running; merge to main makes it the build to upload | in progress | PR #3 |
+| T2 | Safe release build: `GreeblisTown-release.apk` (versionCode 3, 3.15.2, launch-crash fix) is at the repository root and passes `check_apk.sh`; needs the headset launch confirmed, then merge to main makes it the build to upload | in progress | PR #3 |
 | T3 | Headset test of the release build (direct-to-VR launch, play through, quit cleanly) | open, developer | `RELEASE.md` section 3 |
 | T4 | Store upload: Alpha channel first, listing assets, questionnaires, privacy policy URL | open, developer | `RELEASE.md` section 5 |
 | T5 | Extend the input test: body collision, park bounds, pick ray and menu choice through fake controllers (dead-zone, walking, snap turn, select/squeeze, hull collision already pass) | open | `tools/test_input.js` |
