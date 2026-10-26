@@ -457,7 +457,7 @@ VR-entry fix; each item is for discussion first.
     error text, entry is retried twice, and the worst case is a readable
     screen the user leaves with the system button. (c) The page posts its
     events and errors to the loopback server's `/log` endpoint, logged as
-    `GreeblisServer: page: <ms> <text>` (HEADSET_DIAG.md). (d) `tools/fakexr.js`
+    `GreeblisServer: page: m=<ms> <text>` (HEADSET_DIAG.md). (d) `tools/fakexr.js`
     enforces the rules above, so the headless entry test fails on a `layers`
     session the way the headset does. (e) The real fix for B13 (black bars)
     must render the game itself through an `XRProjectionLayer`: three.js's

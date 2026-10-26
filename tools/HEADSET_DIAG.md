@@ -77,7 +77,7 @@ adb pull <path printed above> oculus-browser.apk
 ## Page diagnostics (3.15.12+)
 
 The page posts its events to the loopback server, which logs them with tag
-`GreeblisServer` as `page: <ms since page start> <text>`:
+`GreeblisServer` as `page: m=<ms since page start> <text>`:
 `session parked, features=...`, `loader failed: ...`, `entry failed (n): ...`,
 `session ended (before|after handover)`, `requestSession rejected: ...`, and
 every error the game's own handler sees (`[xr-enter] ...`, `[boot] ...`).
