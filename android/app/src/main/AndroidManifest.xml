@@ -12,6 +12,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     android:installLocation="auto">
 
+    <!-- Required for any socket, including the loopback server that hands the
+         game to the browser. Without it ServerSocket throws EACCES and the
+         launcher crashes before anything is shown. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <!-- VRC.Quest.Packaging.1 / .3: head tracking required, no phone-only features. -->
     <uses-feature
         android:name="android.hardware.vr.headtracking"

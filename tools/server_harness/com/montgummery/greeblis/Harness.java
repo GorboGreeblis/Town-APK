@@ -56,9 +56,55 @@ public final class Harness {
         boolean all = true;
         for (boolean b : ok) all &= b;
         failures += expect("10 concurrent fetches identical", all);
+        // Robustness: nothing below should take the server down; the real GET afterwards must still work.
+        failures += expect("garbage request line gets a response or clean close", rawOk(server.port(), "\u00ff\u00fe garbage\r\n\r\n"));
+        failures += expect("empty connection closes cleanly", rawOk(server.port(), ""));
+        failures += expect("HTTP/1.0 GET served", raw(server.port(), "GET / HTTP/1.0\r\n\r\n").startsWith("HTTP/1.1 200"));
+        failures += expect("path traversal /../index.html is 404", raw(server.port(), "GET /../index.html HTTP/1.1\r\nHost: x\r\n\r\n").startsWith("HTTP/1.1 404"));
+        failures += expect("bare GET line answered, not a crash (served as /, see NOTES.md item 15)", raw(server.port(), "GET\r\n\r\n").startsWith("HTTP/1.1 "));
+        StringBuilder huge = new StringBuilder("GET /");
+        for (int i = 0; i < 200_000; i++) huge.append('a');
+        huge.append(" HTTP/1.1\r\n\r\n");
+        failures += expect("200 KB request line answered 404", raw(server.port(), huge.toString()).startsWith("HTTP/1.1 404"));
+        failures += expect("slow client that never sends headers is dropped (server timeout)", slowClientDropped(server.port()));
+        failures += expect("server still serves after abuse", Arrays.equals(fetch(server.url(), "GET").body, doc));
         server.close();
         System.out.println(failures == 0 ? "SERVER TEST PASSED" : "SERVER TEST FAILED (" + failures + ")");
         System.exit(failures == 0 ? 0 : 1);
+    }
+
+    static String raw(int port, String request) throws IOException {
+        try (java.net.Socket s = new java.net.Socket("127.0.0.1", port)) {
+            s.setSoTimeout(15000);
+            s.getOutputStream().write(request.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1));
+            s.getOutputStream().flush();
+            byte[] head = new byte[64];
+            int n = 0, r;
+            while (n < head.length && (r = s.getInputStream().read(head, n, head.length - n)) > 0) n += r;
+            return new String(head, 0, n, java.nio.charset.StandardCharsets.ISO_8859_1);
+        } catch (java.net.SocketTimeoutException e) {
+            return "TIMEOUT";
+        }
+    }
+
+    static boolean rawOk(int port, String request) {
+        try { String r = raw(port, request); return !r.equals("TIMEOUT"); } catch (IOException e) { return true; }
+    }
+
+    static boolean slowClientDropped(int port) throws IOException {
+        try (java.net.Socket s = new java.net.Socket("127.0.0.1", port)) {
+            s.setSoTimeout(20000);
+            s.getOutputStream().write("GET / HTTP/1.1\r\nHost: x\r\n".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+            s.getOutputStream().flush();
+            long t0 = System.currentTimeMillis();
+            int r = s.getInputStream().read();          // server should close after its 10 s read timeout
+            long dt = System.currentTimeMillis() - t0;
+            return r == -1 && dt >= 5000 && dt < 20000;
+        } catch (java.net.SocketTimeoutException e) {
+            return false;
+        } catch (IOException e) {
+            return true;                                   // reset by the server also counts as dropped
+        }
     }
 
     static int expect(String what, boolean cond) {

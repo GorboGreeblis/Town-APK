@@ -25,24 +25,33 @@ public class LauncherActivity extends com.meta.androidbrowserhelper.trusted.Laun
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // The server must be up before the parent class builds the launch intent.
+        // The server must be up before the parent class builds the launch intent
+        // (the parent's onCreate launches the browser when the activity is new).
         try {
             mGameUrl = GameServer.ensureStarted(this);
         } catch (IOException e) {
             Log.e(TAG, "game server failed to start", e);
+            mGameUrl = null;
+        }
+        super.onCreate(savedInstanceState);   // must always run, or Android throws SuperNotCalledException
+        if (mGameUrl == null) {
             Toast.makeText(this, "Greeblis Town could not start its game server.",
                     Toast.LENGTH_LONG).show();
             finish();
-            return;
         }
-        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected boolean shouldLaunchImmediately() {
+        // Do not try to open the browser when the server is not running.
+        return mGameUrl != null && super.shouldLaunchImmediately();
     }
 
     @Override
     protected Uri getLaunchingUrl() {
         // Ignore the manifest placeholder and any incoming intent data: the only
         // thing this app ever opens is its own bundled game.
-        return Uri.parse(mGameUrl);
+        return Uri.parse(mGameUrl != null ? mGameUrl : "http://127.0.0.1:" + GameServer.PREFERRED_PORT + "/");
     }
 
     @Override

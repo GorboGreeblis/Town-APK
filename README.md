@@ -35,7 +35,7 @@ NOTES.md                 observations and possible bugs, to discuss before actin
    requests after the first load, so the server only matters for the first few
    seconds.
 
-## The VR-entry fix (the only change to the game)
+## Changes to the game: the VR-entry fix and two approved gameplay fixes
 
 The original file dropped the browser's `sessiongranted` event unless the
 world had already finished building, and then waited for a press on a 2D
@@ -53,7 +53,13 @@ played.
 4. the session request reuses the parked session when there is one.
 
 The "Press A" screen still works unchanged when the game is opened in a 2D
-browser window. `python3 tools/apply_entry_fix.py --verify` proves the APK
+browser window.
+
+Two gameplay fixes approved after testing are applied by the same script
+(`GAME_FIXES`): the navigator now respects a building's real walls when a
+route starts or ends beside it, which cured the Mushroom getting stuck next
+to his kiosk (see `NOTES.md`), and Hennrick's campfire line gained its
+missing subject. `python3 tools/apply_entry_fix.py --verify` proves the APK
 copy equals the original plus exactly these edits.
 
 ## Building
@@ -99,7 +105,7 @@ What cannot be tested here: the actual launch on a headset. Sideload and
 confirm that the app goes straight into VR:
 
 ```sh
-adb install -r android/app/build/outputs/apk/release/app-release.apk
+adb install -r GreeblisTown-release.apk
 adb logcat -s GreeblisServer GreeblisLauncher TwaLauncher TWALauncherActivity
 ```
 
@@ -110,7 +116,7 @@ adb logcat -s GreeblisServer GreeblisLauncher TwaLauncher TWALauncherActivity
   earlier upload used a different package name, change `applicationId` in
   `android/app/build.gradle` to match before building.
 - Bump `versionCode` in `android/app/build.gradle` for every upload.
-- Upload `app-release.apk` through the Meta Horizon Developer Dashboard
+- Upload `GreeblisTown-release.apk` (repository root) through the Meta Horizon Developer Dashboard
   (or `ovr-platform-util upload-quest-build`).
 - `tools/check_apk.sh` reproduces the manifest, signature, SDK-level, size
   and 64-bit checks from the VRC document.

@@ -78,3 +78,104 @@ VR-entry fix; each item is for discussion first.
     joins are accounted for. The APK is built from the uncompressed source,
     so it is "on par" with the release in content, but anyone wanting a
     byte-identical guarantee would need the original minifier pipeline.
+
+## From general testing (round 2)
+
+14. **Android lint** (`gradle lintRelease`) reports 11 warnings, none
+    affecting the Quest build: launcher icon fills its square (cosmetic),
+    redundant activity label, fixed landscape orientation (intended for a VR
+    launcher), `allowBackup` deprecation note, `compileSdk 35` available, the
+    splash bitmap sits in the density-less `drawable/` folder (fine for a
+    single image), and one "Fatal" `ExpiredTargetSdkVersion` that is a Google
+    Play rule (target 33+). Meta's VRC wants 32-34 for immersive apps and
+    Meta's own PWA template uses 32, so targetSdk stays 32. Raising it to 34
+    would silence lint and is low risk for this app; discuss.
+15. **Loopback server leniency.** A request line with no path (`GET` alone)
+    is served as `/` instead of answered 400. Harmless (only the Quest
+    Browser talks to it), noted for completeness; the harness documents the
+    behaviour rather than failing on it.
+
+## Content review (round 2)
+
+16. **Hennrick grammar.** His campfire line reads "Sometimes worry that doing
+    these things will alter the timeline…" and is missing its subject
+    ("Sometimes I worry…"). Entity id `gratelet`, field `campfire`.
+    **Fixed** (approved): applied by `tools/apply_entry_fix.py`, GAME_FIXES.
+17. **Hennrick and the field office.** The only line of his that touches the
+    subject is "These joints were built for fieldwork, not a desk." The line
+    "See anything glowing in the sky, you report it to this office." belongs
+    to the Sheriff (Mushroom, id `drifter`). The Field Office building itself
+    carries no text. If a specific line is wrong, point at it and it goes on
+    this list.
+18. **Spelling.** `tools/spellcheck_dialogue.py` finds no misspellings in the
+    421 prose strings. Everything it flags is a name or deliberate sound
+    (Goomp, Backpacka, Appterix, Cobourg) or font/engine text.
+
+## Runtime testing (round 2 results)
+
+19. **Simulated VR session works end to end.** With the fake WebXR device
+    (`tools/fakexr.js`) the game accepts the grant, three.js takes the
+    session, the gate hides ("Entering VR..."), stereo frames render, and on
+    session end the 2D gate returns, all with zero page errors. This is the
+    closest thing to a headset run available here; it does not exercise real
+    sensors, controllers or the Quest Browser.
+20. **NPCs only simulate while presenting.** In 2D (gate) mode no NPC moves
+    and the player cannot pick anything up, which is by design (the 2D gate
+    is only a holding screen). All behaviour tests therefore run inside the
+    fake session.
+21. **Software rendering is slow.** Stereo frames run at roughly 3 fps under
+    SwiftShader even with the framebuffer clamped to 320 px, so behaviour
+    scenarios run with large frame deltas (about 0.35 s). Results are valid
+    for logic, not for timing precision or frame-rate claims.
+
+## Mushroom stuck: root cause and fix (round 2)
+
+22. **Reproduced in the harness** (`tools/test_npc_home.js`, fake VR
+    session): placed 6 m behind his kiosk, Mushroom walked straight at the
+    front waypoint, pinned himself against the back wall, the stuck detector
+    fired and re-planned, and the re-plan sent him straight through the wall
+    again, forever. The off-screen teleport never fires while the player is
+    within 12 m or looking at him. Several other "failures" in the first run
+    were only the software renderer slowing the simulation (fixed in the
+    harness by skipping draw calls).
+23. **Root cause.** `F.segBlocked`, the navigator's wall test, skipped a
+    building entirely when both ends of a segment were inside the building's
+    clearance margin (about 1 m for Mushroom). Beside or behind his kiosk,
+    both his position and the front waypoint are inside that margin, so the
+    kiosk was invisible to the router and the "path" went through the wall.
+    The same test also marked any segment that merely ended inside the margin
+    as blocked, so the waypoint was unreachable by the proper route and the
+    router fell back to the straight line.
+24. **Why it is rare and why it looks like the safety net.** He only leaves
+    the desk for visits and the garden event; walking back along the front
+    is fine. The trap needs an interrupted visit or a return that starts
+    beside or behind the kiosk (the post-visit `drop` path navigates straight
+    at the desk). Then the safety net is what the player sees failing.
+25. **Fix (applied by `tools/apply_entry_fix.py`, GAME_FIXES):** when either
+    end of a segment is within a building's margin, test against the real
+    hull instead of the enlarged one, and still ignore the building when both
+    ends are inside it (walking indoors). Routes now go around the kiosk to
+    the front waypoints, then the normal hop onto the desk follows. One
+    function changed, no behaviour change away from buildings.
+
+26. **Visit paths verified after the fix.** `tools/test_visits.js` forced
+    visits with Mushroom as host (Hennrick calls on the Sheriff) and as
+    visitor (to Anomalee), complete and interrupted while walking out, at the
+    meeting and on the way back. In every case he ended on his desk at full
+    height with his stand height restored, so the visit system's hop-down /
+    hop-up bookkeeping is sound; the earlier "moved home but never jumped"
+    sighting is consistent with the wall-pinning case (fixed).
+
+27. **Headset launch crash (3.15.1) and fix.** The author's logcat shows
+    `SuperNotCalledException: LauncherActivity did not call through to
+    super.onCreate()` three times in a row at 03:47 on 10-26, each right after
+    the launcher process started: the app never showed anything. Cause: the
+    loopback server could not bind because the manifest lacked
+    `android.permission.INTERNET` (needed for any socket on Android), and the
+    launcher's error path finished the activity without calling
+    `super.onCreate()`, which Android treats as a crash. 3.15.2 declares the
+    permission, always calls `super.onCreate()`, and skips the browser launch
+    when the server is down (showing a toast instead). The same log also holds
+    two `StackOverflowError` crashes from 10-24 in the earlier
+    `com.greeblis.greeblistown` package (a previous packaging attempt), which
+    are unrelated to this project.
