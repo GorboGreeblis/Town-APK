@@ -7,7 +7,7 @@ Living list. Done items move to the bottom with the date. Bugs live in
 
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
-| T2 | Safe release build. 3.15.8 (root APK, PR #6; 3.15.7 is on main) = 3.15.7 + B4r: request at page start, sliced boot, own in-VR loading screen (NOTES 34). Needs the headset to confirm: no OS loading screen beyond a second or two, loading screen visible, then the game | awaiting headset confirmation | PR #6 |
+| T2 | Safe release build. 3.15.11 (root APK, PR #6; 3.15.7 is on main) = 3.15.7 + B4r, B2, effects pre-warm, cacheable page, pre-rendered textures, compositor-layer loading screen (B13): request at page start, sliced boot, own in-VR loading screen (NOTES 34). Needs the headset to confirm: no OS loading screen beyond a second or two, loading screen visible, then the game | awaiting headset confirmation | PR #6 |
 | T3 | Headset test of the release build (direct-to-VR launch, play through, quit cleanly) | open, developer | `RELEASE.md` section 3 |
 | T4 | Store upload: Alpha channel first, listing assets, questionnaires, privacy policy URL | open, developer | `RELEASE.md` section 5 |
 | T5 | Input test extended: body collision, park bounds, controller pick + menu choice + dialogue (plus dead-zone, walking, snap turn, select/squeeze, hull) | done | `tools/test_input.js` |
