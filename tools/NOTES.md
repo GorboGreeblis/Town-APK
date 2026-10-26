@@ -237,3 +237,33 @@ VR-entry fix; each item is for discussion first.
     against `--entry-only` (bug reproduced: still for 94 s) and the fixed asset
     (delivers in 4 s, outside again at 9 s).
 
+32. **B12, subtle white flashes on objects (author's repro: pick something up
+    while looking at the kiosk behind Zollod from a distance; also the garden
+    ground during the Event; other kiosks and objects too).** What the code
+    rules in and out so far:
+    - Not a whole-view effect: the flash is on objects, never across the
+      screen, so the base-layer rebuild by the quality governor and the
+      comfort vignette quad are out as the primary cause.
+    - The draw batcher (`gcEB`) is consistent within a frame: three.js calls
+      `scene.onBeforeRender` before it builds the render list, so slot
+      updates and the layer toggles that move a part between "drawn by the
+      batch" and "drawn by itself" land in the same frame. A zeroed slot
+      collapses a part to a point (no pixels), so stale slots would show as a
+      pop, not as white.
+    - Live candidates, in order: (1) GPU work first done during the pickup
+      frame: new sparkle meshes (white Phong, unique materials) and the 64x64
+      label textures; on Quest a long frame is shown re-projected and a
+      bright object can read as a flash; (2) a one-frame lighting difference
+      when a part toggles between the batch shader (normals from the slot's
+      adjugate matrix) and its own mesh (three.js normal matrix); (3) the
+      per-frame HUD canvas re-upload on count changes; (4) a driver-level
+      issue with the dynamically indexed `vec4 gcR[128]` uniform array in the
+      batch vertex shader (Adreno), which the headless probe cannot see.
+    - Tools: `tools/flash_probe.js` (per-frame read-back: near-white pixel
+      count and frame-to-frame jumps while still, facing the garden kiosk
+      from 22 m during pickups, and the garden during the Event),
+      `tools/hitch_probe.js` (new programs/textures per action), and three
+      headset A/B variants from `tools/build_experiment.sh`: `nobatch`,
+      `noeffects`, `nogovernor`. Whichever variant makes the flash disappear
+      names the cause.
+
