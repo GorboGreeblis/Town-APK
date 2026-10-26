@@ -22,7 +22,9 @@ public final class Harness {
             System.exit(2);
         }
         byte[] doc = Files.readAllBytes(Path.of(args[0]));
-        GameServer server = new GameServer(doc);
+        String print = GameServer.sha256Fingerprint("not a real certificate".getBytes());
+        String links = GameServer.assetLinksJson("com.montgummery.greeblis", new String[]{print});
+        GameServer server = new GameServer(doc, links);
         System.out.println("URL " + server.url());
         if (args[1].equals("--serve")) {
             Thread.currentThread().join();
@@ -41,7 +43,17 @@ public final class Harness {
         failures += expect("GET /nope is 404", fetch(server.url() + "nope", "GET").status == 404);
         failures += expect("GET /favicon.ico is 404", fetch(server.url() + "favicon.ico", "GET").status == 404);
         failures += expect("POST / is 405", fetch(server.url(), "POST").status == 405);
-        failures += expect("bound to loopback port " + server.port(), server.url().startsWith("http://127.0.0.1:"));
+        Resp al = fetch(server.url() + ".well-known/assetlinks.json", "GET");
+        String alBody = new String(al.body, "UTF-8");
+        failures += expect("GET /.well-known/assetlinks.json is 200 application/json", al.status == 200 && "application/json".equals(al.type));
+        failures += expect("assetlinks names the package, the handle_all_urls relation and the certificate fingerprint",
+                alBody.contains("\"package_name\":\"com.montgummery.greeblis\"")
+                && alBody.contains("delegate_permission/common.handle_all_urls")
+                && alBody.contains("\"sha256_cert_fingerprints\":[\"" + print + "\"]"));
+        failures += expect("fingerprint is 32 colon-separated upper-case hex bytes", print.matches("([0-9A-F]{2}:){31}[0-9A-F]{2}"));
+        failures += expect("HEAD /.well-known/assetlinks.json is 200, empty body", fetch(server.url() + ".well-known/assetlinks.json", "HEAD").status == 200);
+        failures += expect("POST /.well-known/assetlinks.json is 405", fetch(server.url() + ".well-known/assetlinks.json", "POST").status == 405);
+        failures += expect("addressed as http://localhost:" + server.port(), server.url().startsWith("http://localhost:"));
         // Ten quick parallel fetches: the server spawns a thread per connection.
         Thread[] ts = new Thread[10];
         final boolean[] ok = new boolean[10];
@@ -61,7 +73,7 @@ public final class Harness {
         failures += expect("empty connection closes cleanly", rawOk(server.port(), ""));
         failures += expect("HTTP/1.0 GET served", raw(server.port(), "GET / HTTP/1.0\r\n\r\n").startsWith("HTTP/1.1 200"));
         failures += expect("path traversal /../index.html is 404", raw(server.port(), "GET /../index.html HTTP/1.1\r\nHost: x\r\n\r\n").startsWith("HTTP/1.1 404"));
-        failures += expect("bare GET line answered, not a crash (served as /, see NOTES.md item 15)", raw(server.port(), "GET\r\n\r\n").startsWith("HTTP/1.1 "));
+        failures += expect("bare GET line answered 400", raw(server.port(), "GET\r\n\r\n").startsWith("HTTP/1.1 400"));
         StringBuilder huge = new StringBuilder("GET /");
         for (int i = 0; i < 200_000; i++) huge.append('a');
         huge.append(" HTTP/1.1\r\n\r\n");

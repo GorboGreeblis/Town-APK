@@ -66,7 +66,7 @@ check "android.permission.INTERNET declared (loopback server needs it)" "$(print
 echo
 echo "Immersive launch wiring"
 check "horizonos.pwa.APP_MODE = immersive" "$(printf '%s\n' "$XMLTREE" | awk '/horizonos.pwa.APP_MODE/{f=1} f&&/immersive/{x=1} END{print x?1:0}')"
-check "DEFAULT_URL points at loopback" "$(printf '%s\n' "$XMLTREE" | awk '/customtabs.trusted.DEFAULT_URL/{f=1} f&&/127.0.0.1/{x=1} END{print x?1:0}')"
+check "DEFAULT_URL uses http://localhost (the browser rejects 127.0.0.1 as unverified)" "$(printf '%s\n' "$XMLTREE" | awk '/customtabs.trusted.DEFAULT_URL/{f=1} f&&/http:\/\/localhost/{x=1} END{print x?1:0}')"
 echo
 echo "Bundled game"
 SRC="$ROOT/android/app/src/main/assets/index.html"

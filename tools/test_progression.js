@@ -66,6 +66,23 @@ const LONG = process.argv.includes('--long');
   expect('battle: fought to the end and won', battle.won === true, `clicks=${battle.clicks} log=${(battle.log || []).join(' / ').slice(0, 120)}`);
   expect('battle: first win awards an Artifact and records the win', battle.artifactsAfter === battle.artifactsBefore + 1 && (battle.danceWins || []).includes('w_mont'), `artifacts ${battle.artifactsBefore} -> ${battle.artifactsAfter}`);
 
+  // ---- shop pause (B8): only Zollod pauses while the shop menu is open
+  const pause = await page.evaluate(async () => {
+    const D = window.__dbg, Kt = D.Kt; Kt.shyFree = true;
+    const tw = performance.now();
+    while (D.qt.isOpen && performance.now() - tw < 40000) await new Promise((r) => setTimeout(r, 200));
+    const before = new Map(D.It.all.map((h) => [h, [h.group.position.x, h.group.position.z]]));
+    D.ne.open(); await new Promise((r) => setTimeout(r, 4000));
+    const held = D.It.all.filter((h) => h.held).map((h) => h.def && h.def.name);
+    const moved = D.It.all.filter((h) => { const b = before.get(h); return Math.hypot(h.group.position.x - b[0], h.group.position.z - b[1]) > 0.3; }).map((h) => h.def && h.def.name);
+    const z = D.It.all.find((h) => h.def && h.def.name === 'ZOLLOD');
+    const out = { kind: D._t.state && D._t.state.kind, held, moved, zollodHeld: !!(z && z.held), zollodMoving: !!(z && z.moving) };
+    D._t.close(); return out;
+  });
+  // The targeted pause branch returns before the `held` flag is set, so check motion, not the flag.
+  expect('shop pause: Zollod stands still while the shop is open', pause.kind === 'shop' && !pause.zollodMoving && !pause.moved.includes('ZOLLOD'), JSON.stringify(pause));
+  expect('shop pause: nobody else is held and the town keeps moving', pause.held.every((n) => n === 'ZOLLOD') && pause.moved.length >= 1, JSON.stringify(pause));
+
   // ---- shop
   const shop = await page.evaluate(async () => {
     const D = window.__dbg, Kt = D.Kt; const out = {};
@@ -125,8 +142,13 @@ const LONG = process.argv.includes('--long');
     out.jtTop = D.jt && D.jt.top; out.meActive = !!(D.me && D.me.active);
     try { D.ue.call(); } catch (e) { out.threw = String(e); }
     await new Promise((r) => setTimeout(r, 300)); out.dlgAfterCall = !!D.qt.isOpen;
-    const t0 = performance.now();
-    while (!D.ue.courier && performance.now() - t0 < 30000) await new Promise((r) => setTimeout(r, 300));
+    const t0 = performance.now(); out.timeline = [];
+    // The portal sets pizza.callDelayMs to 30 s, so the courier appears ~31 s after the call.
+    while (!D.ue.courier && performance.now() - t0 < 45000) {
+      await new Promise((r) => setTimeout(r, 1000));
+      out.timeline.push({ t: Math.round((performance.now() - t0) / 1000), st: D.ue.state, ot: D.ot && D.ot.state, trip: !!(D.ot && D.ot.trip), couriers: D.It.all.filter((h) => h.kind === 'courier').length, dlg: !!D.qt.isOpen });
+    }
+    out.timeline = out.timeline.filter((x, i, a) => i === 0 || i === a.length - 1 || JSON.stringify(x) !== JSON.stringify(a[i - 1]));
     out.dlgLater = !!D.qt.isOpen;
     out.courier = !!D.ue.courier; out.state = D.ue.state;
     const t1 = performance.now();

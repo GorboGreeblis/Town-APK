@@ -179,3 +179,61 @@ VR-entry fix; each item is for discussion first.
     two `StackOverflowError` crashes from 10-24 in the earlier
     `com.greeblis.greeblistown` package (a previous packaging attempt), which
     are unrelated to this project.
+
+28. **3.15.2: immersive activity closes on the loopback URL.** The second
+    headset log shows the fixed launcher doing its job (`START ... dat=
+    http://127.0.0.1:17777/ cmp=com.oculus.browser/.WebXRCustomTabActivity`),
+    then a CLOSE transition for that activity about 300 ms later and the whole
+    task finishing; this repeats on every launch, leaving the OS loading
+    screen up. No browser-side reason is logged, and the capture holds no
+    lines from our own process (pid 13084), so the server and launcher logs
+    are missing; an unfiltered `adb logcat -v threadtime` would show them.
+    Working hypothesis: the immersive custom-tab activity requires a verified
+    HTTPS origin. Since hosting is ruled out, the 2D app mode (browser panel
+    plus the game's own "Press A") is the fallback under test, and the
+    build now has a `-PappMode=2D` switch.
+
+29. **B9 resolved by the unfiltered log.** The browser prints
+    `cr_OriginVerifier: Verification failed for http://127.0.0.1:17777 as not
+    https or localhost`, then `cr_WebXRCustomTabActivity: TWA verification was
+    unsuccessful! Exiting the activity.` Chromium's Trusted Web Activity
+    verifier has a development exception for the host name `localhost`
+    (no HTTPS needed) but not for the numeric loopback address. 3.15.4
+    addresses the game as `http://localhost:17777/`; the server also listens
+    on `::1` in case `localhost` resolves to IPv6 first. No hosting, no
+    browser window: the immersive activity should now verify and go straight
+    to `sessiongranted`.
+
+30. **3.15.4 passed the origin check and hit the next one: Digital Asset
+    Links.** With `http://localhost:17777/` the browser no longer rejects the
+    origin, but Trusted Web Activity verification has a second step: it fetches
+    `/.well-known/assetlinks.json` from the origin and requires a statement that
+    names the launching package and its signing certificate. Our server
+    answered 404 for anything but the game, so the log shows
+    `digital_asset_links_handler.cc: Digital Asset Links endpoint responded
+    with code 404` followed by `TWA verification was unsuccessful! Exiting the
+    activity.` 3.15.5 serves that file from the loopback server. The statement
+    is built at runtime from the installed package's own signing certificate
+    (`PackageManager.GET_SIGNING_CERTIFICATES`, SHA-256, colon-separated upper
+    case as keytool and Chromium print it), so it stays correct whichever key
+    signed the build. The JVM harness checks the path, content type, relation,
+    package name and fingerprint format (`tools/test_server.sh`). This is the
+    same mechanism a hosted PWA uses; the only difference is that the "host"
+    is the APK itself, so the no-hosting rule still holds.
+
+31. **B11: the pizza courier and the Ancient.** Inside the church the courier
+    follows two fixed waypoints (both on the +x side of the nave) and then
+    walks straight at the player. The Ancient is registered as a solid part of
+    the church (`[-.95,-13.65,.95,-9.55]` in church-local coordinates), so a
+    player standing on the -x side put the Ancient on that straight line and
+    the wall resolver pinned her there until the 100 s give-up (the exit path
+    had the same problem in reverse). The fix adds `detour()` to the courier:
+    a Liang-Barsky segment test against the Ancient's box grown by her radius;
+    when the line crosses it she first walks to the front corner on her side
+    and then the corner on the player's side (corners 1 m outside the margin,
+    because `follow()` consumes a waypoint within 1 m and a closer corner made
+    her loop in place, which the first attempt did). Used for the approach and
+    prepended to the exit waypoints. Verified with `tools/test_courier.js`
+    against `--entry-only` (bug reproduced: still for 94 s) and the fixed asset
+    (delivers in 4 s, outside again at 9 s).
+
