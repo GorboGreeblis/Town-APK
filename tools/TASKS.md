@@ -36,10 +36,12 @@ Living list. Done items move to the bottom with the date. Bugs live in
 
 ## Resume point (2026-10-27)
 
-- 3.15.16 built: flash-free projection-layer swaps, adaptive render scale 1.2/1.1/1.0
-  (sharp experiment retired, author's call), loading panel 25 degrees, Gallery painting
-  at 2.0 px/unit with anisotropy 16, school mural at 2x in its own texture, boot slice
-  timings in logcat, Event props pre-built. Full tier on it: `tools/.runs/full_v16.log`.
+- 3.15.17 built: flash-free projection-layer swaps, adaptive render scale 1.2/1.1/1.0
+  (sharp experiment retired, author's call), loading panel 25 degrees, Gallery kiosk
+  painting at 2.0 px/unit with anisotropy 16 (the only painting the author wanted sharper;
+  the mural change was reverted), boot slice timings in logcat, Event props pre-built.
+  Full tier on it: `tools/.runs/full_v17.log`.
 - Awaiting the author's full run: panel size, no black frame on scale steps, sharper
-  gallery painting and mural, Event flash (B12).
-- T12 lead unchanged (NOTES 46): loading is 8.2 s of JavaScript world-building.
+  gallery painting, Event flash (B12).
+- Focus now: performance (author). T12 lead (NOTES 46): loading is 8.2 s of JavaScript
+  world-building; in-game: hitch probe clean except first pickup (~15-24 ms headless).

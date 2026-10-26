@@ -569,16 +569,13 @@ VR-entry fix; each item is for discussion first.
     experiment is retired (author's call); the `native` variant reverts to 1.0
     everywhere for A/B tests. The play test exercises a swap in layers mode.
 
-48. **Sharper paintings (3.15.16).** Gooward's large painting at the Gallery
-    kiosk is a triptych painted in a worker by `paintGallery`, which scales
-    with its canvas (`ART.s` pixels per unit): 1.5 gave a 3072x1158 canvas
-    (1024x1158 per panel for 2.3 x 2.6 m); now 2.0, 4096x1544 (1365x1544 per
-    panel), and the art textures take anisotropy 16 instead of the global 8.
-    Headless the worker finishes before the boot ends. The school mural
-    (Backpacka, 11 x 4.3 m) was an 896x352 slot of the 2048x2048 sign atlas
-    (about 80 px/m); its painter uses absolute pixel coordinates, so it is
-    now painted at 2x into its own 1792x704 texture (`muralTx`, a `mural`
-    material bin; the sign call routes "mural" to it) and pre-rendered like
-    the other canvases. Both checked by headless screenshots
-    (`tools/.runs/gallery.png`, `tools/.runs/mural.png`): right way up, sharp.
+48. **Sharper Gallery painting (3.15.16/17).** Gooward's large painting at
+    the Gallery kiosk is a triptych painted in a worker by `paintGallery`,
+    which scales with its canvas (`ART.s` pixels per unit): 1.5 gave a
+    3072x1158 canvas (1024x1158 per panel for 2.3 x 2.6 m); now 2.0,
+    4096x1544 (1365x1544 per panel), and the art textures take anisotropy 16
+    instead of the global 8. Headless the worker finishes before the boot
+    ends; checked by a headless screenshot (`tools/.runs/gallery.png`). The
+    school mural was briefly given the same treatment (2x into its own
+    texture) and reverted at the author's request: it was fine as it was.
 
