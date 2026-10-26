@@ -42,7 +42,7 @@ The HTML is 93 lines; a few of them are very long script blocks.
   (`Math.PI/6`), pick range 16, UI distance 11.5, foveation and framebuffer
   scale per quality level, target 72 Hz with an adaptive quality controller
   (`targetHz`, `emaAlpha`, `overFrames`, `underFrames`).
-- Pickups: 32 blossoms (regrow 12 s), 40 acorns (regrow 12 s).
+- Pickups: 32 blossoms (regrow 12 s), 40 flint (regrow 12 s; called acorns in the code, flint in the game's own text and the Store).
 - Finale: 180 s, NPC chatter every 3-7 s, `finaleLockMs` 600 s.
 - Pizza: call delay 1.8 s, driver spawn radius 75, gives up after 100 s.
 - Gravity 14.
@@ -83,7 +83,7 @@ launch's grant is never dropped (see `apply_entry_fix.py`).
   `GARDEN SUPPLIES`; menu labels `Talk to ...`, `Give a blossom`, `Shop at
   Garden Supplies`, `Call for pizza`, `Rock out!`, `Do the splits like
   scissors!`, `Go horizontal like paper!`, `Yes/No`, `DONE`, `CLOSE`, `LEAVE`.
-- Collectibles: blossoms, acorns, "Ancient Gem collected!".
+- Collectibles: blossoms, flint, "Ancient Gem collected!".
 - Audio: everything is synthesised (`G.note(freq, dur, wave, gain, delay)`
   with sine/square/sawtooth/triangle), with helpers like `G.bubbleBlip`,
   `G.toot`; the audio context uses `latencyHint: "balanced"` on Quest.

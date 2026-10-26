@@ -61,7 +61,11 @@ if [ "$TIER" != quick ]; then
     run "z-fighting / flicker on environmental surfaces (jittered render)" node "$ROOT/tools/test_zfight.js" "$ASSET"
     report "loading time (boot profile)" node "$ROOT/tools/boot_profile.js" "$ASSET"
     report "handover profile (frames after entering VR)" node "$ROOT/tools/entry_profile.js" "$ASSET"
-    report "in-game hitches (pickups, dialogue, Event)" node "$ROOT/tools/hitch_probe.js" "$ASSET"
+    # Frame timings are only meaningful without the layers path (its MSAA resolve is software-rendered here),
+    # so the hitch probe runs on the no-layers variant of the same asset.
+    python3 -I "$ROOT/tools/apply_entry_fix.py" --experiment nolayers "$ROOT/tools/uncompressed.html" "$ROOT/tools/.runs/hitch_nolayers.html" >/dev/null 2>&1 \
+      && report "in-game hitches (pickups, dialogue, Event; no-layers variant)" node "$ROOT/tools/hitch_probe.js" "$ROOT/tools/.runs/hitch_nolayers.html" \
+      || report "in-game hitches (pickups, dialogue, Event)" node "$ROOT/tools/hitch_probe.js" "$ASSET"
     report "scene cost (draw calls, triangles, materials)" node "$ROOT/tools/perf_probe.js" "$ASSET"
     report "render sharpness (scale, foveation, texture filtering)" node "$ROOT/tools/sharpness_probe.js" "$ASSET"
   else skip "graphical and performance pass (z-fight, profiles, sharpness)" "$TIER tier; run --full"; fi

@@ -538,3 +538,63 @@ VR-entry fix; each item is for discussion first.
     the up-front capture and relying on the hide-time capture (context loss
     without a hide event is the only case it covers).
 
+46. **On-device loading breakdown (3.15.14, author's log), 8.2 s from page
+    start to the projection layer:** start 541, kiosks 684, player 1223,
+    companions 111, townsfolk 104+97+88+44+61+573+493+585+44+111+488 (2.7 s),
+    creatures 519, pickups 99, batching 145, placing 614, shaders 8 slices
+    64+16+15+16+16+17+18+16 (0.18 s), first draw 847, effects 17, textures
+    (the canvas capture) 792, the rest under 60 ms each. So the Quest's time
+    is JavaScript world-building (procedural models for the player, five
+    heavy townsfolk at about 0.5 s each, creatures, kiosks), not shader
+    compilation. Cutting it means building models faster or building fewer
+    before the handover (deferred builds for NPCs that start far away), which
+    is content-risky; recorded as the T12 lead. The texture capture at 0.8 s
+    is the one cheap cut if it is ever needed. Panel: the author found the
+    3.6 m / 2.6 m panel (about 40 degrees) still "much too close"; it is a
+    size problem, not a distance one: 3.15.15 uses 1.8 x 0.9 m at 4 m (about
+    25 degrees), 0.2 m below the eye line.
+
+47. **Layer swaps and the adaptive render scale (3.15.16).** The author's log
+    for the `sharp` experiment: `projection layer live, scale 1.2` at 8.6 s,
+    `scale 1.1` at 12.5 s, `scale 1` at 56.7 s, and "one quick black flash
+    after loading in": each swap put a fresh, undrawn projection layer in
+    front for a frame. The shim now inserts the new layer BEHIND the old one
+    (layers composite in array order), renders into it, and drops the old one
+    after the second frame (`projection layer swapped to scale ...` in the
+    log). The author also found the sharper picture better, so the release
+    adopts quality levels [1.2, 1.1, 1, 1, 1] with foveation [0, 0, 0, .5, 1]:
+    sharp when there is headroom, today's native look under load, and the
+    governor's existing hysteresis (1 s over budget to step down, 4 s under to
+    step up, 30 rebuilds per session at most) paces the swaps. The sharp
+    experiment is retired (author's call); the `native` variant reverts to 1.0
+    everywhere for A/B tests. The play test exercises a swap in layers mode.
+
+48. **Sharper Gallery painting (3.15.16/17).** Gooward's large painting at
+    the Gallery kiosk is a triptych painted in a worker by `paintGallery`,
+    which scales with its canvas (`ART.s` pixels per unit): 1.5 gave a
+    3072x1158 canvas (1024x1158 per panel for 2.3 x 2.6 m); now 2.0,
+    4096x1544 (1365x1544 per panel), and the art textures take anisotropy 16
+    instead of the global 8. Headless the worker finishes before the boot
+    ends; checked by a headless screenshot (`tools/.runs/gallery.png`). The
+    school mural was briefly given the same treatment (2x into its own
+    texture) and reverted at the author's request: it was fine as it was.
+
+49. **Loading: the blob-body march (3.15.19).** `tools/slice_profile.js`
+    (CPU samples attributed to the boot slices, clock-aligned through
+    `Performance.getMetrics`) put 60-75% of the five heavy townsfolk, the
+    creatures and the kiosks in `sdE`/`field`: `blobBody` builds a character
+    body by ray-marching 4941 rays (80 x 60 sphere grid) from 2.6 m inward in
+    2 cm steps until the smooth-min ellipsoid field turns negative (up to 130
+    field evaluations per ray, each summing every part), then bisecting 14
+    times and taking a 6-sample gradient. The field is a distance bound (iq's
+    ellipsoid bound under a smooth min, which only shrinks it), so the march
+    now steps by 80% of the field value, clamped to 2-15 cm: the same first
+    crossing in a few steps, the same bisection after it. `tools/geom_compare.js`
+    boots the asset before and after and compares every character's vertices:
+    identical to within 1.8e-6 m. Headless, the heavy townsfolk slices went
+    from 604/416/521/453 ms to 273/220/264/227 ms, creatures 402 to 197,
+    kiosks 657 to 507; on the headset that is about 1.5 s of the 8.2 s. The
+    second mesher (`BORN.kingdino`, start 2.4 m) got the same change.
+    Remaining per-body cost is the 14-step bisection and the gradient (20
+    field evaluations per ray) and the vertex colouring (`hard`).
+

@@ -26,9 +26,13 @@ X.projShim = function (s, g, msaa) {
     if (!samples) o.depthFormat = W2 ? g.DEPTH24_STENCIL8 : g.DEPTH_STENCIL;
     var p = bd.createProjectionLayer(o);
     try { p.fixedFoveation = fov; } catch (e) {}
-    s.updateRenderState({ layers: [p] });
-    var old = S.layer; S.layer = p; S.scale = sc || 1;
-    if (old) { try { old.destroy(); } catch (e) {} }
+    var old = S.layer;
+    /* A swap (the quality governor's rebuilds) must never show an undrawn layer: the new layer
+       goes in BEHIND the old one (layers are composited in array order), gets rendered into for a
+       frame or two, and only then replaces it. The author saw one black frame per swap before. */
+    if (old) { if (S.old) { try { S.old.destroy(); } catch (e) {} } S.old = old; S.swapIn = 2; s.updateRenderState({ layers: [p, old] }); }
+    else s.updateRenderState({ layers: [p] });
+    S.layer = p; S.scale = sc || 1;
     return p;
   };
   Object.defineProperty(S, "fixedFoveation", { get: function () { return fov; }, set: function (v) { fov = v; try { if (S.layer) S.layer.fixedFoveation = v; } catch (e) {} } });
@@ -73,6 +77,11 @@ X.projShim = function (s, g, msaa) {
       g.blitFramebuffer(0, 0, tw, th, 0, 0, tw, th, g.COLOR_BUFFER_BIT, g.NEAREST);
       g.bindFramebuffer(g.FRAMEBUFFER, fb);
     }
+    if (S.old && --S.swapIn <= 0) {
+      try { s.updateRenderState({ layers: [S.layer] }); } catch (e) {}
+      var o = S.old; S.old = null; setTimeout(function () { try { o.destroy(); } catch (e) {} }, 100);
+      __gtLog("projection layer swapped to scale " + S.scale);
+    }
   };
   return S;
 };
@@ -105,7 +114,7 @@ X.facade = function (s) {
     Object.defineProperty(b, "framebufferHeight", { get: function () { return shim.h; }, configurable: true });
     __gtLog("projection layer live, scale " + sc + ", msaa " + shim.samples);
   }
-  return new Proxy(s, {
+  var P = new Proxy(s, {
     get: function (t, k) {
       if (k === "updateRenderState") return function (st) { if (st && st.baseLayer) { setBase(st.baseLayer); return; } return s.updateRenderState(st); };
       if (k === "renderState") return rs;
@@ -116,4 +125,6 @@ X.facade = function (s) {
     },
     set: function (t, k, v) { t[k] = v; return true; }
   });
+  X.session = P;
+  return P;
 };
