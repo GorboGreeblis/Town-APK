@@ -524,3 +524,17 @@ VR-entry fix; each item is for discussion first.
     the Event's props during the loading screen (`BP.prewarm`), which halves
     the Event-start frame in the hitch probe.
 
+45. **Boot slice timings (3.15.14).** The entry script now posts the duration of
+    every loading slice at the handover (`page: m=... boot slices ms: ...`), so
+    a headset log gives the on-device loading breakdown. Headless (SwiftShader,
+    so GPU-bound slices are inflated): textures (the B16 canvas capture, a
+    1x1 readback per painted texture) 8.5-9.9 s, placing 0.9-3.2 s, player
+    1.1-1.3 s, first draw 0.7-0.9 s, effects 0.2-0.8 s, the townsfolk about
+    2.5 s together, shaders 8 x 15-30 ms (the chunked compile is cheap here;
+    it is the expensive one on the Quest's driver). The capture's cost on the
+    Quest is unknown until the first log with these lines: if it is a large
+    share of the 8 s, the options are a CPU-side probe for the pre-rendered
+    textures (sample the decoded PNG instead of the GPU canvas) or dropping
+    the up-front capture and relying on the hide-time capture (context loss
+    without a hide event is the only case it covers).
+
