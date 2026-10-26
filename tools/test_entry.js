@@ -33,6 +33,14 @@ const BOOT_TIMEOUT_MS = 240000;
 function serve() {
   return new Promise((resolve) => {
     const srv = http.createServer((req, res) => {
+      if (req.url.startsWith('/tex/')) {   // pre-rendered textures, as the APK serves them
+        const name = path.basename(req.url.split('?')[0]);
+        const f = path.join(root, 'tools/android/app/src/main/assets/tex', name);
+        if (!/^[\w.-]+$/.test(name) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); }
+        const data = fs.readFileSync(f);
+        res.writeHead(200, { 'Content-Type': name.endsWith('.json') ? 'application/json' : 'image/png', 'Content-Length': data.length });
+        return res.end(data);
+      }
       if (req.url.split('?')[0] === '/' || req.url.startsWith('/index.html')) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': html.length });
         res.end(html);
