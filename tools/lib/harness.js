@@ -64,7 +64,7 @@ async function boot({ file = path.join(root, 'android/app/src/main/assets/index.
   const ctx = await browser.newContext({ userAgent: UA, viewport: { width: 1280, height: 720 } });
   const page = await ctx.newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push('pageerror: ' + String(e).split('\n')[0]));
+  page.on('pageerror', (e) => errors.push('pageerror: ' + String(e).split('\n')[0] + (e && e.stack ? ' @ ' + String(e.stack).split('\n').slice(1, 3).join(' | ').trim() : '')));
   page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text().split('\n')[0]); });
   if (vr) await page.addInitScript(fs.readFileSync(path.join(root, 'tools/fakexr.js'), 'utf8'));
   const t0 = Date.now();
