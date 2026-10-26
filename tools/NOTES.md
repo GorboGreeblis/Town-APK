@@ -466,3 +466,33 @@ VR-entry fix; each item is for discussion first.
     rebuilds (`scaleFactor` instead of a new `XRWebGLLayer`). New rendering
     code only a headset can verify, so it ships as an experiment APK first.
 
+42. **B13 fix design: compositor layers for the loader, a projection layer for
+    the game (`tools/lib/xr_layers_shim.js`).** With the `layers` feature the
+    browser forbids `baseLayer` (41), and this three.js build only knows
+    `baseLayer`. The shim keeps three.js unchanged: in layers mode the session
+    the game receives is a facade (a `Proxy` over the real session) whose
+    `updateRenderState({baseLayer})` creates an `XRProjectionLayer` instead
+    (scale from the layer's `framebufferScaleFactor`, so the quality governor's
+    0.82 rebuilds still work), whose `renderState.baseLayer` is the stub layer
+    three.js constructed (its `framebuffer` is the shim's MSAA framebuffer, its
+    `getViewport` the eye viewport from `getViewSubImage`, `fixedFoveation`
+    forwarded to the projection layer), and whose `requestAnimationFrame`
+    wraps every callback with `begin(frame)` (attach this frame's eye texture)
+    and `end()` (resolve the 4x MSAA renderbuffer into it with
+    `blitFramebuffer`, as three.js's own projection-layer path does). The
+    global `XRWebGLLayer` is replaced by a stub in that mode so no unused
+    swapchains are allocated. The loader draws into a cube layer (sky) and a
+    quad layer (panel), which the compositor re-renders every vsync with the
+    current head pose whatever the page is doing; if those fail it falls back
+    to its own projection layer through the same shim. `tools/fakexr.js`
+    emulates `XRWebGLBinding` and the three layer kinds (real GL textures,
+    nothing composited), so the whole path runs headless: on the "layers"
+    experiment asset the entry test passes and the play test renders 1045 XR
+    frames in 20 s with "projection layer live, scale 1, msaa 4" in the page
+    log. What only the headset can show: that the compositor accepts the
+    layers (cube/quad/projection), the handover (cube+quad replaced by the
+    projection layer on the game's first frame), and the picture quality of
+    the MSAA resolve. Ships as `tools/.runs/GreeblisTown-exp-layers.apk`
+    (`tools/build_experiment.sh layers`); the release asset carries the same
+    code dormant (it never requests `layers`).
+

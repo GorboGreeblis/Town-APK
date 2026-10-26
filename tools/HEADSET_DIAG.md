@@ -85,3 +85,14 @@ Capture with `adb logcat -s GreeblisServer GreeblisLauncher cr_VrShellDelegate c
 A launch that exits shows `exitWebVRPresent` in `cr_VrShellDelegate` right
 after the page's last `page:` line, which names the cause.
 
+## Layers experiment (B13)
+
+`tools/.runs/GreeblisTown-exp-layers.apk` (same package/version as the release;
+`adb install -r`, and reinstall the release afterwards). Expected `page:` lines:
+`session parked, features=...,layers`, then at the handover `projection layer
+live, scale <q>, msaa 4`. Trouble lines: `loader layers failed`, `loader
+projection layer failed`, `loader layers frame failed`, `entry failed (n)`.
+What to watch: no black bars while turning the head during loading (the panel
+should stay put in the world), a clean switch into the town, and the picture
+quality in the town compared with 3.15.12.
+

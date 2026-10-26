@@ -153,6 +153,49 @@
   const xr = new XRSystem();
   try { delete Navigator.prototype.xr; } catch (e) {}
   Object.defineProperty(navigator, 'xr', { value: xr, configurable: true });
+  // WebXR Layers, as the Quest Browser exposes them: enough for the loader's cube/quad
+  // layers and the game's projection-layer shim to run their real GL calls headless
+  // (nothing is composited; the textures are plain WebGL textures of the binding's context).
+  class FakeLayer {
+    constructor(binding, kind, init) { this.binding = binding; this.kind = kind; this.init = init || {}; this.needsRedraw = true; this.fixedFoveation = 0; this.destroyed = false; this.layout = this.init.layout || 'default'; this.space = this.init.space; this.transform = this.init.transform; this.width = this.init.width; this.height = this.init.height; this.textureWidth = 0; this.textureHeight = 0; this._tex = null; }
+    destroy() { this.destroyed = true; if (this._tex) { this.binding.gl.deleteTexture(this._tex); this._tex = null; } }
+  }
+  class XRWebGLBindingFake {
+    constructor(session, gl) {
+      if (!(session instanceof Session)) throw new TypeError('XRWebGLBinding: not a session');
+      if (session.ended) throw new DOMException('Cannot create an XRWebGLBinding for an XRSession which has already ended.', 'InvalidStateError');
+      if (session.mode !== 'immersive-vr') throw new DOMException('Cannot create an XRWebGLBinding with a non-immersive session.', 'InvalidStateError');
+      if (!session.enabledFeatures.includes('layers')) throw new DOMException('XRSession was not created with the layers feature', 'NotSupportedError');
+      if (!gl || typeof gl.createTexture !== 'function') throw new TypeError('XRWebGLBinding: not a WebGL context');
+      this.session = session; this.gl = gl; this.nativeProjectionScaleFactor = 1;
+    }
+    _check(layer) { if (!(layer instanceof FakeLayer)) throw new TypeError('not an XRLayer'); if (layer.binding.session !== this.session) throw new DOMException('XRLayer was created with a different session.', 'InvalidStateError'); if (layer.destroyed) throw new DOMException('layer destroyed', 'InvalidStateError'); }
+    _tex(layer, w, h, cube) {
+      const gl = this.gl; if (layer._tex && layer._w === w && layer._h === h) return layer._tex;
+      if (layer._tex) gl.deleteTexture(layer._tex);
+      const T = cube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D; layer._tex = gl.createTexture(); gl.bindTexture(T, layer._tex);
+      if (cube) for (let k = 0; k < 6; k++) gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + k, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      gl.texParameteri(T, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(T, gl.TEXTURE_MAG_FILTER, gl.LINEAR); gl.bindTexture(T, null);
+      layer._w = w; layer._h = h; return layer._tex;
+    }
+    createProjectionLayer(init) { if (this.session.ended) throw new DOMException('Cannot create a new layer for an XRSession which has already ended.', 'InvalidStateError'); return new FakeLayer(this, 'projection', init); }
+    createCubeLayer(init) { return new FakeLayer(this, 'cube', init); }
+    createQuadLayer(init) { return new FakeLayer(this, 'quad', init); }
+    getSubImage(layer, frame) {
+      this._check(layer); if (layer.kind === 'projection') throw new TypeError('getSubImage: use getViewSubImage for projection layers');
+      const w = layer.init.viewPixelWidth || 256, h = layer.init.viewPixelHeight || 256; const tex = this._tex(layer, w, h, layer.kind === 'cube'); layer.needsRedraw = false;
+      return { colorTexture: tex, depthStencilTexture: null, textureWidth: w, textureHeight: h, imageIndex: 0, viewport: { x: 0, y: 0, width: w, height: h } };
+    }
+    getViewSubImage(layer, view) {
+      this._check(layer); if (layer.kind !== 'projection') throw new TypeError('getViewSubImage: not a projection layer');
+      const L = this.session.renderState.layers; if (!L || !L.includes(layer)) throw new DOMException('layer is not in the render state', 'InvalidStateError');
+      const sc = layer.init.scaleFactor || 1; const w = Math.max(8, Math.round(S.fbMax * sc)), h = Math.round(w * 9 / 16); const tex = this._tex(layer, 2 * w, h, false);
+      layer.textureWidth = 2 * w; layer.textureHeight = h;
+      return { colorTexture: tex, depthStencilTexture: null, textureWidth: 2 * w, textureHeight: h, imageIndex: 0, viewport: { x: view.eye === 'right' ? w : 0, y: 0, width: w, height: h } };
+    }
+  }
+  window.XRWebGLBinding = XRWebGLBindingFake;
   window.XRWebGLLayer = Layer; window.XRRigidTransform = RigidTransform;
   // Chromium's native makeXRCompatible rejects (InvalidStateError) when no real
   // XR device exists, so always replace it.

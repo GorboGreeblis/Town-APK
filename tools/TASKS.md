@@ -34,28 +34,18 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D6 | Mushroom fix confirmed: 17/17 return-home scenarios pass at real-time simulation | 2026-10-26 |
 | D7 | Visit system verified: host/visitor visits complete and interrupted (out, meet, back) all end with Mushroom on his desk at height | 2026-10-26 |
 
-## Resume point (2026-10-26, session ended on credits)
+## Resume point (2026-10-26, evening)
 
-State when the session stopped:
-- Headset log for 3.15.11: app exited 6-8 s after launch on every try. Cause found in
-  the browser's native strings: `Can't use baseLayer with layers feature requested`.
-  3.15.11 asked for the `layers` feature; the loader's `updateRenderState({baseLayer})`
-  threw (no loading screen), then three.js threw the same at boot end and the game's
-  entry routine ended the session (= app exit). Full write-up still to add to
-  `BUGS.md` (F-B15), `NOTES.md` (41), `RELEASE.md` (rule: entry-script changes go out
-  as experiment APKs first), `HEADSET_DIAG.md` (page logs), `TEST_PLAN.md`.
-- Committed in `tools/apply_entry_fix.py` (asset regenerated, `--verify` OK):
-  B14 sealed corner behind the Shop; no `layers` feature (3.15.10 entry path);
-  `window.__gtLog` posts page events/errors to the server's `/log` (logcat
-  `GreeblisServer: page: ...`); B15: entry failure keeps the session, shows the error
-  on the loading screen, retries twice; `vo()` errors are logged.
-- `tools/fakexr.js` now enforces the browser's render-state rules; `test_entry.js`
-  expects no `layers`. Entry test on the new asset: PASS (all 3 scenarios). The same
-  asset with `layers` re-added fails the test (regression proof). Play test not yet
-  re-run on the final asset. Standard tier passed on the B14-only asset.
-- `GreeblisTown-release.apk` at the root is 3.15.12 with B14 ONLY (built before the
-  B15/no-layers change). NEXT: `cd tools/android && ./gradlew assembleRelease`, copy to
-  the root, `tools/check_apk.sh`, run `tools/run_tests.sh`, commit, push, update PR #7.
-- B13 (black bars on the loading screen) stays open: the proper fix is to render the
-  game through an `XRProjectionLayer` (shim three.js's base-layer path), headset-only
-  verification, ship as an experiment APK first.
+- 3.15.12 launch fix confirmed by the author on the headset ("works enough to get into VR").
+  Remaining complaints: black bars on the loading screen (B13) and one instance of black
+  bars right after being dropped in (B16, fixed: UI build and texture capture moved into
+  the loading phase; `tools/entry_profile.js` measures the handover).
+- B13 fix built (NOTES 42): `tools/lib/xr_layers_shim.js`, embedded in the head script,
+  dormant in the release asset; the "layers" experiment requests the feature.
+  `tools/.runs/GreeblisTown-exp-layers.apk` posted to the author for a headset test.
+  If it works: promote by moving "layers" into the release feature list (req() in
+  `apply_entry_fix.py`), rebuild, full tier, new build. If it fails: read the `page:`
+  lines (HEADSET_DIAG.md, "Layers experiment").
+- Open: B12 Event flash unconfirmed (author has not tested the Event yet); T12 boot
+  profile with textures; T13 graphical pass; T14 soak; T15 tools/docs; T4 store upload
+  (author confirmed: no earlier upload to the app ID, so the package name is free).
