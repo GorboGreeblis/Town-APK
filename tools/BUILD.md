@@ -6,18 +6,21 @@ APK and is served to the Quest Browser's immersive WebXR activity from a
 loopback server inside the app.
 
 ```
-android/                 Android Studio / Gradle project that produces the APK
-  app/src/main/assets/index.html   the game (generated: original + VR-entry fix)
-  app/src/main/java/.../GameServer.java      loopback HTTP server for the game
-  app/src/main/java/.../LauncherActivity.java launches the Quest Browser immersive
-tools/                   original game, release build, docs, test tools
-  uncompressed.html      the untouched game source (final HTML version)
-  index.compressed.html  the compressed HTML release build, for reference
-  apply_entry_fix.py     generates the APK copy of the game from the original
-  GAME.md                basic game documentation
-  README.md              what each tool does and how to run the test suite
-store/icon-512.png       store icon derived from the game art
-NOTES.md                 observations and possible bugs, to discuss before acting
+GreeblisTown-release.apk   the final signed build (the only file at the root besides tools/)
+tools/
+  android/                 Android Studio / Gradle project that produces the APK
+    app/src/main/assets/index.html             the game as bundled (generated, see below)
+    app/src/main/java/.../GameServer.java      loopback HTTP server for the game
+    app/src/main/java/.../LauncherActivity.java launches the Quest Browser immersive
+  uncompressed.html        the original game, untouched (source of truth)
+  apply_entry_fix.py       generates the bundled copy = original + the approved edits
+  test_*.js, *.sh          test suite (see tools/README.md)
+  BUILD.md                 this file: how the APK works, building, signing, testing
+  RELEASE.md               what the author does: signing key, headset test, store upload
+  NOTES.md                 investigation notes, numbered
+  TASKS.md / BUGS.md       open tasks and open bugs
+  GAME.md / LORE.md / TEST_PLAN.md   game documentation, lore bible, test plan
+  store/icon-512.png       store icon derived from the game art
 ```
 
 ## How the APK works
@@ -58,14 +61,14 @@ browser window.
 Two gameplay fixes approved after testing are applied by the same script
 (`GAME_FIXES`): the navigator now respects a building's real walls when a
 route starts or ends beside it, which cured the Mushroom getting stuck next
-to his kiosk (see `NOTES.md`), and Hennrick's campfire line gained its
+to his kiosk (see `tools/NOTES.md`), and Hennrick's campfire line gained its
 missing subject. `python3 tools/apply_entry_fix.py --verify` proves the APK
 copy equals the original plus exactly these edits.
 
 ## Building
 
 Requirements: JDK 17+, Android SDK with `platforms;android-34` and
-`build-tools;34.0.0` (`ANDROID_HOME` set or `android/local.properties` with
+`build-tools;34.0.0` (`ANDROID_HOME` set or `tools/android/local.properties` with
 `sdk.dir=...`). Gradle 8.14 via the wrapper.
 
 ```sh
@@ -77,7 +80,7 @@ cd android
 ### Signing
 
 The Meta Quest Store requires every upload to be signed with the same key,
-forever. Create `android/keystore.properties` (git-ignored):
+forever. Create `tools/android/keystore.properties` (git-ignored):
 
 ```
 storeFile=keystore/greeblis-town-release.jks
@@ -86,7 +89,7 @@ keyAlias=greeblistown
 keyPassword=...
 ```
 
-and place the keystore at `android/keystore/greeblis-town-release.jks`. With
+and place the keystore at `tools/android/keystore/greeblis-town-release.jks`. With
 that file present `assembleRelease` produces a v1+v2 signed APK; without it
 the release build is unsigned. Back the keystore up somewhere safe; losing it
 means the store listing can never be updated.
@@ -114,8 +117,8 @@ adb logcat -s GreeblisServer GreeblisLauncher TwaLauncher TWALauncherActivity
 - Package name `com.montgummery.greeblis` and the signing key must match
   any build previously uploaded to the app (ID 1441937125658740). If an
   earlier upload used a different package name, change `applicationId` in
-  `android/app/build.gradle` to match before building.
-- Bump `versionCode` in `android/app/build.gradle` for every upload.
+  `tools/android/app/build.gradle` to match before building.
+- Bump `versionCode` in `tools/android/app/build.gradle` for every upload.
 - Upload `GreeblisTown-release.apk` (repository root) through the Meta Horizon Developer Dashboard
   (or `ovr-platform-util upload-quest-build`).
 - `tools/check_apk.sh` reproduces the manifest, signature, SDK-level, size

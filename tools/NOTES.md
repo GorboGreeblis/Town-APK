@@ -237,3 +237,103 @@ VR-entry fix; each item is for discussion first.
     against `--entry-only` (bug reproduced: still for 94 s) and the fixed asset
     (delivers in 4 s, outside again at 9 s).
 
+32. **B12, subtle white flashes on objects (author's repro: pick something up
+    while looking at the kiosk behind Zollod from a distance; also the garden
+    ground during the Event; other kiosks and objects too).** What the code
+    rules in and out so far:
+    - Not a whole-view effect: the flash is on objects, never across the
+      screen, so the base-layer rebuild by the quality governor and the
+      comfort vignette quad are out as the primary cause.
+    - The draw batcher (`gcEB`) is consistent within a frame: three.js calls
+      `scene.onBeforeRender` before it builds the render list, so slot
+      updates and the layer toggles that move a part between "drawn by the
+      batch" and "drawn by itself" land in the same frame. A zeroed slot
+      collapses a part to a point (no pixels), so stale slots would show as a
+      pop, not as white.
+    - Live candidates, in order: (1) GPU work first done during the pickup
+      frame: new sparkle meshes (white Phong, unique materials) and the 64x64
+      label textures; on Quest a long frame is shown re-projected and a
+      bright object can read as a flash; (2) a one-frame lighting difference
+      when a part toggles between the batch shader (normals from the slot's
+      adjugate matrix) and its own mesh (three.js normal matrix); (3) the
+      per-frame HUD canvas re-upload on count changes; (4) a driver-level
+      issue with the dynamically indexed `vec4 gcR[128]` uniform array in the
+      batch vertex shader (Adreno), which the headless probe cannot see.
+    - Tools: `tools/flash_probe.js` (per-frame read-back: near-white pixel
+      count and frame-to-frame jumps while still, facing the garden kiosk
+      from 22 m during pickups, and the garden during the Event),
+      `tools/hitch_probe.js` (new programs/textures per action), and three
+      headset A/B variants from `tools/build_experiment.sh`: `nobatch`,
+      `noeffects`, `nogovernor`. Whichever variant makes the flash disappear
+      names the cause.
+    - Result of the brightness probe on 3.15.6 (software GL, 1280x720 read-back
+      of every rendered frame): no anomalous frame during three blossom and two
+      acorn pickups while facing the garden kiosk from 22 m (near-white pixel
+      count 6-12 per frame throughout, frame-to-frame jumps under 10 pixels),
+      and none during 20 s of the Event looking at the garden. The hitch probe
+      in the same build shows the first pickup of a session uploading 14
+      textures and 57 geometries on the spot. So the flash is not in the
+      scene's colours as computed by the game; it is either Adreno-specific
+      (dynamically indexed uniform arrays in the batch vertex shader, or
+      texture/buffer uploads racing the previous frame) or timing-dependent.
+      Headless cannot decide that; the A/B variants on the headset can.
+
+33. **3.15.6 on the headset: verification passes, the game boots, no VR.**
+    The launch log shows `TWA verification was successful!`, the page load
+    (12 s, the synchronous world build) and the ready sound, then
+    `cr_VrShellDelegate: setListeningForSessionGranted(true), navSession.isNull?
+    true` / `no navigation - no activation. Status -1`, and 15 s after the
+    launch the OS gives up on an immersive app that never submitted a frame
+    (`FocusPlaceholderActivity`, focus lost, activity destroyed).
+    Read from the Quest Browser's own code (APK from the author, dex
+    disassembled with `dexdump`): `VrShellDelegate.setListeningForSessionGranted`
+    grants the session only if a `WebVRNavigationDescriptor` exists with status
+    1-4. That descriptor is created in exactly two places: the delegate's tab
+    observer (`onDidStartNavigationInPrimaryMainFrame`), which is attached only
+    by `enterVRHelper`, i.e. once the delegate is already in VR; and the panel
+    browser's deep-link handler. A fresh immersive launch of a verified app
+    creates neither, so our early listener registration is received correctly
+    and there is nothing to grant. The second entry path, `presentRequested`
+    (the page calling `requestSession` itself), explicitly accepts Trusted Web
+    Activity tabs (`TWAUtils.isTWA`) and enters VR through the already-started
+    `WebXRCustomTabActivity`. Whether that path needs user activation in the
+    immersive activity is decided in the native library, not readable here.
+    Variant `directrequest` (built, sent to the author) requests the session
+    right after boot and logs the refusal reason to the console; the next
+    logcat answers it. The 2D-mode test (`CustomTabActivity`) gave
+    `NotSupportedError` then `SecurityError` on A presses: the plain custom tab
+    has no XR device, so that test says nothing about the immersive activity.
+
+34. **3.15.7: the launch fix and our own loading screen.** The `directrequest`
+    diagnostic proved the mechanism (author's log, 09:46): the page called
+    `requestSession` with no user activation and the immersive activity accepted
+    it (`presentRequested` -> `enterVR` -> "requestSession OK", first frames
+    0.3 s later). So the browser never needed a grant; 3.15.6 only waited for a
+    `sessiongranted` that this browser does not send for a fresh launch. Two
+    problems remained: the request was only made after the 12 s synchronous
+    world build, and the OS kills an immersive app that submits no frame for
+    about 15 s (the earlier builds died exactly there), and the user stared at
+    the OS loading screen the whole time.
+    What 3.15.7 does (all in `apply_entry_fix.py` EDITS, the game's code is
+    unchanged apart from the inserted yields):
+    - The head script requests the session at page start on a Quest UA, parks
+      it, and draws our own loading screen into it with raw WebGL: sky-colour
+      background, "GREEBLIS TOWN", "Loading…" and a progress bar, world-locked
+      2.2 m ahead in the `local` space. The grant listener stays for browsers
+      that use it.
+    - The boot is made async and sliced: the outer boot function and its
+      world-build IIFE are `async`, and `await __gtY(label)` yields are
+      inserted before each heavy step (garden, kiosks, pond, clouds, library,
+      portal, music, scenery, player, each companion/townsfolk/creature spawn,
+      pickups, batching, placing), the shader compile runs in 8 slices
+      (visibility-chunked `O.compile`), then first draw and warm-up. Anchors
+      come from a real parse of the script (`tools/lib/boot_map.js`, acorn), so
+      every yield sits at the top level of an async function.
+    - At the very end of the boot (after `Re.start()`) the game enters the
+      parked session through its own `je()`; the loader stops when `je` takes
+      the session (`__gtXR.taken`). Errors in the async boot still reach `vo()`.
+    Headless: play test passes (2D and fake VR), entry wiring test rewritten
+    for the new design (one request at page start, parked session reused, no
+    extra request on grant or click). B6 (in-VR loading indicator) is covered
+    by this. Pending: the author's headset run of 3.15.7.
+

@@ -22,7 +22,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const file = path.resolve(process.argv[2] || path.join(root, 'android/app/src/main/assets/index.html'));
+const file = path.resolve(process.argv[2] || path.join(root, 'tools/android/app/src/main/assets/index.html'));
 const which = process.argv[3] || 'all';
 const RUN_S = Number(process.argv[4] || 20);
 const html = fs.readFileSync(file);

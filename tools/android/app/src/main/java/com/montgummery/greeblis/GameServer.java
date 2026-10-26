@@ -246,10 +246,23 @@ public final class GameServer {
             }
             String target = parts[1];
             int q = target.indexOf('?');
+            String query = q >= 0 ? target.substring(q + 1) : "";
             if (q >= 0) {
                 target = target.substring(0, q);
             }
             OutputStream out = c.getOutputStream();
+            if (target.equals("/log")) {
+                // Diagnostics: the page can report to logcat (the browser does not log console output).
+                String msg = query;
+                try {
+                    msg = java.net.URLDecoder.decode(query, "UTF-8");
+                } catch (Exception ignored) {
+                }
+                Log.i(TAG, "page: " + msg);
+                writeHead(out, "204 No Content", "text/plain", 0);
+                out.flush();
+                return;
+            }
             boolean isDoc = target.equals("/") || target.equals("/index.html");
             boolean isLinks = target.equals(ASSET_LINKS_PATH);
             boolean methodOk = method.equals("GET") || method.equals("HEAD");

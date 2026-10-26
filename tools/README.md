@@ -1,10 +1,12 @@
 # tools/
 
+The repository root holds only the final build, `GreeblisTown-release.apk`, and this folder. Everything else lives here: the Android project (`android/`), the untouched original game (`uncompressed.html`), the build and release guides (`BUILD.md`, `RELEASE.md`), notes, task and bug lists, game documentation, and the test suite described below.
+
 | File | Purpose |
 | --- | --- |
 | `uncompressed.html` | The untouched final HTML version of the game. Source of truth. |
 | `index.compressed.html` | The compressed HTML release build, kept for reference and parity checks. |
-| `apply_entry_fix.py` | Generates `android/app/src/main/assets/index.html` from `uncompressed.html` by applying the four VR-entry edits (`EDITS`) and the approved gameplay fixes (`GAME_FIXES`: the Mushroom navigator fix, Hennrick's campfire line). `--verify` checks the asset equals the original plus exactly those edits. |
+| `apply_entry_fix.py` | Generates `android/app/src/main/assets/index.html` (inside tools/) from `uncompressed.html` by applying the four VR-entry edits (`EDITS`) and the approved gameplay fixes (`GAME_FIXES`: the Mushroom navigator fix, Hennrick's campfire line). `--verify` checks the asset equals the original plus exactly those edits. |
 | `GAME.md` | Basic documentation of the game as found in the code. |
 | `TASKS.md` / `BUGS.md` | Living lists of open tasks and open bugs (fixed items at the bottom). |
 | `run_tests.sh` | The test passes. `--smoke`: a few-minute spot check that touches every game element. Default: the standard pass. `--full`: every scenario with long soak times, meant for the final build only. `--quick`: static checks, no browser. |
@@ -46,7 +48,7 @@ node tools/test_parity.js
 node tools/test_play.js                      # 2d and vr scenarios, 20 s each
 node tools/test_npc_home.js                  # Mushroom return-home scenarios
 python3 tools/spellcheck_dialogue.py --who HENNRICK
-tools/check_apk.sh android/app/build/outputs/apk/release/app-release.apk
+tools/check_apk.sh tools/android/app/build/outputs/apk/release/app-release.apk
 ```
 
 Requirements: python3, JDK 17+, Node 18+ with `playwright` (and its Chromium)

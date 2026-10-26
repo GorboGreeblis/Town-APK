@@ -15,7 +15,7 @@
  *            click, then exactly one request (the original behaviour).
  *
  * Usage: node tools/test_entry.js [file.html] [scenario|all]
- *   default file: android/app/src/main/assets/index.html
+ *   default file: tools/android/app/src/main/assets/index.html
  * Exit code 1 if any expectation fails. Run against tools/uncompressed.html to
  * see the original drop the early grant.
  */
@@ -25,7 +25,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const file = path.resolve(process.argv[2] || path.join(root, 'android/app/src/main/assets/index.html'));
+const file = path.resolve(process.argv[2] || path.join(root, 'tools/android/app/src/main/assets/index.html'));
 const which = process.argv[3] || 'all';
 const html = fs.readFileSync(file);
 const BOOT_TIMEOUT_MS = 240000;
@@ -91,7 +91,7 @@ async function run(scenario, srvUrl, browser) {
     gate: (document.getElementById('gateText') || {}).textContent,
     gateOn: (document.getElementById('gate') || { className: '' }).className.includes('on'),
     calls: window.__xrTest.calls,
-    gtXR: window.__gtXR ? { granted: window.__gtXR.granted, pending: !!window.__gtXR.pending, enter: !!window.__gtXR.enter } : null,
+    gtXR: window.__gtXR ? { granted: window.__gtXR.granted, pending: !!window.__gtXR.pending, enter: !!window.__gtXR.enter, taken: !!window.__gtXR.taken, ready: !!window.__gtXR.ready } : null,
   }));
 
   const failures = [];
@@ -99,35 +99,33 @@ async function run(scenario, srvUrl, browser) {
   let s = await state();
   console.log(`[${scenario}] world built in ${(bootMs / 1000).toFixed(1)}s; gate="${s.gate}" calls=${s.calls.length}` +
               (s.gtXR ? ` __gtXR=${JSON.stringify(s.gtXR)}` : ' (no __gtXR: original file)'));
+  // New design (3.15.7): on a Quest UA the head script requests the session at
+  // page start, parks it, draws the loading screen into it, and the game takes
+  // it over at the end of the (now sliced) boot. A grant never adds a request.
+  // The sliced boot tail (shader slices, warm-up, game loop) runs after the gate
+  // leaves "Loading..."; wait for the game to take the parked session.
+  await page.waitForFunction(() => window.__gtXR && window.__gtXR.taken, null, { timeout: 120000 }).catch(() => {});
+  s = await state();
+  const fatal = errors.filter((e) => !/GPU|WebGL|GL_|SwiftShader|gpu/i.test(e));
+  const first = s.calls[0];
+  expect('requestSession called exactly once, at page start (before the world was ready)', s.calls.length === 1 && !first.readyFlag);
+  expect('immersive-vr with local-floor/bounded-floor', !!first && first.mode === 'immersive-vr' &&
+         JSON.stringify(first.opts.optionalFeatures) === JSON.stringify(['local-floor', 'bounded-floor']));
+  expect('world ready flag set for the head script', s.gtXR && s.gtXR.ready);
+  expect('game took the parked session over at the end of the boot', s.gtXR && s.gtXR.taken);
+  expect('gate left "Loading..." (the rAF loop rewrites the gate text each frame while the fake session never resolves)', s.gate !== 'Loading...');
   if (scenario === 'early') {
-    expect('requestSession called exactly once', s.calls.length === 1);
-    expect('request made inside the grant handler (before the world was ready)', s.calls.length === 1 && !s.calls[0].readyFlag);
-    expect('immersive-vr with local-floor/bounded-floor', s.calls.length === 1 && s.calls[0].mode === 'immersive-vr' &&
-           JSON.stringify(s.calls[0].opts.optionalFeatures) === JSON.stringify(['local-floor', 'bounded-floor']));
-    // The fake session never resolves, so the gate text falls back to "Press A"
-    // (the game's own frame loop resets it); what matters is that the parked
-    // session was reused and no second request was made once the world was ready.
-    expect('parked session still held after boot (reused by the game, not re-requested)', s.gtXR && s.gtXR.pending === true);
-    await page.waitForTimeout(1500);
-    s = await state();
-    expect('still exactly one request 1.5s after boot', s.calls.length === 1);
+    await new Promise((r) => setTimeout(r, 1500)); s = await state();
+    expect('still exactly one request 1.5s after boot (early grant did not add one)', s.calls.length === 1);
   } else if (scenario === 'late') {
-    expect('no request before the grant', s.calls.length === 0);
-    expect('gate shows "Press A to Continue." before the grant', s.gate === 'Press A to Continue.');
     await page.evaluate(() => window.__xrTest.fire());
-    await page.waitForTimeout(500);
-    s = await state();
-    expect('grant after boot triggers exactly one request', s.calls.length === 1);
-    expect('request made from the ready game (not parked)', s.calls.length === 1 && s.calls[0].readyFlag && !s.gtXR.pending);
+    await new Promise((r) => setTimeout(r, 500)); s = await state();
+    expect('grant after boot adds no request (session already taken)', s.calls.length === 1 && s.gtXR.granted);
   } else if (scenario === 'none') {
-    expect('no request without a grant', s.calls.length === 0);
-    expect('gate shows "Press A to Continue."', s.gate === 'Press A to Continue.');
-    await page.mouse.click(640, 360);
-    await page.waitForTimeout(500);
-    s = await state();
-    expect('click (user gesture) triggers exactly one request', s.calls.length === 1);
+    await page.mouse.click(10, 10);
+    await new Promise((r) => setTimeout(r, 500)); s = await state();
+    expect('click after automatic entry adds no request', s.calls.length === 1);
   }
-  const fatal = errors.filter((e) => !/WebGL|GPU|swiftshader|deprecated/i.test(e));
   expect(`no uncaught page errors (${errors.length} console errors, ${fatal.length} non-GPU)`, fatal.length === 0);
   if (fatal.length) console.log('    ' + fatal.slice(0, 5).join('\n    '));
   await ctx.close();

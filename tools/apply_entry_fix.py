@@ -2,9 +2,10 @@
 """Produce the APK copy of the game from the untouched original.
 
 Usage:  python3 tools/apply_entry_fix.py [src] [dst]
+        python3 tools/apply_entry_fix.py --experiment nobatch|noeffects|nogovernor [src] dst   (diagnostic variant)
         python3 tools/apply_entry_fix.py --entry-only [src] dst   (VR-entry edits only, no gameplay fixes)
         python3 tools/apply_entry_fix.py --verify [src] [dst]
-Default src: tools/uncompressed.html   Default dst: android/app/src/main/assets/index.html
+Default src: tools/uncompressed.html   Default dst: tools/android/app/src/main/assets/index.html
 
 --verify does not write anything: it re-derives the patched file from src and
 checks that dst is byte-identical to it, i.e. the APK copy differs from the
@@ -20,52 +21,144 @@ Every replacement must match exactly once; the script fails loudly otherwise.
 import sys, pathlib
 
 root = pathlib.Path(__file__).resolve().parent.parent
-args = [a for a in sys.argv[1:] if a not in ("--verify", "--entry-only")]
+# --experiment NAME: additionally apply one diagnostic variant (headset A/B tests for B12 etc.).
+# Variants are never used for the release asset; build_experiment.sh writes them elsewhere.
+EXPERIMENTS = {
+    # Direct request: once the world is ready, call the game's own VR request
+    # (je) immediately without waiting for sessiongranted, and log the browser's
+    # reason to the console (logcat shows it) if it refuses. Tests whether the
+    # immersive activity accepts a page-initiated request without a press.
+    "directrequest": [(
+        '(function(){var X=window.__gtXR={granted:!1,pending:null,enter:null};',
+        '(function(){var X=window.__gtXR={granted:!1,pending:null,enter:null};'
+        'var rep=X.rep=function(m){try{fetch("/log?m="+encodeURIComponent(m))}catch(e){}};'
+        'try{var xr=navigator.xr,orq=xr&&xr.requestSession;if(orq){xr.requestSession=function(){var a=arguments;rep("requestSession called: "+JSON.stringify(a[0])+" activation="+(navigator.userActivation?navigator.userActivation.isActive:"?"));'
+        'return orq.apply(xr,a).then(function(s){rep("requestSession OK");return s},function(e){rep("requestSession rejected: "+(e&&e.name)+": "+(e&&e.message));throw e})}}rep("head script ran, xr="+!!navigator.xr)}catch(e){rep("wrap failed "+e)}',
+    ), (
+        'gcEB.ready=!0;',
+        'gcEB.ready=!0;setTimeout(function(){var X=window.__gtXR;try{X.rep("world ready; granted="+X.granted+" enter="+!!X.enter+"; calling enter()");X.enter&&X.enter()}catch(e){X.rep("enter threw "+e)}},0);',
+    )],
+    # Session keep-alive: when the grant arrives before the world is built, the
+    # early-created session gets a tiny WebGL layer and a clear-colour frame loop
+    # right away, so the OS sees frames (no loading-screen stall / session timeout)
+    # until the game takes the session over. Candidate fix for the 3.15.6 symptom.
+    "keepalive": [(
+        'X.pending=p;p.then(function(s){try{s.addEventListener("end",function(){X.pending===p&&(X.pending=null)})}catch(e){}},',
+        'X.pending=p;p.then(function(s){try{s.addEventListener("end",function(){X.pending===p&&(X.pending=null)})}catch(e){}'
+        'try{var c=document.createElement("canvas"),g=c.getContext("webgl2",{xrCompatible:!0})||c.getContext("webgl",{xrCompatible:!0});'
+        'if(g){var L=new XRWebGLLayer(s,g);s.updateRenderState({baseLayer:L});X.keep=L;'
+        'var f=function(){if(X.taken||X.pending!==p)return;try{g.bindFramebuffer(g.FRAMEBUFFER,L.framebuffer);g.clearColor(.52,.69,.89,1);g.clear(g.COLOR_BUFFER_BIT|g.DEPTH_BUFFER_BIT)}catch(e){}s.requestAnimationFrame(f)};'
+        's.requestAnimationFrame(f)}}catch(e){}},'
+    ), (
+        'window.__gtXR.pending||navigator.xr.requestSession(',
+        '(window.__gtXR.taken=!0,window.__gtXR.pending)||navigator.xr.requestSession(',
+    )],
+    # Draw every mesh individually: no gcEB batches, no custom vertex shader.
+    "nobatch": [("const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[]};",
+                 "const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[],off:!0};")],
+    # No pickup effects: no sparkle particles, no floating labels, no HUD/label texture churn from pickups.
+    "noeffects": [("gcEB.ready=!0;", "gcEB.ready=!0;Nt.sparkle=()=>{};Ut.at=()=>{};Ut.above=()=>{};")],
+    # Quality governor frozen: foveation stays 0 and the layer is never rebuilt.
+    "nogovernor": [("quality:[1,1,1,1,1],foveation:[0,.25,.5,.75,1],sosScale:.82,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:30,",
+                    "quality:[1,1,1,1,1],foveation:[0,0,0,0,0],sosScale:1,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:0,")],
+}
+experiment = None
+_argv = sys.argv[1:]
+if "--experiment" in _argv:
+    experiment = _argv[_argv.index("--experiment") + 1]
+    if experiment not in EXPERIMENTS:
+        sys.exit("unknown experiment %r; known: %s" % (experiment, ", ".join(EXPERIMENTS)))
+    _argv = [a for i, a in enumerate(_argv) if a != "--experiment" and (i == 0 or _argv[i - 1] != "--experiment")]
+args = [a for a in _argv if a not in ("--verify", "--entry-only")]
 verify = "--verify" in sys.argv[1:]
 # --entry-only: write src + the 4 VR-entry edits only (no gameplay fixes), for before/after comparisons in the harness.
 entry_only = "--entry-only" in sys.argv[1:]
 src = pathlib.Path(args[0]) if len(args) > 0 else root / "tools" / "uncompressed.html"
-dst = pathlib.Path(args[1]) if len(args) > 1 else root / "android" / "app" / "src" / "main" / "assets" / "index.html"
+dst = pathlib.Path(args[1]) if len(args) > 1 else root / "tools" / "android" / "app" / "src" / "main" / "assets" / "index.html"
 
 html = src.read_text(encoding="utf-8")
 
 EDITS = [
-    # 1. Head script: catch the Quest Browser's WebXR grant before the 1 MB of game
-    #    scripts parse, and request the session *inside* the grant handler (the only
-    #    moment the browser allows a session without a controller press). The session
-    #    is parked in window.__gtXR.pending until the game has finished building.
+    # 1. Head script: request the VR session immediately on the Quest Browser (the
+    #    immersive activity accepts a page request without a press; it never sends
+    #    sessiongranted for a fresh launch, see NOTES 33), park the session, and
+    #    draw our own loading screen into it (title, progress bar) until the game
+    #    takes it over. Also keeps the sessiongranted path for browsers that use it.
     (
         '<title>Greeblis Town</title>',
-        '<title>Greeblis Town</title>'
-        '<script>/* APK immersive launch: capture the WebXR grant early (see tools/apply_entry_fix.py) */'
-        '(function(){var X=window.__gtXR={granted:!1,pending:null,enter:null};'
-        'try{navigator.xr&&navigator.xr.addEventListener("sessiongranted",function(){X.granted=!0;'
-        'if(X.enter){X.enter();return}'
-        'try{var p=navigator.xr.requestSession("immersive-vr",{optionalFeatures:["local-floor","bounded-floor"]});'
-        'X.pending=p;p.then(function(s){try{s.addEventListener("end",function(){X.pending===p&&(X.pending=null)})}catch(e){}},'
-        'function(){X.pending===p&&(X.pending=null)})}catch(e){X.pending=null}})}catch(e){}})();</script>'
+        '<title>Greeblis Town</title>' + '<script>/* APK immersive launch + in-VR loading screen (see tools/apply_entry_fix.py) */(function(){var X=window.__gtXR={granted:!1,pending:null,enter:null,taken:!1,ready:!1,step:0,total:46,label:"Loading"};var Q=/OculusBrowser|Quest/i.test(navigator.userAgent||"");function req(){try{return navigator.xr.requestSession("immersive-vr",{optionalFeatures:["local-floor","bounded-floor"]})}catch(e){return null}}function park(p){if(!p)return;X.pending=p;p.then(function(s){try{s.addEventListener("end",function(){X.pending===p&&(X.pending=null)})}catch(e){}try{loader(s)}catch(e){}},function(){X.pending===p&&(X.pending=null)})}function ensure(){X.pending||X.taken||park(req())}if(Q&&navigator.xr)ensure();try{navigator.xr&&navigator.xr.addEventListener("sessiongranted",function(){X.granted=!0;if(X.taken)return;if(X.enter&&X.ready&&!X.pending){X.enter();return}ensure()})}catch(e){}window.__gtY=function(l){X.step++;l&&(X.label=l);return new Promise(function(r){setTimeout(r,0)})};function loader(s){var c=document.createElement("canvas"),g=c.getContext("webgl",{xrCompatible:!0,antialias:!1});if(!g)return;var L=new XRWebGLLayer(s,g);s.updateRenderState({baseLayer:L});var ref=null;s.requestReferenceSpace("local").then(function(r){ref=r},function(){});function sh(k,src){var h=g.createShader(k);g.shaderSource(h,src);g.compileShader(h);return h}var pr=g.createProgram();g.attachShader(pr,sh(g.VERTEX_SHADER,"attribute vec2 p;uniform mat4 P,V;varying vec2 t;void main(){t=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=P*V*vec4(p.x*1.1,p.y*.55,-2.2,1.);}"));g.attachShader(pr,sh(g.FRAGMENT_SHADER,"precision mediump float;uniform sampler2D s;varying vec2 t;void main(){gl_FragColor=texture2D(s,t);}"));g.linkProgram(pr);var ap=g.getAttribLocation(pr,"p"),uP=g.getUniformLocation(pr,"P"),uV=g.getUniformLocation(pr,"V"),buf=g.createBuffer();g.bindBuffer(g.ARRAY_BUFFER,buf);g.bufferData(g.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),g.STATIC_DRAW);var tc=document.createElement("canvas");tc.width=1024;tc.height=512;var x2=tc.getContext("2d"),tex=g.createTexture();g.bindTexture(g.TEXTURE_2D,tex);g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MIN_FILTER,g.LINEAR);g.texParameteri(g.TEXTURE_2D,g.TEXTURE_MAG_FILTER,g.LINEAR);g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_S,g.CLAMP_TO_EDGE);g.texParameteri(g.TEXTURE_2D,g.TEXTURE_WRAP_T,g.CLAMP_TO_EDGE);var drawn="";function paint(){var p=Math.min(.97,X.step/X.total),k=Math.round(p*100)+"|"+X.label;if(k===drawn)return;drawn=k;x2.clearRect(0,0,1024,512);x2.fillStyle="rgba(20,30,50,0.55)";x2.beginPath();x2.roundRect?x2.roundRect(20,20,984,472,40):x2.rect(20,20,984,472);x2.fill();x2.fillStyle="#ffffff";x2.textAlign="center";x2.font="bold 96px sans-serif";x2.fillText("GREEBLIS TOWN",512,170);x2.font="46px sans-serif";x2.fillText("Loading…",512,270);x2.fillStyle="rgba(255,255,255,0.25)";x2.fillRect(112,340,800,36);x2.fillStyle="#f4cc4a";x2.fillRect(112,340,800*p,36);g.bindTexture(g.TEXTURE_2D,tex);g.pixelStorei(g.UNPACK_PREMULTIPLY_ALPHA_WEBGL,1);g.texImage2D(g.TEXTURE_2D,0,g.RGBA,g.RGBA,g.UNSIGNED_BYTE,tc)}var c0=14083823,cr=(c0>>16&255)/255,cg=(c0>>8&255)/255,cb=(c0&255)/255;function frame(t,f){if(X.taken||!X.pending)return;s.requestAnimationFrame(frame);X.loaderFrames=(X.loaderFrames||0)+1;try{paint();g.bindFramebuffer(g.FRAMEBUFFER,L.framebuffer);g.clearColor(cr,cg,cb,1);g.clear(g.COLOR_BUFFER_BIT|g.DEPTH_BUFFER_BIT);var pose=ref&&f.getViewerPose(ref);if(!pose)return;g.useProgram(pr);g.enable(g.BLEND);g.blendFunc(g.ONE,g.ONE_MINUS_SRC_ALPHA);g.disable(g.DEPTH_TEST);g.bindBuffer(g.ARRAY_BUFFER,buf);g.enableVertexAttribArray(ap);g.vertexAttribPointer(ap,2,g.FLOAT,!1,0,0);g.activeTexture(g.TEXTURE0);g.bindTexture(g.TEXTURE_2D,tex);for(var i=0;i<pose.views.length;i++){var v=pose.views[i],vp=L.getViewport(v);g.viewport(vp.x,vp.y,vp.width,vp.height);g.uniformMatrix4fv(uP,!1,v.projectionMatrix);g.uniformMatrix4fv(uV,!1,v.transform.inverse.matrix);g.drawArrays(g.TRIANGLE_STRIP,0,4)}}catch(e){}}s.requestAnimationFrame(frame)}})();</script>',
     ),
-    # 2. Gate: expose the game's own "enter VR" routine to the head script, and enter
-    #    at once if the grant already arrived and the world is ready.
+    # 2. Gate: expose the game's own "enter VR" routine to the head script.
     (
         'const t=()=>{o.presenting||(gcEB.ready&&je())};try{navigator.xr.addEventListener("sessiongranted",t)}catch(e){}',
         'const t=()=>{o.presenting||(gcEB.ready&&je())};try{navigator.xr.addEventListener("sessiongranted",t)}catch(e){}'
-        'try{window.__gtXR&&(window.__gtXR.enter=t,window.__gtXR.granted&&gcEB.ready&&t())}catch(e){}',
+        'try{window.__gtXR&&(window.__gtXR.enter=t)}catch(e){}',
     ),
-    # 3. World ready: if the grant arrived while the world was still building, enter now.
+    # 3. World ready flag for the head script (the actual entry happens at the end
+    #    of the boot, after shaders are compiled and the game loop is running).
     (
         'gcEB.ready=!0}()',
-        'gcEB.ready=!0;try{window.__gtXR&&window.__gtXR.granted&&window.__gtXR.enter&&window.__gtXR.enter()}catch(e){}}()',
+        'gcEB.ready=!0;try{window.__gtXR&&(window.__gtXR.ready=!0)}catch(e){}}()',
     ),
-    # 4. Session request: reuse the session parked by the head script when there is one.
+    # 4. Session request: reuse the parked session and tell the loader to stop.
     (
         'a=await navigator.xr.requestSession("immersive-vr",{optionalFeatures:["local-floor","bounded-floor"]})',
-        'a=await(window.__gtXR&&window.__gtXR.pending||navigator.xr.requestSession("immersive-vr",{optionalFeatures:["local-floor","bounded-floor"]}))',
+        'a=await(window.__gtXR&&(window.__gtXR.taken=!0,window.__gtXR.pending)||navigator.xr.requestSession("immersive-vr",{optionalFeatures:["local-floor","bounded-floor"]}))',
+    ),
+    # 5. Boot becomes async so the loading screen can draw between slices: the
+    #    outer boot function and its world-build IIFE are awaited, errors still
+    #    reach vo(); at the very end the game enters the parked session.
+    (
+        'try{window.__jgpBlocked?blockedGate():!function(){(function(){G.bubbleBlip',
+        'try{window.__jgpBlocked?blockedGate():!async function(){await(async function(){G.bubbleBlip',
+    ),
+    (
+        'Re.start()}()}catch(t){vo(t,"boot")}',
+        'Re.start(),window.__gtXR&&(window.__gtXR.pending||window.__gtXR.granted)&&window.__gtXR.enter&&window.__gtXR.enter()}().catch((t=>vo(t,"boot")))}catch(t){vo(t,"boot")}',
+    ),
+    # 6. Shader compile in 8 slices (it is ~40% of the boot), then the first draw.
+    (
+        'JGP.farDetail&&JGP.farDetail.warm(!0),O.compile(C,B),O.render(C,B)',
+        'JGP.farDetail&&JGP.farDetail.warm(!0),' + 'await(async function(){const ms=[];C.traverse((o=>{(o.isMesh||o.isSprite||o.isLine||o.isPoints)&&o.visible&&ms.push(o)}));const n=Math.max(1,Math.ceil(ms.length/8));for(let i=0;i<ms.length;i+=n){ms.forEach(((o,k)=>{o.visible=k>=i&&k<i+n}));try{O.compile(C,B)}catch(e){}await __gtY("shaders")}ms.forEach((o=>{o.visible=!0}))})()' + ',O.compile(C,B),await __gtY("first draw"),O.render(C,B)',
+    ),
+    (
+        'Oe.visible=!1),Bulb.warm(),Ze(),Re.start()',
+        'Oe.visible=!1),await __gtY("warm-up"),Bulb.warm(),Ze(),Re.start()',
+    ),
+] + [(a, 'await __gtY(%r),' % l + a) for l, a in [
+    # 7. Yield points before the heavy world-build steps (anchors are the first
+    #    characters of each step; see tools/lib/boot_map.js for the map).
+    ('garden', 'function(t,e){const o=new THREE.Group;o.position.set(0,0,0),'),
+    ('kiosks', 'function(t,e){const o=new THREE.Group;o.userData.jgpKeep=!0,'),
+    ('pond', 'function(t,e){const o=new THREE.Group;o.position.set(t,0,e),C.add(o),F'),
+    ('clouds', 'function(){const t=x.world("#ffffff",{fog:!1}),e=[];for(let '),
+    ('library', 'function(t,e){const o=new THREE.Group;o.position.set(t,0,e),o.rotation'),
+    ('portal', 'at(),L.push((()=>{const e=me.active;for(const o of[le.list,c'),
+    ('music', 'L.push(((t,e)=>{e=e||.016;const o=me.active&&bt.live,a=t,mus'),
+    ('scenery', 'C.children.forEach((e=>{e!==At&&e.traverse((e=>{!e.isMesh||e'),
+    ('scenery-batch', 'io(t)})(),At=function(){const e=new THREE.Group,o=t.player,a'),
+    ('player', 'At=function(){const e=new THREE.Group,o=t.player,a=x.clay(o.'),
+    ('pickups', 'le.build(),ce.build(),function(){It.all.forEach((t=>_e(t.gro'),
+    ('batching', 'function(){It.all.forEach((t=>_e(t.group))),st.group&&_e(st.'),
+    ('placing', 'B.position.set(At.position.x,1.7,At.position.z),B.lookAt(0,1'),
+]] + [
+    # 8. Yields inside the spawn loops (one creature per slice).
+    (
+        'for(const t in e){const o=e[t];It.spawn({id:t,kind:"companion"',
+        'for(const t in e){await __gtY("companions");const o=e[t];It.spawn({id:t,kind:"companion"',
+    ),
+    (
+        'for(const t in o){const e=o[t];It.spawn({id:t,kind:"npc"',
+        'for(const t in o){await __gtY("townsfolk");const e=o[t];It.spawn({id:t,kind:"npc"',
+    ),
+    (
+        'for(let e=0;e<t.creaturesRoaming;e++)Mo(r[e%r.length]);',
+        'for(let e=0;e<t.creaturesRoaming;e++){await __gtY("creatures");Mo(r[e%r.length])}',
     ),
 ]
 
 # ---------------------------------------------------------------------------
-# Gameplay fixes (approved bug fixes; see NOTES.md for the investigation).
+# Gameplay fixes (approved bug fixes; see tools/NOTES.md for the investigation).
 # ---------------------------------------------------------------------------
 GAME_FIXES = [
     # Mushroom stuck beside/behind his kiosk. The navigator's segment test
@@ -148,7 +241,7 @@ GAME_FIXES = [
     ),
 ]
 
-for old, new in EDITS + ([] if entry_only else GAME_FIXES):
+for old, new in EDITS + ([] if entry_only else GAME_FIXES) + (EXPERIMENTS[experiment] if experiment else []):
     n = html.count(old)
     if n != 1:
         sys.exit(f"ERROR: anchor found {n} times (expected 1): {old[:80]!r}")

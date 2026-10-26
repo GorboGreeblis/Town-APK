@@ -1,12 +1,12 @@
 #!/bin/sh
 # Checks an APK against the Meta Quest store packaging rules (VRC.Quest.Packaging.1-6)
-# and confirms the bundled game is byte-identical to android/app/src/main/assets/index.html.
+# and confirms the bundled game is byte-identical to tools/android/app/src/main/assets/index.html.
 #
 #   tools/check_apk.sh [path/to/app.apk]
 #
 # Needs: ANDROID_HOME with build-tools/34.0.0 (aapt2, apksigner). Exit 1 on any FAIL.
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-APK=${1:-$ROOT/GreeblisTown-release.apk}; [ -f "$APK" ] || APK=$ROOT/android/app/build/outputs/apk/release/app-release.apk
+APK=${1:-$ROOT/GreeblisTown-release.apk}; [ -f "$APK" ] || APK=$ROOT/tools/android/app/build/outputs/apk/release/app-release.apk
 SDK=${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}
 BT=$(ls -d "$SDK"/build-tools/3[4-9].* 2>/dev/null | tail -1)
 [ -x "$BT/aapt2" ] || { echo "aapt2 not found under $SDK/build-tools (set ANDROID_HOME)"; exit 2; }
@@ -69,7 +69,7 @@ check "horizonos.pwa.APP_MODE = immersive" "$(printf '%s\n' "$XMLTREE" | awk '/h
 check "DEFAULT_URL uses http://localhost (the browser rejects 127.0.0.1 as unverified)" "$(printf '%s\n' "$XMLTREE" | awk '/customtabs.trusted.DEFAULT_URL/{f=1} f&&/http:\/\/localhost/{x=1} END{print x?1:0}')"
 echo
 echo "Bundled game"
-SRC="$ROOT/android/app/src/main/assets/index.html"
+SRC="$ROOT/tools/android/app/src/main/assets/index.html"
 if unzip -p "$APK" assets/index.html 2>/dev/null | cmp -s - "$SRC"; then ok "assets/index.html byte-identical to $SRC"; else bad "assets/index.html differs from $SRC"; fi
 echo
 if [ "$fail" = 0 ]; then echo "APK CHECK PASSED"; else echo "APK CHECK FAILED ($fail)"; fi

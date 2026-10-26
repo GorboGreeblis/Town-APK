@@ -10,8 +10,8 @@
 # Needs: python3, JDK 17+, node with playwright (browser tests), and
 # ANDROID_HOME for the server harness and the APK checker.
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-ASSET="$ROOT/android/app/src/main/assets/index.html"
-APK="$ROOT/GreeblisTown-release.apk"; [ -f "$APK" ] || APK="$ROOT/android/app/build/outputs/apk/release/app-release.apk"
+ASSET="$ROOT/tools/android/app/src/main/assets/index.html"
+APK="$ROOT/GreeblisTown-release.apk"; [ -f "$APK" ] || APK="$ROOT/tools/android/app/build/outputs/apk/release/app-release.apk"
 TIER=standard
 case "$1" in --smoke) TIER=smoke;; --full) TIER=full;; --quick) TIER=quick;; esac
 

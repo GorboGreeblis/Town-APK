@@ -25,7 +25,7 @@ This makes `http://127.0.0.1:17777/` on the headset come from a folder on
 the PC, so launch variations can be tried without touching the APK.
 
 ```sh
-cd <repo>/android/app/src/main/assets
+cd <repo>/tools/android/app/src/main/assets
 python3 -m http.server 8000           # leave running
 adb reverse tcp:17777 tcp:8000        # headset:17777 -> PC:8000
 ```
@@ -58,6 +58,8 @@ only the launcher creates, and the log from step 1 is the key.
 | Build | Browser line | Meaning | Fix |
 |---|---|---|---|
 | 3.15.2/3.15.3 | `cr_OriginVerifier: Verification failed for http://127.0.0.1:17777 as not https or localhost` | numeric loopback is not a trusted origin | 3.15.4 addresses the game as `http://localhost:17777/` |
+| 3.15.6 diag | `GreeblisServer: page: m=requestSession called ... activation=false` then `presentRequested`, `enterVR`, `requestSession OK`, frames | a page-initiated request is accepted without activation; the wait for `sessiongranted` was the bug | 3.15.7: request at page start + sliced boot + in-VR loading screen |
+| 3.15.6 | `TWA verification was successful!`, page loads, ready sound, then `setListeningForSessionGranted(true), navSession.isNull? true` / `no navigation - no activation. Status -1`; OS gives up after 15 s without frames | the browser grants a session only with a navigation descriptor it never creates for a fresh immersive launch (NOTES 33) | variant `directrequest` under test |
 | 3.15.4 | `digital_asset_links_handler.cc: Digital Asset Links endpoint responded with code 404` then `TWA verification was unsuccessful! Exiting the activity.` | the browser fetched `/.well-known/assetlinks.json` from the game's origin and the server had nothing there | 3.15.5 serves the asset-links statement (package name + the APK's own signing-certificate fingerprint) |
 
 Lines to grep for in the next capture: `cr_WebXRCustomTabActivity`, `cr_OriginVerifier`, `digital_asset_links`, `cr_WebAppLaunchHandler`. A good launch should show no `TWA verification was unsuccessful` and the game's own `sessiongranted` path should take over.

@@ -2,7 +2,7 @@
 
 Everything in this file is on your side: keys, headset testing, and the Meta
 Quest Store upload. The build and test automation is already in the repo
-(`README.md`, `tools/README.md`).
+(`tools/BUILD.md`, `tools/README.md`).
 
 ## 1. Signing key (do this first, keep it forever)
 
@@ -26,8 +26,8 @@ keytool -list -v -keystore greeblis-town-release.jks | grep -A1 "Owner"
 1. Store both files somewhere safe and private (password manager, encrypted
    drive). They are deliberately not in git.
 2. For rebuilding, place them in the project:
-   - `android/keystore/greeblis-town-release.jks`
-   - `android/keystore.properties`
+   - `tools/android/keystore/greeblis-town-release.jks`
+   - `tools/android/keystore.properties`
    Both paths are git-ignored. With them present, `assembleRelease` produces a
    signed APK; without them it produces an unsigned one that the store will
    not accept.
@@ -38,7 +38,7 @@ keytool -list -v -keystore greeblis-town-release.jks | grep -A1 "Owner"
      -keyalg RSA -keysize 2048 -validity 10000 \
      -dname "CN=Greeblis Town, O=Montgummery Games"
    ```
-   then put the passwords in `android/keystore.properties`:
+   then put the passwords in `tools/android/keystore.properties`:
    ```
    storeFile=keystore/greeblis-town-release.jks
    storePassword=YOUR_PASSWORD
@@ -54,7 +54,7 @@ and look at **Distribution → Builds**:
 
 - No builds listed: nothing to do.
 - A build is listed: its package name and signing key are locked in. Use the
-  same package name (edit `applicationId` in `android/app/build.gradle`,
+  same package name (edit `applicationId` in `tools/android/app/build.gradle`,
   rebuild) and the same key. If that key is lost, the only way forward is a
   new store app.
 
@@ -77,7 +77,7 @@ and look at **Distribution → Builds**:
 5. What to check, in this order:
    - It goes straight into VR with no 2D browser panel and no stuck loading
      screen. (This is the one thing that could not be verified without a
-     headset; see `NOTES.md` item 1.)
+     headset; see `tools/NOTES.md` item 1.)
    - The town looks and sounds exactly as in the HTML version.
    - Pressing the Meta button and choosing Quit returns to the home
      environment with no leftover browser window.
@@ -99,17 +99,17 @@ once to enter VR.
    Android Studio). Install `platforms;android-34`, `build-tools;34.0.0` and
    `platform-tools`.
 2. Point the build at the SDK: `export ANDROID_HOME=/path/to/sdk` or create
-   `android/local.properties` with `sdk.dir=/path/to/sdk`.
+   `tools/android/local.properties` with `sdk.dir=/path/to/sdk`.
 3. Put the signing files in place (section 1).
-4. Bump `versionCode` in `android/app/build.gradle` (every store upload needs
+4. Bump `versionCode` in `tools/android/app/build.gradle` (every store upload needs
    a higher number) and `versionName` if the game version changed.
 5. Build and check:
    ```sh
    python3 tools/apply_entry_fix.py          # regenerate the game asset
-   cd android && ./gradlew assembleRelease && cd ..
+   cd tools/android && ./gradlew assembleRelease && cd ..
    tools/check_apk.sh                        # store packaging rules
    ```
-   The APK is at `android/app/build/outputs/apk/release/app-release.apk`.
+   The APK is at `tools/android/app/build/outputs/apk/release/app-release.apk`.
    `tools/run_tests.sh` runs the full suite if Node and Playwright are
    installed.
 
@@ -129,7 +129,7 @@ once to enter VR.
    manifest and SDK checks within minutes of upload.
 3. Fill in the store listing. The dashboard states the exact pixel sizes it
    wants; the common slots and the art you already have:
-   - icon 512x512: `store/icon-512.png` (from your square logo)
+   - icon 512x512: `tools/store/icon-512.png` (from your square logo)
    - square cover 1440x1440: your square logo image
    - landscape cover (2560x1440 in the dashboard): your wide town image, which
      will need upscaling or re-exporting from the source art
@@ -141,7 +141,7 @@ once to enter VR.
    comfort rating, Data Use Checkup (this app collects nothing), supported
    devices (Quest 2, Quest Pro, Quest 3, Quest 3S), pricing, and a privacy
    policy URL (required even for apps that collect no data).
-5. Submit for review. If the reviewer raises any of the items in `NOTES.md`
+5. Submit for review. If the reviewer raises any of the items in `tools/NOTES.md`
    (loading indicator, 64-bit wording), send me the exact text and we decide
    the fix together.
 

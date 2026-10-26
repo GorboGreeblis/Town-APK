@@ -119,3 +119,15 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | Item | How | Coverage |
 | --- | --- | --- |
 | Compressed release build carries the same content as the APK source | `test_parity.js` | done |
+
+## Latest results (3.15.6 asset, headless harness)
+
+| Test | Result |
+| --- | --- |
+| entry fix verify, server harness (incl. asset links), APK check, VR entry wiring, runtime play, input | PASS (smoke tier) |
+| progression: talk, battle, shop pause, shop, library, trade, pizza | PASS (all 14 checks) |
+| world: 20/20 routes, hulls, bounds, pickups + regrow, watchdog (Fortizmo home in 63 s) | PASS |
+| courier/Ancient (B11), left and right | PASS; entry-only build reproduces the bug |
+| Mushroom return-home 17/17, visits 6/6 | PASS |
+| full tier (`run_tests.sh --full`) on 3.15.6: entry, server, spell-check, APK check, VR entry, runtime 120 s, input, progression incl. garden event, visits (all), courier, return-home (all), release parity | PASS except world: 2/20 random routes clipped the shop corner by 0.3 m / 0.02 m (B4 residual, cosmetic) |
+
