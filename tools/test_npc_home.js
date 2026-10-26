@@ -23,7 +23,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const file = process.argv[2] || path.join(root, 'android/app/src/main/assets/index.html');
+const file = process.argv[2] || path.join(root, 'tools/android/app/src/main/assets/index.html');
 const NPC = process.argv[3] || 'drifter';
 const MAX_S = Number(process.argv[4] || 45);
 const ONLY = process.argv[5] ? Number(process.argv[5]) : null;   // run only the first N scenarios (smoke)

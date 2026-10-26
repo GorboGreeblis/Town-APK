@@ -1,7 +1,7 @@
 # Open bugs
 
 Living list. Each entry: what, where, how to reproduce, status. Fixed bugs
-move to the bottom. Longer investigations live in `../NOTES.md`.
+move to the bottom. Longer investigations live in `NOTES.md`.
 
 ## Open
 

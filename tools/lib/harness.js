@@ -59,7 +59,7 @@ function serve(body) {
  *   noVisits: true (default) parks the random visit scheduler; test_visits forces
  *   its own pairs through JGP.visitAt, which still works.
  */
-async function boot({ file = path.join(root, 'android/app/src/main/assets/index.html'), vr = true, fastSim = true, noVisits = true, timeoutMs = 300000 } = {}) {
+async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/index.html'), vr = true, fastSim = true, noVisits = true, timeoutMs = 300000 } = {}) {
   const srv = await serve(hooked(path.resolve(file)));
   const url = `http://127.0.0.1:${srv.address().port}/`;
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--autoplay-policy=no-user-gesture-required'] });

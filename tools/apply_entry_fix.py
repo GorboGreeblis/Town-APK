@@ -4,7 +4,7 @@
 Usage:  python3 tools/apply_entry_fix.py [src] [dst]
         python3 tools/apply_entry_fix.py --entry-only [src] dst   (VR-entry edits only, no gameplay fixes)
         python3 tools/apply_entry_fix.py --verify [src] [dst]
-Default src: tools/uncompressed.html   Default dst: android/app/src/main/assets/index.html
+Default src: tools/uncompressed.html   Default dst: tools/android/app/src/main/assets/index.html
 
 --verify does not write anything: it re-derives the patched file from src and
 checks that dst is byte-identical to it, i.e. the APK copy differs from the
@@ -25,7 +25,7 @@ verify = "--verify" in sys.argv[1:]
 # --entry-only: write src + the 4 VR-entry edits only (no gameplay fixes), for before/after comparisons in the harness.
 entry_only = "--entry-only" in sys.argv[1:]
 src = pathlib.Path(args[0]) if len(args) > 0 else root / "tools" / "uncompressed.html"
-dst = pathlib.Path(args[1]) if len(args) > 1 else root / "android" / "app" / "src" / "main" / "assets" / "index.html"
+dst = pathlib.Path(args[1]) if len(args) > 1 else root / "tools" / "android" / "app" / "src" / "main" / "assets" / "index.html"
 
 html = src.read_text(encoding="utf-8")
 
@@ -65,7 +65,7 @@ EDITS = [
 ]
 
 # ---------------------------------------------------------------------------
-# Gameplay fixes (approved bug fixes; see NOTES.md for the investigation).
+# Gameplay fixes (approved bug fixes; see tools/NOTES.md for the investigation).
 # ---------------------------------------------------------------------------
 GAME_FIXES = [
     # Mushroom stuck beside/behind his kiosk. The navigator's segment test

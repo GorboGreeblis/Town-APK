@@ -15,7 +15,7 @@
  *            click, then exactly one request (the original behaviour).
  *
  * Usage: node tools/test_entry.js [file.html] [scenario|all]
- *   default file: android/app/src/main/assets/index.html
+ *   default file: tools/android/app/src/main/assets/index.html
  * Exit code 1 if any expectation fails. Run against tools/uncompressed.html to
  * see the original drop the early grant.
  */
@@ -25,7 +25,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const file = path.resolve(process.argv[2] || path.join(root, 'android/app/src/main/assets/index.html'));
+const file = path.resolve(process.argv[2] || path.join(root, 'tools/android/app/src/main/assets/index.html'));
 const which = process.argv[3] || 'all';
 const html = fs.readFileSync(file);
 const BOOT_TIMEOUT_MS = 240000;

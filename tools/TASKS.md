@@ -1,7 +1,7 @@
 # Open tasks
 
 Living list. Done items move to the bottom with the date. Bugs live in
-`BUGS.md`; investigation notes in `../NOTES.md`.
+`BUGS.md`; investigation notes in `NOTES.md`.
 
 ## Open
 

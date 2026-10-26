@@ -25,7 +25,7 @@ This makes `http://127.0.0.1:17777/` on the headset come from a folder on
 the PC, so launch variations can be tried without touching the APK.
 
 ```sh
-cd <repo>/android/app/src/main/assets
+cd <repo>/tools/android/app/src/main/assets
 python3 -m http.server 8000           # leave running
 adb reverse tcp:17777 tcp:8000        # headset:17777 -> PC:8000
 ```
