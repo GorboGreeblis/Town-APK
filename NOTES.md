@@ -221,3 +221,19 @@ VR-entry fix; each item is for discussion first.
     same mechanism a hosted PWA uses; the only difference is that the "host"
     is the APK itself, so the no-hosting rule still holds.
 
+31. **B11: the pizza courier and the Ancient.** Inside the church the courier
+    follows two fixed waypoints (both on the +x side of the nave) and then
+    walks straight at the player. The Ancient is registered as a solid part of
+    the church (`[-.95,-13.65,.95,-9.55]` in church-local coordinates), so a
+    player standing on the -x side put the Ancient on that straight line and
+    the wall resolver pinned her there until the 100 s give-up (the exit path
+    had the same problem in reverse). The fix adds `detour()` to the courier:
+    a Liang-Barsky segment test against the Ancient's box grown by her radius;
+    when the line crosses it she first walks to the front corner on her side
+    and then the corner on the player's side (corners 1 m outside the margin,
+    because `follow()` consumes a waypoint within 1 m and a closer corner made
+    her loop in place, which the first attempt did). Used for the approach and
+    prepended to the exit waypoints. Verified with `tools/test_courier.js`
+    against `--entry-only` (bug reproduced: still for 94 s) and the fixed asset
+    (delivers in 4 s, outside again at 9 s).
+
