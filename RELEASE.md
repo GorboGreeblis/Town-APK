@@ -14,6 +14,15 @@ You were sent two files in the chat:
 The Meta Quest Store locks the signing key on the first upload. Every later
 update of the app must be signed with the same key, or the store rejects it.
 
+**Decision: this generated key is the release key.** Identify it by its
+certificate: `CN=Greeblis Town, O=Montgummery Games`, SHA-256 fingerprint
+`A9:07:5E:05:25:F8:C0:48:71:77:0A:DB:2B:2E:7D:A8:62:15:40:C8:83:88:42:D4:B8:17:7A:21:8F:EF:8A:E1`.
+The only durable copies are the ones downloaded from the chat; the build
+environment that created it no longer exists. Check a keystore with:
+```sh
+keytool -list -v -keystore greeblis-town-release.jks | grep -A1 "Owner"
+```
+
 1. Store both files somewhere safe and private (password manager, encrypted
    drive). They are deliberately not in git.
 2. For rebuilding, place them in the project:
@@ -22,8 +31,8 @@ update of the app must be signed with the same key, or the store rejects it.
    Both paths are git-ignored. With them present, `assembleRelease` produces a
    signed APK; without them it produces an unsigned one that the store will
    not accept.
-3. Optional: if you would rather own a key with your own passwords, make one
-   **before** the first store upload and never change it afterwards:
+3. Not needed now that the key is decided, kept for reference: to create a
+   different key you would have to do it **before** the first store upload:
    ```sh
    keytool -genkeypair -keystore greeblis-town-release.jks -alias greeblistown \
      -keyalg RSA -keysize 2048 -validity 10000 \
