@@ -92,6 +92,7 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | Dance battles (Dbt): rock/paper/scissors, stamina, bow-out, first win awards an Artifact, `danceWins` | `test_progression.js` | done |
 | Garden event (`bt`): summoning pillar, gather timer `GATHER_S`, seeds/snacks/stone rewards, NPCs sent home afterwards (`fe`) within 90 s | `test_progression.js --long` | done (full tier) |
 | Pizza courier (`ue`): call, spawn 30 s later at 75 m, arrival, give-up after 100 s | `test_progression.js` | partial |
+| Long session stability: heap, programs, entity count over N minutes with all systems exercised (GPU counters are stubbed in the harness) | `test_soak.js` | Soak 10 min on 3.15.8: PASS, heap 119 -> 118 MB, programs 114 -> 114, 13 entities, no errors |
 | Pizza courier inside the church: detour around the Ancient to a player on the far side, deliver, walk back out (B11) | `test_courier.js` | yes |
 | Library finale: three Artifacts → Sparkakus awards the Gem | `test_progression.js` | done |
 | Backpacka sequence (`BP`) and jazz (`JAZZ`) timings | headless | todo |
@@ -120,7 +121,15 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | --- | --- | --- |
 | Compressed release build carries the same content as the APK source | `test_parity.js` | done |
 
-## Latest results (3.15.6 asset, headless harness)
+## Latest results (3.15.10/3.15.11 asset, headless harness)
+
+Full tier on 3.15.10 (all fixes, pre-rendered textures): **all stages pass** (entry fix verify, server harness incl. ETag/304, spell-check, APK check, VR entry wiring, runtime 120 s, world incl. B2 rescue and 20/20 routes, input 12/12, progression incl. garden event, visits all, courier, return-home all 17, release parity). 3.15.11 differs only in the head-script loader (compositor layers); play and entry tests pass on it; full tier running.
+
+### Earlier (3.15.7/3.15.8)
+
+Standard tier on 3.15.7: all stages pass except the world routes check (2/20 random routes clipped the shop corner at their final leg), fixed as B4r in 3.15.8 (world test 20/20 afterwards). Entry test rewritten for the page-start request and the in-VR loading screen; play test passes in 2D and fake VR.
+
+### Earlier (3.15.6)
 
 | Test | Result |
 | --- | --- |

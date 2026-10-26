@@ -145,6 +145,19 @@ const SAMPLE_S = Number(process.argv[3] || 40);
   });
   expect(`watchdog: displaced ${wd.name} (${wd.id}) returns home within 70s`, !wd.error && wd.dist < 0.5, JSON.stringify(wd));
 
+  // B2: an NPC stuck in view for 8 stalls is rescued visibly (sparkle poof + move to its target).
+  const b2 = await page.evaluate(() => {
+    const D = window.__dbg; const h = D.It.byId.frog || D.It.all.find((x) => x.def && x.def.at && x.home);
+    if (!h) return { error: 'no npc' };
+    const p = h.group.position; D.At.position.set(p.x + 3, D.At.position.y, p.z + 3);   // within 12 m: counts as "in view"
+    const before = [p.x, p.z]; const target = h.goHome && h.dest ? [h.dest.x, h.dest.z] : [h.home.x, h.home.z];
+    h.gcStuckN = 8; h.gcBlk = 1.3; h.gcWant = 1;
+    let threw = null; try { D.De(h, null, 0.016, 0); } catch (e) { threw = String(e); }
+    const after = [h.group.position.x, h.group.position.z];
+    return { name: h.def.name, moved: +Math.hypot(after[0] - before[0], after[1] - before[1]).toFixed(2), atTarget: +Math.hypot(after[0] - target[0], after[1] - target[1]).toFixed(2), stuckN: h.gcStuckN, threw };
+  });
+  expect(`B2: ${b2.name || '?'} stuck in view for 8 stalls is moved to its target with a visible poof`, !b2.error && !b2.threw && b2.atTarget < 0.05 && b2.stuckN === 0, JSON.stringify(b2));
+
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   await g.close();
   console.log(failures.length ? `WORLD TEST FAILED (${failures.length})` : 'WORLD TEST PASSED');

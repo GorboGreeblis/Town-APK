@@ -90,6 +90,63 @@ const file = process.argv[2];
   expect('player never ends up inside a building hull', inside.length === 0, JSON.stringify(inside));
 
   mark('end');
+  mark('collision');
+  // Body collision: stand 1.2 m from a standing townsperson and push into them for 2 s.
+  const col = await page.evaluate(async () => {
+    const D = window.__dbg, At = D.At;
+    const npc = D.It.all.find((h) => h.def && h.def.at && h.home && !h.busy && !h.visiting && Math.hypot(h.group.position.x - h.home.x, h.group.position.z - h.home.z) < 1) || D.It.all.find((h) => h.def && h.def.at);
+    if (!npc) return { error: 'no standing npc' };
+    const n = npc.group.position; const yaw = D.we.headYaw;
+    // place the player 1.2 m "behind" the walking direction so that walking forward runs into the npc
+    const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+    At.position.set(n.x - fx * 1.2, At.position.y, n.z - fz * 1.2);
+    const d0 = Math.hypot(At.position.x - n.x, At.position.z - n.z);
+    return { name: npc.def.name, d0: +d0.toFixed(2), fx: +fx.toFixed(2), fz: +fz.toFixed(2) };
+  });
+  let minD = 9;
+  if (!col.error) {
+    await inputs([ctl('left', [0, 0, 0, -1]), ctl('right', [0, 0, 0, 0])]);
+    const t0 = Date.now();
+    while (Date.now() - t0 < 2000) { const d = await page.evaluate((name) => { const D = window.__dbg, h = D.It.all.find((x) => x.def && x.def.name === name); return h ? Math.hypot(D.At.position.x - h.group.position.x, D.At.position.z - h.group.position.z) : 9; }, col.name); minD = Math.min(minD, d); await new Promise((r) => setTimeout(r, 100)); }
+    await inputs([ctl('left', [0, 0, 0, 0]), ctl('right', [0, 0, 0, 0])]);
+  }
+  expect(`body collision: walking into ${col.name || '?'} never overlaps (min distance ${minD.toFixed(2)} m)`, !col.error && minD > 0.7, JSON.stringify(col));
+
+  mark('bounds');
+  // Park bounds: start 3 m inside the clearing edge, walk outward for 3 s, must stay inside.
+  const bnd = await page.evaluate(() => {
+    const D = window.__dbg, At = D.At, R = D.t.clearingR, yaw = D.we.headYaw;
+    const fx = -Math.sin(yaw), fz = -Math.cos(yaw);        // walking direction (stick forward)
+    At.position.set(fx * (R - 3), At.position.y, fz * (R - 3));   // start on the side the stick walks toward
+    return { R, r0: +Math.hypot(At.position.x, At.position.z).toFixed(1) };
+  });
+  await inputs([ctl('left', [0, 0, 0, -1]), ctl('right', [0, 0, 0, 0])]);
+  await new Promise((r) => setTimeout(r, 3000));
+  await inputs([ctl('left', [0, 0, 0, 0]), ctl('right', [0, 0, 0, 0])]);
+  const pb = await page.evaluate(() => { const D = window.__dbg, t = D.t; return { x: +D.At.position.x.toFixed(1), z: +D.At.position.z.toFixed(1), half: t.parkHalf, south: t.parkSouth }; });
+  const insidePark = Math.abs(pb.x) <= pb.half + 0.3 && pb.z >= -pb.half - 0.3 && pb.z <= pb.south + 0.3;
+  expect(`park bounds: walking outward for 3 s stays inside the park rectangle (ended at ${pb.x},${pb.z}; |x|<=${pb.half}, ${-pb.half}<=z<=${pb.south})`, insidePark && Math.hypot(pb.x, pb.z) >= bnd.r0 - 0.5, JSON.stringify(pb));
+
+  mark('menu');
+  // Controller pick + menu: put a townsperson on the right controller's ray 2.5 m ahead, press select, choose "Talk".
+  const menu = await page.evaluate(async () => {
+    const D = window.__dbg, At = D.At, O = D.O; const out = {};
+    const c = O.xr.getController(1); c.updateMatrixWorld(true);
+    const dir = new THREE.Vector3(0, 0, -1).transformDirection(c.matrixWorld); dir.y = 0; dir.normalize();
+    const npc = D.It.all.find((h) => h.def && h.def.at && h.home && !h.busy && !h.visiting && Math.hypot(h.group.position.x - h.home.x, h.group.position.z - h.home.z) < 1) || D.It.all.find((h) => h.def && h.def.at);
+    if (!npc) return { error: 'no standing npc' };
+    const n = npc.group.position; At.position.set(n.x - dir.x * 2.5, At.position.y, n.z - dir.z * 2.5);
+    await new Promise((r) => setTimeout(r, 600));                 // let the rig follow the player
+    const s = window.__fakeXR.sessions.at(-1); s.pressSelect(1);
+    await new Promise((r) => setTimeout(r, 400));
+    out.name = npc.def.name; out.open = !!(window.__jgpMenu && window.__jgpMenu.open()); out.labels = window.__jgpMenu ? window.__jgpMenu.labels() : [];
+    const k = out.labels.findIndex((l) => /^Talk to /.test(l));
+    if (out.open && k >= 0) { window.__jgpMenu.choose(k); await new Promise((r) => setTimeout(r, 300)); out.dialogue = !!D.qt.isOpen; }
+    return out;
+  });
+  expect(`controller select opens the interaction menu on ${menu.name || '?'}`, !menu.error && menu.open === true && menu.labels.some((l) => /^Talk to /.test(l)), JSON.stringify(menu));
+  expect('choosing "Talk to" from the menu opens the dialogue', menu.dialogue === true, JSON.stringify(menu));
+
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   await g.close();
   console.log(failures.length ? `INPUT TEST FAILED (${failures.length})` : 'INPUT TEST PASSED');

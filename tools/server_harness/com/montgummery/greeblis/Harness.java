@@ -54,6 +54,11 @@ public final class Harness {
         failures += expect("HEAD /.well-known/assetlinks.json is 200, empty body", fetch(server.url() + ".well-known/assetlinks.json", "HEAD").status == 200);
         failures += expect("POST /.well-known/assetlinks.json is 405", fetch(server.url() + ".well-known/assetlinks.json", "POST").status == 405);
         failures += expect("addressed as http://localhost:" + server.port(), server.url().startsWith("http://localhost:"));
+        String et = server.etag();
+        failures += expect("GET / carries a strong ETag", et != null && et.startsWith("\"") && rawHead(server.port(), "HEAD / HTTP/1.1\r\nHost: x\r\n\r\n").contains("ETag: " + et));
+        failures += expect("GET / is cacheable with revalidation (Cache-Control: no-cache)", rawHead(server.port(), "HEAD / HTTP/1.1\r\nHost: x\r\n\r\n").contains("Cache-Control: no-cache"));
+        failures += expect("If-None-Match with the current ETag gets 304", raw(server.port(), "GET / HTTP/1.1\r\nHost: x\r\nIf-None-Match: " + et + "\r\n\r\n").startsWith("HTTP/1.1 304"));
+        failures += expect("If-None-Match with a stale ETag gets the document", raw(server.port(), "GET / HTTP/1.1\r\nHost: x\r\nIf-None-Match: \"stale\"\r\n\r\n").startsWith("HTTP/1.1 200"));
         // Ten quick parallel fetches: the server spawns a thread per connection.
         Thread[] ts = new Thread[10];
         final boolean[] ok = new boolean[10];
@@ -83,6 +88,21 @@ public final class Harness {
         server.close();
         System.out.println(failures == 0 ? "SERVER TEST PASSED" : "SERVER TEST FAILED (" + failures + ")");
         System.exit(failures == 0 ? 0 : 1);
+    }
+
+    /** Like raw() but reads up to 2 KB, enough for the whole header block. */
+    static String rawHead(int port, String request) throws IOException {
+        try (java.net.Socket s = new java.net.Socket("127.0.0.1", port)) {
+            s.setSoTimeout(15000);
+            s.getOutputStream().write(request.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1));
+            s.getOutputStream().flush();
+            byte[] head = new byte[2048];
+            int n = 0, r;
+            while (n < head.length && (r = s.getInputStream().read(head, n, head.length - n)) > 0) n += r;
+            return new String(head, 0, n, java.nio.charset.StandardCharsets.ISO_8859_1);
+        } catch (java.net.SocketTimeoutException e) {
+            return "TIMEOUT";
+        }
     }
 
     static String raw(int port, String request) throws IOException {

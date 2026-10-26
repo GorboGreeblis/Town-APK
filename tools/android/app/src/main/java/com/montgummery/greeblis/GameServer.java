@@ -54,6 +54,11 @@ public final class GameServer {
 
     private final byte[] mDocument;
     private final byte[] mAssetLinks;
+    /** Strong ETag of the document, so the browser can revalidate (304) and keep its compiled-script cache between launches. */
+    private final String mEtag;
+    /** APK assets (null in the JVM harness); pre-rendered textures live under assets/tex/. */
+    private android.content.res.AssetManager mAssets;
+    private final java.util.Map<String, byte[]> mTexCache = new java.util.HashMap<>();
     private final ServerSocket mSocket;      // 127.0.0.1
     private ServerSocket mSocket6;           // ::1, same port, if available
     private final int mPort;
@@ -70,6 +75,7 @@ public final class GameServer {
     GameServer(byte[] document, String assetLinksJson) throws IOException {
         mDocument = document;
         mAssetLinks = assetLinksJson.getBytes(StandardCharsets.UTF_8);
+        mEtag = etagOf(document);
         mSocket = bind();
         mPort = mSocket.getLocalPort();
         Thread t = new Thread(() -> acceptLoop(mSocket), "greeblis-http");
@@ -90,6 +96,26 @@ public final class GameServer {
 
     private GameServer(Context context) throws IOException {
         this(readAsset(context), assetLinksJson(context));
+        mAssets = context.getAssets();
+    }
+
+    /** Pre-rendered texture or manifest from assets/tex/, cached in memory; null if absent. */
+    private byte[] texFile(String name) {
+        if (mAssets == null || !name.matches("[A-Za-z0-9_.-]+")) {
+            return null;
+        }
+        synchronized (mTexCache) {
+            if (mTexCache.containsKey(name)) {
+                return mTexCache.get(name);
+            }
+            byte[] data = null;
+            try (InputStream in = mAssets.open("tex/" + name)) {
+                data = readFully(in);
+            } catch (IOException ignored) {
+            }
+            mTexCache.put(name, data);
+            return data;
+        }
     }
 
     /**
@@ -132,6 +158,24 @@ public final class GameServer {
         }
         sb.append("]}}]");
         return sb.toString();
+    }
+
+    /** A strong ETag derived from the document bytes (changes with every build). */
+    static String etagOf(byte[] document) {
+        try {
+            byte[] d = MessageDigest.getInstance("SHA-256").digest(document);
+            StringBuilder sb = new StringBuilder(20);
+            for (int i = 0; i < 8; i++) {
+                sb.append(String.format("%02x", d[i] & 0xff));
+            }
+            return "\"" + sb + "\"";
+        } catch (NoSuchAlgorithmException e) {
+            return "\"" + document.length + "\"";
+        }
+    }
+
+    String etag() {
+        return mEtag;
     }
 
     /** Colon-separated upper-case hex, the form keytool and Chromium use. */
@@ -230,10 +274,14 @@ public final class GameServer {
             if (requestLine == null) {
                 return;
             }
-            // Drain headers; we do not need any of them.
+            // Drain headers; only If-None-Match matters (revalidation).
             String line;
+            String ifNoneMatch = null;
             while ((line = reader.readLine()) != null && !line.isEmpty()) {
-                // ignore
+                int colon = line.indexOf(':');
+                if (colon > 0 && line.substring(0, colon).trim().equalsIgnoreCase("If-None-Match")) {
+                    ifNoneMatch = line.substring(colon + 1).trim();
+                }
             }
             String[] parts = requestLine.split(" ");
             String method = parts.length > 0 ? parts[0] : "";
@@ -263,13 +311,28 @@ public final class GameServer {
                 out.flush();
                 return;
             }
+            if (target.startsWith("/tex/") && (method.equals("GET") || method.equals("HEAD"))) {
+                byte[] data = texFile(target.substring(5));
+                if (data != null) {
+                    writeHead(out, "200 OK", target.endsWith(".json") ? "application/json" : "image/png", data.length);
+                    if (method.equals("GET")) {
+                        out.write(data);
+                    }
+                    out.flush();
+                    return;
+                }
+            }
             boolean isDoc = target.equals("/") || target.equals("/index.html");
             boolean isLinks = target.equals(ASSET_LINKS_PATH);
             boolean methodOk = method.equals("GET") || method.equals("HEAD");
             if (isDoc && methodOk) {
-                writeHead(out, "200 OK", "text/html; charset=utf-8", mDocument.length);
-                if (method.equals("GET")) {
-                    out.write(mDocument);
+                if (ifNoneMatch != null && ifNoneMatch.contains(mEtag)) {
+                    writeHead(out, "304 Not Modified", "text/html; charset=utf-8", 0, mEtag);
+                } else {
+                    writeHead(out, "200 OK", "text/html; charset=utf-8", mDocument.length, mEtag);
+                    if (method.equals("GET")) {
+                        out.write(mDocument);
+                    }
                 }
             } else if (isLinks && methodOk) {
                 writeHead(out, "200 OK", "application/json", mAssetLinks.length);
@@ -293,10 +356,20 @@ public final class GameServer {
 
     private static void writeHead(OutputStream out, String status, String type, int length)
             throws IOException {
+        writeHead(out, status, type, length, null);
+    }
+
+    /**
+     * With an ETag the response is cacheable but must be revalidated on every use
+     * (no-cache): the browser keeps the document and its compiled-script cache
+     * between launches and gets a 304 unless the build changed.
+     */
+    private static void writeHead(OutputStream out, String status, String type, int length, String etag)
+            throws IOException {
         String head = "HTTP/1.1 " + status + "\r\n"
                 + "Content-Type: " + type + "\r\n"
                 + "Content-Length: " + length + "\r\n"
-                + "Cache-Control: no-store\r\n"
+                + (etag != null ? "ETag: " + etag + "\r\nCache-Control: no-cache\r\n" : "Cache-Control: no-store\r\n")
                 + "X-Content-Type-Options: nosniff\r\n"
                 + "Connection: close\r\n"
                 + "\r\n";

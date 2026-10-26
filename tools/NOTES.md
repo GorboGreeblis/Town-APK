@@ -337,3 +337,80 @@ VR-entry fix; each item is for discussion first.
     extra request on grant or click). B6 (in-VR loading indicator) is covered
     by this. Pending: the author's headset run of 3.15.7.
 
+35. **B4r, the last corner clip in random routes.** The grid router's smoother
+    already rejected legs that cross a hull (B4), but two spots were unchecked:
+    before dropping the last grid cell it only tested the leg up to 1.2 m short
+    of the exact target, and the final leg to the target was appended without
+    any test. Both crossings reported by the world test were exactly that final
+    leg (a cell centre to a target beside the shop). 3.15.8 checks the whole leg
+    before dropping the cell and, if the final leg is still blocked, inserts an
+    L-shaped step round the corner. World test: 20/20 random pairs clean.
+
+36. **B2, a visible fallback for stuck NPCs.** The stuck detector `De()` re-plans
+    after ~1.2 s without progress and, after four stalls, teleports the NPC to
+    its target, but only when the player is more than 12 m away and the NPC is
+    outside the view, so a stall in view went on for as long as the player
+    watched. At the author's request the hidden teleport stays as it is and a
+    second threshold is added: after eight stalls (about ten seconds) the NPC is
+    moved even in view, with a sparkle burst from the game's own particle pool
+    where it stood and where it lands, so it reads as a deliberate "poof"
+    rather than a glitch. Everything else (re-planning, the B1/B4/B11 route
+    fixes) still runs first, so this only ever fires on a case those did not
+    cover. Test: `test_world.js` forces eight stalls on a visible NPC and checks
+    it lands on its target without errors.
+
+37. **Pre-warm of the pickup effects, and a cacheable page.** Two fixes applied
+    ahead of the final test pass at the author's request.
+    - *Effects pre-warm (B12 candidate 2, `GAME_FIXES`).* The hitch probe showed
+      the first pickup of a session creating 14 textures and 57 geometries on
+      the spot. The sliced boot now has an "effects" slice that creates them
+      out of sight (y = -60): every label text/colour pair the game uses
+      (hearts, "!", "?", sparkles, notes, "~", blossoms, dots), a 14-particle
+      sparkle burst and a splat, so a pickup never allocates on the GPU
+      mid-game. Whether this is the whole of the white flash is for the
+      headset A/B to say.
+    - *Cacheable page (wrapper).* `GameServer` now sends a strong ETag
+      (SHA-256 of the document) with `Cache-Control: no-cache` and answers
+      `If-None-Match` with 304, instead of `no-store`. Chromium can then keep
+      the document and its compiled-script cache between launches and still
+      never serve a stale build (the ETag changes with every build). The JVM
+      harness checks ETag, no-cache, 304 and a stale-ETag miss.
+
+38. **Pre-rendered textures (using the APK's space).** The game paints its
+    textures procedurally with 50 canvas painters at boot (14% of the boot CPU
+    in the profile), a legacy of the on-chain size limit. The APK has no such
+    limit, so `tools/prerender_textures.js` boots a capture variant once,
+    records every painter's output and writes PNGs plus a manifest to
+    `assets/tex/` (105 textures, 8.5 MB). At runtime the head script fetches
+    them from the loopback server during the loading screen (`__gtAssets`,
+    awaited at the start of the sliced boot) and the painter `b()` blits the
+    decoded bitmap instead of repainting. Matching is by canvas size, a hash of
+    the painter's source and the call ordinal, and only during the boot;
+    painters that draw text are never substituted, because fonts differ
+    between the build machine and the headset and the game must look the
+    same as before. If the files are missing (hosted copy, old server) the
+    painters simply run as before. Headless check: 105 loaded, 104 used, no
+    errors. The server and the harness serve `/tex/*`; the APK grew from 3 to
+    about 12 MB.
+
+39. **B13, the loading screen must keep up with the head.** The author saw black
+    bars when turning the head during loading. The loader drew its panel as a
+    normal WebXR projection layer, so it could only submit a frame between boot
+    slices, and the longest slices (kiosk builders, the library, a shader-compile
+    chunk) block the main thread for hundreds of milliseconds; the compositor
+    then re-projects the last frame and rotation exposes its edges. Finer
+    slicing cannot fix that (single builder functions are that long), so
+    3.15.11 moves the loading screen to the compositor: with the `layers`
+    feature, `XRWebGLBinding` provides a cube layer (64x64 sky-colour faces, all
+    around) and a quad layer (the 1024x512 title/progress panel, 2.2 x 1.1 m,
+    2.2 m ahead in `local` space). Their textures are filled from the page
+    (once for the cube, on progress changes for the quad, both inside the
+    session's rAF via `getSubImage`), and the browser re-renders the layers
+    every vsync with current head tracking whether or not the page is busy,
+    so there are no stale frames and the OS keeps receiving frames. When the
+    game takes the session, `__gtXR.stop()` clears the layers and three.js
+    sets its own base layer. If the binding or a layer call fails, the loader
+    falls back to the previous projection drawing. The headless fake XR has no
+    layers, so the harness exercises the fallback; the layers path needs the
+    headset.
+
