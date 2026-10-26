@@ -255,6 +255,18 @@ GAME_FIXES = [
         'return i0+NX*j0===a&&i0>=0&&i0<NX||out.unshift([cx(a),cz(a)]),out.push([x1,z1]),out}',
         'i0+NX*j0===a&&i0>=0&&i0<NX||out.unshift([cx(a),cz(a)]);{const L=out[out.length-1];if(L&&F.segBlocked(L[0],L[1],x1,z1,.3)){const A=[L[0],z1],Bq=[x1,L[1]];!F.segBlocked(L[0],L[1],A[0],A[1],.3)&&!F.segBlocked(A[0],A[1],x1,z1,.3)?out.push(A):!F.segBlocked(L[0],L[1],Bq[0],Bq[1],.3)&&!F.segBlocked(Bq[0],Bq[1],x1,z1,.3)&&out.push(Bq)}}return out.push([x1,z1]),out}',
     ),
+    # B14: the corner behind the Shop is sealed. The Shop stands diagonally
+    # across the south-west corner and its clearance margin meets both park
+    # walls, so the triangle behind it (local z below the back wall) is free
+    # ground that no route can reach: a grid island of ~28 cells. A route that
+    # started or ended there found no path and fell back to a straight leg
+    # through the Shop (world test: 4/20 random routes crossed the Shop hull by
+    # up to 3.4 m). Treat the sealed corner as not free, so it is never a
+    # roaming target, a route endpoint, or an open grid cell.
+    (
+        '&&!F.buildings.some((B=>F.inHull(B,x,z,.6+.5*r)))&&roamZones().solid.every(',
+        '&&!F.buildings.some((B=>F.inHull(B,x,z,.6+.5*r)||"shop"===B.name&&F.local(B,x,z)[1]<B.hull[1]))&&roamZones().solid.every(',
+    ),
     # B11: Nextessa (the pizza courier) pinned against the Ancient. Inside the
     # church she walked straight at the player; when the player stood on the far
     # side of the Ancient, the Ancient's solid part blocked the line and nothing
