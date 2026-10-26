@@ -123,6 +123,14 @@ async function scenario(name, srvUrl, browser) {
     await page.waitForFunction(() => window.__play.xrFrames > 5 || window.__play.errors.length, null, { timeout: 60000 }).catch(() => {});
     const inPage = await page.evaluate(() => window.__play.errors);
     for (const e of inPage) errors.push(e);
+    const diag = await page.evaluate(() => ({
+      xrCtor: navigator.xr && navigator.xr.constructor && navigator.xr.constructor.name,
+      polyfillLoaded: !!window.WebXRPolyfill,
+      ownRequestSession: !!(navigator.xr && Object.prototype.hasOwnProperty.call(navigator.xr, 'requestSession')),
+      gtXR: window.__gtXR ? { granted: window.__gtXR.granted, enter: !!window.__gtXR.enter, pending: !!window.__gtXR.pending } : null,
+      playErrors: window.__play.errors,
+    }));
+    console.log('  diag ' + JSON.stringify(diag));
     s = await state();
     expect('session granted -> game entered the XR session', s.hasSession);
     expect('2D gate hidden while presenting', !s.gateOn, `gate="${s.gate}"`);
