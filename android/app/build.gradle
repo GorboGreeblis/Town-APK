@@ -1,0 +1,85 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Optional release signing. Create android/keystore.properties with:
+//   storeFile=keystore/greeblis-town-release.jks
+//   storePassword=...
+//   keyAlias=greeblistown
+//   keyPassword=...
+// The Meta Quest Store requires every update to be signed with the SAME key,
+// so back the keystore up and never commit it.
+def keystorePropsFile = rootProject.file('keystore.properties')
+def keystoreProps = new Properties()
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+}
+
+android {
+    namespace 'com.gorbogreeblis.greeblistown'
+    compileSdk 34
+
+    defaultConfig {
+        // Must stay identical across every build uploaded to the Meta Quest Store
+        // (VRC.Quest.Packaging.1 wants it to reflect the title and developer).
+        applicationId 'com.gorbogreeblis.greeblistown'
+        // VRC.Quest.Packaging.4: minSdk 29-34, targetSdk 32-34 for immersive apps.
+        minSdk 29
+        targetSdk 32
+        versionCode 1
+        versionName '3.15'
+
+        resValue 'string', 'app_name', 'Greeblis Town'
+    }
+
+    signingConfigs {
+        release {
+            if (keystoreProps.storeFile) {
+                storeFile rootProject.file(keystoreProps.storeFile)
+                storePassword keystoreProps.storePassword
+                keyAlias keystoreProps.keyAlias
+                keyPassword keystoreProps.keyPassword
+                // VRC.Quest.Packaging.2 requires APK Signature Scheme v2.
+                enableV1Signing true
+                enableV2Signing true
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // The game is plain HTML; nothing to shrink, and keeping the Java
+            // readable makes the APK easy to audit.
+            minifyEnabled false
+            debuggable false
+            if (keystoreProps.storeFile) {
+                signingConfig signingConfigs.release
+            }
+        }
+        debug {
+            applicationIdSuffix ''
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    // The APK must carry the game exactly as-is; disable any asset processing.
+    androidResources {
+        noCompress 'html'
+    }
+}
+
+dependencies {
+    // Meta's fork of android-browser-helper: knows how to launch the Quest
+    // Browser in immersive (direct-to-WebXR) mode. Same library Meta's own
+    // bubblewrap PWA packager uses.
+    implementation 'com.meta.androidbrowserhelper:androidbrowserhelper:2.5.0'
+}
