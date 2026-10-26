@@ -45,6 +45,10 @@ if [ "$TIER" != quick ]; then
     standard) run "visits (Mushroom host complete + interrupted at meet)" node "$ROOT/tools/test_visits.js" "$ASSET" 240 host-complete,host-drop-meet;;
     full)     run "visits (all scenarios)" node "$ROOT/tools/test_visits.js" "$ASSET" 300 all;;
   esac
+  case "$TIER" in
+    smoke) ;;
+    *)     run "courier: Nextessa reaches a player behind the Ancient and leaves (B11)" node "$ROOT/tools/test_courier.js" "$ASSET" left;;
+  esac
   if [ "$NPC_N" = 0 ]; then run "NPC return-home (Mushroom), all scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S";
   else run "NPC return-home (Mushroom), first $NPC_N scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S" "$NPC_N"; fi
   if [ "$TIER" = full ]; then run "release parity (compressed build vs source)" node "$ROOT/tools/test_parity.js"; else skip "release parity" "$TIER tier; run --full"; fi

@@ -143,7 +143,8 @@ const LONG = process.argv.includes('--long');
     try { D.ue.call(); } catch (e) { out.threw = String(e); }
     await new Promise((r) => setTimeout(r, 300)); out.dlgAfterCall = !!D.qt.isOpen;
     const t0 = performance.now(); out.timeline = [];
-    while (!D.ue.courier && performance.now() - t0 < 30000) {
+    // The portal sets pizza.callDelayMs to 30 s, so the courier appears ~31 s after the call.
+    while (!D.ue.courier && performance.now() - t0 < 45000) {
       await new Promise((r) => setTimeout(r, 1000));
       out.timeline.push({ t: Math.round((performance.now() - t0) / 1000), st: D.ue.state, ot: D.ot && D.ot.state, trip: !!(D.ot && D.ot.trip), couriers: D.It.all.filter((h) => h.kind === 'courier').length, dlg: !!D.qt.isOpen });
     }
