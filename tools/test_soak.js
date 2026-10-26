@@ -3,7 +3,9 @@
 // all systems exercised in a loop (pickups, dialogue, shop, battle, pizza call,
 // visits unparked) and samples heap, renderer counts and errors every 30 s.
 // Fails on page errors, on heap growth over 60% from the 2-minute mark, or on
-// unbounded growth of programs/textures/geometries.
+// unbounded growth of programs/textures/geometries. Note: the harness stubs
+// the draw call (fastSim), so GPU texture/geometry counters stay at their
+// boot values; heap, programs and entity counts are the meaningful signals.
 //
 //   node tools/test_soak.js [file] [minutes=10]
 const path = require('path');
