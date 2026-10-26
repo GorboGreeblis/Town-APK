@@ -151,7 +151,8 @@ async function scenario(name, srvUrl, browser) {
       const before = real.renderState.layers.length, f0 = window.__fakeXR.frames;
       sess.updateRenderState({ baseLayer: new XRWebGLLayer(sess, null, { framebufferScaleFactor: 0.9, antialias: true }) });
       const during = real.renderState.layers.length;
-      await new Promise((r) => setTimeout(r, 400));
+      // Wait for frames, not for time: under a loaded machine the fake session can go seconds without one.
+      const t0 = performance.now(); while (window.__fakeXR.frames - f0 < 3 && performance.now() - t0 < 15000) await new Promise((r) => setTimeout(r, 50));
       return { before, during, after: real.renderState.layers.length, frames: window.__fakeXR.frames - f0, scale: window.__gtXR.shim.scale };
     });
     expect('layer swap keeps the old layer in front until the new one is drawn, then drops it', sw.before === 1 && sw.during === 2 && sw.after === 1 && sw.frames >= 2 && sw.scale === 0.9, JSON.stringify(sw));
