@@ -3,7 +3,9 @@
 package android.util;
 
 public final class Log {
+    public static volatile String last = "";   // the harness reads the latest message
     private static int p(String lvl, String tag, String msg, Throwable t) {
+        last = lvl + "/" + tag + ": " + msg;
         System.err.println(lvl + "/" + tag + ": " + msg + (t != null ? " (" + t + ")" : ""));
         return 0;
     }

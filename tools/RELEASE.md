@@ -115,6 +115,9 @@ once to enter VR.
 
 ## 5. Upload to the Meta Quest Store
 
+The app label inside the APK is "GREEBLIS TOWN" (headset library and menus); type the
+same spelling as the listing name in the developer dashboard.
+
 1. Dashboard → the app → **Distribution → Builds** → upload the APK to a
    release channel. Use **Alpha** first (you and invited testers only), then
    promote the same build to the store channel when it is approved.
@@ -146,6 +149,15 @@ once to enter VR.
    the fix together.
 
 ## 6. Every later update
+
+Rule for the VR-entry script (`EDITS` in `tools/apply_entry_fix.py`): it is
+the one path proven on the headset. Any change to how the session is
+requested, parked, drawn into, or handed to the game goes out first as an
+experiment APK (`tools/build_experiment.sh NAME`) for a headset test, and
+only then into the main build. 3.15.11 skipped this and crashed at launch
+(`tools/BUGS.md` F-B15). Keep logcat open during a headset test:
+`adb logcat -s GreeblisServer GreeblisLauncher cr_VrShellDelegate` shows the
+page's own events and errors (`page: ...`).
 
 Same key, same package name, higher `versionCode`, rebuild, run
 `tools/check_apk.sh`, upload to Alpha, test, promote.

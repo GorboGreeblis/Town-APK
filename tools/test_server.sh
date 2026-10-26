@@ -8,7 +8,10 @@
 # Needs: JDK 17+, ANDROID_HOME pointing at an SDK with platforms/android-34.
 set -e
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-SDK=${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}
+SDK=${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}
+# Fall back to the SDK the Gradle project uses (tools/android/local.properties).
+[ -n "$SDK" ] || SDK=$(sed -n "s/^sdk.dir=//p" "$(dirname "$0")/android/local.properties" 2>/dev/null | head -1)
+[ -n "$SDK" ] || SDK=$HOME/Android/Sdk
 AJAR=$(ls "$SDK"/platforms/android-3[4-9]/android.jar 2>/dev/null | tail -1)
 [ -f "$AJAR" ] || { echo "android.jar not found under $SDK/platforms (set ANDROID_HOME)"; exit 2; }
 OUT=${TMPDIR:-/tmp}/greeblis-server-harness

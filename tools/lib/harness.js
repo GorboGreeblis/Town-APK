@@ -38,6 +38,10 @@ function hooked(file) {
 function serve(body) {
   return new Promise((resolve) => {
     const srv = http.createServer((req, res) => {
+      if (req.url.startsWith('/log?')) {   // page diagnostics, as the APK's server accepts them (logged to the console here)
+        try { const m = decodeURIComponent(req.url.slice(7)); (global.__pageLog = global.__pageLog || []).push(m); if (process.env.PAGE_LOG) console.log('  page: ' + m); } catch (e) {}
+        res.writeHead(204); return res.end();
+      }
       if (req.url.startsWith('/tex/')) {   // pre-rendered textures, as the APK serves them
         const name = path.basename(req.url.split('?')[0]);
         const f = path.join(root, 'tools/android/app/src/main/assets/tex', name);
@@ -64,10 +68,11 @@ function serve(body) {
  *   at 0.1 s, so with drawing the simulation runs at about a quarter of real
  *   time; without it the loop runs at full rate and timings are realistic.
  *   Screenshots are blank in this mode; use fastSim: false for visual checks.
+ *   onBeforeGrant(page, ctx): awaited right before the simulated grant (probes).
  *   noVisits: true (default) parks the random visit scheduler; test_visits forces
  *   its own pairs through JGP.visitAt, which still works.
  */
-async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/index.html'), vr = true, fastSim = true, noVisits = true, timeoutMs = 300000 } = {}) {
+async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/index.html'), vr = true, fastSim = true, noVisits = true, timeoutMs = 300000, onBeforeGrant = null } = {}) {
   const srv = await serve(hooked(path.resolve(file)));
   const url = `http://127.0.0.1:${srv.address().port}/`;
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--autoplay-policy=no-user-gesture-required'] });
@@ -85,6 +90,7 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
   await page.waitForFunction(() => window.__gtXR && window.__gtXR.booted === true, null, { timeout: 180000 }).catch(() => {});
   let presentS = null;
   if (vr) {
+    if (onBeforeGrant) await onBeforeGrant(page, ctx);   // e.g. start a profiler just before the handover
     await page.evaluate(() => window.__fakeXR.fire());
     await page.waitForFunction(() => window.__fakeXR.frames > 5, null, { timeout: 60000 });
     presentS = (Date.now() - t0) / 1000;

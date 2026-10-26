@@ -73,3 +73,26 @@ adb pull <path printed above> oculus-browser.apk
 
 `oculus-browser.apk` can be decompiled to read exactly what
 `WebXRCustomTabActivity` checks before closing. It is large (hundreds of MB).
+
+## Page diagnostics (3.15.12+)
+
+The page posts its events to the loopback server, which logs them with tag
+`GreeblisServer` as `page: m=<ms since page start> <text>`:
+`session parked, features=...`, `loader failed: ...`, `entry failed (n): ...`,
+`session ended (before|after handover)`, `requestSession rejected: ...`, and
+every error the game's own handler sees (`[xr-enter] ...`, `[boot] ...`).
+Capture with `adb logcat -s GreeblisServer GreeblisLauncher cr_VrShellDelegate cr_XRActivity`.
+A launch that exits shows `exitWebVRPresent` in `cr_VrShellDelegate` right
+after the page's last `page:` line, which names the cause.
+
+## Layers experiment (B13)
+
+`tools/.runs/GreeblisTown-exp-layers.apk` (same package/version as the release;
+`adb install -r`, and reinstall the release afterwards). Expected `page:` lines:
+`session parked, features=...,layers`, then at the handover `projection layer
+live, scale <q>, msaa 4`. Trouble lines: `loader layers failed`, `loader
+projection layer failed`, `loader layers frame failed`, `entry failed (n)`.
+What to watch: no black bars while turning the head during loading (the panel
+should stay put in the world), a clean switch into the town, and the picture
+quality in the town compared with 3.15.12.
+

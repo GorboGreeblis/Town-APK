@@ -33,6 +33,10 @@ const BOOT_TIMEOUT_MS = 240000;
 function serve() {
   return new Promise((resolve) => {
     const srv = http.createServer((req, res) => {
+      if (req.url.startsWith('/log?')) {   // page diagnostics, as the APK's server accepts them (logged to the console here)
+        try { const m = decodeURIComponent(req.url.slice(7)); (global.__pageLog = global.__pageLog || []).push(m); if (process.env.PAGE_LOG) console.log('  page: ' + m); } catch (e) {}
+        res.writeHead(204); return res.end();
+      }
       if (req.url.startsWith('/tex/')) {   // pre-rendered textures, as the APK serves them
         const name = path.basename(req.url.split('?')[0]);
         const f = path.join(root, 'tools/android/app/src/main/assets/tex', name);
@@ -117,8 +121,12 @@ async function run(scenario, srvUrl, browser) {
   const fatal = errors.filter((e) => !/GPU|WebGL|GL_|SwiftShader|gpu/i.test(e));
   const first = s.calls[0];
   expect('requestSession called exactly once, at page start (before the world was ready)', s.calls.length === 1 && !first.readyFlag);
-  expect('immersive-vr with local-floor/bounded-floor (no layers: the browser forbids baseLayer with it)', !!first && first.mode === 'immersive-vr' &&
-         JSON.stringify(first.opts.optionalFeatures) === JSON.stringify(['local-floor', 'bounded-floor']));
+  // The release asset asks for local-floor + bounded-floor only (the browser forbids baseLayer
+  // with the layers feature, NOTES 41); the "layers" experiment asset adds "layers".
+  const wantLayers = fs.readFileSync(file, 'utf8').includes('"bounded-floor","layers"]})}catch(e){return null}}function park(');
+  const wantFeatures = wantLayers ? ['local-floor', 'bounded-floor', 'layers'] : ['local-floor', 'bounded-floor'];
+  expect('immersive-vr with ' + wantFeatures.join('/') + (wantLayers ? ' (layers experiment)' : ' (no layers: the browser forbids baseLayer with it)'), !!first && first.mode === 'immersive-vr' &&
+         JSON.stringify(first.opts.optionalFeatures) === JSON.stringify(wantFeatures));
   expect('world ready flag set for the head script', s.gtXR && s.gtXR.ready);
   expect('game took the parked session over at the end of the boot', s.gtXR && s.gtXR.taken);
   expect('gate left "Loading..." (the rAF loop rewrites the gate text each frame while the fake session never resolves)', s.gate !== 'Loading...');

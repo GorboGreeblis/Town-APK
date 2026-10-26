@@ -26,6 +26,9 @@ SUMMARY=""; rc_all=0
 run() { name=$1; shift; echo; echo "=== $name ==="; "$@"; rc=$?
   if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  PASS  $name"; else SUMMARY="$SUMMARY\n  FAIL  $name (exit $rc)"; rc_all=1; fi; }
 skip() { SUMMARY="$SUMMARY\n  SKIP  $1 ($2)"; }
+# Report stages run a probe and keep its output in the log; they never fail the pass.
+report() { name=$1; shift; echo; echo "=== report: $name ==="; "$@"; rc=$?
+  if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  INFO  $name (see log)"; else SUMMARY="$SUMMARY\n  INFO  $name (probe exit $rc)"; fi; }
 
 echo "Greeblis Town test pass: $TIER"
 run "entry fix: asset == original + 4 edits" python3 -I "$ROOT/tools/apply_entry_fix.py" --verify
@@ -52,6 +55,16 @@ if [ "$TIER" != quick ]; then
   if [ "$NPC_N" = 0 ]; then run "NPC return-home (Mushroom), all scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S";
   else run "NPC return-home (Mushroom), first $NPC_N scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S" "$NPC_N"; fi
   if [ "$TIER" = full ]; then run "release parity (compressed build vs source)" node "$ROOT/tools/test_parity.js"; else skip "release parity" "$TIER tier; run --full"; fi
+  if [ "$TIER" = full ]; then
+    # Graphical and performance pass (T12/T13): z-fighting on environmental surfaces fails the pass;
+    # the probes report loading time, the handover, frame cost and texture sharpness for the record.
+    run "z-fighting / flicker on environmental surfaces (jittered render)" node "$ROOT/tools/test_zfight.js" "$ASSET"
+    report "loading time (boot profile)" node "$ROOT/tools/boot_profile.js" "$ASSET"
+    report "handover profile (frames after entering VR)" node "$ROOT/tools/entry_profile.js" "$ASSET"
+    report "in-game hitches (pickups, dialogue, Event)" node "$ROOT/tools/hitch_probe.js" "$ASSET"
+    report "scene cost (draw calls, triangles, materials)" node "$ROOT/tools/perf_probe.js" "$ASSET"
+    report "render sharpness (scale, foveation, texture filtering)" node "$ROOT/tools/sharpness_probe.js" "$ASSET"
+  else skip "graphical and performance pass (z-fight, profiles, sharpness)" "$TIER tier; run --full"; fi
 else
   skip "browser tests" "--quick"
 fi

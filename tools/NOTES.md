@@ -433,3 +433,94 @@ VR-entry fix; each item is for discussion first.
     1 near the gallery) are reachable at finer margins and the final leg into
     them is tree-free, so they were left alone.
 
+41. **3.15.11 crash: the `layers` feature forbids `baseLayer` (B15).** The
+    author's headset log for 3.15.11 showed three identical launches: the page
+    requests the session at page start, `presentRequested` / `enterVR` two
+    seconds later, then 6-8 s after that `exitWebVRPresent`, `shutdownVR`,
+    `terminate!`, and the launcher's `browser requested finishAndRemoveTask`.
+    Nothing killed the app from outside: the page's own session ended, and
+    the immersive activity finishes with it. The browser does not log page
+    errors, but its native library carries the rule as a string:
+    `Can't use baseLayer with layers feature requested` (also `Can't set both
+    baseLayer and layers`, `All layers in render state must be unique`, `The
+    'layers' feature was not enabled for this XRSession.`, `Session is not
+    configured correctly: no layer is set`). With `layers` among the granted
+    features every `updateRenderState({baseLayer})` throws: first in our
+    loader (hence no loading screen at all on 3.15.11), then in three.js's
+    `setSession` at boot end; the game's entry routine caught that and ended
+    the session, i.e. exited the app. The 6-8 s is the boot time on the Quest
+    with pre-rendered textures.
+
+    Consequences: (a) 3.15.12 does not request `layers`; the projection
+    loader of 3.15.10 is back. (b) The entry routine no longer ends an
+    APK-launched session on failure: the loading screen comes back with the
+    error text, entry is retried twice, and the worst case is a readable
+    screen the user leaves with the system button. (c) The page posts its
+    events and errors to the loopback server's `/log` endpoint, logged as
+    `GreeblisServer: page: m=<ms> <text>` (HEADSET_DIAG.md). (d) `tools/fakexr.js`
+    enforces the rules above, so the headless entry test fails on a `layers`
+    session the way the headset does. (e) The real fix for B13 (black bars)
+    must render the game itself through an `XRProjectionLayer`: three.js's
+    base-layer path shimmed with a framebuffer whose colour/depth attachments
+    come from `getViewSubImage` each frame, plus the quality governor's layer
+    rebuilds (`scaleFactor` instead of a new `XRWebGLLayer`). New rendering
+    code only a headset can verify, so it ships as an experiment APK first.
+
+42. **B13 fix design: compositor layers for the loader, a projection layer for
+    the game (`tools/lib/xr_layers_shim.js`).** With the `layers` feature the
+    browser forbids `baseLayer` (41), and this three.js build only knows
+    `baseLayer`. The shim keeps three.js unchanged: in layers mode the session
+    the game receives is a facade (a `Proxy` over the real session) whose
+    `updateRenderState({baseLayer})` creates an `XRProjectionLayer` instead
+    (scale from the layer's `framebufferScaleFactor`, so the quality governor's
+    0.82 rebuilds still work), whose `renderState.baseLayer` is the stub layer
+    three.js constructed (its `framebuffer` is the shim's MSAA framebuffer, its
+    `getViewport` the eye viewport from `getViewSubImage`, `fixedFoveation`
+    forwarded to the projection layer), and whose `requestAnimationFrame`
+    wraps every callback with `begin(frame)` (attach this frame's eye texture)
+    and `end()` (resolve the 4x MSAA renderbuffer into it with
+    `blitFramebuffer`, as three.js's own projection-layer path does). The
+    global `XRWebGLLayer` is replaced by a stub in that mode so no unused
+    swapchains are allocated. The loader draws into a cube layer (sky) and a
+    quad layer (panel), which the compositor re-renders every vsync with the
+    current head pose whatever the page is doing; if those fail it falls back
+    to its own projection layer through the same shim. `tools/fakexr.js`
+    emulates `XRWebGLBinding` and the three layer kinds (real GL textures,
+    nothing composited), so the whole path runs headless: on the "layers"
+    experiment asset the entry test passes and the play test renders 1045 XR
+    frames in 20 s with "projection layer live, scale 1, msaa 4" in the page
+    log. What only the headset can show: that the compositor accepts the
+    layers (cube/quad/projection), the handover (cube+quad replaced by the
+    projection layer on the game's first frame), and the picture quality of
+    the MSAA resolve. Ships as `tools/.runs/GreeblisTown-exp-layers.apk`
+    (`tools/build_experiment.sh layers`); the release asset carries the same
+    code dormant (it never requests `layers`).
+
+43. **Layers path confirmed on the headset; 3.15.13.** The author's log for the
+    experiment APK: `session parked, features=local,viewer,bounded-floor,layers,
+    webxr,local-floor` at 0.7 s, `projection layer live, scale 1, msaa 4` at
+    9.0 s (boot about 8 s), then the town; verdict "no black bars or loading
+    in perf issues". The only complaint was the panel at 2.2 m (2.2 m wide,
+    about 53 degrees of view): now 3.6 m away, 2.6 x 1.3 m (about 40 degrees),
+    0.15 m below the eye line, in both the quad layer and the projection
+    fallback. The `layers` feature is now in the release feature list; the
+    `nolayers` experiment flips it back for A/B comparisons. Also in 3.15.13:
+    B16 (game fully loaded before drop-in) and the app label "GREEBLIS TOWN"
+    (the Store listing name is typed in the dashboard separately).
+
+44. **Graphical pass tools (T13).** `tools/test_zfight.js` finds coplanar
+    overlaps statically (plane-bucketed triangles, 2D overlap test, batched
+    parts resolved through the batcher's `gcPart` attribute) and confirms them
+    by rendering: the two surfaces alone on a private layer, twice, with a 1 mm
+    camera shift; pixels that flip are a depth fight, edge aliasing of the rest
+    of the scene cannot count. On 3.15.13 nothing flickers; the one pair the
+    first version flagged was a 4 cm corner where the church's side wall meets
+    its roof slab, and it was edge aliasing. `tools/sharpness_probe.js` reads
+    what decides crispness (render scale per level, foveation, MSAA, texture
+    filtering); the game renders at native scale at every level with 4x MSAA
+    and anisotropy 8 on its textures, so the remaining lever is supersampling:
+    the `sharp` experiment (scale 1.2 / 1.1 at the top two levels) is for a
+    headset comparison, with the governor stepping down under load. B17 builds
+    the Event's props during the loading screen (`BP.prewarm`), which halves
+    the Event-start frame in the hitch probe.
+

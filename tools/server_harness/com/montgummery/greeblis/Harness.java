@@ -43,6 +43,10 @@ public final class Harness {
         failures += expect("GET /nope is 404", fetch(server.url() + "nope", "GET").status == 404);
         failures += expect("GET /favicon.ico is 404", fetch(server.url() + "favicon.ico", "GET").status == 404);
         failures += expect("POST / is 405", fetch(server.url(), "POST").status == 405);
+        Resp lg = fetch(server.url() + "log?m=12ms%20session%20parked%2C%20features%3Dviewer", "GET");
+        failures += expect("GET /log?m=... is 204 and reaches logcat as \"page: m=<decoded>\"",
+                lg.status == 204 && lg.body.length == 0 && android.util.Log.last.equals("I/GreeblisServer: page: m=12ms session parked, features=viewer"));
+        failures += expect("GET /log with no query is 204 (empty message)", fetch(server.url() + "log", "GET").status == 204);
         Resp al = fetch(server.url() + ".well-known/assetlinks.json", "GET");
         String alBody = new String(al.body, "UTF-8");
         failures += expect("GET /.well-known/assetlinks.json is 200 application/json", al.status == 200 && "application/json".equals(al.type));

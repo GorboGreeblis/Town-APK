@@ -115,6 +115,17 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | 72 Hz on Quest 2/3 (VRC.Quest.Performance), loading indicator rule | headset | headset |
 | Console error de-dup shim, `vo` error reporting counts | `test_play.js` | done |
 
+## 10a. Graphical and performance pass (full tier)
+
+| What | How | Status |
+| --- | --- | --- |
+| Loading time: boot slices, where the time goes, with pre-rendered textures | `tools/boot_profile.js` (report stage) | 3.15.13: about 8 s on the headset (author's log: projection layer live at 9.0 s after page start) |
+| Handover: nothing heavy after the user is dropped in | `tools/entry_profile.js` (report stage); B16 moved the UI build and the texture capture into the loading phase | 3.15.13: no long gap after the grant |
+| In-game hitches: first pickup, label, dialogue, battle panel, Event start | `tools/hitch_probe.js` (report stage): worst frame, new programs/textures/geometries/objects per scenario | 3.15.13: no new shader programs anywhere; Event start 26 ms headless after B17 (was 46) |
+| Scene cost: draw calls, triangles, materials, transparent meshes | `tools/perf_probe.js` (report stage) | recorded in `PERF.md` |
+| Render sharpness: render scale per quality level, foveation, pixel ratio, MSAA, texture mipmaps/anisotropy | `tools/sharpness_probe.js` (report stage) | 3.15.13: scale 1.0 at every level (governor only changes foveation 0..1), 4x MSAA through the projection layer, textures mipmapped with anisotropy 8 except the UI canvases; `sharp` experiment = scale 1.2/1.1 at the top levels for a headset comparison |
+| Flicker / z-fighting on environmental objects | `tools/test_zfight.js` (fails the pass): every planar triangle bucketed by world plane; coplanar overlaps between different surfaces are rendered twice from 3 m with a 1 mm camera shift, the two surfaces alone on a private layer, and pixels that flip mean a depth fight | 3.15.13: 19 coplanar overlaps, 5 handled by offset/order, 8 same-look (invisible), 6 different-look, none flicker (max 0.31% edge pixels) |
+
 ## 10. Release parity
 
 | Item | How | Coverage |
@@ -123,7 +134,11 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 
 ## Latest results (3.15.10/3.15.11 asset, headless harness)
 
-Full tier on 3.15.11: all stages pass except world routes, 16/20 (four random routes through the Shop, all starting in the sealed corner behind it; the earlier 20/20 runs had simply not sampled that corner). Fixed as B14 in 3.15.12; world test 20/20 in four runs since, standard tier on 3.15.12 recorded below.
+Standard tier on the 3.15.13 asset (layers loading screen, B16, name): **all stages pass**. Z-fight test, sharpness probe and hitch probe added and run on it (see 10a).
+
+3.15.13 (layers loading screen, B16, name): entry test 3/3 scenarios and play test (2D + fake VR, projection layer live, 1045 XR frames/20 s) pass on the final asset; standard tier on the final asset recorded below when done. Headset (author): experiment build with the same entry path, no black bars, no drop-in stall.
+
+Full tier on 3.15.11: all stages pass except world routes, 16/20 (four random routes through the Shop, all starting in the sealed corner behind it; the earlier 20/20 runs had simply not sampled that corner). Fixed as B14 in 3.15.12; world test 20/20 in four runs since. Standard tier on the 3.15.12 asset (B14, before the B15 entry change): all stages pass. 3.15.12 then dropped the `layers` feature and hardened the entry (B15, see BUGS.md); entry test passes on the final asset (3/3 scenarios) and the 3.15.11 feature list fails it; standard tier on the final asset recorded below.
 
 Full tier on 3.15.10 (all fixes, pre-rendered textures): **all stages pass** (entry fix verify, server harness incl. ETag/304, spell-check, APK check, VR entry wiring, runtime 120 s, world incl. B2 rescue and 20/20 routes, input 12/12, progression incl. garden event, visits all, courier, return-home all 17, release parity). 3.15.11 differs only in the head-script loader (compositor layers); play and entry tests pass on it; full tier running.
 

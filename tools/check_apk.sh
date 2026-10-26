@@ -7,7 +7,10 @@
 # Needs: ANDROID_HOME with build-tools/34.0.0 (aapt2, apksigner). Exit 1 on any FAIL.
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 APK=${1:-$ROOT/GreeblisTown-release.apk}; [ -f "$APK" ] || APK=$ROOT/tools/android/app/build/outputs/apk/release/app-release.apk
-SDK=${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}
+SDK=${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}
+# Fall back to the SDK the Gradle project uses (tools/android/local.properties).
+[ -n "$SDK" ] || SDK=$(sed -n "s/^sdk.dir=//p" "$(dirname "$0")/android/local.properties" 2>/dev/null | head -1)
+[ -n "$SDK" ] || SDK=$HOME/Android/Sdk
 BT=$(ls -d "$SDK"/build-tools/3[4-9].* 2>/dev/null | tail -1)
 [ -x "$BT/aapt2" ] || { echo "aapt2 not found under $SDK/build-tools (set ANDROID_HOME)"; exit 2; }
 [ -f "$APK" ] || { echo "APK not found: $APK"; exit 2; }
