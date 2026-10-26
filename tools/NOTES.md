@@ -508,3 +508,19 @@ VR-entry fix; each item is for discussion first.
     B16 (game fully loaded before drop-in) and the app label "GREEBLIS TOWN"
     (the Store listing name is typed in the dashboard separately).
 
+44. **Graphical pass tools (T13).** `tools/test_zfight.js` finds coplanar
+    overlaps statically (plane-bucketed triangles, 2D overlap test, batched
+    parts resolved through the batcher's `gcPart` attribute) and confirms them
+    by rendering: the two surfaces alone on a private layer, twice, with a 1 mm
+    camera shift; pixels that flip are a depth fight, edge aliasing of the rest
+    of the scene cannot count. On 3.15.13 nothing flickers; the one pair the
+    first version flagged was a 4 cm corner where the church's side wall meets
+    its roof slab, and it was edge aliasing. `tools/sharpness_probe.js` reads
+    what decides crispness (render scale per level, foveation, MSAA, texture
+    filtering); the game renders at native scale at every level with 4x MSAA
+    and anisotropy 8 on its textures, so the remaining lever is supersampling:
+    the `sharp` experiment (scale 1.2 / 1.1 at the top two levels) is for a
+    headset comparison, with the governor stepping down under load. B17 builds
+    the Event's props during the loading screen (`BP.prewarm`), which halves
+    the Event-start frame in the hitch probe.
+

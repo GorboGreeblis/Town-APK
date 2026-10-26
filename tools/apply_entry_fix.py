@@ -24,6 +24,14 @@ root = pathlib.Path(__file__).resolve().parent.parent
 # --experiment NAME: additionally apply one diagnostic variant (headset A/B tests for B12 etc.).
 # Variants are never used for the release asset; build_experiment.sh writes them elsewhere.
 EXPERIMENTS = {
+    # Sharp: render scale 1.2 at the top quality level (the projection layer's
+    # scaleFactor; the release renders at the native 1.0 at every level and the
+    # governor only changes foveation). 44% more pixels at level 0; the governor
+    # steps down to 1.1 / 1.0 under load. For a headset sharpness comparison.
+    "sharp": [(
+        'quality:[1,1,1,1,1],foveation:[0,.25,.5,.75,1],',
+        'quality:[1.2,1.1,1,1,1],foveation:[0,.25,.5,.75,1],',
+    )],
     # No layers: the release requests the WebXR "layers" feature (compositor
     # layers for the loading screen, projection layer for the game, NOTES 42,
     # confirmed on the headset). This variant goes back to the plain
@@ -326,6 +334,23 @@ GAME_FIXES = [
     (
         'function buildUI(){if(F.built)return;',
         'window.__gtBuildUI=buildUI;function buildUI(){if(F.built)return;',
+    ),
+    # B17: the garden Event's props (Backpacka, jets, drops, ripples: 28 objects)
+    # were built when the Event gathered, a one-time stall in play (46 ms
+    # headless). Build them hidden during the loading screen, before the shader
+    # slices, so their programs compile with the rest.
+    (
+        'preview:e=>{made||(made=make()),flags=flags||{},pose(e,.016);return made.root},',
+        'prewarm:()=>{made||(made=make(),hideAll())},preview:e=>{made||(made=make()),flags=flags||{},pose(e,.016);return made.root},',
+    ),
+    (
+        'try{window.__gtBuildUI&&window.__gtBuildUI()}catch(e){vo(e,"ui-prewarm")}',
+        'try{window.__gtBuildUI&&window.__gtBuildUI()}catch(e){vo(e,"ui-prewarm")}try{window.__gtBP&&window.__gtBP.prewarm()}catch(e){vo(e,"event-prewarm")}',
+    ),
+    # BP (the Event module) is not visible from the boot's scope either; publish it.
+    (
+        '})();const VIGS={};',
+        '})();window.__gtBP=BP;const VIGS={};',
     ),
     # B11: Nextessa (the pizza courier) pinned against the Ancient. Inside the
     # church she walked straight at the player; when the player stood on the far
