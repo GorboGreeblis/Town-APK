@@ -12,7 +12,7 @@ const side = (process.argv.slice(2).find((a) => /^(left|right)$/.test(a))) || 'l
 
 (async () => {
   const { page, browser, errors, bootS } = await boot({ file });
-  const { expect, done } = reporter('COURIER TEST');
+  const { expect, failures } = reporter();
   console.log(`booted in ${bootS}s; side=${side}`);
   await page.evaluate(() => { window.__autoAdvance = setInterval(() => { try { const q = window.__dbg.qt; if (q && q.isOpen) q.advance(); } catch (e) {} }, 250); });
 
@@ -62,5 +62,6 @@ const side = (process.argv.slice(2).find((a) => /^(left|right)$/.test(a))) || 'l
   expect('courier walks back out of the church after delivering', r.leftChurch, `left at ${r.leftAtS}s`);
   expect('no page errors', errors.length === 0 && !r.errors, errors.slice(0, 3).join(' | '));
   await browser.close().catch(() => {});
-  done();
+  console.log(failures.length ? `COURIER TEST FAILED (${failures.length})` : 'COURIER TEST PASSED');
+  process.exit(failures.length ? 1 : 0);
 })();

@@ -2,6 +2,7 @@
 """Produce the APK copy of the game from the untouched original.
 
 Usage:  python3 tools/apply_entry_fix.py [src] [dst]
+        python3 tools/apply_entry_fix.py --entry-only [src] dst   (VR-entry edits only, no gameplay fixes)
         python3 tools/apply_entry_fix.py --verify [src] [dst]
 Default src: tools/uncompressed.html   Default dst: android/app/src/main/assets/index.html
 
@@ -19,8 +20,10 @@ Every replacement must match exactly once; the script fails loudly otherwise.
 import sys, pathlib
 
 root = pathlib.Path(__file__).resolve().parent.parent
-args = [a for a in sys.argv[1:] if a != "--verify"]
+args = [a for a in sys.argv[1:] if a not in ("--verify", "--entry-only")]
 verify = "--verify" in sys.argv[1:]
+# --entry-only: write src + the 4 VR-entry edits only (no gameplay fixes), for before/after comparisons in the harness.
+entry_only = "--entry-only" in sys.argv[1:]
 src = pathlib.Path(args[0]) if len(args) > 0 else root / "tools" / "uncompressed.html"
 dst = pathlib.Path(args[1]) if len(args) > 1 else root / "android" / "app" / "src" / "main" / "assets" / "index.html"
 
@@ -128,10 +131,12 @@ GAME_FIXES = [
     # re-routed her (and the same straight line pinned her on the way out).
     # Add a detour helper: if the church-local segment crosses the Ancient's box
     # (plus her radius), walk around its front corners first. Used for the
-    # approach and for the exit path.
+    # approach and for the exit path. The corners sit 1 m outside the margin so
+    # follow()'s 1 m arrival radius cannot swallow them; a courier already at her
+    # own-side corner walks straight (no detour loop).
     (
         'mark=()=>{kx=i.x,kz=i.z,kt=u},planIn',
-        'mark=()=>{kx=i.x,kz=i.z,kt=u},segRect=(ax,az,bx,bz,R)=>{let t0=0,t1=1;const dx=bx-ax,dz=bz-az,cl=(p,q)=>{if(0===p)return q>=0;const r=q/p;if(p<0){if(r>t1)return!1;r>t0&&(t0=r)}else{if(r<t0)return!1;r<t1&&(t1=r)}return!0};return cl(-dx,ax-R[0])&&cl(dx,R[2]-ax)&&cl(-dz,az-R[1])&&cl(dz,R[3]-az)},detour=(ax,az,bx,bz)=>{if(!cb||!JGP.slug||!JGP.slug.ent)return[];const mg=.8*rr+.25,[sx,sz]=F.local(cb,JGP.slug.ent.home.x,JGP.slug.ent.home.z),AB=cb.parts.find((R=>sx>R[0]&&sx<R[2]&&sz>R[1]&&sz<R[3]));if(!AB)return[];const[ax2,az2]=F.local(cb,ax,az),[bx2,bz2]=F.local(cb,bx,bz),X=[AB[0]-mg,AB[1]-mg,AB[2]+mg,AB[3]+mg],same=Math.sign(ax2||1)===Math.sign(bx2||1),endIn=bx2>X[0]&&bx2<X[2]&&bz2>X[1]&&bz2<X[3];if(same&&endIn||!segRect(ax2,az2,bx2,bz2,X))return[];const fz=X[3]+.3,cx=s2=>s2>0?X[2]+.3:X[0]-.3,c1=[cx(Math.sign(ax2||1)),fz],c2=[cx(Math.sign(bx2||1)),fz];return(same?[c1]:[c1,c2]).map((([x,z])=>F.world(cb,x,z)))},planIn',
+        'mark=()=>{kx=i.x,kz=i.z,kt=u},segRect=(ax,az,bx,bz,R)=>{let t0=0,t1=1;const dx=bx-ax,dz=bz-az,cl=(p,q)=>{if(0===p)return q>=0;const r=q/p;if(p<0){if(r>t1)return!1;r>t0&&(t0=r)}else{if(r<t0)return!1;r<t1&&(t1=r)}return!0};return cl(-dx,ax-R[0])&&cl(dx,R[2]-ax)&&cl(-dz,az-R[1])&&cl(dz,R[3]-az)},detour=(ax,az,bx,bz)=>{if(!cb||!JGP.slug||!JGP.slug.ent)return[];const mg=.8*rr+.25,[sx,sz]=F.local(cb,JGP.slug.ent.home.x,JGP.slug.ent.home.z),AB=cb.parts.find((R=>sx>R[0]&&sx<R[2]&&sz>R[1]&&sz<R[3]));if(!AB)return[];const[ax2,az2]=F.local(cb,ax,az),[bx2,bz2]=F.local(cb,bx,bz),X=[AB[0]-mg,AB[1]-mg,AB[2]+mg,AB[3]+mg],same=Math.sign(ax2||1)===Math.sign(bx2||1),endIn=bx2>X[0]&&bx2<X[2]&&bz2>X[1]&&bz2<X[3];if(same&&endIn||!segRect(ax2,az2,bx2,bz2,X))return[];const fz=X[3]+.6,cx=s2=>s2>0?X[2]+1:X[0]-1,c1=[cx(Math.sign(ax2||1)),fz],c2=[cx(Math.sign(bx2||1)),fz];if(same&&Math.hypot(ax2-c1[0],az2-c1[1])<1.2)return[];return(same?[c1]:[c1,c2]).map((([x,z])=>F.world(cb,x,z)))},planIn',
     ),
     (
         'planOut=()=>{const v=sv();wp=v.way.slice().reverse().concat([v.out]),wi=0,we=!0,kn=0,n.inside="church",n.wallNear=!1,mark()}',
@@ -143,7 +148,7 @@ GAME_FIXES = [
     ),
 ]
 
-for old, new in EDITS + GAME_FIXES:
+for old, new in EDITS + ([] if entry_only else GAME_FIXES):
     n = html.count(old)
     if n != 1:
         sys.exit(f"ERROR: anchor found {n} times (expected 1): {old[:80]!r}")
