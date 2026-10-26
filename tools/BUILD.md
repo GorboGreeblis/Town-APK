@@ -25,38 +25,47 @@ tools/
 
 ## How the APK works
 
-1. `LauncherActivity` starts `GameServer`, a tiny HTTP server bound to
-   `127.0.0.1` (port 17777, or the next free one). It serves one document, the
-   bundled `index.html`, from memory. Nothing outside the headset can reach it.
-2. The activity then launches the Meta Quest Browser through Meta's fork of
-   `android-browser-helper` with `horizonos.pwa.APP_MODE = immersive`. That is
-   the same mechanism Meta's own PWA packager uses: the browser opens
-   `com.oculus.browser.WebXRCustomTabActivity` and fires the WebXR
-   `sessiongranted` event instead of waiting for a button press.
-3. The game's VR-entry fix (see below) accepts that grant and enters VR as
-   soon as the world has finished building. The game makes no further network
-   requests after the first load, so the server only matters for the first few
-   seconds.
+1. `GreeblisApplication`/`LauncherActivity` start `GameServer`, a tiny HTTP
+   server bound to the loopback interface (port 17777, or the next free one).
+   It serves one document, the bundled `index.html`, from memory, plus the
+   Digital Asset Links statement the browser needs to verify the app, and a
+   `/log` endpoint the page can use for diagnostics. Nothing outside the
+   headset can reach it. The page is addressed as `http://localhost:17777/`,
+   the only non-HTTPS origin the browser's Trusted Web Activity check accepts.
+2. The activity launches the Meta Quest Browser through Meta's fork of
+   `android-browser-helper` with `horizonos.pwa.APP_MODE = immersive`, i.e.
+   `com.oculus.browser.WebXRCustomTabActivity`.
+3. The game's entry script (see below) requests the VR session at page start,
+   draws our own loading screen into it while the world builds, and hands the
+   session to the game when it is ready. The game makes no further network
+   requests after the first load.
 
-## Changes to the game: the VR-entry fix and two approved gameplay fixes
+## Changes to the game: the VR-entry script, the sliced boot, and approved gameplay fixes
 
-The original file dropped the browser's `sessiongranted` event unless the
-world had already finished building, and then waited for a press on a 2D
-"Press A to Continue" screen that an immersive launch never shows. Result:
-the headset stayed on the OS loading screen while the game's opening sound
-played.
+The original file waited for the browser's `sessiongranted` event (which this
+browser does not send for a fresh immersive launch, see `NOTES.md` 33-34),
+built the whole world in one 12 s synchronous call, and then waited for a
+press on a 2D "Press A to Continue" screen that an immersive launch never
+shows. Result: the headset stayed on the OS loading screen and the OS killed
+the app after about 15 s without a frame.
 
-`tools/apply_entry_fix.py` applies four small edits and nothing else:
+`tools/apply_entry_fix.py` applies the entry edits (`EDITS`) and nothing else
+to the game's logic:
 
-1. a `<head>` script that listens for `sessiongranted` before the game scripts
-   parse and requests the immersive session inside the grant handler,
-   parking it until the game is ready;
+1. a `<head>` script that, on a Quest browser, requests the immersive session
+   immediately, parks it, and renders a loading screen into it (sky colour,
+   "GREEBLIS TOWN", a progress bar) with its own small WebGL context; the
+   `sessiongranted` listener is kept for browsers that use it;
 2. the gate code hands its own "enter VR" routine to that script;
-3. when the world finishes building, enter VR if a grant already arrived;
-4. the session request reuses the parked session when there is one.
+3. the boot becomes `async` and yields (`await __gtY(label)`) before each heavy
+   world-build step, each creature spawn, and in eight shader-compile slices,
+   so the loading screen keeps drawing and the OS always sees frames; the
+   yield anchors come from a parse of the script (`tools/lib/boot_map.js`);
+4. at the end of the boot the game enters the parked session through its own
+   routine, and the loader stops.
 
 The "Press A" screen still works unchanged when the game is opened in a 2D
-browser window.
+browser window on a non-Quest browser.
 
 Two gameplay fixes approved after testing are applied by the same script
 (`GAME_FIXES`): the navigator now respects a building's real walls when a
