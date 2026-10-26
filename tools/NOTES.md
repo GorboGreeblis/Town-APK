@@ -304,3 +304,36 @@ VR-entry fix; each item is for discussion first.
     `NotSupportedError` then `SecurityError` on A presses: the plain custom tab
     has no XR device, so that test says nothing about the immersive activity.
 
+34. **3.15.7: the launch fix and our own loading screen.** The `directrequest`
+    diagnostic proved the mechanism (author's log, 09:46): the page called
+    `requestSession` with no user activation and the immersive activity accepted
+    it (`presentRequested` -> `enterVR` -> "requestSession OK", first frames
+    0.3 s later). So the browser never needed a grant; 3.15.6 only waited for a
+    `sessiongranted` that this browser does not send for a fresh launch. Two
+    problems remained: the request was only made after the 12 s synchronous
+    world build, and the OS kills an immersive app that submits no frame for
+    about 15 s (the earlier builds died exactly there), and the user stared at
+    the OS loading screen the whole time.
+    What 3.15.7 does (all in `apply_entry_fix.py` EDITS, the game's code is
+    unchanged apart from the inserted yields):
+    - The head script requests the session at page start on a Quest UA, parks
+      it, and draws our own loading screen into it with raw WebGL: sky-colour
+      background, "GREEBLIS TOWN", "Loading…" and a progress bar, world-locked
+      2.2 m ahead in the `local` space. The grant listener stays for browsers
+      that use it.
+    - The boot is made async and sliced: the outer boot function and its
+      world-build IIFE are `async`, and `await __gtY(label)` yields are
+      inserted before each heavy step (garden, kiosks, pond, clouds, library,
+      portal, music, scenery, player, each companion/townsfolk/creature spawn,
+      pickups, batching, placing), the shader compile runs in 8 slices
+      (visibility-chunked `O.compile`), then first draw and warm-up. Anchors
+      come from a real parse of the script (`tools/lib/boot_map.js`, acorn), so
+      every yield sits at the top level of an async function.
+    - At the very end of the boot (after `Re.start()`) the game enters the
+      parked session through its own `je()`; the loader stops when `je` takes
+      the session (`__gtXR.taken`). Errors in the async boot still reach `vo()`.
+    Headless: play test passes (2D and fake VR), entry wiring test rewritten
+    for the new design (one request at page start, parked session reused, no
+    extra request on grant or click). B6 (in-VR loading indicator) is covered
+    by this. Pending: the author's headset run of 3.15.7.
+

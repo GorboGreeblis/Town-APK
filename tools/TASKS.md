@@ -7,7 +7,7 @@ Living list. Done items move to the bottom with the date. Bugs live in
 
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
-| T2 | Safe release build. main now holds 3.15.6 (PR #4 merged): localhost origin + asset links for B9, plus B11. Still needs the headset to confirm a direct VR launch; if it fails again, capture the launch log as in `tools/HEADSET_DIAG.md` | awaiting headset confirmation of 3.15.6 | main |
+| T2 | Safe release build. 3.15.7 (root APK, PR #5): request at page start, sliced boot, own in-VR loading screen (NOTES 34). Needs the headset to confirm: no OS loading screen beyond a second or two, loading screen visible, then the game | awaiting headset confirmation of 3.15.7 | PR #5 |
 | T3 | Headset test of the release build (direct-to-VR launch, play through, quit cleanly) | open, developer | `RELEASE.md` section 3 |
 | T4 | Store upload: Alpha channel first, listing assets, questionnaires, privacy policy URL | open, developer | `RELEASE.md` section 5 |
 | T5 | Extend the input test: body collision, park bounds, pick ray and menu choice through fake controllers (dead-zone, walking, snap turn, select/squeeze, hull collision already pass) | open | `tools/test_input.js` |
