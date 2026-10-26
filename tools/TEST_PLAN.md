@@ -10,6 +10,16 @@ confirm it.
 Legend for the Coverage column: **done** (automated and passing), **partial**,
 **todo** (automatable, not yet written), **headset** (manual, on device).
 
+## Test passes
+
+Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
+
+- **Smoke** (`--smoke`): a few minutes; touches every element once (short
+  soak, first NPC scenarios, short sampling). For every build.
+- **Standard** (default): the everyday pass.
+- **Full** (`--full`): every scenario, long soak and sampling windows, plus
+  the release parity check. Meant for the final build only.
+
 ## 1. Packaging and launch (APK)
 
 | Item | How | Coverage |
@@ -27,10 +37,10 @@ Legend for the Coverage column: **done** (automated and passing), **partial**,
 | World builds without errors; gate shows "Press A" when ready | `test_entry.js`, `test_play.js 2d` | done |
 | Early `sessiongranted` is captured, session requested inside the handler and parked; reused when ready; no duplicate request | `test_entry.js early` | done |
 | Late grant and no-grant (click) paths | `test_entry.js late/none` | done |
-| Entering a real session: three.js takes the session, gate hides, XR frames render, in-VR UI builds, audio context created | `test_play.js vr` (polyfill) | partial (harness being finished) |
+| Entering a real session: three.js takes the session, gate hides, XR frames render, in-VR UI builds, audio context created | `test_play.js vr` (fake device) | partial (harness being finished) |
 | Leaving VR: session end restores 2D camera, gate returns, audio wakes | `test_play.js vr` | partial |
-| Reference space fallback `local-floor` → `local` with `floorOffset` | polyfill with `local-floor` disabled | todo |
-| Visibility/blur handling in session (`visibilitychange`, `Ho.capture/restore`) | polyfill session `visibilityState` | todo |
+| Reference space fallback `local-floor` → `local` with `floorOffset` | `fakexr.js` with `supportLocalFloor=false` | todo |
+| Visibility/blur handling in session (`visibilitychange`, `Ho.capture/restore`) | `fakexr.js` `setVisibility` | todo |
 | WebGL context loss and restore (`Ho`) | headless: `WEBGL_lose_context` extension | todo |
 | Real headset: direct-to-VR launch, floor height, comfort settings | sideload | headset |
 
@@ -38,7 +48,7 @@ Legend for the Coverage column: **done** (automated and passing), **partial**,
 
 | Item | How | Coverage |
 | --- | --- | --- |
-| Left stick walk with dead-zone, speed, collision with buildings (`F.solid`) and bodies (`uo`), park bounds | headless: fake XR input sources on the polyfill session, or drive `we.move` through the hook | todo |
+| Left stick walk with dead-zone, speed, collision with buildings (`F.solid`) and bodies (`uo`), park bounds | headless: `fakexr.js` `setInputs`, or drive `we.move` through the hook | todo |
 | Right stick snap turn 30°, no repeat while held | same | todo |
 | Trigger/grip (`select`/`squeeze`): pick ray, pick range/cone, menu choice, UI buttons 4/5 | same | todo |
 | Controller mapping on real hardware (hand assignment, haptics) | sideload | headset |

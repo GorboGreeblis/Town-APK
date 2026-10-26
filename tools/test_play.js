@@ -5,8 +5,8 @@
  *   2d  - boot the game, let its frame loop run, check the canvas actually
  *         renders (non-uniform pixels), count frames, watch for errors and
  *         JS-heap growth. Screenshot to tools/.runs/2d.png.
- *   vr  - same, but with the WebXR polyfill (tools/vendor/webxr-polyfill.js,
- *         Cardboard device) installed in place of navigator.xr and a
+ *   vr  - same, but with the fake WebXR device (tools/fakexr.js) installed in
+ *         place of navigator.xr and a
  *         `sessiongranted` event fired after load, exactly like Meta's
  *         immersive launch. Checks the game enters the session, hides the 2D
  *         gate, renders XR frames, survives a while, and comes back to the
@@ -26,7 +26,7 @@ const file = path.resolve(process.argv[2] || path.join(root, 'android/app/src/ma
 const which = process.argv[3] || 'all';
 const RUN_S = Number(process.argv[4] || 20);
 const html = fs.readFileSync(file);
-const polyfill = fs.readFileSync(path.join(root, 'tools/vendor/webxr-polyfill.js'), 'utf8');
+const fakexr = fs.readFileSync(path.join(root, 'tools/fakexr.js'), 'utf8');
 const outDir = path.join(root, 'tools', '.runs');
 fs.mkdirSync(outDir, { recursive: true });
 const BOOT_TIMEOUT_MS = 300000;
@@ -46,55 +46,36 @@ function serve() {
 
 // Counters installed before any page script.
 const instrument = () => {
-  window.__play = { raf: 0, xrFrames: 0, session: null, errors: [] };
+  window.__play = { raf: 0, session: null, errors: [] };
   const raf = window.requestAnimationFrame.bind(window);
   window.requestAnimationFrame = (cb) => raf((t) => { window.__play.raf++; cb(t); });
 };
 
-// Replace Chromium's stub navigator.xr with the polyfill's Cardboard device and
-// make it able to fire `sessiongranted`.
-const installPolyfill = (src) => {
-  delete Navigator.prototype.xr;
-  Element.prototype.requestFullscreen = function () { return Promise.resolve(); };
-  Element.prototype.requestPointerLock = function () {};
-  (0, eval)(src);
-  const P = window.WebXRPolyfill;
-  new P({ webvr: false, cardboard: true, allowCardboardOnDesktop: true, global: window });
-  const xr = navigator.xr;
-  // The Cardboard device fetches a device database from the web; the test
-  // server answers that URL (see page.route below) so no network is needed.
-  if (!xr.addEventListener) {
-    const l = {};
-    xr.addEventListener = (t, f) => (l[t] = l[t] || []).push(f);
-    xr.removeEventListener = () => {};
-    xr.dispatchEvent = (e) => { (l[e.type] || []).forEach((f) => f(e)); return true; };
-  }
-  const rs = xr.requestSession.bind(xr);
-  xr.requestSession = async (mode, opts) => {
-    let s;
-    try { s = await rs(mode, opts); }
-    catch (e) { window.__play.errors.push('requestSession rejected: ' + (e && e.message || e)); throw e; }
-    window.__play.session = s;
-    const sraf = s.requestAnimationFrame.bind(s);
-    s.requestAnimationFrame = (cb) => sraf((t, f) => { window.__play.xrFrames++; cb(t, f); });
-    return s;
+// Hooks on top of tools/fakexr.js: record sessions and XR frames for the checks.
+const installHooks = () => {
+  const S = window.__fakeXR;
+  const rs = navigator.xr.requestSession.bind(navigator.xr);
+  navigator.xr.requestSession = async (mode, opts) => {
+    let sess;
+    try { sess = await rs(mode, opts); } catch (e) { window.__play.errors.push('requestSession rejected: ' + (e && e.message || e)); throw e; }
+    window.__play.session = sess;
+    return sess;
   };
-  // The polyfill's EventTarget takes (type, event); the DOM one takes (event). Support both.
-  window.__play.fireGrant = () => { const ev = new Event('sessiongranted'); try { xr.dispatchEvent('sessiongranted', ev); } catch (e) {} try { xr.dispatchEvent(ev); } catch (e) {} };
+  Object.defineProperty(window.__play, 'xrFrames', { get: () => S.frames });
+  window.__play.fireGrant = () => S.fire();
 };
 
 async function scenario(name, srvUrl, browser) {
   const ctx = await browser.newContext({ userAgent: UA, viewport: { width: 1280, height: 720 } });
   const page = await ctx.newPage();
   const errors = [];
-  const noise = /Failed to recalculate device parameters|Permission to access sensor|dpdb\.json|DPDB|DeviceOrientation|DeviceMotion/;
+  const noise = /^$/;
   page.on('pageerror', (e) => errors.push('pageerror: ' + String(e).split('\n')[0]));
   page.on('console', (m) => { if (m.type() === 'error' && !noise.test(m.text())) errors.push('console: ' + m.text().split('\n')[0]); });
   await page.addInitScript(instrument);
   if (name === 'vr') {
-    await page.addInitScript(installPolyfill, polyfill);
-    // Offline stand-in for the polyfill's device-parameter database.
-    await page.route('**/dpdb.json', (route) => route.fulfill({ status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ format: 1, last_updated: '2020-01-01', devices: [{ type: 'android', rules: [{ ua: 'Nexus 5' }], dpi: 445, bw: 4, ac: 1000 }] }) }));
+    await page.addInitScript(fakexr);
+    await page.addInitScript(installHooks);
   }
 
   const failures = [];
@@ -123,14 +104,6 @@ async function scenario(name, srvUrl, browser) {
     await page.waitForFunction(() => window.__play.xrFrames > 5 || window.__play.errors.length, null, { timeout: 60000 }).catch(() => {});
     const inPage = await page.evaluate(() => window.__play.errors);
     for (const e of inPage) errors.push(e);
-    const diag = await page.evaluate(() => ({
-      xrCtor: navigator.xr && navigator.xr.constructor && navigator.xr.constructor.name,
-      polyfillLoaded: !!window.WebXRPolyfill,
-      ownRequestSession: !!(navigator.xr && Object.prototype.hasOwnProperty.call(navigator.xr, 'requestSession')),
-      gtXR: window.__gtXR ? { granted: window.__gtXR.granted, enter: !!window.__gtXR.enter, pending: !!window.__gtXR.pending } : null,
-      playErrors: window.__play.errors,
-    }));
-    console.log('  diag ' + JSON.stringify(diag));
     s = await state();
     expect('session granted -> game entered the XR session', s.hasSession);
     expect('2D gate hidden while presenting', !s.gateOn, `gate="${s.gate}"`);

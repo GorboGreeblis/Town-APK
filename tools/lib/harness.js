@@ -1,0 +1,87 @@
+/**
+ * Shared harness for headless game tests.
+ *
+ *   const { boot } = require('./lib/harness');
+ *   const g = await boot({ file, vr: false });   // g.page, g.browser, g.close()
+ *
+ * Serves a TEMPORARY copy of the game with a debug hook appended right after
+ * the world is built (`gcEB.ready=!0;`). The hook exposes closure-scoped game
+ * objects on window.__dbg: It (entities), JGP, F (buildings), E (zones),
+ * lo (patterns), Be/De (navigation + stuck handling), t (tuning), At (player),
+ * B (camera), Re (clock), uo (bodies), C (scene), Kt (progress), le/ce
+ * (blossoms/acorns), we (XR input state), G (audio), Ut (speech bubbles).
+ * The shipped game is never modified.
+ */
+const { chromium } = require('playwright');
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+
+const root = path.resolve(__dirname, '..', '..');
+const HOOK_NAMES = ['It', 'JGP', 'F', 'E', 'lo', 'Be', 'De', 't', 'At', 'B', 'Re', 'uo', 'C', 'Kt', 'le', 'ce', 'we', 'G', 'Ut', 'O', 'me', 'bt', 'ue', 'Dbt', '_t', 'qt', 'jt'];
+const UA = 'Mozilla/5.0 (X11; Linux x86_64; Quest 3) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/35.0 Chrome/128.0 VR Safari/537.36';
+
+function hooked(file) {
+  let html = fs.readFileSync(file, 'utf8');
+  const anchor = 'gcEB.ready=!0;';
+  if (!html.includes(anchor)) throw new Error('anchor not found in ' + file + ' (use the patched asset)');
+  const hook = 'window.__dbg={};' + HOOK_NAMES.map((n) => `try{window.__dbg.${n}=${n}}catch(e){}`).join('') + 'window.__dbgReady=true;';
+  return Buffer.from(html.replace(anchor, anchor + hook));
+}
+
+function serve(body) {
+  return new Promise((resolve) => {
+    const srv = http.createServer((req, res) => {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': body.length });
+      res.end(body);
+    });
+    srv.listen(0, '127.0.0.1', () => resolve(srv));
+  });
+}
+
+/**
+ * boot({ file, vr, timeoutMs })
+ *   vr: true (default) installs tools/fakexr.js, fires `sessiongranted` once the
+ *   world is built and waits until the game renders XR frames. NPC behaviour,
+ *   pickups and input only run while the game is presenting, so almost every
+ *   behaviour test needs this. vr: false leaves the game on its 2D gate.
+ */
+async function boot({ file = path.join(root, 'android/app/src/main/assets/index.html'), vr = true, timeoutMs = 300000 } = {}) {
+  const srv = await serve(hooked(path.resolve(file)));
+  const url = `http://127.0.0.1:${srv.address().port}/`;
+  const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--autoplay-policy=no-user-gesture-required'] });
+  const ctx = await browser.newContext({ userAgent: UA, viewport: { width: 1280, height: 720 } });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push('pageerror: ' + String(e).split('\n')[0]));
+  page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text().split('\n')[0]); });
+  if (vr) await page.addInitScript(fs.readFileSync(path.join(root, 'tools/fakexr.js'), 'utf8'));
+  const t0 = Date.now();
+  await page.goto(url, { waitUntil: 'load', timeout: timeoutMs });
+  await page.waitForFunction(() => window.__dbgReady === true, null, { timeout: timeoutMs });
+  let presentS = null;
+  if (vr) {
+    await page.evaluate(() => window.__fakeXR.fire());
+    await page.waitForFunction(() => window.__fakeXR.frames > 5, null, { timeout: 60000 });
+    presentS = (Date.now() - t0) / 1000;
+  }
+  const bootS = (Date.now() - t0) / 1000;
+  return {
+    presentS,
+    page, browser, errors, bootS, url,
+    hooks: await page.evaluate(() => Object.keys(window.__dbg)),
+    close: async () => { await browser.close(); srv.close(); },
+  };
+}
+
+function reporter() {
+  const failures = [];
+  const expect = (what, ok, extra) => {
+    console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${what}${extra ? '  [' + extra + ']' : ''}`);
+    if (!ok) failures.push(what);
+  };
+  const note = (what) => console.log(`  NOTE  ${what}`);
+  return { failures, expect, note };
+}
+
+module.exports = { boot, reporter, root, HOOK_NAMES };

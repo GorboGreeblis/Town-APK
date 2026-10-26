@@ -4,7 +4,8 @@
  * (entity id "drifter"): the only character whose home is raised (a kiosk desk,
  * standY 1.545) and who has to walk two front waypoints and then hop up.
  *
- * It runs the real game in headless Chromium (2D mode, real frame loop), with a
+ * It runs the real game in headless Chromium inside a fake WebXR session (NPCs
+ * only move while the game presents), with a
  * debug hook injected into a TEMPORARY copy of the game that exposes the
  * closure-scoped objects (It, JGP, F, lo, Be, De, t, At, B, Re). The shipped
  * game is not touched.
@@ -14,38 +15,20 @@
  * game run, and records whether and when the NPC reaches home at desk height,
  * plus any teleports, re-plans (gcStuckN) and oscillation.
  *
- * Usage: node tools/test_npc_home.js [file.html] [npcId] [maxSeconds]
+ * Usage: node tools/test_npc_home.js [file.html] [npcId] [maxSeconds] [firstNScenarios]
  * Exit 1 if any scenario fails to get the NPC home.
  */
-const { chromium } = require('playwright');
-const http = require('http');
+const { boot } = require('./lib/harness');
 const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const file = path.resolve(process.argv[2] || path.join(root, 'android/app/src/main/assets/index.html'));
+const file = process.argv[2] || path.join(root, 'android/app/src/main/assets/index.html');
 const NPC = process.argv[3] || 'drifter';
 const MAX_S = Number(process.argv[4] || 45);
+const ONLY = process.argv[5] ? Number(process.argv[5]) : null;   // run only the first N scenarios (smoke)
 const outDir = path.join(root, 'tools', '.runs');
 fs.mkdirSync(outDir, { recursive: true });
-
-// Test-only debug hook, inserted right after the world is built.
-let html = fs.readFileSync(file, 'utf8');
-const anchor = 'gcEB.ready=!0;';
-if (!html.includes(anchor)) throw new Error('anchor not found; is this the patched asset?');
-const hook = 'window.__dbg={};' + ['It', 'JGP', 'F', 'lo', 'Be', 'De', 't', 'At', 'B', 'Re', 'uo', 'C']
-  .map((n) => `try{window.__dbg.${n}=${n}}catch(e){}`).join('');
-html = Buffer.from(html.replace(anchor, anchor + hook));
-
-function serve() {
-  return new Promise((resolve) => {
-    const srv = http.createServer((req, res) => {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': html.length });
-      res.end(html);
-    });
-    srv.listen(0, '127.0.0.1', () => resolve(srv));
-  });
-}
 
 // Runs inside the page: frame-locked observer of one NPC.
 const observe = ({ id, maxS, standY }) => new Promise((resolve) => {
@@ -72,17 +55,9 @@ const observe = ({ id, maxS, standY }) => new Promise((resolve) => {
 });
 
 (async () => {
-  const srv = await serve();
-  const url = `http://127.0.0.1:${srv.address().port}/`;
-  const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
-  const ctx = await browser.newContext({ userAgent: 'Mozilla/5.0 (X11; Linux x86_64; Quest 3) OculusBrowser/35.0 Chrome/128.0 VR', viewport: { width: 1280, height: 720 } });
-  const page = await ctx.newPage();
-  const errors = [];
-  page.on('pageerror', (e) => errors.push(String(e).split('\n')[0]));
-  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().split('\n')[0]); });
-  await page.goto(url, { waitUntil: 'load', timeout: 300000 });
-  await page.waitForFunction(() => window.__dbg && window.__dbg.It, null, { timeout: 300000 });
-
+  const g = await boot({ file, vr: true });
+  const { page, errors } = g;
+  console.log(`booted in ${g.bootS.toFixed(1)}s, presenting after ${g.presentS.toFixed(1)}s`);
   const info = await page.evaluate((id) => {
     const D = window.__dbg, h = D.It.byId[id];
     if (!h) return { error: 'no such npc: ' + id + '; ids: ' + Object.keys(D.It.byId).join(',') };
@@ -116,7 +91,7 @@ const observe = ({ id, maxS, standY }) => new Promise((resolve) => {
   ];
 
   const results = [];
-  for (const sc of scenarios) {
+  for (const sc of (ONLY ? scenarios.slice(0, ONLY) : scenarios)) {
     const r = await page.evaluate(async ({ id, sc, maxS, standY, observeSrc }) => {
       const D = window.__dbg, h = D.It.byId[id];
       // Reset NPC state.
@@ -146,6 +121,6 @@ const observe = ({ id, maxS, standY }) => new Promise((resolve) => {
   console.log(`page errors: ${errors.length}${errors.length ? ' | ' + errors.slice(0, 3).join(' | ') : ''}`);
   console.log(`traces written to tools/.runs/npc_home_${NPC}.json`);
   console.log(failed ? `NPC HOME TEST: ${failed} scenario(s) did not get home` : 'NPC HOME TEST PASSED');
-  await browser.close(); srv.close();
+  await g.close();
   process.exit(failed ? 1 : 0);
 })().catch((e) => { console.error('NPC HOME TEST ERROR', e); process.exit(1); });
