@@ -30,6 +30,16 @@ android {
         versionName '3.15.2'
 
         resValue 'string', 'app_name', 'Greeblis Town'
+
+        // Launch mode: 'immersive' (direct to WebXR, needs a verified origin) or
+        // '2D' (browser panel; the game's own "Press A" enters VR).
+        // Build the 2D variant with: ./gradlew assembleRelease -PappMode=2D
+        def appMode = project.hasProperty('appMode') ? project.property('appMode') : 'immersive'
+        manifestPlaceholders = [
+            appMode            : appMode,
+            oculusCategory     : appMode == '2D' ? 'com.oculus.intent.category.2D' : 'com.oculus.intent.category.VR',
+            headtrackingRequired: appMode == '2D' ? 'false' : 'true',
+        ]
     }
 
     signingConfigs {

@@ -20,7 +20,7 @@
     <!-- VRC.Quest.Packaging.1 / .3: head tracking required, no phone-only features. -->
     <uses-feature
         android:name="android.hardware.vr.headtracking"
-        android:required="true"
+        android:required="${headtrackingRequired}"
         android:version="1" />
     <uses-feature
         android:name="android.hardware.touchscreen"
@@ -67,7 +67,7 @@
             <!-- Meta Quest: launch straight into WebXR (no 2D browser panel). -->
             <meta-data
                 android:name="horizonos.pwa.APP_MODE"
-                android:value="immersive" />
+                android:value="${appMode}" />
 
             <meta-data
                 android:name="android.support.customtabs.trusted.FALLBACK_STRATEGY"
@@ -103,8 +103,9 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-                <!-- VRC.Quest.Packaging.1 item 7: immersive apps declare the VR category. -->
-                <category android:name="com.oculus.intent.category.VR" />
+                <!-- VRC.Quest.Packaging.1 item 7: immersive apps declare the VR category;
+                     the 2D variant declares the 2D category instead (gradle -PappMode=2D). -->
+                <category android:name="${oculusCategory}" />
             </intent-filter>
         </activity>
 

@@ -179,3 +179,16 @@ VR-entry fix; each item is for discussion first.
     two `StackOverflowError` crashes from 10-24 in the earlier
     `com.greeblis.greeblistown` package (a previous packaging attempt), which
     are unrelated to this project.
+
+28. **3.15.2: immersive activity closes on the loopback URL.** The second
+    headset log shows the fixed launcher doing its job (`START ... dat=
+    http://127.0.0.1:17777/ cmp=com.oculus.browser/.WebXRCustomTabActivity`),
+    then a CLOSE transition for that activity about 300 ms later and the whole
+    task finishing; this repeats on every launch, leaving the OS loading
+    screen up. No browser-side reason is logged, and the capture holds no
+    lines from our own process (pid 13084), so the server and launcher logs
+    are missing; an unfiltered `adb logcat -v threadtime` would show them.
+    Working hypothesis: the immersive custom-tab activity requires a verified
+    HTTPS origin. Since hosting is ruled out, the 2D app mode (browser panel
+    plus the game's own "Press A") is the fallback under test, and the
+    build now has a `-PappMode=2D` switch.

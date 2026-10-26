@@ -125,8 +125,12 @@ const LONG = process.argv.includes('--long');
     out.jtTop = D.jt && D.jt.top; out.meActive = !!(D.me && D.me.active);
     try { D.ue.call(); } catch (e) { out.threw = String(e); }
     await new Promise((r) => setTimeout(r, 300)); out.dlgAfterCall = !!D.qt.isOpen;
-    const t0 = performance.now();
-    while (!D.ue.courier && performance.now() - t0 < 30000) await new Promise((r) => setTimeout(r, 300));
+    const t0 = performance.now(); out.timeline = [];
+    while (!D.ue.courier && performance.now() - t0 < 30000) {
+      await new Promise((r) => setTimeout(r, 1000));
+      out.timeline.push({ t: Math.round((performance.now() - t0) / 1000), st: D.ue.state, ot: D.ot && D.ot.state, trip: !!(D.ot && D.ot.trip), couriers: D.It.all.filter((h) => h.kind === 'courier').length, dlg: !!D.qt.isOpen });
+    }
+    out.timeline = out.timeline.filter((x, i, a) => i === 0 || i === a.length - 1 || JSON.stringify(x) !== JSON.stringify(a[i - 1]));
     out.dlgLater = !!D.qt.isOpen;
     out.courier = !!D.ue.courier; out.state = D.ue.state;
     const t1 = performance.now();
