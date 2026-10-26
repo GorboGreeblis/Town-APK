@@ -61,15 +61,48 @@ that it holds 72 Hz in normal play and strains only in the Event.
 The world is built in one synchronous call before the first frame: geometry
 generation, 50 canvas-painted textures (up to 768x2048), batching, then shader
 compilation for ~106 programs and a warm-up render. This is the part that the
-APK's extra space can remove: see section 6. Boot profile numbers:
-`tools/boot_profile.js` (to be filled in).
+APK's extra space can remove: see section 6.
+
+Boot profile (`tools/boot_profile.js`, headless, software GL, CPU sampling on,
+so absolute times are inflated; the split is what matters):
+
+| Phase | Inclusive time | Share of sampled boot |
+| --- | --- | --- |
+| Shader compile and first draws (renderer compile/render) | 14.3 s | 41% |
+| Script parse/compile (V8 "(program)") | 9.7 s | 28% |
+| Canvas texture painting (50 painters) | 4.7 s | 14% |
+| Garbage collection | 0.4 s | 1% |
+| Geometry merge | 0.4 s | 1% |
+| Draw batching | 0.2 s | 1% |
+| World ready / first XR frame | 10.4 s / 34.6 s | |
+
+On the headset the GPU driver compiles the 106 programs far faster than
+software GL, but the order stays: shader compilation, script compile, texture
+painting. The browser keeps a shader cache across launches (so the second
+launch is faster), while `no-store` currently prevents the script code cache
+(section 1).
 
 ## 5. Demanding moments (pickups, the Event)
 
 See `BUGS.md` B12 and `NOTES.md` item 32 for the flash investigation. The
 hitch probe (`tools/hitch_probe.js`) reports what each action creates on the
-GPU (programs, textures, geometries) and the frame-time spike around it;
-results to be filled in.
+GPU (programs, textures, geometries) and the frame-time spike around it
+(software GL; spikes are relative):
+
+| Action | New programs | New textures | New geometries | Worst frame vs baseline |
+| --- | --- | --- | --- | --- |
+| First blossom pickup of the session | 0 | 14 | 57 | 78 ms (all 9 frames over 2x) |
+| Acorn pickup, later pickups, new label text | 0 | 0 | 0 | none |
+| Dialogue box open | 0 | 0 | 0 | 20 ms vs 15 |
+| Battle panel open | 1 | 1 | 1 | 1,154 ms vs 12 (shader compile) |
+| Garden Event start | 0 | 0 | 0 | 44 ms vs 10 (3 frames over 2x) |
+| During the Event | | | | p50 9.3 ms, p99 20.7 ms |
+
+So the first pickup of a session uploads 14 textures and 57 geometries on the
+spot (sparkle and splat pools, labels), opening the battle panel compiles a
+shader program during play, and the Event start has a few long frames. On the
+headset each of those is a dropped frame shown re-projected. Pre-warming them
+at boot (section 6, item 2) removes all three.
 
 ## 6. Improvements possible now that size is not a limit
 
