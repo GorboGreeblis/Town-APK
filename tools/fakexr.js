@@ -94,11 +94,25 @@
       this.enabledFeatures = ['viewer', 'local', 'local-floor'];
       this.supportedFrameRates = new Float32Array([72, 90]); this.frameRate = 72;
       this.floorSpace = false; this.layerAspect = 16 / 9; this._raf = new Map(); this._id = 0;
-      Object.defineProperty(this, 'inputSources', { get: () => S.inputs.map((d) => ({
-        handedness: d.handedness || 'right', targetRayMode: 'tracked-pointer', profiles: ['oculus-touch-v3'],
-        targetRaySpace: new Space('ray'), gripSpace: new Space('grip'),
-        gamepad: { axes: d.axes || [0, 0, 0, 0], buttons: (d.buttons || []).map((b) => ({ pressed: !!b.pressed, touched: !!b.touched, value: b.value || 0 })), connected: true, mapping: 'xr-standard', hapticActuators: [] },
-      })) });
+      // Stable XRInputSource objects (three.js maps controllers by identity);
+      // gamepad data is refreshed in place from S.inputs on every read.
+      this._sources = [];
+      Object.defineProperty(this, 'inputSources', { get: () => this.syncSources() });
+    }
+    syncSources() {
+      const want = S.inputs || [];
+      while (this._sources.length > want.length) this._sources.pop();
+      want.forEach((d, i) => {
+        let src = this._sources[i];
+        if (!src || src.handedness !== (d.handedness || 'right')) {
+          src = this._sources[i] = { handedness: d.handedness || 'right', targetRayMode: 'tracked-pointer', profiles: ['oculus-touch-v3'],
+            targetRaySpace: new Space('ray'), gripSpace: new Space('grip'),
+            gamepad: { axes: [0, 0, 0, 0], buttons: [], connected: true, mapping: 'xr-standard', hapticActuators: [] } };
+        }
+        src.gamepad.axes = d.axes || [0, 0, 0, 0];
+        src.gamepad.buttons = (d.buttons || []).map((b) => ({ pressed: !!b.pressed, touched: !!b.touched, value: b.value || 0 }));
+      });
+      return this._sources.slice();
     }
     updateRenderState(s) { Object.assign(this.renderState, s || {}); if (s && s.baseLayer) this.layerAspect = s.baseLayer.framebufferWidth / s.baseLayer.framebufferHeight; }
     requestReferenceSpace(type) {
@@ -136,5 +150,14 @@
     if (C) C.prototype.makeXRCompatible = function () { return Promise.resolve(); };
   }
   S.fire = () => xr.dispatchEvent(new Event('sessiongranted'));
-  S.setInputs = (list) => { S.inputs = list || []; const s = S.sessions[S.sessions.length - 1]; if (s) s.dispatchEvent(new Event('inputsourceschange')); };
+  S.setInputs = (list) => {
+    const s = S.sessions[S.sessions.length - 1];
+    const before = s ? s.inputSources : [];
+    S.inputs = list || [];
+    if (!s) return;
+    const after = s.inputSources;
+    const ev = new Event('inputsourceschange');
+    ev.session = s; ev.added = after.filter((x) => !before.includes(x)); ev.removed = before.filter((x) => !after.includes(x));
+    s.dispatchEvent(ev);
+  };
 })();
