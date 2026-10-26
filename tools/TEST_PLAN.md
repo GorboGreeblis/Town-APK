@@ -134,6 +134,8 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 
 ## Latest results (3.15.10/3.15.11 asset, headless harness)
 
+**Full tier on 3.15.19** (`tools/.runs/full_v19.log`): **all stages pass**, including the play stage's layer-swap check and the z-fight test; report stages: handover clean (one 284 ms first-frame gap headless), hitch probe on the no-layers variant worst frames 6-37 ms (Event start 37 ms, pickups 26 ms), scene cost and sharpness recorded. 3.15.19 adds the native-start governor, build-time texture probe points and the sphere-traced blob march (characters build about twice as fast, geometry identical per `geom_compare.js`).
+
 **Full tier on 3.15.17** (`tools/.runs/full_v17.log`): every stage passes (entry verify, server harness incl. /log, spell-check, APK check, VR entry, world incl. B2 and 20/20 routes, input, progression incl. the Event, visits all, courier, return-home all, release parity, z-fight: nothing flickers) except one check in the play stage: the new layer-swap check timed out waiting 400 ms for frames while the tier loaded the machine (frames 0); the same check passes standalone (24 frames) and now waits for frames instead of a fixed time. Report stages recorded: handover clean (one 235 ms first-frame gap headless), hitch probe moved to the no-layers variant for meaningful timings.
 
 Standard tier on the 3.15.13 asset (layers loading screen, B16, name): **all stages pass**. Z-fight test, sharpness probe and hitch probe added and run on it (see 10a).
