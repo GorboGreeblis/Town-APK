@@ -87,6 +87,41 @@ GAME_FIXES = [
         'campfire:"Sometimes worry that doing these things will alter the timeline…"',
         'campfire:"Sometimes I worry that doing these things will alter the timeline…"',
     ),
+    # B8: only the shopkeeper should pause while the Shop menu is open. holdsAll()
+    # froze every NPC for any panel but the battle; now the shop panel is excluded
+    # and Zollod (cutebex) is paused through the targeted branch instead.
+    (
+        'function holdsAll(){return jt.has("panel")&&!(_t.state&&"battle"===_t.state.kind)}',
+        'function holdsAll(){return jt.has("panel")&&!(_t.state&&("battle"===_t.state.kind||"shop"===_t.state.kind))}',
+    ),
+    (
+        'jt.has("panel")&&xe.lastTarget===e&&"campfire"!==(_t.state&&_t.state.kind)){e.moving=!1,e.gcWant=0,',
+        'jt.has("panel")&&xe.lastTarget===e&&"campfire"!==(_t.state&&_t.state.kind)||jt.has("panel")&&_t.state&&"shop"===_t.state.kind&&"cutebex"===e.id){e.moving=!1,e.gcWant=0,',
+    ),
+    # B7: a failed VR request showed leftover wording for one frame and was then
+    # overwritten by "Press A". Show a real message and hold it for 8 seconds.
+    (
+        'e&&/Security|NotSupported/.test(e.name)&&(mo("gateText").textContent="VR can\'t start in this preview.\\nOpen the inscription\'s own page.")',
+        'e&&(mo("gateText").textContent="VR could not start ("+(e.name||"error")+").\\nClick or press A to try again.",mo("gateText").holdUntil=performance.now()+8e3)',
+    ),
+    (
+        'if(gcEB.ready&&Ke.textContent!=="Press A to Continue.")Ke.textContent="Press A to Continue."',
+        'if(gcEB.ready&&Ke.textContent!=="Press A to Continue."&&!(Ke.holdUntil>performance.now()))Ke.textContent="Press A to Continue."',
+    ),
+    # B1: when a posted NPC's straight walk to a waypoint outside any building would
+    # cross a real wall, re-route at once instead of pinning against the wall for
+    # a second until the stuck detector notices.
+    (
+        'if(t.vbk>=0&&dh>.3){const w=via[t.vbk],dx=w[0]-n.x,dz=w[1]-n.z,d=Math.hypot(dx,dz)||1,st=Math.min(d,1.4*wk*o);',
+        'if(t.vbk>=0&&dh>.3){const w=via[t.vbk],dx=w[0]-n.x,dz=w[1]-n.z,d=Math.hypot(dx,dz)||1,st=Math.min(d,1.4*wk*o);'
+        'if(!F.buildings.some((B=>F.inHull(B,n.x,n.z)||F.inHull(B,w[0],w[1])))&&F.segBlocked(n.x,n.z,w[0],w[1],0))t.gcWant=1,t.gcBlk=1.3;',
+    ),
+    # B4: the route smoother only checked grid cells, so a long straightened leg
+    # could clip a building corner; also reject legs that cross a real hull.
+    (
+        'clear=(ax,az,bx,bz)=>{const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,bz-az)/.3));',
+        'clear=(ax,az,bx,bz)=>{if(F.segBlocked(ax,az,bx,bz,.3))return!1;const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,bz-az)/.3));',
+    ),
 ]
 
 for old, new in EDITS + GAME_FIXES:

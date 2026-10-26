@@ -146,7 +146,14 @@ public final class GameServer {
             }
             String[] parts = requestLine.split(" ");
             String method = parts.length > 0 ? parts[0] : "";
-            String target = parts.length > 1 ? parts[1] : "/";
+            if (parts.length < 2 || !parts[1].startsWith("/")) {
+                byte[] body = "Bad Request".getBytes(StandardCharsets.US_ASCII);
+                writeHead(c.getOutputStream(), "400 Bad Request", "text/plain", body.length);
+                c.getOutputStream().write(body);
+                c.getOutputStream().flush();
+                return;
+            }
+            String target = parts[1];
             int q = target.indexOf('?');
             if (q >= 0) {
                 target = target.substring(0, q);

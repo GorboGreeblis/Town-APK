@@ -1,0 +1,64 @@
+# Headset diagnostics for the immersive launch (bug B9)
+
+The Quest Browser's immersive activity closes itself when our launcher hands
+it `http://127.0.0.1:17777/`. The browser's reason is not in the captured
+logs, so these experiments pin it down. All commands run on the PC with the
+headset on USB and developer mode on.
+
+## 1. Unfiltered log of one launch (most useful)
+
+```sh
+adb logcat -c
+adb logcat -v threadtime > launch.txt      # leave running
+# put the headset on, launch Greeblis Town from Unknown Sources, wait 15 s
+# then Ctrl-C in the terminal
+```
+
+Send `launch.txt`. The earlier captures had no lines from our own process
+and none from the browser's `cr_*` tags; the unfiltered log has both. Lines
+to look for: `GreeblisServer`, `GreeblisLauncher`, `TwaLauncher`,
+`cr_` (browser), `WebXRCustomTabActivity`.
+
+## 2. Serve the game from the PC on the headset's loopback (no rebuilds)
+
+This makes `http://127.0.0.1:17777/` on the headset come from a folder on
+the PC, so launch variations can be tried without touching the APK.
+
+```sh
+cd <repo>/android/app/src/main/assets
+python3 -m http.server 8000           # leave running
+adb reverse tcp:17777 tcp:8000        # headset:17777 -> PC:8000
+```
+
+Then try the immersive activity directly (no TWA session, plain intent):
+
+```sh
+adb shell am start -n com.oculus.browser/.WebXRCustomTabActivity -d http://127.0.0.1:17777/
+```
+
+Three outcomes tell us three different things:
+- the game appears in VR: the activity accepts a plain http loopback page
+  when launched this way, and the problem is in how the launcher launches it;
+- it closes immediately: the activity rejects the origin or the scheme;
+- an error dialog or a 2D window: note what it says.
+
+Repeat with a known-good hosted WebXR page purely as a control (this is a
+test, not a shipping plan):
+
+```sh
+adb shell am start -n com.oculus.browser/.WebXRCustomTabActivity -d https://immersive-web.github.io/webxr-samples/immersive-vr-session.html
+```
+
+If the control works and the loopback does not, the scheme/origin is the
+rule. If neither works, the activity needs the Custom Tabs session that
+only the launcher creates, and the log from step 1 is the key.
+
+## 3. Pull the browser package for offline analysis (optional)
+
+```sh
+adb shell pm path com.oculus.browser
+adb pull <path printed above> oculus-browser.apk
+```
+
+`oculus-browser.apk` can be decompiled to read exactly what
+`WebXRCustomTabActivity` checks before closing. It is large (hundreds of MB).

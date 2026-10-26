@@ -61,7 +61,7 @@ public final class Harness {
         failures += expect("empty connection closes cleanly", rawOk(server.port(), ""));
         failures += expect("HTTP/1.0 GET served", raw(server.port(), "GET / HTTP/1.0\r\n\r\n").startsWith("HTTP/1.1 200"));
         failures += expect("path traversal /../index.html is 404", raw(server.port(), "GET /../index.html HTTP/1.1\r\nHost: x\r\n\r\n").startsWith("HTTP/1.1 404"));
-        failures += expect("bare GET line answered, not a crash (served as /, see NOTES.md item 15)", raw(server.port(), "GET\r\n\r\n").startsWith("HTTP/1.1 "));
+        failures += expect("bare GET line answered 400", raw(server.port(), "GET\r\n\r\n").startsWith("HTTP/1.1 400"));
         StringBuilder huge = new StringBuilder("GET /");
         for (int i = 0; i < 200_000; i++) huge.append('a');
         huge.append(" HTTP/1.1\r\n\r\n");
