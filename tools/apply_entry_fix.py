@@ -24,6 +24,21 @@ root = pathlib.Path(__file__).resolve().parent.parent
 # --experiment NAME: additionally apply one diagnostic variant (headset A/B tests for B12 etc.).
 # Variants are never used for the release asset; build_experiment.sh writes them elsewhere.
 EXPERIMENTS = {
+    # Session keep-alive: when the grant arrives before the world is built, the
+    # early-created session gets a tiny WebGL layer and a clear-colour frame loop
+    # right away, so the OS sees frames (no loading-screen stall / session timeout)
+    # until the game takes the session over. Candidate fix for the 3.15.6 symptom.
+    "keepalive": [(
+        'X.pending=p;p.then(function(s){try{s.addEventListener("end",function(){X.pending===p&&(X.pending=null)})}catch(e){}},',
+        'X.pending=p;p.then(function(s){try{s.addEventListener("end",function(){X.pending===p&&(X.pending=null)})}catch(e){}'
+        'try{var c=document.createElement("canvas"),g=c.getContext("webgl2",{xrCompatible:!0})||c.getContext("webgl",{xrCompatible:!0});'
+        'if(g){var L=new XRWebGLLayer(s,g);s.updateRenderState({baseLayer:L});X.keep=L;'
+        'var f=function(){if(X.taken||X.pending!==p)return;try{g.bindFramebuffer(g.FRAMEBUFFER,L.framebuffer);g.clearColor(.52,.69,.89,1);g.clear(g.COLOR_BUFFER_BIT|g.DEPTH_BUFFER_BIT)}catch(e){}s.requestAnimationFrame(f)};'
+        's.requestAnimationFrame(f)}}catch(e){}},'
+    ), (
+        'window.__gtXR.pending||navigator.xr.requestSession(',
+        '(window.__gtXR.taken=!0,window.__gtXR.pending)||navigator.xr.requestSession(',
+    )],
     # Draw every mesh individually: no gcEB batches, no custom vertex shader.
     "nobatch": [("const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[]};",
                  "const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[],off:!0};")],
