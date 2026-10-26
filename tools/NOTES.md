@@ -278,3 +278,29 @@ VR-entry fix; each item is for discussion first.
       texture/buffer uploads racing the previous frame) or timing-dependent.
       Headless cannot decide that; the A/B variants on the headset can.
 
+33. **3.15.6 on the headset: verification passes, the game boots, no VR.**
+    The launch log shows `TWA verification was successful!`, the page load
+    (12 s, the synchronous world build) and the ready sound, then
+    `cr_VrShellDelegate: setListeningForSessionGranted(true), navSession.isNull?
+    true` / `no navigation - no activation. Status -1`, and 15 s after the
+    launch the OS gives up on an immersive app that never submitted a frame
+    (`FocusPlaceholderActivity`, focus lost, activity destroyed).
+    Read from the Quest Browser's own code (APK from the author, dex
+    disassembled with `dexdump`): `VrShellDelegate.setListeningForSessionGranted`
+    grants the session only if a `WebVRNavigationDescriptor` exists with status
+    1-4. That descriptor is created in exactly two places: the delegate's tab
+    observer (`onDidStartNavigationInPrimaryMainFrame`), which is attached only
+    by `enterVRHelper`, i.e. once the delegate is already in VR; and the panel
+    browser's deep-link handler. A fresh immersive launch of a verified app
+    creates neither, so our early listener registration is received correctly
+    and there is nothing to grant. The second entry path, `presentRequested`
+    (the page calling `requestSession` itself), explicitly accepts Trusted Web
+    Activity tabs (`TWAUtils.isTWA`) and enters VR through the already-started
+    `WebXRCustomTabActivity`. Whether that path needs user activation in the
+    immersive activity is decided in the native library, not readable here.
+    Variant `directrequest` (built, sent to the author) requests the session
+    right after boot and logs the refusal reason to the console; the next
+    logcat answers it. The 2D-mode test (`CustomTabActivity`) gave
+    `NotSupportedError` then `SecurityError` on A presses: the plain custom tab
+    has no XR device, so that test says nothing about the immersive activity.
+
