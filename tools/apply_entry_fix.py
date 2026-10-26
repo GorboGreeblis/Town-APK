@@ -29,11 +29,14 @@ EXPERIMENTS = {
     # reason to the console (logcat shows it) if it refuses. Tests whether the
     # immersive activity accepts a page-initiated request without a press.
     "directrequest": [(
-        'gcEB.ready=!0;',
-        'gcEB.ready=!0;setTimeout(function(){try{console.error("[gtXR] direct requestSession attempt, granted="+(window.__gtXR&&window.__gtXR.granted)+", xr="+!!navigator.xr);je()}catch(e){console.error("[gtXR] direct attempt threw "+e)}},0);',
+        '(function(){var X=window.__gtXR={granted:!1,pending:null,enter:null};',
+        '(function(){var X=window.__gtXR={granted:!1,pending:null,enter:null};'
+        'var rep=X.rep=function(m){try{fetch("/log?m="+encodeURIComponent(m))}catch(e){}};'
+        'try{var xr=navigator.xr,orq=xr&&xr.requestSession;if(orq){xr.requestSession=function(){var a=arguments;rep("requestSession called: "+JSON.stringify(a[0])+" activation="+(navigator.userActivation?navigator.userActivation.isActive:"?"));'
+        'return orq.apply(xr,a).then(function(s){rep("requestSession OK");return s},function(e){rep("requestSession rejected: "+(e&&e.name)+": "+(e&&e.message));throw e})}}rep("head script ran, xr="+!!navigator.xr)}catch(e){rep("wrap failed "+e)}',
     ), (
-        'e&&(mo("gateText").textContent="VR could not start ("+(e.name||"error")+").\\nClick or press A to try again.",',
-        'e&&(console.error("[gtXR] requestSession failed: "+(e.name||"error")+": "+(e.message||e)),mo("gateText").textContent="VR could not start ("+(e.name||"error")+").\\nClick or press A to try again.",',
+        'gcEB.ready=!0;',
+        'gcEB.ready=!0;setTimeout(function(){var X=window.__gtXR;try{X.rep("world ready; granted="+X.granted+" enter="+!!X.enter+"; calling enter()");X.enter&&X.enter()}catch(e){X.rep("enter threw "+e)}},0);',
     )],
     # Session keep-alive: when the grant arrives before the world is built, the
     # early-created session gets a tiny WebGL layer and a clear-colour frame loop
