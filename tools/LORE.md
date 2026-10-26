@@ -59,8 +59,8 @@ marked *(inference)*. Gaps are listed at the end so the author can fill them.
 | Thing | Facts from the game |
 | --- | --- |
 | Blossoms | The town currency ("We only accept Blossoms at this establishment"; "the house currency is Blossoms"). 32 grow in the park and regrow in 12 s. Can be given as gifts. |
-| Flint | Gemtoe values gems in flint ("worth countless flint"); the shop prices in flint. *(inference: flint and acorns are the same counter; the shop deducts acorns.)* |
-| Acorns | 40 in the park, regrow in 12 s; spent in the shop. |
+| Flint | The pickups on the ground and the shop's currency (author confirmed: the game says flint; the code calls the same counter acorns). Gemtoe values gems in flint ("worth countless flint"). |
+| Flint pickups | 40 in the park, regrow in 12 s; spent in the shop (the code's `acorns`). |
 | Gems / Ancient Gem | Gemtoe hoards gems. "Ancient Gem collected!" is the finale reward (the Eye of the Sphinx). |
 | Artifacts | Three Ancient Artifacts exist in the region; one is awarded for each first dance-battle win. |
 | Summoning Stone | Obtained by trading the Gem: "I'll trade this rock I found for it." Wakes the Summoning Pillar's runes to start the gardening event. |
@@ -129,7 +129,7 @@ Library's VHS tapes.
 ## Open questions for the author
 
 1. Who are "the Ancient" and "Mama W" on the map? Neither speaks.
-2. Is flint the same as acorns? The shop deducts acorns while saying flint.
+2. (answered) Flint and the code's acorns are the same thing; flint is the game's word.
 3. What is the Field Office for? The building exists but carries no text.
 4. GLOOPERNAUGHT, PATCHOOLEE, STAPLERS, "works of Orson / Appterix": sign
    text only; any backstory?
