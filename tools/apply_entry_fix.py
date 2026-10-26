@@ -24,13 +24,13 @@ root = pathlib.Path(__file__).resolve().parent.parent
 # --experiment NAME: additionally apply one diagnostic variant (headset A/B tests for B12 etc.).
 # Variants are never used for the release asset; build_experiment.sh writes them elsewhere.
 EXPERIMENTS = {
-    # Sharp: render scale 1.2 at the top quality level (the projection layer's
-    # scaleFactor; the release renders at the native 1.0 at every level and the
-    # governor only changes foveation). 44% more pixels at level 0; the governor
-    # steps down to 1.1 / 1.0 under load. For a headset sharpness comparison.
-    "sharp": [(
+    # Native: the release renders at scale 1.2 / 1.1 at the top two quality
+    # levels and native 1.0 below (the author found the sharper picture better;
+    # the governor steps down under load, swaps are flash-free). This variant
+    # goes back to native scale at every level for A/B comparisons.
+    "native": [(
+        'quality:[1.2,1.1,1,1,1],foveation:[0,0,0,.5,1],',
         'quality:[1,1,1,1,1],foveation:[0,.25,.5,.75,1],',
-        'quality:[1.2,1.1,1,1,1],foveation:[0,.25,.5,.75,1],',
     )],
     # No layers: the release requests the WebXR "layers" feature (compositor
     # layers for the loading screen, projection layer for the game, NOTES 42,
@@ -351,6 +351,15 @@ GAME_FIXES = [
     (
         '})();const VIGS={};',
         '})();window.__gtBP=BP;const VIGS={};',
+    ),
+    # Sharpness: render scale 1.2 / 1.1 at the top two quality levels, native
+    # below; foveation only from level 3. The author compared 1.2 on the headset
+    # ("looks better"); the governor stepped it down to 1.1 after 4 s and to 1.0
+    # after a minute, which with flash-free layer swaps (xr_layers_shim.js) is
+    # the intended behaviour: sharp when there is headroom, native under load.
+    (
+        'quality:[1,1,1,1,1],foveation:[0,.25,.5,.75,1],',
+        'quality:[1.2,1.1,1,1,1],foveation:[0,0,0,.5,1],',
     ),
     # B11: Nextessa (the pizza courier) pinned against the Ancient. Inside the
     # church she walked straight at the player; when the player stood on the far
