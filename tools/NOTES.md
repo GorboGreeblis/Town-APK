@@ -359,3 +359,20 @@ VR-entry fix; each item is for discussion first.
     cover. Test: `test_world.js` forces eight stalls on a visible NPC and checks
     it lands on its target without errors.
 
+37. **Pre-warm of the pickup effects, and a cacheable page.** Two fixes applied
+    ahead of the final test pass at the author's request.
+    - *Effects pre-warm (B12 candidate 2, `GAME_FIXES`).* The hitch probe showed
+      the first pickup of a session creating 14 textures and 57 geometries on
+      the spot. The sliced boot now has an "effects" slice that creates them
+      out of sight (y = -60): every label text/colour pair the game uses
+      (hearts, "!", "?", sparkles, notes, "~", blossoms, dots), a 14-particle
+      sparkle burst and a splat, so a pickup never allocates on the GPU
+      mid-game. Whether this is the whole of the white flash is for the
+      headset A/B to say.
+    - *Cacheable page (wrapper).* `GameServer` now sends a strong ETag
+      (SHA-256 of the document) with `Cache-Control: no-cache` and answers
+      `If-None-Match` with 304, instead of `no-store`. Chromium can then keep
+      the document and its compiled-script cache between launches and still
+      never serve a stale build (the ETag changes with every build). The JVM
+      harness checks ETag, no-cache, 304 and a stale-ETag miss.
+

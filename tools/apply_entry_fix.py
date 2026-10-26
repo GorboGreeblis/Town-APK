@@ -218,6 +218,15 @@ GAME_FIXES = [
         'clear=(ax,az,bx,bz)=>{const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,bz-az)/.3));',
         'clear=(ax,az,bx,bz)=>{if(F.segBlocked(ax,az,bx,bz,.3))return!1;const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,bz-az)/.3));',
     ),
+    # B12 pre-warm: the first pickup of a session created 14 textures and 57
+    # geometries on the spot (sparkle pool, label textures, splat) and dropped
+    # frames. Warm them during the sliced boot, out of sight (y = -60), so a
+    # pickup never allocates on the GPU mid-game. Anchored on the entry edit's
+    # warm-up slice (GAME_FIXES apply after EDITS).
+    (
+        'await __gtY("warm-up"),Bulb.warm(),Ze(),Re.start()',
+        'await __gtY("warm-up"),Bulb.warm(),await __gtY("effects"),(function(){try{const y=-60;[["\u2665",M.pink],["\u2665","#e8a838"],["!",M.yellow],["!",M.pink],["?",M.teal],["\u2726",M.yellow],["\u2726","#62d6c8"],["\u266a",M.lime],["~",M.yellow],["\u273f",M.yellow],["\u273f",M.pink],["\u00b7",M.white]].forEach((([s2,c2])=>Ut.at(0,y,0,s2,c2)));Nt.sparkle(new c(0,y,0),14);Nt.splat(999,999,.5,"#ffffff")}catch(e){}})(),Ze(),Re.start()',
+    ),
     # B2: the stuck-rescue teleport only fired out of view (4 stalls, >12 m away
     # and outside the view), so an NPC stalling in front of the player twitched
     # for as long as they watched. Keep that, and add a visible fallback after 8

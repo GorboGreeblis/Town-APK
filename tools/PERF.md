@@ -109,11 +109,11 @@ at boot (section 6, item 2) removes all three.
 Ordered by payoff over risk. None change gameplay; all are "little fixes" in
 the author's sense except the last two, which change how assets are built.
 
-1. **Cacheable page** (section 1). Faster second launch. Wrapper only.
+1. **Cacheable page** (section 1). Faster second launch. Wrapper only. *Done in 3.15.9 (ETag + no-cache + 304).*
 2. **Pre-warm everything that first appears mid-game**: every label text and
    colour, the sparkle/splat/particle materials, the Event props, the battle
    and shop panels, so no shader compiles or texture uploads happen during
-   play. Game edit, small, same visuals. Candidate fix for B12.
+   play. Game edit, small, same visuals. Candidate fix for B12. *Pickup effects (labels, sparkles, splat) done in 3.15.9; battle/shop panels and Event props still compile on first use.*
 3. **Pre-rendered textures shipped as PNG/WebP** instead of painting 50
    canvases at boot (the gallery, posters, signs, skins). Cuts boot CPU and
    the canvas memory; needs a build step that runs the painters once (the
