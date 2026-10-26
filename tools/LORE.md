@@ -4,6 +4,15 @@ Compiled strictly from the game's own text and data in `tools/uncompressed.html`
 (v3.15). Lines are quoted as written. Anything not stated by the game is
 marked *(inference)*. Gaps are listed at the end so the author can fill them.
 
+
+> **Naming rule (author):** the names the game shows are the canon. The code's
+> identifiers are leftovers from earlier games and prove nothing: `acorns` is
+> flint, `drifter` is the Mushroom, `frog` is Fortizmo, `gratelet` is Hennrick,
+> `blinker` is Anomalee, `cutebex` is Zollod, `m_somlet` is Somlet, `gorbo` is
+> Gooward, `w_mont` is Montgummery, and so on. When a document needs an
+> identifier for a test or a probe, it says so and gives the in-game name next
+> to it.
+
 ## The world
 
 - **Greeblis Town / Greeblis Park.** A cartoon town around a park. Mama Gorbo:
