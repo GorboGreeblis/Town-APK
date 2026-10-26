@@ -35,7 +35,7 @@ const SAMPLE_S = Number(process.argv[3] || 40);
       tried++;
       try { if (J.roamFree(x, z, 0.6)) free.push([x, z]); } catch (e) { thrown = String(e); break; }
     }
-    let ok = 0, crossed = 0, missed = 0, empty = 0, maxLen = 0;
+    let ok = 0, crossed = 0, missed = 0, empty = 0, maxLen = 0, crossings = null;
     const r = 0.6;
     for (let i = 0; i + 1 < free.length; i += 2) {
       const [x0, z0] = free[i], [x1, z1] = free[i + 1];
@@ -43,12 +43,29 @@ const SAMPLE_S = Number(process.argv[3] || 40);
       if (!path || !path.length) { empty++; continue; }
       maxLen = Math.max(maxLen, path.length);
       let px = x0, pz = z0, bad = false;
-      for (const [x, z] of path) { if (F.segBlocked(px, pz, x, z, 0.2)) bad = true; px = x; pz = z; }
+      for (const [x, z] of path) {
+        if (F.segBlocked(px, pz, x, z, 0.2)) {
+          bad = true;
+          // How deep does the segment cut into the real hull? Sample along it.
+          let worst = 0, who = null;
+          for (let k = 0; k <= 20; k++) {
+            const sx = px + (x - px) * k / 20, sz = pz + (z - pz) * k / 20;
+            for (const B of F.buildings) {
+              if (!F.inHull(B, sx, sz)) continue;
+              const [lx, lz] = F.local(B, sx, sz), h = B.hull;
+              const depth = Math.min(lx - h[0], h[2] - lx, lz - h[1], h[3] - lz);
+              if (depth > worst) { worst = depth; who = B.name; }
+            }
+          }
+          (crossings = crossings || []).push({ building: who, depthM: +worst.toFixed(2), from: [+px.toFixed(1), +pz.toFixed(1)], to: [+x.toFixed(1), +z.toFixed(1)] });
+        }
+        px = x; pz = z;
+      }
       const end = path[path.length - 1];
       if (Math.hypot(end[0] - x1, end[1] - z1) > 0.01) missed++;
       if (bad) crossed++; else ok++;
     }
-    return { pairs: Math.floor(free.length / 2), ok, crossed, missed, empty, maxLen, tried, freeCells: free.length, thrown, park: [t.parkHalf, t.parkSouth] };
+    return { pairs: Math.floor(free.length / 2), ok, crossed, missed, empty, maxLen, tried, freeCells: free.length, thrown, crossings };
   });
   expect(`routes: ${routes.ok}/${routes.pairs} random pairs routed without crossing a hull`, routes.pairs >= 5 && routes.crossed === 0 && routes.empty === 0 && !routes.thrown, JSON.stringify(routes));
   expect('routes end at the requested point', routes.missed === 0, `${routes.missed} missed`);

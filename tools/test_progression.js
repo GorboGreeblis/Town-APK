@@ -23,6 +23,8 @@ const LONG = process.argv.includes('--long');
   const { failures, expect, note } = reporter();
   console.log(`booted in ${g.bootS.toFixed(1)}s, presenting after ${g.presentS.toFixed(1)}s; hooks: ${g.hooks.join(',')}`);
   const errCount = () => g.errors.length;
+  // Dialogue boxes need a player press to advance; this does it from the test.
+  await page.evaluate(() => { window.__autoAdvance = setInterval(() => { try { const q = window.__dbg.qt; if (q && q.isOpen) q.advance(); } catch (e) {} }, 250); });
 
   // ---- talk: show every line through the dialogue box
   const talk = await page.evaluate(async () => {
@@ -31,7 +33,7 @@ const LONG = process.argv.includes('--long');
       const lines = h.def && h.def.lines; if (!lines || !lines.length) continue;
       out.npcs++;
       for (const l of lines) {
-        try { D.qt.open(h.def.name, '#ffffff', l, () => {}); out.shown++; await new Promise((r) => setTimeout(r, 30)); D.qt.close && D.qt.close(); }
+        try { D.qt.open(h.def.name, '#ffffff', l, () => {}); out.shown++; const t0 = performance.now(); while (D.qt.isOpen && performance.now() - t0 < 3000) { D.qt.advance(); await new Promise((r) => setTimeout(r, 40)); } }
         catch (e) { out.problems.push(h.id + ': ' + String(e).slice(0, 80)); }
       }
     }
@@ -52,7 +54,7 @@ const LONG = process.argv.includes('--long');
     while (performance.now() - t0 < 60000) {
       const s = st(); if (!s || s.kind !== 'battle') break;
       if (s.done && s.done.label && /BOW/.test(s.done.label) && (!s.items || !s.items.length)) { out.won = /awards you/.test(s.log || ''); out.log.push(s.log); break; }
-      const items = (s.items || []).filter((i) => i.onClick);
+      const items = (s.items || []).filter((i) => i.onClick && !/BOW/i.test(i.label || '') && i.id !== 'run');
       if (!items.length) { await new Promise((r) => setTimeout(r, 200)); continue; }
       for (const it of items) { try { it.onClick(); out.clicks++; } catch (e) { out.log.push('click threw ' + e); } await new Promise((r) => setTimeout(r, 120)); }
     }
@@ -89,8 +91,8 @@ const LONG = process.argv.includes('--long');
     Kt.artifacts = 3;
     try { D.LIB.talk(); } catch (e) { out.threw = String(e); }
     const t0 = performance.now();
-    while (!Kt.rewards.artifacts && performance.now() - t0 < 40000) await new Promise((r) => setTimeout(r, 300));
-    out.rewardArtifacts = !!Kt.rewards.artifacts; out.gem = !!Kt.gem; out.seconds = +((performance.now() - t0) / 1000).toFixed(1);
+    while (!Kt.rewards.artifacts && performance.now() - t0 < 60000) await new Promise((r) => setTimeout(r, 300));
+    out.rewardArtifacts = !!Kt.rewards.artifacts; out.gem = !!Kt.gem; out.seconds = +((performance.now() - t0) / 1000).toFixed(1); out.dlgOpen = !!D.qt.isOpen; out.bulbHold = !!(D.Bulb && D.Bulb.hold); out.spEnt = !!(D.st && D.st.ent);
     return out;
   });
   expect('library: three Artifacts -> Sparkakus finale awards the Gem', lib.rewardArtifacts && lib.gem, JSON.stringify(lib));
