@@ -99,8 +99,8 @@ VR-entry fix; each item is for discussion first.
 
 16. **Hennrick grammar.** His campfire line reads "Sometimes worry that doing
     these things will alter the timeline…" and is missing its subject
-    ("Sometimes I worry…"). Entity id `gratelet`, field `campfire`. Not
-    changed; one-word fix when approved.
+    ("Sometimes I worry…"). Entity id `gratelet`, field `campfire`.
+    **Fixed** (approved): applied by `tools/apply_entry_fix.py`, GAME_FIXES.
 17. **Hennrick and the field office.** The only line of his that touches the
     subject is "These joints were built for fieldwork, not a desk." The line
     "See anything glowing in the sky, you report it to this office." belongs

@@ -82,6 +82,11 @@ GAME_FIXES = [
         'const clip=(p,q)=>{if(Math.abs(p)<1e-9)return q>=0;const r=q/p;return p<0?r>t1?!1:(r>t0&&(t0=r),!0):r<t0?!1:(r<t1&&(t1=r),!0)};'
         'if(clip(-dx,ax-(h[0]-m))&&clip(dx,h[2]+m-ax)&&clip(-dz,az-(h[1]-m))&&clip(dz,h[3]+m-az)&&t0<=t1)return!0}return!1}',
     ),
+    # Hennrick's campfire line was missing its subject.
+    (
+        'campfire:"Sometimes worry that doing these things will alter the timeline…"',
+        'campfire:"Sometimes I worry that doing these things will alter the timeline…"',
+    ),
 ]
 
 for old, new in EDITS + GAME_FIXES:
