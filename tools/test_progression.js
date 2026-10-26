@@ -97,16 +97,23 @@ const LONG = process.argv.includes('--long');
   });
   expect('library: three Artifacts -> Sparkakus finale awards the Gem', lib.rewardArtifacts && lib.gem, JSON.stringify(lib));
 
-  // ---- gem trade -> Summoning Stone
+  // ---- gem trade -> Summoning Stone (give Gemtoe a blossom while holding the Gem)
   const trade = await page.evaluate(async () => {
     const D = window.__dbg, Kt = D.Kt; const out = { before: !!Kt.rewards.stone };
-    const gt = D.gemTrade; out.api = gt && Object.keys(gt);
-    if (gt && typeof gt.run === 'function') gt.run(); else if (gt && typeof gt.offer === 'function') gt.offer();
+    const tw = performance.now();
+    while (D.qt.isOpen && performance.now() - tw < 40000) await new Promise((r) => setTimeout(r, 200));
+    const gt = D.It.byId.p_gemtoe; if (!gt) return { error: 'no p_gemtoe' };
+    Kt.gem = true; Kt.blossoms = Math.max(Kt.blossoms, 3);
+    D.At.position.set(gt.group.position.x + 2, D.At.position.y, gt.group.position.z + 2);
+    const acts = D.xe.actionsFor(gt) || []; out.actions = acts.map((a) => a.label);
+    const give = acts.find((a) => a.verb === 'give');
+    if (!give) return Object.assign(out, { error: 'no give action' });
+    give.run();
     const t0 = performance.now();
-    while (!Kt.rewards.stone && performance.now() - t0 < 15000) await new Promise((r) => setTimeout(r, 300));
-    out.stone = !!Kt.rewards.stone; return out;
+    while (!Kt.rewards.stone && performance.now() - t0 < 20000) await new Promise((r) => setTimeout(r, 300));
+    out.stone = !!Kt.rewards.stone; out.gemLeft = !!Kt.gem; return out;
   });
-  if (trade.stone) expect('trade: Gem traded for the Summoning Stone', true); else note('trade: no callable entry point found on gemTrade (' + JSON.stringify(trade.api) + '); setting the reward directly for the next steps');
+  expect('trade: giving Gemtoe a blossom while holding the Gem yields the Summoning Stone', trade.stone === true && trade.gemLeft === false, JSON.stringify(trade));
 
   // ---- pizza
   const pizza = await page.evaluate(async () => {
