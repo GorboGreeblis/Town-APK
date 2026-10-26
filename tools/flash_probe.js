@@ -26,9 +26,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const B = D.B, F = D.F;
     const lookAt = async (x, z) => { // steer the fake head yaw until the point projects near the view centre
       const v = new (D.At.position.constructor)(); for (let k = 0; k < 12; k++) { await wait(400); v.set(x, 1, z); v.project(B); if (v.z < 1 && Math.abs(v.x) < 0.25) return { ok: true, nx: +v.x.toFixed(2), ny: +v.y.toFixed(2) }; window.__fakeXR.pose.yaw += (v.z < 1 ? -v.x * 0.6 : 1.2); } v.set(x, 1, z); v.project(B); return { ok: false, nx: +v.x.toFixed(2), nz: +v.z.toFixed(2) }; };
-    // Scenario A: 25 m from the shop kiosk, facing it; pick up three blossoms and two acorns without moving.
-    const shop = F.buildings.find((b) => b.name === 'shop'); const dx = -shop.x, dz = -shop.z, L = Math.hypot(dx, dz) || 1;
-    D.At.position.set(shop.x + dx / L * 25, D.At.position.y, shop.z + dz / L * 25);
+    // Scenario A: 22 m from Zollod's Garden Supplies kiosk (building 'garden'), facing it; pick up three blossoms and two acorns without moving.
+    const shop = F.buildings.find((b) => b.name === 'garden') || F.buildings.find((b) => b.name === 'shop'); out.A_building = shop.name; const dx = -shop.x, dz = -shop.z, L = Math.hypot(dx, dz) || 1;
+    D.At.position.set(shop.x + dx / L * 22, D.At.position.y, shop.z + dz / L * 22);
     out.A_look = await lookAt(shop.x, shop.z); await wait(2500);
     phase = 'A-still'; await wait(3000);
     phase = 'A-pickups'; for (const b of D.le.list.filter((x) => x.visible && !x.userData.taken).slice(0, 3)) { D.le.take(b); await wait(1500); }
