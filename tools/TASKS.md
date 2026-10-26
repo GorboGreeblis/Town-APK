@@ -7,7 +7,7 @@ Living list. Done items move to the bottom with the date. Bugs live in
 
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
-| T2 | Safe release build. main holds 3.15.2, which stalls on the loading screen (B9). B9's cause is found and fixed in 3.15.4 (serve as http://localhost); once the headset confirms a direct VR launch, PR #4 lands the safe build on main | awaiting headset confirmation | PR #4 |
+| T2 | Safe release build. main holds 3.15.2, which stalls on the loading screen (B9). B9: 3.15.4 fixed the origin (http://localhost); its headset log showed the asset-links 404, fixed in 3.15.5 (server serves `/.well-known/assetlinks.json`). Once the headset confirms a direct VR launch, PR #4 lands the safe build on main | awaiting headset confirmation of 3.15.5 | PR #4 |
 | T3 | Headset test of the release build (direct-to-VR launch, play through, quit cleanly) | open, developer | `RELEASE.md` section 3 |
 | T4 | Store upload: Alpha channel first, listing assets, questionnaires, privacy policy URL | open, developer | `RELEASE.md` section 5 |
 | T5 | Extend the input test: body collision, park bounds, pick ray and menu choice through fake controllers (dead-zone, walking, snap turn, select/squeeze, hull collision already pass) | open | `tools/test_input.js` |

@@ -22,7 +22,9 @@ public final class Harness {
             System.exit(2);
         }
         byte[] doc = Files.readAllBytes(Path.of(args[0]));
-        GameServer server = new GameServer(doc);
+        String print = GameServer.sha256Fingerprint("not a real certificate".getBytes());
+        String links = GameServer.assetLinksJson("com.montgummery.greeblis", new String[]{print});
+        GameServer server = new GameServer(doc, links);
         System.out.println("URL " + server.url());
         if (args[1].equals("--serve")) {
             Thread.currentThread().join();
@@ -41,6 +43,16 @@ public final class Harness {
         failures += expect("GET /nope is 404", fetch(server.url() + "nope", "GET").status == 404);
         failures += expect("GET /favicon.ico is 404", fetch(server.url() + "favicon.ico", "GET").status == 404);
         failures += expect("POST / is 405", fetch(server.url(), "POST").status == 405);
+        Resp al = fetch(server.url() + ".well-known/assetlinks.json", "GET");
+        String alBody = new String(al.body, "UTF-8");
+        failures += expect("GET /.well-known/assetlinks.json is 200 application/json", al.status == 200 && "application/json".equals(al.type));
+        failures += expect("assetlinks names the package, the handle_all_urls relation and the certificate fingerprint",
+                alBody.contains("\"package_name\":\"com.montgummery.greeblis\"")
+                && alBody.contains("delegate_permission/common.handle_all_urls")
+                && alBody.contains("\"sha256_cert_fingerprints\":[\"" + print + "\"]"));
+        failures += expect("fingerprint is 32 colon-separated upper-case hex bytes", print.matches("([0-9A-F]{2}:){31}[0-9A-F]{2}"));
+        failures += expect("HEAD /.well-known/assetlinks.json is 200, empty body", fetch(server.url() + ".well-known/assetlinks.json", "HEAD").status == 200);
+        failures += expect("POST /.well-known/assetlinks.json is 405", fetch(server.url() + ".well-known/assetlinks.json", "POST").status == 405);
         failures += expect("addressed as http://localhost:" + server.port(), server.url().startsWith("http://localhost:"));
         // Ten quick parallel fetches: the server spawns a thread per connection.
         Thread[] ts = new Thread[10];

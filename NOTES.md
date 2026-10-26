@@ -203,3 +203,21 @@ VR-entry fix; each item is for discussion first.
     on `::1` in case `localhost` resolves to IPv6 first. No hosting, no
     browser window: the immersive activity should now verify and go straight
     to `sessiongranted`.
+
+30. **3.15.4 passed the origin check and hit the next one: Digital Asset
+    Links.** With `http://localhost:17777/` the browser no longer rejects the
+    origin, but Trusted Web Activity verification has a second step: it fetches
+    `/.well-known/assetlinks.json` from the origin and requires a statement that
+    names the launching package and its signing certificate. Our server
+    answered 404 for anything but the game, so the log shows
+    `digital_asset_links_handler.cc: Digital Asset Links endpoint responded
+    with code 404` followed by `TWA verification was unsuccessful! Exiting the
+    activity.` 3.15.5 serves that file from the loopback server. The statement
+    is built at runtime from the installed package's own signing certificate
+    (`PackageManager.GET_SIGNING_CERTIFICATES`, SHA-256, colon-separated upper
+    case as keytool and Chromium print it), so it stays correct whichever key
+    signed the build. The JVM harness checks the path, content type, relation,
+    package name and fingerprint format (`tools/test_server.sh`). This is the
+    same mechanism a hosted PWA uses; the only difference is that the "host"
+    is the APK itself, so the no-hosting rule still holds.
+

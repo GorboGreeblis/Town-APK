@@ -1,6 +1,10 @@
 package com.montgummery.greeblis;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
+import android.content.pm.SigningInfo;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -13,6 +17,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Tiny loopback-only HTTP server that hands the bundled game to the Meta Quest
@@ -21,7 +27,9 @@ import java.nio.charset.StandardCharsets;
  * <ul>
  *   <li>Binds to 127.0.0.1 only; nothing outside the headset can reach it.</li>
  *   <li>Serves exactly one document (assets/index.html) which is loaded into
- *       memory once. Everything else is a 404.</li>
+ *       memory once, plus the Digital Asset Links file the browser fetches to
+ *       verify the Trusted Web Activity (see {@link #ASSET_LINKS_PATH}).
+ *       Everything else is a 404.</li>
  *   <li>The game makes no further requests after the first load, so the server
  *       only has to live for the first few seconds. It is a daemon thread that
  *       dies with the process.</li>
@@ -33,11 +41,19 @@ public final class GameServer {
     private static final String TAG = "GreeblisServer";
     static final String ASSET = "index.html";
     static final int PREFERRED_PORT = 17777;
+    /**
+     * The browser's TWA verification fetches this from the game's origin and
+     * requires it to name this package and its signing certificate; a 404 here
+     * makes WebXRCustomTabActivity log "TWA verification was unsuccessful" and
+     * exit, which looked like a hang on the Quest loading screen.
+     */
+    static final String ASSET_LINKS_PATH = "/.well-known/assetlinks.json";
     private static final int PORT_ATTEMPTS = 10;
 
     private static GameServer sInstance;
 
     private final byte[] mDocument;
+    private final byte[] mAssetLinks;
     private final ServerSocket mSocket;      // 127.0.0.1
     private ServerSocket mSocket6;           // ::1, same port, if available
     private final int mPort;
@@ -51,8 +67,9 @@ public final class GameServer {
     }
 
     /** Package-private so the JVM test harness can drive it without Android. */
-    GameServer(byte[] document) throws IOException {
+    GameServer(byte[] document, String assetLinksJson) throws IOException {
         mDocument = document;
+        mAssetLinks = assetLinksJson.getBytes(StandardCharsets.UTF_8);
         mSocket = bind();
         mPort = mSocket.getLocalPort();
         Thread t = new Thread(() -> acceptLoop(mSocket), "greeblis-http");
@@ -72,7 +89,60 @@ public final class GameServer {
     }
 
     private GameServer(Context context) throws IOException {
-        this(readAsset(context));
+        this(readAsset(context), assetLinksJson(context));
+    }
+
+    /**
+     * Digital Asset Links statement for this very APK: its package name and the
+     * SHA-256 fingerprint(s) of the certificate it is signed with, read from the
+     * installed package so it stays correct whichever key signed the build.
+     */
+    static String assetLinksJson(Context context) {
+        String pkg = context.getPackageName();
+        String[] prints;
+        try {
+            PackageInfo info = context.getPackageManager().getPackageInfo(
+                    pkg, PackageManager.GET_SIGNING_CERTIFICATES);
+            SigningInfo si = info.signingInfo;
+            Signature[] sigs = si == null ? null
+                    : (si.hasMultipleSigners() ? si.getApkContentsSigners() : si.getSigningCertificateHistory());
+            if (sigs == null || sigs.length == 0) {
+                throw new PackageManager.NameNotFoundException("no signatures");
+            }
+            prints = new String[sigs.length];
+            for (int i = 0; i < sigs.length; i++) {
+                prints[i] = sha256Fingerprint(sigs[i].toByteArray());
+            }
+        } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException e) {
+            Log.e(TAG, "cannot read own signing certificate", e);
+            prints = new String[0];
+        }
+        return assetLinksJson(pkg, prints);
+    }
+
+    /** Builds the statement list for the given package and certificate fingerprints. */
+    static String assetLinksJson(String packageName, String[] sha256Fingerprints) {
+        StringBuilder sb = new StringBuilder(256);
+        sb.append("[{\"relation\":[\"delegate_permission/common.handle_all_urls\"],")
+          .append("\"target\":{\"namespace\":\"android_app\",\"package_name\":\"")
+          .append(packageName).append("\",\"sha256_cert_fingerprints\":[");
+        for (int i = 0; i < sha256Fingerprints.length; i++) {
+            if (i > 0) sb.append(',');
+            sb.append('"').append(sha256Fingerprints[i]).append('"');
+        }
+        sb.append("]}}]");
+        return sb.toString();
+    }
+
+    /** Colon-separated upper-case hex, the form keytool and Chromium use. */
+    static String sha256Fingerprint(byte[] certificate) throws NoSuchAlgorithmException {
+        byte[] d = MessageDigest.getInstance("SHA-256").digest(certificate);
+        StringBuilder sb = new StringBuilder(d.length * 3);
+        for (int i = 0; i < d.length; i++) {
+            if (i > 0) sb.append(':');
+            sb.append(String.format("%02X", d[i] & 0xff));
+        }
+        return sb.toString();
     }
 
     /**
@@ -181,11 +251,17 @@ public final class GameServer {
             }
             OutputStream out = c.getOutputStream();
             boolean isDoc = target.equals("/") || target.equals("/index.html");
+            boolean isLinks = target.equals(ASSET_LINKS_PATH);
             boolean methodOk = method.equals("GET") || method.equals("HEAD");
             if (isDoc && methodOk) {
                 writeHead(out, "200 OK", "text/html; charset=utf-8", mDocument.length);
                 if (method.equals("GET")) {
                     out.write(mDocument);
+                }
+            } else if (isLinks && methodOk) {
+                writeHead(out, "200 OK", "application/json", mAssetLinks.length);
+                if (method.equals("GET")) {
+                    out.write(mAssetLinks);
                 }
             } else if (!methodOk) {
                 byte[] body = "Method Not Allowed".getBytes(StandardCharsets.US_ASCII);
