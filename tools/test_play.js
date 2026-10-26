@@ -85,9 +85,10 @@ async function scenario(name, srvUrl, browser) {
   page.on('pageerror', (e) => errors.push('pageerror: ' + String(e).split('\n')[0]));
   page.on('console', (m) => { if (m.type() === 'error' && !noise.test(m.text())) errors.push('console: ' + m.text().split('\n')[0]); });
   await page.addInitScript(instrument);
-  if (name === 'vr') {
+  if (name.startsWith('vr')) {
     await page.addInitScript(fakexr);
     await page.addInitScript(installHooks);
+    if (name === 'vr-nofloor') await page.addInitScript(() => { window.__fakeXR.supportLocalFloor = false; });   // the game must fall back to `local` + floorOffset
   }
 
   const failures = [];
@@ -111,7 +112,7 @@ async function scenario(name, srvUrl, browser) {
   expect('a WebGL canvas exists', s.canvases >= 1);
   expect('no page errors during boot', errors.length === 0, errors.slice(0, 3).join(' | '));
 
-  if (name === 'vr') {
+  if (name.startsWith('vr')) {
     await page.evaluate(() => window.__play.fireGrant());
     await page.waitForFunction(() => window.__play.xrFrames > 5 || window.__play.errors.length, null, { timeout: 60000 }).catch(() => {});
     const inPage = await page.evaluate(() => window.__play.errors);
@@ -125,10 +126,10 @@ async function scenario(name, srvUrl, browser) {
   const before = await state();
   await page.waitForTimeout(RUN_S * 1000);
   const after = await state();
-  const frames = name === 'vr' ? after.xrFrames - before.xrFrames : after.raf - before.raf;
-  console.log(`[${name}] ran ${RUN_S}s: ${frames} ${name === 'vr' ? 'XR' : 'rAF'} frames (${(frames / RUN_S).toFixed(1)} fps, software GL), heap ${before.heapMB}MB -> ${after.heapMB}MB`);
+  const frames = name.startsWith('vr') ? after.xrFrames - before.xrFrames : after.raf - before.raf;
+  console.log(`[${name}] ran ${RUN_S}s: ${frames} ${name.startsWith('vr') ? 'XR' : 'rAF'} frames (${(frames / RUN_S).toFixed(1)} fps, software GL), heap ${before.heapMB}MB -> ${after.heapMB}MB`);
   // Software GL: expect at least ~0.5 fps in VR (stereo) and 2 fps in 2D.
-  expect(`frame loop alive over ${RUN_S}s`, frames > RUN_S * (name === 'vr' ? 0.5 : 2), `${frames} frames`);
+  expect(`frame loop alive over ${RUN_S}s`, frames > RUN_S * (name.startsWith('vr') ? 0.5 : 2), `${frames} frames`);
   expect('no page errors while running', errors.length === 0, errors.slice(0, 3).join(' | '));
   if (before.heapMB != null) expect('JS heap did not grow more than 50% while running', after.heapMB <= before.heapMB * 1.5 + 8, `${before.heapMB}MB -> ${after.heapMB}MB`);
 
@@ -149,6 +150,38 @@ async function scenario(name, srvUrl, browser) {
     });
     expect('layer swap keeps the old layer in front until the new one is drawn, then drops it', sw.before === 1 && sw.during === 2 && sw.after === 1 && sw.frames >= 2 && sw.scale === 0.9, JSON.stringify(sw));
   }
+  if (name === 'vr' && s.hasSession) {
+    // Session visibility: hidden (system menu) then visible again; the game blurs, captures its textures,
+    // restores them and keeps rendering (`Ho.capture/restore`, `o.blurred`).
+    const vis = await page.evaluate(async () => {
+      const real = window.__play.session; const f0 = window.__fakeXR.frames;
+      real.setVisibility('hidden'); await new Promise((r) => setTimeout(r, 600));
+      const hiddenFrames = window.__fakeXR.frames - f0;
+      real.setVisibility('visible');
+      const t0 = performance.now(); const f1 = window.__fakeXR.frames;
+      while (window.__fakeXR.frames - f1 < 5 && performance.now() - t0 < 15000) await new Promise((r) => setTimeout(r, 50));
+      return { hiddenFrames, resumedFrames: window.__fakeXR.frames - f1, state: real.visibilityState };
+    });
+    expect('session hidden then visible: frames resume', vis.resumedFrames >= 5 && vis.state === 'visible', JSON.stringify(vis));
+    // WebGL context loss and restore (WEBGL_lose_context): no page errors and frames resume.
+    const ctxLoss = await page.evaluate(async () => {
+      const cv = document.querySelector('#game canvas') || document.querySelector('canvas');
+      const gl = cv.getContext('webgl2') || cv.getContext('webgl'); const ext = gl && gl.getExtension('WEBGL_lose_context');
+      if (!ext) return { skipped: 'no WEBGL_lose_context' };
+      ext.loseContext(); await new Promise((r) => setTimeout(r, 800));
+      ext.restoreContext();
+      const t0 = performance.now(); const f1 = window.__fakeXR.frames;
+      while (window.__fakeXR.frames - f1 < 5 && performance.now() - t0 < 20000) await new Promise((r) => setTimeout(r, 50));
+      return { resumedFrames: window.__fakeXR.frames - f1, lost: gl.isContextLost() };
+    });
+    if (ctxLoss.skipped) console.log(`  NOTE  context loss check skipped (${ctxLoss.skipped})`);
+    // Known limitation (BUGS B19): XR frames do not resume after a context loss headless, with or without the
+    // layers path (the original game behaves the same); reported, not failed, until a Quest reproduction exists.
+    else console.log(`  ${ctxLoss.resumedFrames >= 5 ? 'PASS' : 'NOTE'}  WebGL context lost and restored: ${ctxLoss.resumedFrames >= 5 ? 'frames resume' : 'frames did not resume (B19, known)'}  [${JSON.stringify(ctxLoss)}]`);
+    const errs2 = await page.evaluate(() => window.__play.errors);
+    for (const e of errs2) if (!errors.includes(e)) errors.push(e);
+    expect('no page errors across visibility change and context loss', errors.length === 0, errors.slice(0, 3).join(' | '));
+  }
   const shot = path.join(outDir, name + '.png');
   // In layers mode the game renders into the projection layer's texture, never the canvas,
   // so a page screenshot can stall in headless Chromium: bounded wait, and a note instead of a failure.
@@ -162,7 +195,7 @@ async function scenario(name, srvUrl, browser) {
   if (shotOk && layersMode) console.log(`  NOTE  screenshot blank by design in layers mode (${sample.size} distinct sampled bytes; the XR frames check above covers rendering)`);
   else if (shotOk) expect('screenshot is not a blank frame', sample.size > 40, `${sample.size} distinct sampled bytes, saved ${path.relative(root, shot)}`);
 
-  if (name === 'vr' && s.hasSession) {
+  if (name.startsWith('vr') && s.hasSession) {
     await page.evaluate(() => window.__play.session.end());
     await page.waitForTimeout(1500);
     s = await state();
@@ -179,7 +212,7 @@ async function scenario(name, srvUrl, browser) {
   const url = `http://127.0.0.1:${srv.address().port}/`;
   console.log(`file: ${file}\nserving at ${url}`);
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--autoplay-policy=no-user-gesture-required'] });
-  const names = which === 'all' ? ['2d', 'vr'] : [which];
+  const names = which === 'all' ? ['2d', 'vr', 'vr-nofloor'] : [which];
   let failed = 0;
   for (const n of names) {
     try { failed += (await scenario(n, url, browser)).length; }

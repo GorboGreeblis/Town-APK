@@ -38,8 +38,9 @@ Living list. Done items move to the bottom with the date. Bugs live in
 
 - **3.15.19 passes the author's full headset run, no new issues.** It is the upload
   candidate (root APK, versionCode 20); RELEASE.md section 5. B12 closed.
-- Parked for the next build after the upload: 3.15.20's page-start asset download
-  (entry-script change, needs a headset run per the rule), see NOTES 50.
+- 3.15.21 built: panel about 15 degrees at 5 m with a horizon in the loading sky (author:
+  25 degrees still too close), plus the page-start asset download (NOTES 51). Needs the
+  author's loading-screen check; 3.15.19 stays the upload candidate until then.
 - Remaining: T4 store upload (author: comfort rating Moderate, add Standing, screenshots,
   copy); T10 lore (author); T15 tools/docs upkeep; T12 further loading cuts only with
   content changes (player build, kiosks).

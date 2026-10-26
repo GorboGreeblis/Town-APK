@@ -30,6 +30,7 @@ The repository root holds only the final build, `GreeblisTown-release.apk`, and 
 | `hitch_probe.js` | Report: worst frame and the shader programs, textures, geometries and scene objects created by the first pickup, a new label, a dialogue, the battle panel and the Event start. |
 | `slice_profile.js` | Report: CPU profile of the boot attributed to the boot slices (hot functions per slice, clock-aligned), the tool that found the blob-body march (NOTES 49). |
 | `geom_compare.js` | Boots two assets and compares every character's mesh vertices; proves a change to the model builders does not change the models. |
+| `flash_probe.js` | Report: screenshots consecutive frames around a pickup and reports per-frame brightness jumps (the white-flash investigation, B12; no headless reproduction, kept for the record). |
 | `boot_profile.js`, `perf_probe.js` | Reports: CPU profile of the sliced boot (loading time), and scene cost (draw calls, triangles, materials). |
 | `lib/xr_layers_shim.js` | The WebXR Layers mode of the entry script (embedded by `apply_entry_fix.py`): compositor layers for the loading screen, a projection layer behind a session facade for the game (NOTES 42). |
 | `build_experiment.sh NAME` | Builds an A/B variant APK (`sharp`, `nolayers`, `nobatch`, `noeffects`, `nogovernor`) into `.runs/`, same package and version as the release. |
