@@ -62,7 +62,10 @@ to the game's logic:
    so the loading screen keeps drawing and the OS always sees frames; the
    yield anchors come from a parse of the script (`tools/lib/boot_map.js`);
 4. at the end of the boot the game enters the parked session through its own
-   routine, and the loader stops.
+   routine, and the loader stops;
+5. the procedural textures are pre-rendered at build time into `assets/tex/`
+   (`tools/prerender_textures.js`) and blitted at runtime instead of repainted;
+   text-bearing textures are still painted on the headset.
 
 The "Press A" screen still works unchanged when the game is opened in a 2D
 browser window on a non-Quest browser.

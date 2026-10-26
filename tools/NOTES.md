@@ -376,3 +376,20 @@ VR-entry fix; each item is for discussion first.
       never serve a stale build (the ETag changes with every build). The JVM
       harness checks ETag, no-cache, 304 and a stale-ETag miss.
 
+38. **Pre-rendered textures (using the APK's space).** The game paints its
+    textures procedurally with 50 canvas painters at boot (14% of the boot CPU
+    in the profile), a legacy of the on-chain size limit. The APK has no such
+    limit, so `tools/prerender_textures.js` boots a capture variant once,
+    records every painter's output and writes PNGs plus a manifest to
+    `assets/tex/` (105 textures, 8.5 MB). At runtime the head script fetches
+    them from the loopback server during the loading screen (`__gtAssets`,
+    awaited at the start of the sliced boot) and the painter `b()` blits the
+    decoded bitmap instead of repainting. Matching is by canvas size, a hash of
+    the painter's source and the call ordinal, and only during the boot;
+    painters that draw text are never substituted, because fonts differ
+    between the build machine and the headset and the game must look the
+    same as before. If the files are missing (hosted copy, old server) the
+    painters simply run as before. Headless check: 105 loaded, 104 used, no
+    errors. The server and the harness serve `/tex/*`; the APK grew from 3 to
+    about 12 MB.
+

@@ -114,7 +114,7 @@ the author's sense except the last two, which change how assets are built.
    colour, the sparkle/splat/particle materials, the Event props, the battle
    and shop panels, so no shader compiles or texture uploads happen during
    play. Game edit, small, same visuals. Candidate fix for B12. *Pickup effects (labels, sparkles, splat) done in 3.15.9; battle/shop panels and Event props still compile on first use.*
-3. **Pre-rendered textures shipped as PNG/WebP** instead of painting 50
+3. *(Done in 3.15.9, see NOTES 38.)* **Pre-rendered textures shipped as PNG/WebP** instead of painting 50
    canvases at boot (the gallery, posters, signs, skins). Cuts boot CPU and
    the canvas memory; needs a build step that runs the painters once (the
    harness can do it) and a loader. Medium change.
