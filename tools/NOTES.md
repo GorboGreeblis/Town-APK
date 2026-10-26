@@ -266,4 +266,15 @@ VR-entry fix; each item is for discussion first.
       headset A/B variants from `tools/build_experiment.sh`: `nobatch`,
       `noeffects`, `nogovernor`. Whichever variant makes the flash disappear
       names the cause.
+    - Result of the brightness probe on 3.15.6 (software GL, 1280x720 read-back
+      of every rendered frame): no anomalous frame during three blossom and two
+      acorn pickups while facing the garden kiosk from 22 m (near-white pixel
+      count 6-12 per frame throughout, frame-to-frame jumps under 10 pixels),
+      and none during 20 s of the Event looking at the garden. The hitch probe
+      in the same build shows the first pickup of a session uploading 14
+      textures and 57 geometries on the spot. So the flash is not in the
+      scene's colours as computed by the game; it is either Adreno-specific
+      (dynamically indexed uniform arrays in the batch vertex shader, or
+      texture/buffer uploads racing the previous frame) or timing-dependent.
+      Headless cannot decide that; the A/B variants on the headset can.
 
