@@ -14,8 +14,8 @@ AJAR=$(ls "$SDK"/platforms/android-3[4-9]/android.jar 2>/dev/null | tail -1)
 OUT=${TMPDIR:-/tmp}/greeblis-server-harness
 rm -rf "$OUT" && mkdir -p "$OUT"
 javac -nowarn -d "$OUT" -cp "$AJAR" \
-  "$ROOT/android/app/src/main/java/com/gorbogreeblis/greeblistown/GameServer.java" \
+  "$ROOT/android/app/src/main/java/com/montgummery/greeblis/GameServer.java" \
   "$ROOT/tools/server_harness/android/util/Log.java" \
-  "$ROOT/tools/server_harness/com/gorbogreeblis/greeblistown/Harness.java"
-exec java -cp "$OUT:$AJAR" com.gorbogreeblis.greeblistown.Harness \
+  "$ROOT/tools/server_harness/com/montgummery/greeblis/Harness.java"
+exec java -cp "$OUT:$AJAR" com.montgummery.greeblis.Harness \
   "$ROOT/android/app/src/main/assets/index.html" "${1:---check}"

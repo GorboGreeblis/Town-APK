@@ -105,7 +105,7 @@ adb logcat -s GreeblisServer GreeblisLauncher TwaLauncher TWALauncherActivity
 
 ## Store submission checklist
 
-- Package name `com.gorbogreeblis.greeblistown` and the signing key must match
+- Package name `com.montgummery.greeblis` and the signing key must match
   any build previously uploaded to the app (ID 1441937125658740). If an
   earlier upload used a different package name, change `applicationId` in
   `android/app/build.gradle` to match before building.

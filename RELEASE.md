@@ -27,7 +27,7 @@ update of the app must be signed with the same key, or the store rejects it.
    ```sh
    keytool -genkeypair -keystore greeblis-town-release.jks -alias greeblistown \
      -keyalg RSA -keysize 2048 -validity 10000 \
-     -dname "CN=Greeblis Town, O=GorboGreeblis"
+     -dname "CN=Greeblis Town, O=Montgummery Games"
    ```
    then put the passwords in `android/keystore.properties`:
    ```
@@ -39,7 +39,7 @@ update of the app must be signed with the same key, or the store rejects it.
 
 ## 2. Package name check (before the first upload)
 
-The APK's package name is `com.gorbogreeblis.greeblistown`. Open the Meta
+The APK's package name is `com.montgummery.greeblis`. Open the Meta
 Horizon Developer Dashboard, pick the Greeblis Town app (ID 1441937125658740),
 and look at **Distribution → Builds**:
 
