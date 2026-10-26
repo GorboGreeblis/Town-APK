@@ -19,7 +19,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const orig = sess.requestAnimationFrame.bind(sess);
     sess.requestAnimationFrame = (cb) => orig((t, f) => { const a = performance.now(); cb(t, f); samples.push(performance.now() - a); });
     const progNames = () => O.info.programs.map((p) => p.name + (p.cacheKey ? '#' + String(p.cacheKey).length : ''));
-    const snap = () => ({ programs: O.info.programs.length, progNames: progNames(), textures: O.info.memory.textures, geometries: O.info.memory.geometries, heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null });
+    const C = D.C; const ids = () => { const m = new Map(); C.traverse((o) => m.set(o.uuid, o)); return m; };
+    const snap = () => ({ objs: ids(), programs: O.info.programs.length, progNames: progNames(), textures: O.info.memory.textures, geometries: O.info.memory.geometries, heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null });
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     const measure = async (name, act, settleMs = 2500) => {
       await wait(1500); const before = snap(); const n0 = samples.length; const base = samples.slice(-30);
@@ -27,7 +28,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       try { await act(); } catch (e) { out[name] = { error: String(e) }; return; }
       await wait(settleMs); const after = snap(); const win = samples.slice(n0);
       const mx = Math.max(...win);
-      out[name] = { newPrograms: after.programs - before.programs, newProgramNames: after.progNames.filter((n) => !before.progNames.includes(n)), newTextures: after.textures - before.textures, newGeometries: after.geometries - before.geometries, heapDeltaMB: after.heap - before.heap, baselineFrameMs: +baseP50.toFixed(1), worstFrameMs: +mx.toFixed(1), framesOver2xBaseline: win.filter((x) => x > 2 * baseP50).length, frames: win.length };
+      const newObjs = {}; for (const [id, o] of after.objs) if (!before.objs.has(id)) { const k = o.type + (o.geometry ? '/' + o.geometry.type : '') + (o.material ? '/' + o.material.type : '') + ' in ' + ((o.parent && (o.parent.name || o.parent.type)) || '?'); newObjs[k] = (newObjs[k] || 0) + 1; }
+      out[name] = { newPrograms: after.programs - before.programs, newProgramNames: after.progNames.filter((n) => !before.progNames.includes(n)), newObjects: newObjs, newTextures: after.textures - before.textures, newGeometries: after.geometries - before.geometries, heapDeltaMB: after.heap - before.heap, baselineFrameMs: +baseP50.toFixed(1), worstFrameMs: +mx.toFixed(1), framesOver2xBaseline: win.filter((x) => x > 2 * baseP50).length, frames: win.length };
     };
     out.atStart = snap();
     // 1. blossom pickup: stand on the nearest blossom

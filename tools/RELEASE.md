@@ -115,6 +115,9 @@ once to enter VR.
 
 ## 5. Upload to the Meta Quest Store
 
+The app label inside the APK is "GREEBLIS TOWN" (headset library and menus); type the
+same spelling as the listing name in the developer dashboard.
+
 1. Dashboard → the app → **Distribution → Builds** → upload the APK to a
    release channel. Use **Alpha** first (you and invited testers only), then
    promote the same build to the store channel when it is approved.

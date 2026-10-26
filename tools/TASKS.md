@@ -34,18 +34,15 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D6 | Mushroom fix confirmed: 17/17 return-home scenarios pass at real-time simulation | 2026-10-26 |
 | D7 | Visit system verified: host/visitor visits complete and interrupted (out, meet, back) all end with Mushroom on his desk at height | 2026-10-26 |
 
-## Resume point (2026-10-26, evening)
+## Resume point (2026-10-26, night)
 
-- 3.15.12 launch fix confirmed by the author on the headset ("works enough to get into VR").
-  Remaining complaints: black bars on the loading screen (B13) and one instance of black
-  bars right after being dropped in (B16, fixed: UI build and texture capture moved into
-  the loading phase; `tools/entry_profile.js` measures the handover).
-- B13 fix built (NOTES 42): `tools/lib/xr_layers_shim.js`, embedded in the head script,
-  dormant in the release asset; the "layers" experiment requests the feature.
-  `tools/.runs/GreeblisTown-exp-layers.apk` posted to the author for a headset test.
-  If it works: promote by moving "layers" into the release feature list (req() in
-  `apply_entry_fix.py`), rebuild, full tier, new build. If it fails: read the `page:`
-  lines (HEADSET_DIAG.md, "Layers experiment").
-- Open: B12 Event flash unconfirmed (author has not tested the Event yet); T12 boot
-  profile with textures; T13 graphical pass; T14 soak; T15 tools/docs; T4 store upload
-  (author confirmed: no earlier upload to the app ID, so the package name is free).
+- 3.15.13 built and posted: layers loading screen promoted (author confirmed the
+  experiment: no black bars, no drop-in stall), panel at 3.6 m, B16, label "GREEBLIS TOWN".
+  Awaiting the author's check of the panel distance on 3.15.13; standard tier on the
+  final asset running (`tools/.runs/std_v13.log`), full tier still to run on the final build.
+- Open: B12 Event flash unconfirmed (author has not run the Event); hitch probe shows
+  the Event's props are built at the gathering phase (28 objects, 46 ms headless), a
+  candidate for a boot-time pre-build via `BP.preview(0)` then hide (not done: `pose`
+  side effects need checking); first pickup still creates 14 textures/52 geometries
+  (batcher re-merge), 24 ms headless. T12 boot profile with textures; T13 graphical
+  pass; T14 soak; T15 tools/docs; T4 store upload (no earlier upload, package name free).

@@ -26,10 +26,10 @@ android {
         // VRC.Quest.Packaging.4: minSdk 29-34, targetSdk 32-34 for immersive apps.
         minSdk 29
         targetSdk 32
-        versionCode 13
-        versionName "3.15.12"
+        versionCode 14
+        versionName "3.15.13"
 
-        resValue 'string', 'app_name', 'Greeblis Town'
+        resValue 'string', 'app_name', 'GREEBLIS TOWN'
 
         // Launch mode: 'immersive' (direct to WebXR, needs a verified origin) or
         // '2D' (browser panel; the game's own "Press A" enters VR).
