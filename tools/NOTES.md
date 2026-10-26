@@ -579,3 +579,22 @@ VR-entry fix; each item is for discussion first.
     school mural was briefly given the same treatment (2x into its own
     texture) and reverted at the author's request: it was fine as it was.
 
+49. **Loading: the blob-body march (3.15.19).** `tools/slice_profile.js`
+    (CPU samples attributed to the boot slices, clock-aligned through
+    `Performance.getMetrics`) put 60-75% of the five heavy townsfolk, the
+    creatures and the kiosks in `sdE`/`field`: `blobBody` builds a character
+    body by ray-marching 4941 rays (80 x 60 sphere grid) from 2.6 m inward in
+    2 cm steps until the smooth-min ellipsoid field turns negative (up to 130
+    field evaluations per ray, each summing every part), then bisecting 14
+    times and taking a 6-sample gradient. The field is a distance bound (iq's
+    ellipsoid bound under a smooth min, which only shrinks it), so the march
+    now steps by 80% of the field value, clamped to 2-15 cm: the same first
+    crossing in a few steps, the same bisection after it. `tools/geom_compare.js`
+    boots the asset before and after and compares every character's vertices:
+    identical to within 1.8e-6 m. Headless, the heavy townsfolk slices went
+    from 604/416/521/453 ms to 273/220/264/227 ms, creatures 402 to 197,
+    kiosks 657 to 507; on the headset that is about 1.5 s of the 8.2 s. The
+    second mesher (`BORN.kingdino`, start 2.4 m) got the same change.
+    Remaining per-body cost is the 14-step bisection and the gradient (20
+    field evaluations per ray) and the vertex colouring (`hard`).
+

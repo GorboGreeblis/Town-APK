@@ -35,12 +35,13 @@ const UA = 'Mozilla/5.0 (X11; Linux x86_64; Quest 3) AppleWebKit/537.36 (KHTML, 
   await page.addInitScript(fs.readFileSync(path.join(root, 'tools/fakexr.js'), 'utf8'));
   // Record each slice boundary in page time (performance.now()).
   await page.addInitScript(() => {
-    window.__sliceMarks = [];
+    window.__sliceMarks = [['start', 0]];   // [label, page ms]: the slice `label` starts at that time
     let lastLabel = 'start';
-    const wrap = () => { const y = window.__gtY; if (!y || y.__wrapped) return; const w = function (l) { window.__sliceMarks.push([lastLabel, performance.now()]); lastLabel = l || lastLabel; return y.apply(this, arguments); }; w.__wrapped = true; window.__gtY = w; };
+    const wrap = () => { const y = window.__gtY; if (!y || y.__wrapped) return; const w = function (l) { lastLabel = l || lastLabel; window.__sliceMarks.push([lastLabel, performance.now()]); return y.apply(this, arguments); }; w.__wrapped = true; window.__gtY = w; };
     const iv = setInterval(() => { wrap(); if (window.__gtY && window.__gtY.__wrapped) clearInterval(iv); }, 1);
   });
   const cdp = await ctx.newCDPSession(page);
+  await cdp.send('Performance.enable');
   await cdp.send('Profiler.enable'); await cdp.send('Profiler.setSamplingInterval', { interval: 500 });
   await cdp.send('Profiler.start');
   const t0 = Date.now();
@@ -48,16 +49,18 @@ const UA = 'Mozilla/5.0 (X11; Linux x86_64; Quest 3) AppleWebKit/537.36 (KHTML, 
   // Align the profiler clock with performance.now(): profile.startTime is in the same monotonic base (microseconds).
   await page.waitForFunction(() => window.__gtXR && window.__gtXR.booted === true, null, { timeout: 300000 });
   const marks = await page.evaluate(() => { window.__sliceMarks.push(['end', performance.now()]); return window.__sliceMarks; });
-  const navStart = await page.evaluate(() => performance.timeOrigin);
+  // Clock alignment: Performance.getMetrics' Timestamp is seconds on the profiler's monotonic base; read it and
+  // performance.now() back to back to map sample times onto page time.
+  const { metrics } = await cdp.send('Performance.getMetrics');
+  const ticksS = metrics.find((m) => m.name === 'Timestamp').value;
+  const pageNowAtTicks = await page.evaluate(() => performance.now());
   const { profile } = await cdp.send('Profiler.stop');
   await browser.close(); srv.close();
   // Profile sample times: startTime + cumulative deltas (microseconds, monotonic). performance.now() is ms since timeOrigin
   // (also monotonic). Both use the same TimeTicks base in Chromium, so sample time in page ms = (t - timeOrigin*1000) / 1000.
   const byId = new Map(profile.nodes.map((n) => [n.id, n]));
-  const slices = []; for (let i = 0; i + 1 < marks.length; i++) slices.push({ label: marks[i + 1][0] === 'end' ? marks[i][0] : marks[i][0], from: marks[i][1], to: marks[i + 1][1], ms: marks[i + 1][1] - marks[i][1], self: new Map(), busy: 0 });
-  // Slice labels: the mark records the label of the slice that just ended.
-  for (let i = 0; i + 1 < marks.length; i++) slices[i].label = marks[i + 1][0] === 'end' ? marks[i][0] + ' (last)' : marks[i + 1][0] === marks[i][0] ? marks[i][0] : marks[i][0];
-  let t = profile.startTime; const toPage = (us) => us / 1000 - navStart;
+  const slices = []; for (let i = 0; i + 1 < marks.length; i++) slices.push({ label: marks[i][0], from: marks[i][1], to: marks[i + 1][1], ms: marks[i + 1][1] - marks[i][1], self: new Map(), busy: 0 });
+  let t = profile.startTime; const toPage = (us) => pageNowAtTicks + (us / 1000 - ticksS * 1000);
   let unaligned = 0;
   for (let i = 0; i < profile.samples.length; i++) {
     t += profile.timeDeltas[i] || 0; const pm = toPage(t); const d = (profile.timeDeltas[i] || 0) / 1000;

@@ -36,11 +36,13 @@ Living list. Done items move to the bottom with the date. Bugs live in
 
 ## Resume point (2026-10-27)
 
-- 3.15.17 built: flash-free projection-layer swaps, adaptive render scale 1.2/1.1/1.0
+- 3.15.19 built (3.15.17 plus: native-start governor, build-time texture probe points, the
+  sphere-traced blob march, NOTES 49): flash-free projection-layer swaps, adaptive render scale 1.2/1.1/1.0
   (sharp experiment retired, author's call), loading panel 25 degrees, Gallery kiosk
   painting at 2.0 px/unit with anisotropy 16 (the only painting the author wanted sharper;
   the mural change was reverted), boot slice timings in logcat, Event props pre-built.
-  Full tier on it: `tools/.runs/full_v17.log`.
+  Full tier on 3.15.17 passed (`tools/.runs/full_v17.log`, one flaky test check since fixed);
+  full tier on 3.15.19: `tools/.runs/full_v19.log`.
 - Awaiting the author's full run: panel size, no black frame on scale steps, sharper
   gallery painting, Event flash (B12).
 - Focus now: performance (author). T12 lead (NOTES 46): loading is 8.2 s of JavaScript

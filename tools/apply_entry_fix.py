@@ -392,6 +392,23 @@ GAME_FIXES = [
         'Ge={level:0,ema:1e3/e.targetHz,',
         'Ge={level:2,ema:1e3/e.targetHz,',
     ),
+    # Loading time (NOTES 49): the blob-body mesher ray-marches 4941 rays per
+    # character body, each stepping 2 cm from 2.6 m inward until it is inside
+    # the field (up to 130 field evaluations per ray, each a sum over every
+    # part), then bisects 14 times. The field is a distance bound, so the
+    # march can step by the field value instead (sphere tracing, 80% of the
+    # bound, 2 cm to 15 cm): the same first crossing, found in a few steps; the
+    # bisection keeps the surface within 1e-5 of before. Measured: the five
+    # heavy townsfolk, the creatures and the kiosks spent 60-75% of their boot
+    # slices in this march on the headset's own clock.
+    (
+        'hit=(oo,d)=>{const D=new c0(...d).normalize();let t=TM;while(t>0&&field(oo[0]+D.x*t,oo[1]+D.y*t,oo[2]+D.z*t)>0)t-=.02;let lo=Math.max(0,t),hi=t+.02;',
+        'hit=(oo,d)=>{const D=new c0(...d).normalize();let t=TM,st=.02,f=field(oo[0]+D.x*t,oo[1]+D.y*t,oo[2]+D.z*t);while(t>0&&f>0){st=Math.min(.15,Math.max(.02,.8*f));t-=st;f=field(oo[0]+D.x*t,oo[1]+D.y*t,oo[2]+D.z*t)}let lo=Math.max(0,t),hi=t+st;',
+    ),
+    (
+        'hit=(o,d)=>{const D=new c0(...d).normalize();let t=2.4;while(t>0&&field(o[0]+D.x*t,o[1]+D.y*t,o[2]+D.z*t)>0)t-=.02;let lo=Math.max(0,t),hi=t+.02;',
+        'hit=(o,d)=>{const D=new c0(...d).normalize();let t=2.4,st=.02,f=field(o[0]+D.x*t,o[1]+D.y*t,o[2]+D.z*t);while(t>0&&f>0){st=Math.min(.15,Math.max(.02,.8*f));t-=st;f=field(o[0]+D.x*t,o[1]+D.y*t,o[2]+D.z*t)}let lo=Math.max(0,t),hi=t+st;',
+    ),
     # B11: Nextessa (the pizza courier) pinned against the Ancient. Inside the
     # church she walked straight at the player; when the player stood on the far
     # side of the Ancient, the Ancient's solid part blocked the line and nothing
