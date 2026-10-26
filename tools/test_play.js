@@ -115,7 +115,8 @@ async function scenario(name, srvUrl, browser) {
   const after = await state();
   const frames = name === 'vr' ? after.xrFrames - before.xrFrames : after.raf - before.raf;
   console.log(`[${name}] ran ${RUN_S}s: ${frames} ${name === 'vr' ? 'XR' : 'rAF'} frames (${(frames / RUN_S).toFixed(1)} fps, software GL), heap ${before.heapMB}MB -> ${after.heapMB}MB`);
-  expect(`frame loop alive over ${RUN_S}s`, frames > RUN_S * 2, `${frames} frames`);
+  // Software GL: expect at least ~0.5 fps in VR (stereo) and 2 fps in 2D.
+  expect(`frame loop alive over ${RUN_S}s`, frames > RUN_S * (name === 'vr' ? 0.5 : 2), `${frames} frames`);
   expect('no page errors while running', errors.length === 0, errors.slice(0, 3).join(' | '));
   if (before.heapMB != null) expect('JS heap did not grow more than 50% while running', after.heapMB <= before.heapMB * 1.5 + 8, `${before.heapMB}MB -> ${after.heapMB}MB`);
 

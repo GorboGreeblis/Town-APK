@@ -14,9 +14,10 @@
  *                             fake controllers (gamepad-like), [] for none
  *   frames                    XR animation frames delivered so far
  *   supportLocalFloor         set false to make `local-floor` reject
+ *   fbMax                     max framebuffer width (default 320; software GL is fill-bound)
  */
 (function () {
-  const S = (window.__fakeXR = { sessions: [], frames: 0, pose: { y: 1.6, yaw: 0 }, inputs: [], supportLocalFloor: true });
+  const S = (window.__fakeXR = { sessions: [], frames: 0, pose: { y: 1.6, yaw: 0 }, inputs: [], supportLocalFloor: true, fbMax: 320 });
 
   function perspective(fovDeg, aspect, near, far) {
     const f = 1 / Math.tan((fovDeg * Math.PI) / 360), m = new Float32Array(16);
@@ -51,8 +52,11 @@
       this.session = session; this.gl = gl; this.init = init || {};
       const c = gl.canvas, scale = init && init.framebufferScaleFactor || 1;
       this.framebuffer = null;
-      this.framebufferWidth = Math.max(2, Math.round((c.width || 1280) * scale));
-      this.framebufferHeight = Math.max(2, Math.round((c.height || 720) * scale));
+      let w = Math.max(2, Math.round((c.width || 1280) * scale)), h = Math.max(2, Math.round((c.height || 720) * scale));
+      // Software GL is fill-bound: keep the stereo framebuffer small so the
+      // simulation runs at a usable rate (S.fbMax, default 320 px wide).
+      if (S.fbMax && w > S.fbMax) { h = Math.round(h * S.fbMax / w); w = S.fbMax; }
+      this.framebufferWidth = w; this.framebufferHeight = h;
       this.ignoreDepthValues = false; this.fixedFoveation = 0; this.antialias = !!(init && init.antialias);
     }
     getViewport(view) {
