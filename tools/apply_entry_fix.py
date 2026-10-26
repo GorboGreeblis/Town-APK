@@ -24,6 +24,17 @@ root = pathlib.Path(__file__).resolve().parent.parent
 # --experiment NAME: additionally apply one diagnostic variant (headset A/B tests for B12 etc.).
 # Variants are never used for the release asset; build_experiment.sh writes them elsewhere.
 EXPERIMENTS = {
+    # Direct request: once the world is ready, call the game's own VR request
+    # (je) immediately without waiting for sessiongranted, and log the browser's
+    # reason to the console (logcat shows it) if it refuses. Tests whether the
+    # immersive activity accepts a page-initiated request without a press.
+    "directrequest": [(
+        'gcEB.ready=!0;',
+        'gcEB.ready=!0;setTimeout(function(){try{console.error("[gtXR] direct requestSession attempt, granted="+(window.__gtXR&&window.__gtXR.granted)+", xr="+!!navigator.xr);je()}catch(e){console.error("[gtXR] direct attempt threw "+e)}},0);',
+    ), (
+        'e&&(mo("gateText").textContent="VR could not start ("+(e.name||"error")+").\\nClick or press A to try again.",',
+        'e&&(console.error("[gtXR] requestSession failed: "+(e.name||"error")+": "+(e.message||e)),mo("gateText").textContent="VR could not start ("+(e.name||"error")+").\\nClick or press A to try again.",',
+    )],
     # Session keep-alive: when the grant arrives before the world is built, the
     # early-created session gets a tiny WebGL layer and a clear-colour frame loop
     # right away, so the OS sees frames (no loading-screen stall / session timeout)
