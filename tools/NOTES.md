@@ -554,3 +554,18 @@ VR-entry fix; each item is for discussion first.
     size problem, not a distance one: 3.15.15 uses 1.8 x 0.9 m at 4 m (about
     25 degrees), 0.2 m below the eye line.
 
+47. **Layer swaps and the adaptive render scale (3.15.16).** The author's log
+    for the `sharp` experiment: `projection layer live, scale 1.2` at 8.6 s,
+    `scale 1.1` at 12.5 s, `scale 1` at 56.7 s, and "one quick black flash
+    after loading in": each swap put a fresh, undrawn projection layer in
+    front for a frame. The shim now inserts the new layer BEHIND the old one
+    (layers composite in array order), renders into it, and drops the old one
+    after the second frame (`projection layer swapped to scale ...` in the
+    log). The author also found the sharper picture better, so the release
+    adopts quality levels [1.2, 1.1, 1, 1, 1] with foveation [0, 0, 0, .5, 1]:
+    sharp when there is headroom, today's native look under load, and the
+    governor's existing hysteresis (1 s over budget to step down, 4 s under to
+    step up, 30 rebuilds per session at most) paces the swaps. The sharp
+    experiment is retired (author's call); the `native` variant reverts to 1.0
+    everywhere for A/B tests. The play test exercises a swap in layers mode.
+
