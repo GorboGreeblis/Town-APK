@@ -70,7 +70,7 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | Away watchdog (`sendHome` after 4 s idle / 20 s moving away from home ground) | `test_world.js` | partial |
 | Roamers (gorbo, gratelet, p_mamagorbo) pick free spots, never inside hulls or zones | headless: run 2-3 min, sample positions each frame | todo |
 | Wander/trek for creatures (`ho`), personal space, spreading | same | todo |
-| Mama+Gorbo meeting schedule (`meetAt`), visits (`visitPlan`), vignettes (`VIGS`) fire and release NPCs (`busy` cleared) | headless: force timers through the hook, assert states return to idle | todo |
+| Mama+Gorbo meeting schedule (`meetAt`), visits (`visitPlan`), vignettes (`VIGS`) fire and release NPCs (`busy` cleared) | `test_visits.js` (visits incl. interruptions); meeting/vignettes todo | partial |
 | Greeting/freeze near the player (`greetR`, `proximityFreezeS`), gaze | headless: move player next to each NPC | todo |
 
 ## 6. Dialogue and UI

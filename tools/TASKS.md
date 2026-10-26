@@ -10,13 +10,13 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | T2 | Safe release build: `GreeblisTown-release.apk` (versionCode 2, 3.15.1) is at the repository root and passes `check_apk.sh`; smoke pass running; merge to main makes it the build to upload | in progress | PR #3 |
 | T3 | Headset test of the release build (direct-to-VR launch, play through, quit cleanly) | open, developer | `RELEASE.md` section 3 |
 | T4 | Store upload: Alpha channel first, listing assets, questionnaires, privacy policy URL | open, developer | `RELEASE.md` section 5 |
-| T5 | Finish the input test: body collision, park bounds, pick ray and menu choice through fake controllers | open | `tools/test_input.js` |
+| T5 | Extend the input test: body collision, park bounds, pick ray and menu choice through fake controllers (dead-zone, walking, snap turn, select/squeeze, hull collision already pass) | open | `tools/test_input.js` |
 | T6 | Progression test: verify the gem-trade entry point, pizza arrival timing, shop `shyFree` gate | open | `tools/test_progression.js` |
 | T7 | World test: blossom/acorn regrow check (currently fails at 15 s; find the real regrow condition) | open | `tools/test_world.js` |
 | T8 | Remaining test-plan items: roamers never inside hulls over minutes, NPC schedules (meet, visits, vignettes), greeting freeze, audio node leaks, quality governor, context loss, long soak | open | `tools/TEST_PLAN.md` |
 | T9 | Full pass on the final build (`tools/run_tests.sh --full`) and record the results | open | only on the final build |
 | T10 | Lore Bible: fill the open questions (the Ancient, Mama W, flint vs acorns, Field Office, sign names) | open, author | `tools/LORE.md` |
-| T11 | Visit-interruption reproduction: force a visit with Mushroom as host and as visitor, interrupt at each stage, assert he returns to desk height | open | would close the loop on bug B1 |
+| T11 | Visit-interruption reproduction: force a visit with Mushroom as host and as visitor, interrupt at each stage, assert he returns to desk height | in progress | `tools/test_visits.js` written; first run in progress |
 
 ## Done
 
