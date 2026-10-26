@@ -414,3 +414,22 @@ VR-entry fix; each item is for discussion first.
     layers, so the harness exercises the fallback; the layers path needs the
     headset.
 
+40. The sealed corner behind the Shop (B14, 3.15.12). The final full tier on
+    3.15.11 failed world routes 16/20 with four random routes through the Shop
+    hull (up to 3.4 m deep), all starting from grid cells in the south-west
+    corner. A grid-connectivity probe (flood fill over `JGP.route.grids`)
+    showed why: the Shop stands diagonally across that corner and its
+    clearance margin reaches both park walls, so the triangle behind it is an
+    island of 28 free cells at the walking margin (45 at the finest), with no
+    connection to the rest of the park in any boot. The router's A* then finds
+    no path, falls back to the nearest reachable cell and appends the target,
+    i.e. a straight leg through the building; the L-shaped corner step of B4r
+    cannot help because both legs are blocked too. The three earlier 20/20 runs
+    had simply not sampled the corner (the test draws 40 random free points).
+    Fix: `roamFree` rejects points whose Shop-local z lies below the back wall,
+    so the corner is never a roaming target, a route endpoint, or an open grid
+    cell. The probe shows one component at the finest margin afterwards; the
+    remaining tiny islands at the walking margin (6 cells near the post kiosk,
+    1 near the gallery) are reachable at finer margins and the final leg into
+    them is tree-free, so they were left alone.
+

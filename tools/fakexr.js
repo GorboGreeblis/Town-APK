@@ -91,7 +91,9 @@
       this.mode = mode; this.init = init || {}; this.ended = false;
       this.renderState = { baseLayer: null, depthNear: 0.1, depthFar: 1000, inlineVerticalFieldOfView: null, layers: undefined };
       this.visibilityState = 'visible'; this.environmentBlendMode = 'opaque'; this.interactionMode = 'world-space';
-      this.enabledFeatures = ['viewer', 'local', 'local-floor'];
+      // Quest Browser grants these optional features when asked for them.
+      const opt = (this.init.optionalFeatures || []).concat(this.init.requiredFeatures || []);
+      this.enabledFeatures = ['viewer', 'local', 'local-floor'].concat(['bounded-floor', 'layers', 'hand-tracking'].filter((f) => opt.includes(f)));
       this.supportedFrameRates = new Float32Array([72, 90]); this.frameRate = 72;
       this.floorSpace = false; this.layerAspect = 16 / 9; this._raf = new Map(); this._id = 0;
       // Stable XRInputSource objects (three.js maps controllers by identity);
@@ -114,7 +116,15 @@
       });
       return this._sources.slice();
     }
-    updateRenderState(s) { Object.assign(this.renderState, s || {}); if (s && s.baseLayer) this.layerAspect = s.baseLayer.framebufferWidth / s.baseLayer.framebufferHeight; }
+    updateRenderState(s) {
+      // The Quest Browser's own rules (strings in its libchrome.so), see tools/NOTES.md 41.
+      s = s || {};
+      if (s.baseLayer && s.layers) throw new TypeError("Can't set both baseLayer and layers");
+      if (s.baseLayer && this.enabledFeatures.includes('layers')) throw new TypeError("Can't use baseLayer with layers feature requested");
+      if (s.layers && !this.enabledFeatures.includes('layers')) throw new DOMException("The 'layers' feature was not enabled for this XRSession.", 'NotSupportedError');
+      if (s.layers && new Set(s.layers).size !== s.layers.length) throw new TypeError('All layers in render state must be unique.');
+      Object.assign(this.renderState, s); if (s.baseLayer) this.layerAspect = s.baseLayer.framebufferWidth / s.baseLayer.framebufferHeight;
+    }
     requestReferenceSpace(type) {
       if (type === 'bounded-floor' || (type === 'local-floor' && !S.supportLocalFloor)) return Promise.reject(new DOMException('not supported', 'NotSupportedError'));
       if (type === 'local-floor') this.floorSpace = true;

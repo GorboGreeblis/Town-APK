@@ -70,11 +70,11 @@ to the game's logic:
 The "Press A" screen still works unchanged when the game is opened in a 2D
 browser window on a non-Quest browser.
 
-Two gameplay fixes approved after testing are applied by the same script
-(`GAME_FIXES`): the navigator now respects a building's real walls when a
-route starts or ends beside it, which cured the Mushroom getting stuck next
-to his kiosk (see `tools/NOTES.md`), and Hennrick's campfire line gained its
-missing subject. `python3 tools/apply_entry_fix.py --verify` proves the APK
+The gameplay fixes approved after testing are applied by the same script
+(`GAME_FIXES`, one entry per fix with its reason; the list is in `tools/BUGS.md`
+under Fixed): navigation fixes around buildings (Mushroom's kiosk, the sealed
+corner behind the Shop, the Ancient inside the church), the visible stuck
+rescue, the shop-menu pause, the effects pre-warm, and Hennrick's campfire line. `python3 tools/apply_entry_fix.py --verify` proves the APK
 copy equals the original plus exactly these edits.
 
 ## Building
