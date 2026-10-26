@@ -92,6 +92,7 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | Dance battles (Dbt): rock/paper/scissors, stamina, bow-out, first win awards an Artifact, `danceWins` | `test_progression.js` | done |
 | Garden event (`bt`): summoning pillar, gather timer `GATHER_S`, seeds/snacks/stone rewards, NPCs sent home afterwards (`fe`) within 90 s | `test_progression.js --long` | done (full tier) |
 | Pizza courier (`ue`): call, spawn 30 s later at 75 m, arrival, give-up after 100 s | `test_progression.js` | partial |
+| Long session stability: heap, textures, geometries, programs, entity count over N minutes with all systems exercised | `test_soak.js` | script ready, first run pending |
 | Pizza courier inside the church: detour around the Ancient to a player on the far side, deliver, walk back out (B11) | `test_courier.js` | yes |
 | Library finale: three Artifacts → Sparkakus awards the Gem | `test_progression.js` | done |
 | Backpacka sequence (`BP`) and jazz (`JAZZ`) timings | headless | todo |
