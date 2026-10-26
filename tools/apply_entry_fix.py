@@ -218,6 +218,19 @@ GAME_FIXES = [
         'clear=(ax,az,bx,bz)=>{const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,bz-az)/.3));',
         'clear=(ax,az,bx,bz)=>{if(F.segBlocked(ax,az,bx,bz,.3))return!1;const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,bz-az)/.3));',
     ),
+    # B4r: the last leg of a route (previous point -> exact target) was only
+    # checked up to 1.2 m short of the target, and the final target leg not at
+    # all, so a route could still clip a building corner right at its end. Check
+    # the whole leg before dropping the last cell, and if the final leg is still
+    # blocked, go round the corner with an L-shaped step.
+    (
+        'clear(qx,qz,qx+(x1-qx)*f,qz+(z1-qz)*f)&&out.pop()}',
+        'clear(qx,qz,qx+(x1-qx)*f,qz+(z1-qz)*f)&&!F.segBlocked(qx,qz,x1,z1,.3)&&out.pop()}',
+    ),
+    (
+        'return i0+NX*j0===a&&i0>=0&&i0<NX||out.unshift([cx(a),cz(a)]),out.push([x1,z1]),out}',
+        'i0+NX*j0===a&&i0>=0&&i0<NX||out.unshift([cx(a),cz(a)]);{const L=out[out.length-1];if(L&&F.segBlocked(L[0],L[1],x1,z1,.3)){const A=[L[0],z1],Bq=[x1,L[1]];!F.segBlocked(L[0],L[1],A[0],A[1],.3)&&!F.segBlocked(A[0],A[1],x1,z1,.3)?out.push(A):!F.segBlocked(L[0],L[1],Bq[0],Bq[1],.3)&&!F.segBlocked(Bq[0],Bq[1],x1,z1,.3)&&out.push(Bq)}}return out.push([x1,z1]),out}',
+    ),
     # B11: Nextessa (the pizza courier) pinned against the Ancient. Inside the
     # church she walked straight at the player; when the player stood on the far
     # side of the Ancient, the Ancient's solid part blocked the line and nothing

@@ -337,3 +337,12 @@ VR-entry fix; each item is for discussion first.
     extra request on grant or click). B6 (in-VR loading indicator) is covered
     by this. Pending: the author's headset run of 3.15.7.
 
+35. **B4r, the last corner clip in random routes.** The grid router's smoother
+    already rejected legs that cross a hull (B4), but two spots were unchecked:
+    before dropping the last grid cell it only tested the leg up to 1.2 m short
+    of the exact target, and the final leg to the target was appended without
+    any test. Both crossings reported by the world test were exactly that final
+    leg (a cell centre to a target beside the shop). 3.15.8 checks the whole leg
+    before dropping the cell and, if the final leg is still blocked, inserts an
+    L-shaped step round the corner. World test: 20/20 random pairs clean.
+
