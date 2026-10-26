@@ -121,6 +121,10 @@ does not come back cleanly in `tools/BUGS.md`.
 
 ## 5. Upload to the Meta Quest Store
 
+**Upload candidate: 3.15.19 (versionCode 20)**, the root `GreeblisTown-release.apk`,
+confirmed by the author's full headset run on 2026-10-27 with no new issues, full
+test tier and 10-minute soak green.
+
 The app label inside the APK is "GREEBLIS TOWN" (headset library and menus); type the
 same spelling as the listing name in the developer dashboard.
 

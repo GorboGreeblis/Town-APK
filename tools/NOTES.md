@@ -598,3 +598,12 @@ VR-entry fix; each item is for discussion first.
     Remaining per-body cost is the 14-step bisection and the gradient (20
     field evaluations per ray) and the vertex colouring (`hard`).
 
+50. **3.15.19 confirmed on the headset (author's full run, no new issues).** It
+    is the upload candidate: the root `GreeblisTown-release.apk` is that build
+    (versionCode 20). The Event ran without the white flash (B12 closed), the
+    25-degree panel, the native-start governor and the sharper Gallery painting
+    all passed. A 3.15.20 that starts the texture download at page start
+    (overlapping the script parse, about 0.1 s headless) is parked: it touches
+    the entry script, and the rule is that such changes get a headset run
+    before they ship; it goes into the next build after the Store upload.
+

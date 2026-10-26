@@ -34,19 +34,12 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D6 | Mushroom fix confirmed: 17/17 return-home scenarios pass at real-time simulation | 2026-10-26 |
 | D7 | Visit system verified: host/visitor visits complete and interrupted (out, meet, back) all end with Mushroom on his desk at height | 2026-10-26 |
 
-## Resume point (2026-10-27)
+## Resume point (2026-10-27, after the author's full run)
 
-- 3.15.19 built (3.15.17 plus: native-start governor, build-time texture probe points, the
-  sphere-traced blob march, NOTES 49): flash-free projection-layer swaps, adaptive render scale 1.2/1.1/1.0
-  (sharp experiment retired, author's call), loading panel 25 degrees, Gallery kiosk
-  painting at 2.0 px/unit with anisotropy 16 (the only painting the author wanted sharper;
-  the mural change was reverted), boot slice timings in logcat, Event props pre-built.
-  Full tier on 3.15.17 passed (`tools/.runs/full_v17.log`, one flaky test check since fixed);
-  full tier on 3.15.19: `tools/.runs/full_v19.log`.
-- Awaiting the author's full run: panel size, no black frame on scale steps, sharper
-  gallery painting, Event flash (B12).
-- Performance: the blob-body march (NOTES 49) halves the character builds; the next
-  device log will say where loading landed (expected near 6 s). What remains is the player
-  build (~1.1 s), first draw (~0.85 s), asset decode (~0.45 s), kiosks (~0.5 s): no further
-  cut without content changes. In-game: hitch probe clean (worst 37 ms headless at Event
-  start), soak 10 min clean.
+- **3.15.19 passes the author's full headset run, no new issues.** It is the upload
+  candidate (root APK, versionCode 20); RELEASE.md section 5. B12 closed.
+- Parked for the next build after the upload: 3.15.20's page-start asset download
+  (entry-script change, needs a headset run per the rule), see NOTES 50.
+- Remaining: T4 store upload (author: comfort rating Moderate, add Standing, screenshots,
+  copy); T10 lore (author); T15 tools/docs upkeep; T12 further loading cuts only with
+  content changes (player build, kiosks).
