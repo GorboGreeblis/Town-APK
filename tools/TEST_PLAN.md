@@ -39,9 +39,9 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | Late grant and no-grant (click) paths | `test_entry.js late/none` | done |
 | Entering a real session: three.js takes the session, gate hides, XR frames render, in-VR UI builds, audio context created | `test_play.js vr` (fake device) | partial (harness being finished) |
 | Leaving VR: session end restores 2D camera, gate returns, audio wakes | `test_play.js vr` | partial |
-| Reference space fallback `local-floor` → `local` with `floorOffset` | `fakexr.js` with `supportLocalFloor=false` | todo |
-| Visibility/blur handling in session (`visibilitychange`, `Ho.capture/restore`) | `fakexr.js` `setVisibility` | todo |
-| WebGL context loss and restore (`Ho`) | headless: `WEBGL_lose_context` extension | todo |
+| Reference space fallback `local-floor` → `local` with `floorOffset` | `test_play.js` scenario `vr-nofloor` (`fakexr.supportLocalFloor=false`) | done (standard tier) |
+| Visibility/blur handling in session (`visibilitychange`, `Ho.capture/restore`) | `test_play.js` vr scenario: hidden then visible, frames resume | done |
+| WebGL context loss and restore (`Ho`) | `test_play.js` vr scenario: `WEBGL_lose_context` lose/restore | reported: frames do not resume (B19, known, low) |
 | Real headset: direct-to-VR launch, floor height, comfort settings | sideload | headset |
 
 ## 3. Input and locomotion (`we`, `t.xr`)
@@ -133,6 +133,8 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | Compressed release build carries the same content as the APK source | `test_parity.js` | done |
 
 ## Latest results (3.15.10/3.15.11 asset, headless harness)
+
+**Standard tier on 3.15.21** (`tools/.runs/std_v21.log`): all stages pass, including the new `vr-nofloor` scenario and the hidden/visible check; the context-loss check reports B19 as known. **Standard tier on 3.15.20** (`tools/.runs/std_v20.log`): every stage passes except the play stage's blank-frame screenshot check, which in layers mode sees a canvas that is blank by design (the game draws into the projection layer; the XR-frames check covers rendering); the check is now skipped in layers mode and the play test passes standalone. **Full tier on 3.15.19** (`tools/.runs/full_v19.log`): **all stages pass**, including the play stage's layer-swap check and the z-fight test; report stages: handover clean (one 284 ms first-frame gap headless), hitch probe on the no-layers variant worst frames 6-37 ms (Event start 37 ms, pickups 26 ms), scene cost and sharpness recorded. 3.15.19 adds the native-start governor, build-time texture probe points and the sphere-traced blob march (characters build about twice as fast, geometry identical per `geom_compare.js`). **Soak on 3.15.19** (`tools/test_soak.js`, 10 minutes, `tools/.runs/soak_v19.log`): no errors, heap 115 to 123 MB after the 2-minute mark, textures 121, geometries 287, programs 114 and entities 13 all bounded; SOAK TEST PASSED.
 
 **Full tier on 3.15.17** (`tools/.runs/full_v17.log`): every stage passes (entry verify, server harness incl. /log, spell-check, APK check, VR entry, world incl. B2 and 20/20 routes, input, progression incl. the Event, visits all, courier, return-home all, release parity, z-fight: nothing flickers) except one check in the play stage: the new layer-swap check timed out waiting 400 ms for frames while the tier loaded the machine (frames 0); the same check passes standalone (24 frames) and now waits for frames instead of a fixed time. Report stages recorded: handover clean (one 235 ms first-frame gap headless), hitch probe moved to the no-layers variant for meaningful timings.
 

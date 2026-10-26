@@ -1,6 +1,7 @@
 # Greeblis Town, Meta Quest APK
 
-Self-contained Android package of the Greeblis Town WebXR game (v3.15) for the
+Self-contained Android package of the Greeblis Town WebXR game (v3.15.x, see
+`tools/VERSIONS.md`) for the
 Meta Quest Store. No web hosting is involved: the whole game ships inside the
 APK and is served to the Quest Browser's immersive WebXR activity from a
 loopback server inside the app.
@@ -40,42 +41,43 @@ tools/
    session to the game when it is ready. The game makes no further network
    requests after the first load.
 
-## Changes to the game: the VR-entry script, the sliced boot, and approved gameplay fixes
+## Changes to the game: the entry script, the loading screen, and the gameplay fixes
 
-The original file waited for the browser's `sessiongranted` event (which this
-browser does not send for a fresh immersive launch, see `NOTES.md` 33-34),
-built the whole world in one 12 s synchronous call, and then waited for a
-press on a 2D "Press A to Continue" screen that an immersive launch never
-shows. Result: the headset stayed on the OS loading screen and the OS killed
-the app after about 15 s without a frame.
+`tools/apply_entry_fix.py` generates the bundled copy as the original plus a
+fixed list of text edits, and `--verify` proves that equality byte for byte.
+Two lists: `EDITS` (the VR entry and loading screen, outside the game's
+logic) and `GAME_FIXES` (approved gameplay fixes, one entry per fix with its
+reason; the list of what they fix is `tools/BUGS.md`, section Fixed).
 
-`tools/apply_entry_fix.py` applies the entry edits (`EDITS`) and nothing else
-to the game's logic:
+What the entry script does on a Quest browser (NOTES 34, 41, 42):
 
-1. a `<head>` script that, on a Quest browser, requests the immersive session
-   immediately, parks it, and renders a loading screen into it (sky colour,
-   "GREEBLIS TOWN", a progress bar) with its own small WebGL context; the
-   `sessiongranted` listener is kept for browsers that use it;
-2. the gate code hands its own "enter VR" routine to that script;
-3. the boot becomes `async` and yields (`await __gtY(label)`) before each heavy
-   world-build step, each creature spawn, and in eight shader-compile slices,
-   so the loading screen keeps drawing and the OS always sees frames; the
-   yield anchors come from a parse of the script (`tools/lib/boot_map.js`);
-4. at the end of the boot the game enters the parked session through its own
-   routine, and the loader stops;
-5. the procedural textures are pre-rendered at build time into `assets/tex/`
-   (`tools/prerender_textures.js`) and blitted at runtime instead of repainted;
+1. requests the immersive session at page start with the `layers` feature
+   and parks it (the browser never grants a session on its own for a fresh
+   immersive launch);
+2. draws the loading screen into compositor layers: a cube layer for the sky
+   and a quad layer for the title and progress bar, 1.8 x 0.9 m at 4 m, which
+   the browser re-renders every vsync with the current head pose whatever the
+   page is doing, so turning the head during the boot never shows a stale frame;
+3. slices the boot (`await __gtY(label)` before each heavy step, each character,
+   and eight shader-compile chunks) and posts the slice timings to the loopback
+   server at the handover (`page: m=... boot slices ms: ...` in logcat);
+4. hands the session to the game through a facade (`tools/lib/xr_layers_shim.js`):
+   the browser forbids `baseLayer` on a session with the `layers` feature, so
+   the game renders through an `XRProjectionLayer` behind an object that shows
+   three.js its usual base layer (an MSAA framebuffer resolved into the layer's
+   eye texture each frame); layer swaps for the render-scale governor keep the
+   old layer in front until the new one is drawn;
+5. never ends the session on an entry failure: the error goes to the loading
+   screen with two retries, and page errors go to logcat via `/log`;
+6. uses the pre-rendered textures in `assets/tex/` (`tools/prerender_textures.js`,
+   with each texture's probe points) instead of repainting them at boot;
    text-bearing textures are still painted on the headset.
 
 The "Press A" screen still works unchanged when the game is opened in a 2D
 browser window on a non-Quest browser.
 
-The gameplay fixes approved after testing are applied by the same script
-(`GAME_FIXES`, one entry per fix with its reason; the list is in `tools/BUGS.md`
-under Fixed): navigation fixes around buildings (Mushroom's kiosk, the sealed
-corner behind the Shop, the Ancient inside the church), the visible stuck
-rescue, the shop-menu pause, the effects pre-warm, and Hennrick's campfire line. `python3 tools/apply_entry_fix.py --verify` proves the APK
-copy equals the original plus exactly these edits.
+Rule (RELEASE.md): any change to the entry script ships first as an
+experiment APK for a headset run, never straight into the main build.
 
 ## Building
 
@@ -110,11 +112,14 @@ means the store listing can never be updated.
 
 `tools/run_tests.sh` runs the whole suite (details in `tools/README.md`):
 
-- the asset equals the original plus the four edits;
+- the asset equals the original plus the entry edits and the gameplay fixes;
 - the loopback server serves the game byte-for-byte (JVM harness);
-- the VR-entry wiring in headless Chromium with a simulated grant;
+- the VR entry, the layers path, a layer swap, visibility changes, a WebGL context loss and the `local-floor` fallback in headless Chromium with a fake WebXR device;
 - the compressed release build unpacks to the same content as the source;
-- the APK passes the Meta store packaging checks (VRC.Quest.Packaging.1-6).
+- the APK passes the Meta store packaging checks (VRC.Quest.Packaging.1-6);
+- the full tier adds the world, input, progression, visits, courier, return-home,
+  parity and z-fight tests plus the loading, handover, hitch, scene-cost and
+  sharpness reports (`tools/TEST_PLAN.md`).
 
 What cannot be tested here: the actual launch on a headset. Sideload and
 confirm that the app goes straight into VR:

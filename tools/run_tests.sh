@@ -31,7 +31,7 @@ report() { name=$1; shift; echo; echo "=== report: $name ==="; "$@"; rc=$?
   if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  INFO  $name (see log)"; else SUMMARY="$SUMMARY\n  INFO  $name (probe exit $rc)"; fi; }
 
 echo "Greeblis Town test pass: $TIER"
-run "entry fix: asset == original + 4 edits" python3 -I "$ROOT/tools/apply_entry_fix.py" --verify
+run "asset == original + the entry edits + the gameplay fixes (apply_entry_fix.py --verify)" python3 -I "$ROOT/tools/apply_entry_fix.py" --verify
 run "loopback server harness" "$ROOT/tools/test_server.sh"
 run "dialogue spell-check" sh -c "python3 '$ROOT/tools/spellcheck_dialogue.py' '$ROOT/tools/uncompressed.html' >/dev/null"
 if [ -f "$APK" ]; then run "APK store-rules check" "$ROOT/tools/check_apk.sh" "$APK"; else skip "APK store-rules check" "no APK built"; fi

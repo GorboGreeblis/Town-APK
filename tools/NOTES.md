@@ -5,6 +5,59 @@ VR-entry fix; each item is for discussion first.
 
 ## Must be confirmed on a headset
 
+## Index
+
+1. Immersive launch from a loopback origin
+2. Grant timing
+3. Package name and key
+4. VRC.Quest.Performance.3, in-VR loading indicator
+5. VRC.Quest.Packaging.6, 64-bit
+6. VRC.Quest.Functional, pause / exit
+7. Leftover message text
+8. User-agent gate
+9. "Press A" needs prior activation
+10. No persistent save
+11. Compressed release build
+12. three.js warning
+13. The compressed release is a re-minified build of the same source
+14. Android lint
+15. Loopback server leniency
+16. Hennrick grammar
+17. Hennrick and the field office
+18. Spelling
+19. Simulated VR session works end to end
+20. NPCs only simulate while presenting
+21. Software rendering is slow
+22. Reproduced in the harness
+23. Root cause
+24. Why it is rare and why it looks like the safety net
+25. Fix (applied by `tools/apply_entry_fix.py`, GAME_FIXES):
+26. Visit paths verified after the fix
+27. Headset launch crash (3.15.1) and fix
+28. 3.15.2: immersive activity closes on the loopback URL
+29. B9 resolved by the unfiltered log
+30. **3.15.4 passed the origin check and hit the next one: Digital Asset
+31. B11: the pizza courier and the Ancient
+32. **B12, subtle white flashes on objects (author's repro: pick something up
+33. 3.15.6 on the headset: verification passes, the game boots, no VR
+34. 3.15.7: the launch fix and our own loading screen
+35. B4r, the last corner clip in random routes
+36. B2, a visible fallback for stuck NPCs
+37. Pre-warm of the pickup effects, and a cacheable page
+38. Pre-rendered textures (using the APK's space)
+39. B13, the loading screen must keep up with the head
+40. The sealed corner behind the Shop (B14, 3.15.12)
+41. 3.15.11 crash: the `layers` feature forbids `baseLayer` (B15)
+42. **B13 fix design: compositor layers for the loader, a projection layer for
+43. Layers path confirmed on the headset; 3.15.13
+44. Graphical pass tools (T13)
+45. Boot slice timings (3.15.14)
+46. **On-device loading breakdown (3.15.14, author's log), 8.2 s from page
+47. Layer swaps and the adaptive render scale (3.15.16)
+48. Sharper Gallery painting (3.15.16/17)
+49. Loading: the blob-body march (3.15.19)
+50. 3.15.19 confirmed on the headset (author's full run, no new issues)
+
 1. **Immersive launch from a loopback origin.** Meta's immersive app mode was
    designed for hosted PWAs whose Digital Asset Links the browser can verify.
    A `http://127.0.0.1` origin cannot publish `assetlinks.json`. The browser
@@ -597,4 +650,39 @@ VR-entry fix; each item is for discussion first.
     second mesher (`BORN.kingdino`, start 2.4 m) got the same change.
     Remaining per-body cost is the 14-step bisection and the gradient (20
     field evaluations per ray) and the vertex colouring (`hard`).
+
+50. **3.15.19 confirmed on the headset (author's full run, no new issues).** It
+    is the upload candidate: the root `GreeblisTown-release.apk` is that build
+    (versionCode 20). The Event ran without the white flash (B12 closed), the
+    25-degree panel, the native-start governor and the sharper Gallery painting
+    all passed. A 3.15.20 that starts the texture download at page start
+    (overlapping the script parse, about 0.1 s headless) is parked: it touches
+    the entry script, and the rule is that such changes get a headset run
+    before they ship; it goes into the next build after the Store upload.
+
+51. **Loading panel, third size, and a horizon (3.15.21).** The author found
+    the 25-degree panel at 4 m still too close on 3.15.19. With a flat-colour
+    sky there is nothing to anchor distance, so the panel is sized by its
+    angular size alone; 3.15.21 makes it 1.3 x 0.65 m at 5 m (about 15
+    degrees), 0.3 m below the eye line, and gives the cube-layer sky a horizon:
+    side faces graded from the sky colour to a lighter band at eye level and a
+    darker ground below, the top face sky, the bottom face ground. The
+    page-start asset download of 3.15.20 rides in the same build (risk judged
+    negligible: same promise, same failure paths, only earlier). The play test
+    gained three checks: the `local-floor` fallback (`vr-nofloor` scenario),
+    session hidden/visible (frames resume), and a WebGL context loss, which
+    showed B19.
+
+52. **B20, Hennrick's cuffs (3.15.22).** "Metal and the glowing part
+    overlapping": in `__R["hennrick"]` each forearm has a metal cuff
+    (`T.cyl(.36,.36,.26)` at z .05, surface at z .41) with three cyan lights
+    (`T.box(.08,.04,.02)` at z .40): the lights' front faces coincide with the
+    cuff's surface along the tangent line, which flickers at Quest depth
+    precision. The lights now sit half inside the cuff (centre z .415) and the
+    cuff is .37 (the forearm skin is an ellipsoid of z-radius .34 with up to
+    .018 of noise displacement, so .36 was within a few millimetres of it).
+    The three cyan strips on the upper arm were checked and left alone. A
+    jittered-render probe for one character turned out not to isolate the
+    cuffs: the arm parts are merged, so the metal and glow meshes are not
+    separate objects; the fix rests on the geometry.
 
