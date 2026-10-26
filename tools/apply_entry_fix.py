@@ -96,7 +96,7 @@ GAME_FIXES = [
     ),
     (
         'jt.has("panel")&&xe.lastTarget===e&&"campfire"!==(_t.state&&_t.state.kind)){e.moving=!1,e.gcWant=0,',
-        'jt.has("panel")&&xe.lastTarget===e&&"campfire"!==(_t.state&&_t.state.kind)||jt.has("panel")&&_t.state&&"shop"===_t.state.kind&&"cutebex"===e.id){e.moving=!1,e.gcWant=0,',
+        'jt.has("panel")&&xe.lastTarget===e&&"campfire"!==(_t.state&&_t.state.kind)||jt.has("panel")&&_t.state&&"shop"===_t.state.kind&&e.def&&"ZOLLOD"===e.def.name){e.moving=!1,e.gcWant=0,',
     ),
     # B7: a failed VR request showed leftover wording for one frame and was then
     # overwritten by "Press A". Show a real message and hold it for 8 seconds.

@@ -66,6 +66,22 @@ const LONG = process.argv.includes('--long');
   expect('battle: fought to the end and won', battle.won === true, `clicks=${battle.clicks} log=${(battle.log || []).join(' / ').slice(0, 120)}`);
   expect('battle: first win awards an Artifact and records the win', battle.artifactsAfter === battle.artifactsBefore + 1 && (battle.danceWins || []).includes('w_mont'), `artifacts ${battle.artifactsBefore} -> ${battle.artifactsAfter}`);
 
+  // ---- shop pause (B8): only Zollod pauses while the shop menu is open
+  const pause = await page.evaluate(async () => {
+    const D = window.__dbg, Kt = D.Kt; Kt.shyFree = true;
+    const tw = performance.now();
+    while (D.qt.isOpen && performance.now() - tw < 40000) await new Promise((r) => setTimeout(r, 200));
+    const before = new Map(D.It.all.map((h) => [h, [h.group.position.x, h.group.position.z]]));
+    D.ne.open(); await new Promise((r) => setTimeout(r, 4000));
+    const held = D.It.all.filter((h) => h.held).map((h) => h.def && h.def.name);
+    const moved = D.It.all.filter((h) => { const b = before.get(h); return Math.hypot(h.group.position.x - b[0], h.group.position.z - b[1]) > 0.3; }).map((h) => h.def && h.def.name);
+    const z = D.It.all.find((h) => h.def && h.def.name === 'ZOLLOD');
+    const out = { kind: D._t.state && D._t.state.kind, held, moved, zollodHeld: !!(z && z.held), zollodMoving: !!(z && z.moving) };
+    D._t.close(); return out;
+  });
+  expect('shop pause: Zollod is held while the shop is open', pause.kind === 'shop' && pause.zollodHeld && !pause.zollodMoving, JSON.stringify(pause));
+  expect('shop pause: nobody else is held and the town keeps moving', pause.held.every((n) => n === 'ZOLLOD') && pause.moved.length >= 1, JSON.stringify(pause));
+
   // ---- shop
   const shop = await page.evaluate(async () => {
     const D = window.__dbg, Kt = D.Kt; const out = {};
