@@ -117,7 +117,7 @@ const file = process.argv[2];
   const bnd = await page.evaluate(() => {
     const D = window.__dbg, At = D.At, R = D.t.clearingR, yaw = D.we.headYaw;
     const fx = -Math.sin(yaw), fz = -Math.cos(yaw);        // walking direction (stick forward)
-    At.position.set(-fx * (R - 3), At.position.y, -fz * (R - 3));
+    At.position.set(fx * (R - 3), At.position.y, fz * (R - 3));   // start on the side the stick walks toward
     return { R, r0: +Math.hypot(At.position.x, At.position.z).toFixed(1) };
   });
   await inputs([ctl('left', [0, 0, 0, -1]), ctl('right', [0, 0, 0, 0])]);
