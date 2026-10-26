@@ -40,6 +40,11 @@ if [ "$TIER" != quick ]; then
   run "input and locomotion (fake controllers)" node "$ROOT/tools/test_input.js" "$ASSET"
   if [ "$TIER" = full ]; then run "progression incl. gardening event (--long)" node "$ROOT/tools/test_progression.js" "$ASSET" --long;
   else run "progression (talk, battle, shop, library, pizza)" node "$ROOT/tools/test_progression.js" "$ASSET"; fi
+  case $TIER in
+    smoke)    run "visits (Mushroom host, interrupted while out)" node "$ROOT/tools/test_visits.js" "$ASSET" 120 host-drop-out;;
+    standard) run "visits (Mushroom host complete + interrupted at meet)" node "$ROOT/tools/test_visits.js" "$ASSET" 240 host-complete,host-drop-meet;;
+    full)     run "visits (all scenarios)" node "$ROOT/tools/test_visits.js" "$ASSET" 300 all;;
+  esac
   if [ "$NPC_N" = 0 ]; then run "NPC return-home (Mushroom), all scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S";
   else run "NPC return-home (Mushroom), first $NPC_N scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S" "$NPC_N"; fi
   if [ "$TIER" = full ]; then run "release parity (compressed build vs source)" node "$ROOT/tools/test_parity.js"; else skip "release parity" "$TIER tier; run --full"; fi

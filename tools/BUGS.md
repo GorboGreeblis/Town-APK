@@ -7,7 +7,7 @@ move to the bottom. Longer investigations live in `../NOTES.md`.
 
 | # | Bug | Where | Reproduce | Status |
 | --- | --- | --- | --- | --- |
-| B1 | After an interrupted visit the host/visitor is sent straight at his desk by the navigator; with the wall fix he now goes around, but the straight-line post-visit `drop` path still stalls for ~1 s against the wall before the stuck detector re-plans | `drop()` in the visit system; `lo.post` direct approach within 4 m | `tools/test_npc_home.js` scenarios "interrupted visit" | mitigated by the fix; cosmetic stall remains |
+| B1 | Approaching his kiosk from beside or behind, Mushroom first walks straight at the front waypoint, stalls about a second against the wall, then the stuck detector re-plans around it (the re-plan now works). Visits interrupted at any stage verified to end on the desk (`test_visits.js`) | `lo.post` direct approach within 4 m; post-visit `drop` navigates straight at the desk | `tools/test_npc_home.js` side/behind scenarios | cosmetic stall only |
 | B2 | Stuck-rescue teleport only fires when the NPC is off-screen and more than 12 m from the player, so a stall in view is never rescued | `De()` | pin an NPC in view | by design; worth a visible fallback |
 | B3 | Blossom/acorn did not regrow within 15 s of pickup in the harness although the timer is 12 s | `le.update` / `ce.update` | `tools/test_world.js` | needs investigation (may need the player to look away or be farther) |
 | B4 | One of 20 random routes crossed a building hull corner slightly (`segBlocked` margin 0.2) | `JGP.route` smoothing | `tools/test_world.js` routes | low; collision keeps NPCs out physically |

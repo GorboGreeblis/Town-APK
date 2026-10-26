@@ -157,3 +157,11 @@ VR-entry fix; each item is for discussion first.
     ends are inside it (walking indoors). Routes now go around the kiosk to
     the front waypoints, then the normal hop onto the desk follows. One
     function changed, no behaviour change away from buildings.
+
+26. **Visit paths verified after the fix.** `tools/test_visits.js` forced
+    visits with Mushroom as host (Hennrick calls on the Sheriff) and as
+    visitor (to Anomalee), complete and interrupted while walking out, at the
+    meeting and on the way back. In every case he ended on his desk at full
+    height with his stand height restored, so the visit system's hop-down /
+    hop-up bookkeeping is sound; the earlier "moved home but never jumped"
+    sighting is consistent with the wall-pinning case (fixed).

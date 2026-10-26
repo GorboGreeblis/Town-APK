@@ -14,12 +14,12 @@
  * Each ends with: Mushroom back on his desk (d < 0.2, y ~ standY) within the
  * budget and his pattern height restored.
  *
- * Usage: node tools/test_visits.js [file.html] [budgetSeconds] [scenario|all]
+ * Usage: node tools/test_visits.js [file.html] [budgetSeconds] [scenario[,scenario]|all]
  */
 const { boot, reporter } = require('./lib/harness');
 const file = process.argv[2] && !/^\d+$/.test(process.argv[2]) ? process.argv[2] : undefined;
 const BUDGET_S = Number(process.argv[3] || 240);
-const ONLY = process.argv[4] || 'all';
+const ONLY = (process.argv[4] || 'all').split(',');   // scenario names, or all
 
 (async () => {
   const g = await boot({ file, vr: true });
@@ -34,7 +34,7 @@ const ONLY = process.argv[4] || 'all';
     { name: 'host-drop-meet', v: 'gratelet', h: 'drifter', dropAt: 'meet', dropWho: 'h' },
     { name: 'visitor-drop-out', v: 'drifter', h: 'blinker', dropAt: 'out', dropWho: 'v' },
     { name: 'visitor-drop-back', v: 'drifter', h: 'blinker', dropAt: 'back', dropWho: 'v' },
-  ].filter((s) => ONLY === 'all' || s.name === ONLY);
+  ].filter((s) => ONLY.includes('all') || ONLY.includes(s.name));
 
   for (const sc of scenarios) {
     const r = await page.evaluate(async ({ sc, budget }) => {

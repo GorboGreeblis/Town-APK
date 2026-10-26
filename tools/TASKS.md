@@ -16,7 +16,6 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | T8 | Remaining test-plan items: roamers never inside hulls over minutes, NPC schedules (meet, visits, vignettes), greeting freeze, audio node leaks, quality governor, context loss, long soak | open | `tools/TEST_PLAN.md` |
 | T9 | Full pass on the final build (`tools/run_tests.sh --full`) and record the results | open | only on the final build |
 | T10 | Lore Bible: fill the open questions (the Ancient, Mama W, flint vs acorns, Field Office, sign names) | open, author | `tools/LORE.md` |
-| T11 | Visit-interruption reproduction: force a visit with Mushroom as host and as visitor, interrupt at each stage, assert he returns to desk height | in progress | `tools/test_visits.js` written; first run in progress |
 
 ## Done
 
@@ -28,3 +27,4 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D4 | Game documentation, test plan, first-pass Lore Bible, release guide | 2026-10-26 |
 | D5 | Mushroom root cause found and fixed (navigator wall test); Hennrick line fixed | 2026-10-26 |
 | D6 | Mushroom fix confirmed: 17/17 return-home scenarios pass at real-time simulation | 2026-10-26 |
+| D7 | Visit system verified: host/visitor visits complete and interrupted (out, meet, back) all end with Mushroom on his desk at height | 2026-10-26 |
