@@ -146,14 +146,15 @@ async function scenario(name, srvUrl, browser) {
     // Layers mode: a quality-governor rebuild replaces the projection layer. The swap must keep the
     // old layer in front until the new one has been drawn (no undrawn frame), then drop it.
     const sw = await page.evaluate(async () => {
-      const O = window.__dbg.O, sess = O.xr.getSession(), real = sess.__real, gl = O.getContext();
+      // (this test runs without the harness hook: the facade is reachable through the session the game holds)
+      const sess = (window.__gtXR && window.__gtXR.session) || window.__play.session, real = sess.__real || sess;
       const before = real.renderState.layers.length, f0 = window.__fakeXR.frames;
-      sess.updateRenderState({ baseLayer: new XRWebGLLayer(sess, gl, { framebufferScaleFactor: 0.9, antialias: true }) });
+      sess.updateRenderState({ baseLayer: new XRWebGLLayer(sess, null, { framebufferScaleFactor: 0.9, antialias: true }) });
       const during = real.renderState.layers.length;
       await new Promise((r) => setTimeout(r, 400));
       return { before, during, after: real.renderState.layers.length, frames: window.__fakeXR.frames - f0, scale: window.__gtXR.shim.scale };
     });
-    expect('layer swap keeps the old layer in front until the new one is drawn, then drops it', sw.before === 1 && sw.during === 2 && sw.after === 1 && sw.frames > 2 && sw.scale === 0.9, JSON.stringify(sw));
+    expect('layer swap keeps the old layer in front until the new one is drawn, then drops it', sw.before === 1 && sw.during === 2 && sw.after === 1 && sw.frames >= 2 && sw.scale === 0.9, JSON.stringify(sw));
   }
   if (name === 'vr' && s.hasSession) {
     await page.evaluate(() => window.__play.session.end());

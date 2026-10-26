@@ -114,7 +114,7 @@ X.facade = function (s) {
     Object.defineProperty(b, "framebufferHeight", { get: function () { return shim.h; }, configurable: true });
     __gtLog("projection layer live, scale " + sc + ", msaa " + shim.samples);
   }
-  return new Proxy(s, {
+  var P = new Proxy(s, {
     get: function (t, k) {
       if (k === "updateRenderState") return function (st) { if (st && st.baseLayer) { setBase(st.baseLayer); return; } return s.updateRenderState(st); };
       if (k === "renderState") return rs;
@@ -125,4 +125,6 @@ X.facade = function (s) {
     },
     set: function (t, k, v) { t[k] = v; return true; }
   });
+  X.session = P;
+  return P;
 };

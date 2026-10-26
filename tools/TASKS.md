@@ -34,13 +34,12 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D6 | Mushroom fix confirmed: 17/17 return-home scenarios pass at real-time simulation | 2026-10-26 |
 | D7 | Visit system verified: host/visitor visits complete and interrupted (out, meet, back) all end with Mushroom on his desk at height | 2026-10-26 |
 
-## Resume point (2026-10-26, late)
+## Resume point (2026-10-27)
 
-- 3.15.15 posted: loading panel about 25 degrees (author found 40 degrees too big); no
-  black bars, no loading issues on 3.15.14 per the author. Full tier running on 3.15.15
-  (`tools/.runs/full_v15.log`): record in TEST_PLAN, then a new draft PR.
-- T12 lead (NOTES 46): on-device loading is 8.2 s of JavaScript world-building
-  (townsfolk 2.7 s, player 1.2 s, first draw 0.85 s, kiosks 0.7 s, capture 0.8 s);
-  shaders only 0.18 s. Options: faster procedural model code, or deferring far NPCs'
-  builds past the handover (content risk; needs the author's view).
-- Awaiting: author's sharpness verdict on the `sharp` experiment; B12 Event flash check.
+- 3.15.16 built: flash-free projection-layer swaps, adaptive render scale 1.2/1.1/1.0
+  (sharp experiment retired, author's call), loading panel 25 degrees, Gallery painting
+  at 2.0 px/unit with anisotropy 16, school mural at 2x in its own texture, boot slice
+  timings in logcat, Event props pre-built. Full tier on it: `tools/.runs/full_v16.log`.
+- Awaiting the author's full run: panel size, no black frame on scale steps, sharper
+  gallery painting and mural, Event flash (B12).
+- T12 lead unchanged (NOTES 46): loading is 8.2 s of JavaScript world-building.

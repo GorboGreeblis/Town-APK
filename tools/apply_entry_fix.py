@@ -361,6 +361,40 @@ GAME_FIXES = [
         'quality:[1,1,1,1,1],foveation:[0,.25,.5,.75,1],',
         'quality:[1.2,1.1,1,1,1],foveation:[0,0,0,.5,1],',
     ),
+    # Mural (author's request): the school mural, Gooward's large painting,
+    # was painted at 896x352 px into the shared 2048x2048 sign atlas and hangs
+    # 11 m wide (about 80 px per metre). It is now painted at 2x into its own
+    # 1792x704 texture (the painter uses absolute pixel coordinates, so the
+    # context is scaled) and the sign uses that texture directly.
+    (
+        'slot("mural",896,352,((cx,w,h)=>{',
+        'slot("mural",896,352,window.__gtMural=((cx,w,h)=>{',
+    ),
+    (
+        ',{smooth:!0});const onSlot=(name,geo)=>',
+        ',{smooth:!0});const muralTx=b(1792,704,(cx=>{cx.scale(2,2);window.__gtMural(cx,896,352)}),{smooth:!0});const onSlot=(name,geo)=>',
+    ),
+    (
+        'signO:{m:lam({map:atlasTx,side:THREE.DoubleSide,polygonOffset:!0,polygonOffsetFactor:0,polygonOffsetUnits:-4}),uv:!0},',
+        'signO:{m:lam({map:atlasTx,side:THREE.DoubleSide,polygonOffset:!0,polygonOffsetFactor:0,polygonOffsetUnits:-4}),uv:!0},mural:{m:lam({map:muralTx,side:THREE.DoubleSide,polygonOffset:!0,polygonOffsetFactor:0,polygonOffsetUnits:-4}),uv:!0},',
+    ),
+    (
+        'sign:(name,px,py,pz,w,h,ry=0,rx=0)=>(put("sign",onSlot(name,UQ),"#ffffff",mt(px,py,pz,rx,ry,0,w,h,1)),B),',
+        'sign:(name,px,py,pz,w,h,ry=0,rx=0)=>(put("mural"===name?"mural":"sign","mural"===name?UQ:onSlot(name,UQ),"#ffffff",mt(px,py,pz,rx,ry,0,w,h,1)),B),',
+    ),
+    # Gallery painting (author's request): Gooward's large painting at the
+    # Gallery kiosk is painted in a worker at ART.s pixels per unit (1.5: a
+    # 3072x1158 canvas for 6.9 x 2.6 m). The painter scales with its canvas,
+    # so 2.0 gives 4096x1544 (each of the three panels 1365x1544) and the art
+    # textures take the maximum anisotropy instead of the global 8.
+    (
+        'ART={w:2048,h:772,s:1.5}',
+        'ART={w:2048,h:772,s:2}',
+    ),
+    (
+        't.colorSpace=old.colorSpace,t.anisotropy=old.anisotropy,t.needsUpdate=!0,',
+        't.colorSpace=old.colorSpace,t.anisotropy=Math.min(16,O.capabilities.getMaxAnisotropy()),t.needsUpdate=!0,',
+    ),
     # B11: Nextessa (the pizza courier) pinned against the Ancient. Inside the
     # church she walked straight at the player; when the player stood on the far
     # side of the Ancient, the Ancient's solid part blocked the line and nothing
