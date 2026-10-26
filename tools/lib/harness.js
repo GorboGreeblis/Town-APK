@@ -25,7 +25,12 @@ function hooked(file) {
   let html = fs.readFileSync(file, 'utf8');
   const anchor = 'gcEB.ready=!0;';
   if (!html.includes(anchor)) throw new Error('anchor not found in ' + file + ' (use the patched asset)');
-  const hook = 'window.__dbg={};' + HOOK_NAMES.map((n) => `try{window.__dbg.${n}=${n}}catch(e){}`).join('') + 'window.__dbgReady=true;';
+  // `t` (the tuning object) is shadowed inside the boot function, so capture it
+  // at top level where gcEB is declared, before the world is built.
+  const anchor2 = 'const gcEB={list:[]';
+  if (!html.includes(anchor2)) throw new Error('anchor2 not found in ' + file);
+  html = html.replace(anchor2, 'window.__dbgT=t;' + anchor2);
+  const hook = 'window.__dbg={};' + HOOK_NAMES.map((n) => `try{window.__dbg.${n}=${n}}catch(e){}`).join('') + 'window.__dbg.t=window.__dbgT;window.__dbgReady=true;';
   return Buffer.from(html.replace(anchor, anchor + hook));
 }
 

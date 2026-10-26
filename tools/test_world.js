@@ -29,10 +29,11 @@ const SAMPLE_S = Number(process.argv[3] || 40);
   const routes = await page.evaluate(() => {
     const D = window.__dbg, t = D.t, F = D.F, J = D.JGP;
     const rnd = (a, b) => a + Math.random() * (b - a);
-    const free = [];
-    for (let k = 0; k < 400 && free.length < 40; k++) {
+    const free = []; let tried = 0, thrown = null;
+    for (let k = 0; k < 600 && free.length < 40; k++) {
       const x = rnd(-t.parkHalf + 2, t.parkHalf - 2), z = rnd(-t.parkHalf + 2, t.parkSouth - 2);
-      if (J.roamFree(x, z, 1)) free.push([x, z]);
+      tried++;
+      try { if (J.roamFree(x, z, 0.6)) free.push([x, z]); } catch (e) { thrown = String(e); break; }
     }
     let ok = 0, crossed = 0, missed = 0, empty = 0, maxLen = 0;
     const r = 0.6;
@@ -47,9 +48,9 @@ const SAMPLE_S = Number(process.argv[3] || 40);
       if (Math.hypot(end[0] - x1, end[1] - z1) > 0.01) missed++;
       if (bad) crossed++; else ok++;
     }
-    return { pairs: Math.floor(free.length / 2), ok, crossed, missed, empty, maxLen };
+    return { pairs: Math.floor(free.length / 2), ok, crossed, missed, empty, maxLen, tried, freeCells: free.length, thrown, park: [t.parkHalf, t.parkSouth] };
   });
-  expect(`routes: ${routes.ok}/${routes.pairs} random pairs routed without crossing a hull`, routes.crossed === 0 && routes.empty === 0, JSON.stringify(routes));
+  expect(`routes: ${routes.ok}/${routes.pairs} random pairs routed without crossing a hull`, routes.pairs >= 5 && routes.crossed === 0 && routes.empty === 0 && !routes.thrown, JSON.stringify(routes));
   expect('routes end at the requested point', routes.missed === 0, `${routes.missed} missed`);
 
   // ---- hull / bounds sampling of all NPCs
@@ -107,8 +108,10 @@ const SAMPLE_S = Number(process.argv[3] || 40);
 
   // ---- away watchdog on a posted NPC (Zollod at Garden Supplies, id cutebex)
   const wd = await page.evaluate(async () => {
-    const D = window.__dbg, h = D.It.byId.cutebex || D.It.all.find((e) => e.def && e.def.at && e.id !== 'drifter');
-    if (!h) return { error: 'no posted npc' };
+    const D = window.__dbg;
+    // A posted (stationary) NPC other than the Mushroom: Fortizmo, King Dino, Etcher...
+    const h = ['frog', 'm_kingdino', 'p_etcher', 'p_glyph', 'w_mont', 'm_somlet'].map((id) => D.It.byId[id]).find((e) => e && e.def && e.def.at && e.def.stationary);
+    if (!h) return { error: 'no posted npc; ids=' + Object.keys(D.It.byId).join(',') };
     const home = h.def.at;
     h.group.position.set(home[0] + 7, 0, home[1] + 7);
     Object.assign(h, { vbk: -1, goHome: false, gcNavHome: false, gcNav: null, busy: null, dest: null });
