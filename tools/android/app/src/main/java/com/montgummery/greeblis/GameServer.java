@@ -56,6 +56,9 @@ public final class GameServer {
     private final byte[] mAssetLinks;
     /** Strong ETag of the document, so the browser can revalidate (304) and keep its compiled-script cache between launches. */
     private final String mEtag;
+    /** APK assets (null in the JVM harness); pre-rendered textures live under assets/tex/. */
+    private android.content.res.AssetManager mAssets;
+    private final java.util.Map<String, byte[]> mTexCache = new java.util.HashMap<>();
     private final ServerSocket mSocket;      // 127.0.0.1
     private ServerSocket mSocket6;           // ::1, same port, if available
     private final int mPort;
@@ -93,6 +96,26 @@ public final class GameServer {
 
     private GameServer(Context context) throws IOException {
         this(readAsset(context), assetLinksJson(context));
+        mAssets = context.getAssets();
+    }
+
+    /** Pre-rendered texture or manifest from assets/tex/, cached in memory; null if absent. */
+    private byte[] texFile(String name) {
+        if (mAssets == null || !name.matches("[A-Za-z0-9_.-]+")) {
+            return null;
+        }
+        synchronized (mTexCache) {
+            if (mTexCache.containsKey(name)) {
+                return mTexCache.get(name);
+            }
+            byte[] data = null;
+            try (InputStream in = mAssets.open("tex/" + name)) {
+                data = readFully(in);
+            } catch (IOException ignored) {
+            }
+            mTexCache.put(name, data);
+            return data;
+        }
     }
 
     /**
@@ -287,6 +310,17 @@ public final class GameServer {
                 writeHead(out, "204 No Content", "text/plain", 0);
                 out.flush();
                 return;
+            }
+            if (target.startsWith("/tex/") && (method.equals("GET") || method.equals("HEAD"))) {
+                byte[] data = texFile(target.substring(5));
+                if (data != null) {
+                    writeHead(out, "200 OK", target.endsWith(".json") ? "application/json" : "image/png", data.length);
+                    if (method.equals("GET")) {
+                        out.write(data);
+                    }
+                    out.flush();
+                    return;
+                }
             }
             boolean isDoc = target.equals("/") || target.equals("/index.html");
             boolean isLinks = target.equals(ASSET_LINKS_PATH);

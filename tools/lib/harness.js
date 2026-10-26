@@ -38,6 +38,14 @@ function hooked(file) {
 function serve(body) {
   return new Promise((resolve) => {
     const srv = http.createServer((req, res) => {
+      if (req.url.startsWith('/tex/')) {   // pre-rendered textures, as the APK serves them
+        const name = path.basename(req.url.split('?')[0]);
+        const f = path.join(root, 'tools/android/app/src/main/assets/tex', name);
+        if (!/^[\w.-]+$/.test(name) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); }
+        const data = fs.readFileSync(f);
+        res.writeHead(200, { 'Content-Type': name.endsWith('.json') ? 'application/json' : 'image/png', 'Content-Length': data.length });
+        return res.end(data);
+      }
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': body.length });
       res.end(body);
     });
@@ -72,6 +80,9 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
   const t0 = Date.now();
   await page.goto(url, { waitUntil: 'load', timeout: timeoutMs });
   await page.waitForFunction(() => window.__dbgReady === true, null, { timeout: timeoutMs });
+  // The boot is sliced (3.15.7+): the world-ready flag comes before the shader
+  // slices, warm-up and the game loop start. Wait for the loop (Re.t advances).
+  await page.waitForFunction(() => window.__gtXR && window.__gtXR.booted === true, null, { timeout: 180000 }).catch(() => {});
   let presentS = null;
   if (vr) {
     await page.evaluate(() => window.__fakeXR.fire());
