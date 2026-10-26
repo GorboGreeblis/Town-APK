@@ -123,7 +123,7 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 
 ## Latest results (3.15.10/3.15.11 asset, headless harness)
 
-Full tier on 3.15.11: all stages pass except world routes, 16/20 (four random routes through the Shop, all starting in the sealed corner behind it; the earlier 20/20 runs had simply not sampled that corner). Fixed as B14 in 3.15.12; world test 20/20 in four runs since, standard tier on 3.15.12 recorded below.
+Full tier on 3.15.11: all stages pass except world routes, 16/20 (four random routes through the Shop, all starting in the sealed corner behind it; the earlier 20/20 runs had simply not sampled that corner). Fixed as B14 in 3.15.12; world test 20/20 in four runs since. Standard tier on the 3.15.12 asset (B14, before the B15 entry change): all stages pass. 3.15.12 then dropped the `layers` feature and hardened the entry (B15, see BUGS.md); entry test passes on the final asset (3/3 scenarios) and the 3.15.11 feature list fails it; standard tier on the final asset recorded below.
 
 Full tier on 3.15.10 (all fixes, pre-rendered textures): **all stages pass** (entry fix verify, server harness incl. ETag/304, spell-check, APK check, VR entry wiring, runtime 120 s, world incl. B2 rescue and 20/20 routes, input 12/12, progression incl. garden event, visits all, courier, return-home all 17, release parity). 3.15.11 differs only in the head-script loader (compositor layers); play and entry tests pass on it; full tier running.
 

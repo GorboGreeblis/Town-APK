@@ -19,6 +19,10 @@ const fakexr = fs.readFileSync(path.join(__dirname, 'fakexr.js'), 'utf8');
   html = html.replace(anchor, anchor + 'window.__readyAt=performance.now();');
   const texDir = path.join(root, 'tools/android/app/src/main/assets/tex');
   const server = http.createServer((req, res) => {
+    if (req.url.startsWith('/log?')) {   // page diagnostics, as the APK's server accepts them (logged to the console here)
+      try { const m = decodeURIComponent(req.url.slice(7)); (global.__pageLog = global.__pageLog || []).push(m); if (process.env.PAGE_LOG) console.log('  page: ' + m); } catch (e) {}
+      res.writeHead(204); return res.end();
+    }
     if (req.url.startsWith('/tex/')) {   // pre-rendered textures, as the APK serves them
       const name = path.basename(req.url.split('?')[0]); const f = path.join(texDir, name);
       if (!/^[\w.-]+$/.test(name) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); }

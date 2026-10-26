@@ -73,3 +73,15 @@ adb pull <path printed above> oculus-browser.apk
 
 `oculus-browser.apk` can be decompiled to read exactly what
 `WebXRCustomTabActivity` checks before closing. It is large (hundreds of MB).
+
+## Page diagnostics (3.15.12+)
+
+The page posts its events to the loopback server, which logs them with tag
+`GreeblisServer` as `page: <ms since page start> <text>`:
+`session parked, features=...`, `loader failed: ...`, `entry failed (n): ...`,
+`session ended (before|after handover)`, `requestSession rejected: ...`, and
+every error the game's own handler sees (`[xr-enter] ...`, `[boot] ...`).
+Capture with `adb logcat -s GreeblisServer GreeblisLauncher cr_VrShellDelegate cr_XRActivity`.
+A launch that exits shows `exitWebVRPresent` in `cr_VrShellDelegate` right
+after the page's last `page:` line, which names the cause.
+

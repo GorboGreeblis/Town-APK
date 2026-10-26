@@ -433,3 +433,36 @@ VR-entry fix; each item is for discussion first.
     1 near the gallery) are reachable at finer margins and the final leg into
     them is tree-free, so they were left alone.
 
+41. **3.15.11 crash: the `layers` feature forbids `baseLayer` (B15).** The
+    author's headset log for 3.15.11 showed three identical launches: the page
+    requests the session at page start, `presentRequested` / `enterVR` two
+    seconds later, then 6-8 s after that `exitWebVRPresent`, `shutdownVR`,
+    `terminate!`, and the launcher's `browser requested finishAndRemoveTask`.
+    Nothing killed the app from outside: the page's own session ended, and
+    the immersive activity finishes with it. The browser does not log page
+    errors, but its native library carries the rule as a string:
+    `Can't use baseLayer with layers feature requested` (also `Can't set both
+    baseLayer and layers`, `All layers in render state must be unique`, `The
+    'layers' feature was not enabled for this XRSession.`, `Session is not
+    configured correctly: no layer is set`). With `layers` among the granted
+    features every `updateRenderState({baseLayer})` throws: first in our
+    loader (hence no loading screen at all on 3.15.11), then in three.js's
+    `setSession` at boot end; the game's entry routine caught that and ended
+    the session, i.e. exited the app. The 6-8 s is the boot time on the Quest
+    with pre-rendered textures.
+
+    Consequences: (a) 3.15.12 does not request `layers`; the projection
+    loader of 3.15.10 is back. (b) The entry routine no longer ends an
+    APK-launched session on failure: the loading screen comes back with the
+    error text, entry is retried twice, and the worst case is a readable
+    screen the user leaves with the system button. (c) The page posts its
+    events and errors to the loopback server's `/log` endpoint, logged as
+    `GreeblisServer: page: <ms> <text>` (HEADSET_DIAG.md). (d) `tools/fakexr.js`
+    enforces the rules above, so the headless entry test fails on a `layers`
+    session the way the headset does. (e) The real fix for B13 (black bars)
+    must render the game itself through an `XRProjectionLayer`: three.js's
+    base-layer path shimmed with a framebuffer whose colour/depth attachments
+    come from `getViewSubImage` each frame, plus the quality governor's layer
+    rebuilds (`scaleFactor` instead of a new `XRWebGLLayer`). New rendering
+    code only a headset can verify, so it ships as an experiment APK first.
+
