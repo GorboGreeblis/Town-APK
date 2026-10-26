@@ -15,6 +15,7 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | T7 | World test: blossom/acorn regrow check | done (regrow at 12 s confirmed once the harness ran at real speed, see BUGS F4) | `tools/test_world.js` |
 | T8 | Remaining test-plan items: roamers never inside hulls over minutes, NPC schedules (meet, visits, vignettes), greeting freeze, audio node leaks, quality governor, context loss, long soak | open | `tools/TEST_PLAN.md` |
 | T9 | Full pass on the final build (`tools/run_tests.sh --full`) and record the results | open | only on the final build |
+| T11 | Performance analysis of the APK build: wrapper overhead, renderer/XR settings as bundled (framebuffer scale, foveation, target Hz, adaptive quality), draw calls and per-frame CPU cost measured in the harness; report possible improvements before changing anything | in progress | this list, `NOTES.md` |
 | T10 | Lore Bible: fill the open questions (the Ancient, Mama W, flint vs acorns, Field Office, sign names) | open, author | `tools/LORE.md` |
 
 ## Done
