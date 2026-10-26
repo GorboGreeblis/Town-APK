@@ -383,6 +383,15 @@ GAME_FIXES = [
         'function i(L){for(const e of L||a())try{const o=e.image;t.has(o)||t.set(o,{pr:n(o,o.width,o.height)})}catch(e){}}',
         'function i(L){for(const e of L||a())try{const o=e.image;t.has(o)||t.set(o,{pr:o.__gtPr||n(o,o.width,o.height)})}catch(e){}}',
     ),
+    # Submission safety: start at the native render scale (level 2: 1.0, no
+    # foveation, today's baseline) and let the governor step UP to 1.1 / 1.2
+    # when frames stay under budget, instead of starting at 1.2 and dropping
+    # frames for a second or two at every launch (what the Store's
+    # performance check looks for).
+    (
+        'Ge={level:0,ema:1e3/e.targetHz,',
+        'Ge={level:2,ema:1e3/e.targetHz,',
+    ),
     # B11: Nextessa (the pizza courier) pinned against the Ancient. Inside the
     # church she walked straight at the player; when the player stood on the far
     # side of the Ancient, the Ancient's solid part blocked the line and nothing

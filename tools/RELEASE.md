@@ -93,6 +93,12 @@ If it opens a flat browser panel instead of VR, tell me: the fallback is
 Meta's 2D app mode (one manifest change), where the player clicks the panel
 once to enter VR.
 
+Before the upload, one more headset pass against what the Store's reviewers do:
+press the system button in the town (the system menu pauses the app), wait ten
+seconds, resume, and confirm the game continues with sound; take the headset off
+and put it back on; leave the Guardian boundary and come back. Note anything that
+does not come back cleanly in `tools/BUGS.md`.
+
 ## 4. Rebuilding yourself (only if something changes)
 
 1. Install a JDK 17 or newer, and the Android SDK command-line tools (or
