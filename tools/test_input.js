@@ -19,7 +19,7 @@ const file = process.argv[2];
   const { failures, expect } = reporter();
   console.log(`booted in ${g.bootS.toFixed(1)}s, presenting after ${g.presentS.toFixed(1)}s`);
 
-  const yawOf = () => page.evaluate(() => { const D = window.__dbg; const d = new D.C.constructor().position; D.B.getWorldDirection(d); return Math.atan2(d.x, d.z); });
+  const yawOf = () => page.evaluate(() => window.__dbg.we.headYaw);   // world yaw of the head (rig + head)
   const posOf = () => page.evaluate(() => { const p = window.__dbg.At.position; return [p.x, p.z]; });
   const inputs = (list) => page.evaluate((l) => window.__fakeXR.setInputs(l), list);
   const ctl = (hand, axes, buttons) => ({ handedness: hand, axes, buttons: buttons || [{}, {}, {}, {}, {}, {}, {}] });

@@ -48,9 +48,9 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 
 | Item | How | Coverage |
 | --- | --- | --- |
-| Left stick walk with dead-zone, speed, collision with buildings (`F.solid`) and bodies (`uo`), park bounds | headless: `fakexr.js` `setInputs`, or drive `we.move` through the hook | todo |
-| Right stick snap turn 30°, no repeat while held | same | todo |
-| Trigger/grip (`select`/`squeeze`): pick ray, pick range/cone, menu choice, UI buttons 4/5 | same | todo |
+| Left stick walk with dead-zone, speed, collision with buildings (`F.solid`) and bodies (`uo`), park bounds | `test_input.js` | partial (bodies, bounds todo) |
+| Right stick snap turn 30°, no repeat while held | `test_input.js` | done |
+| Trigger/grip (`select`/`squeeze`): pick ray, pick range/cone, menu choice, UI buttons 4/5 | `test_input.js` (events only) | partial |
 | Controller mapping on real hardware (hand assignment, haptics) | sideload | headset |
 
 ## 4. World and collision
@@ -58,7 +58,7 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | Item | How | Coverage |
 | --- | --- | --- |
 | Building hulls/parts keep player and NPCs out; workers may enter their own kiosk and stand on their home part | `test_npc_home.js` (NPC side); player side | partial |
-| Zones (`E`: still/portal/scenery/pool/phone/stump) and roam grids (`JGP.roamFree`, `JGP.route` A*) produce walkable routes between any two open cells | headless: sample random pairs, assert path validity and no path through hulls | todo |
+| Zones (`E`: still/portal/scenery/pool/phone/stump) and roam grids (`JGP.roamFree`, `JGP.route` A*) produce walkable routes between any two open cells | `test_world.js` | done |
 | Far-detail LOD swaps at 62/66 m without popping errors; instanced batching (`gcEB`) keeps matrices valid | headless: move the camera and count visible meshes; check no NaN matrices | todo |
 
 ## 5. NPC behaviour
@@ -67,7 +67,7 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | --- | --- | --- |
 | Posted NPCs return to their post via waypoints; Mushroom hops onto the desk (`lo.post`) | `test_npc_home.js` (15 placements) | done (results in NOTES.md) |
 | Stuck detection and rescue (`De`: re-plan via waypoints, off-screen teleport after 4 stalls) | `test_npc_home.js` forced-stuck and far-player scenarios | done |
-| Away watchdog (`sendHome` after 4 s idle / 20 s moving away from home ground) | headless: displace an NPC, wait, assert `sendHome` effect | todo |
+| Away watchdog (`sendHome` after 4 s idle / 20 s moving away from home ground) | `test_world.js` | partial |
 | Roamers (gorbo, gratelet, p_mamagorbo) pick free spots, never inside hulls or zones | headless: run 2-3 min, sample positions each frame | todo |
 | Wander/trek for creatures (`ho`), personal space, spreading | same | todo |
 | Mama+Gorbo meeting schedule (`meetAt`), visits (`visitPlan`), vignettes (`VIGS`) fire and release NPCs (`busy` cleared) | headless: force timers through the hook, assert states return to idle | todo |
@@ -78,21 +78,21 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | Item | How | Coverage |
 | --- | --- | --- |
 | Every talk line, gift line, campfire line renders without overflow and has no spelling errors | `spellcheck_dialogue.py`; text-fit shim exists in code | partial (spelling done; layout todo) |
-| Talk flow: `Talk to`, cycling lines, `|` page breaks, typewriter speed | headless: open talk through the hook | todo |
-| Panels (`_t`): shop, campfire/garden event, battle; buttons CLOSE/DONE/LEAVE | headless | todo |
+| Talk flow: `Talk to`, cycling lines, `|` page breaks, typewriter speed | `test_progression.js` (every line shown) | partial |
+| Panels (`_t`): shop, campfire/garden event, battle; buttons CLOSE/DONE/LEAVE | `test_progression.js` | partial |
 | HUD counts (blossoms, acorns, artifacts) update | headless | todo |
 
 ## 7. Economy and progression (`Kt`)
 
 | Item | How | Coverage |
 | --- | --- | --- |
-| Blossom/acorn pickup, regrow timers (12 s), counts | headless: teleport player onto pickups | todo |
-| Shop at Garden Supplies: prices, `owned`, `equip`, `shyBook`, `shyFree` gates | headless | todo |
+| Blossom/acorn pickup, regrow timers (12 s), counts | `test_world.js` | partial (regrow check under review) |
+| Shop at Garden Supplies: prices, `owned`, `equip`, `shyBook`, `shyFree` gates | `test_progression.js` | partial |
 | Give a blossom → gift lines and `met`/`talkState` | headless | todo |
-| Dance battles (Dbt): rock/paper/scissors, stamina, bow-out, first win awards an Artifact, `danceWins` | headless: drive `play(id)` | todo |
-| Garden event (`bt`): summoning pillar, gather timer `GATHER_S`, seeds/snacks/stone rewards, NPCs sent home afterwards (`fe`) within 90 s | headless | todo |
-| Pizza courier (`ue`): call, spawn at 75 m, arrival, give-up after 100 s | headless | todo |
-| Finale (`me`): three Artifacts → 180 s finale, slots, chatter, lock 600 s, world swap (`swapWorld`) keeps `keepInFinale` objects | headless | todo |
+| Dance battles (Dbt): rock/paper/scissors, stamina, bow-out, first win awards an Artifact, `danceWins` | `test_progression.js` | done |
+| Garden event (`bt`): summoning pillar, gather timer `GATHER_S`, seeds/snacks/stone rewards, NPCs sent home afterwards (`fe`) within 90 s | `test_progression.js --long` | done (full tier) |
+| Pizza courier (`ue`): call, spawn at 75 m, arrival, give-up after 100 s | `test_progression.js` | partial |
+| Library finale: three Artifacts → Sparkakus awards the Gem | `test_progression.js` | done |
 | Backpacka sequence (`BP`) and jazz (`JAZZ`) timings | headless | todo |
 
 ## 8. Audio

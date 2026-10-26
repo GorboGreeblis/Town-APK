@@ -37,6 +37,9 @@ if [ "$TIER" != quick ]; then
   run "VR entry wiring (early/late/no grant)" node "$ROOT/tools/test_entry.js" "$ASSET" all
   run "runtime play (2D loop + fake VR session), ${PLAY_S}s" node "$ROOT/tools/test_play.js" "$ASSET" all "$PLAY_S"
   run "world: routes, hulls, pickups, watchdog (${WORLD_S}s)" node "$ROOT/tools/test_world.js" "$ASSET" "$WORLD_S"
+  run "input and locomotion (fake controllers)" node "$ROOT/tools/test_input.js" "$ASSET"
+  if [ "$TIER" = full ]; then run "progression incl. gardening event (--long)" node "$ROOT/tools/test_progression.js" "$ASSET" --long;
+  else run "progression (talk, battle, shop, library, pizza)" node "$ROOT/tools/test_progression.js" "$ASSET"; fi
   if [ "$NPC_N" = 0 ]; then run "NPC return-home (Mushroom), all scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S";
   else run "NPC return-home (Mushroom), first $NPC_N scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S" "$NPC_N"; fi
   if [ "$TIER" = full ]; then run "release parity (compressed build vs source)" node "$ROOT/tools/test_parity.js"; else skip "release parity" "$TIER tier; run --full"; fi
