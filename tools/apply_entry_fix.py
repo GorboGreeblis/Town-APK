@@ -218,6 +218,11 @@ GAME_FIXES = [
         'clear=(ax,az,bx,bz)=>{const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,bz-az)/.3));',
         'clear=(ax,az,bx,bz)=>{if(F.segBlocked(ax,az,bx,bz,.3))return!1;const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,bz-az)/.3));',
     ),
+    # B2: the stuck-rescue teleport only fired out of view (4 stalls, >12 m away
+    # and outside the view), so an NPC stalling in front of the player twitched
+    # for as long as they watched. Keep that, and add a visible fallback after 8
+    # stalls (~10 s): a sparkle burst where it stood and where it lands ("poof").
+    ('if(t.gcStuckN>=4&&!function(t){const e=t.group.position,o=we.presenting&&we.headPos?we.headPos:At.position;if(Math.hypot(e.x-o.x,e.z-o.z)<12)return!0;B.updateMatrixWorld(),We.multiplyMatrices(B.projectionMatrix,B.matrixWorldInverse),Fe.setFromProjectionMatrix(We);for(const t of[.3,1.2,2.4])if(Fe.containsPoint(new c(e.x,t,e.z)))return!0;return!1}(t))return t.group.position.set(r,t.group.position.y,s),t.gcNav=null,t.goHome=!1,t.gcNavHome=!1,void(t.gcStuckN=0);', 'const gcVis=function(t){const e=t.group.position,o=we.presenting&&we.headPos?we.headPos:At.position;if(Math.hypot(e.x-o.x,e.z-o.z)<12)return!0;B.updateMatrixWorld(),We.multiplyMatrices(B.projectionMatrix,B.matrixWorldInverse),Fe.setFromProjectionMatrix(We);for(const t of[.3,1.2,2.4])if(Fe.containsPoint(new c(e.x,t,e.z)))return!0;return!1}(t);if(t.gcStuckN>=4&&!gcVis||t.gcStuckN>=8){if(gcVis)try{const q=t.group.position;Nt.sparkle(new c(q.x,q.y+.6,q.z),14),Nt.sparkle(new c(r,q.y+.6,s),14)}catch(e){}return t.group.position.set(r,t.group.position.y,s),t.gcNav=null,t.goHome=!1,t.gcNavHome=!1,void(t.gcStuckN=0)}'),
     # B4r: the last leg of a route (previous point -> exact target) was only
     # checked up to 1.2 m short of the target, and the final target leg not at
     # all, so a route could still clip a building corner right at its end. Check

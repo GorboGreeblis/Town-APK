@@ -346,3 +346,16 @@ VR-entry fix; each item is for discussion first.
     before dropping the cell and, if the final leg is still blocked, inserts an
     L-shaped step round the corner. World test: 20/20 random pairs clean.
 
+36. **B2, a visible fallback for stuck NPCs.** The stuck detector `De()` re-plans
+    after ~1.2 s without progress and, after four stalls, teleports the NPC to
+    its target, but only when the player is more than 12 m away and the NPC is
+    outside the view, so a stall in view went on for as long as the player
+    watched. At the author's request the hidden teleport stays as it is and a
+    second threshold is added: after eight stalls (about ten seconds) the NPC is
+    moved even in view, with a sparkle burst from the game's own particle pool
+    where it stood and where it lands, so it reads as a deliberate "poof"
+    rather than a glitch. Everything else (re-planning, the B1/B4/B11 route
+    fixes) still runs first, so this only ever fires on a case those did not
+    cover. Test: `test_world.js` forces eight stalls on a visible NPC and checks
+    it lands on its target without errors.
+
