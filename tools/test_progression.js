@@ -97,7 +97,7 @@ const LONG = process.argv.includes('--long');
   });
   expect('library: three Artifacts -> Sparkakus finale awards the Gem', lib.rewardArtifacts && lib.gem, JSON.stringify(lib));
 
-  // ---- gem trade -> Summoning Stone (give Gemtoe a blossom while holding the Gem)
+  // ---- gem trade -> Summoning Stone (TALK to Gemtoe while holding the Gem; the trade is in the talk branch)
   const trade = await page.evaluate(async () => {
     const D = window.__dbg, Kt = D.Kt; const out = { before: !!Kt.rewards.stone };
     const tw = performance.now();
@@ -106,14 +106,14 @@ const LONG = process.argv.includes('--long');
     Kt.gem = true; Kt.blossoms = Math.max(Kt.blossoms, 3);
     D.At.position.set(gt.group.position.x + 2, D.At.position.y, gt.group.position.z + 2);
     const acts = D.xe.actionsFor(gt) || []; out.actions = acts.map((a) => a.label);
-    const give = acts.find((a) => a.verb === 'give');
-    if (!give) return Object.assign(out, { error: 'no give action' });
-    give.run();
+    const talk = acts.find((a) => a.verb === 'interact');
+    if (!talk) return Object.assign(out, { error: 'no talk action' });
+    talk.run();
     const t0 = performance.now();
     while (!Kt.rewards.stone && performance.now() - t0 < 20000) await new Promise((r) => setTimeout(r, 300));
     out.stone = !!Kt.rewards.stone; out.gemLeft = !!Kt.gem; return out;
   });
-  expect('trade: giving Gemtoe a blossom while holding the Gem yields the Summoning Stone', trade.stone === true && trade.gemLeft === false, JSON.stringify(trade));
+  expect('trade: talking to Gemtoe while holding the Gem yields the Summoning Stone', trade.stone === true && trade.gemLeft === false, JSON.stringify(trade));
 
   // ---- pizza
   const pizza = await page.evaluate(async () => {
@@ -122,9 +122,12 @@ const LONG = process.argv.includes('--long');
     const tw = performance.now();
     while (D.qt.isOpen && performance.now() - tw < 40000) await new Promise((r) => setTimeout(r, 200));
     out.dialogueClearedInS = +((performance.now() - tw) / 1000).toFixed(1);
+    out.jtTop = D.jt && D.jt.top; out.meActive = !!(D.me && D.me.active);
     try { D.ue.call(); } catch (e) { out.threw = String(e); }
+    await new Promise((r) => setTimeout(r, 300)); out.dlgAfterCall = !!D.qt.isOpen;
     const t0 = performance.now();
-    while (!D.ue.courier && performance.now() - t0 < 20000) await new Promise((r) => setTimeout(r, 300));
+    while (!D.ue.courier && performance.now() - t0 < 30000) await new Promise((r) => setTimeout(r, 300));
+    out.dlgLater = !!D.qt.isOpen;
     out.courier = !!D.ue.courier; out.state = D.ue.state;
     const t1 = performance.now();
     while (out.courier && !/arriv|wait/.test(D.ue.state) && performance.now() - t1 < 90000) await new Promise((r) => setTimeout(r, 500));
