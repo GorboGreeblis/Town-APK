@@ -59,10 +59,12 @@
             android:screenOrientation="landscape">
 
             <!-- Placeholder; LauncherActivity.getLaunchingUrl() substitutes the live
-                 loopback URL (the port can move if 17777 is taken). -->
+                 loopback URL (the port can move if 17777 is taken). The host must be
+                 "localhost": the browser verifies TWA origins and accepts localhost
+                 without HTTPS but rejects a numeric 127.0.0.1. -->
             <meta-data
                 android:name="android.support.customtabs.trusted.DEFAULT_URL"
-                android:value="http://127.0.0.1:17777/" />
+                android:value="http://localhost:17777/" />
 
             <!-- Meta Quest: launch straight into WebXR (no 2D browser panel). -->
             <meta-data

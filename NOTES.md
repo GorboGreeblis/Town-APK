@@ -192,3 +192,14 @@ VR-entry fix; each item is for discussion first.
     HTTPS origin. Since hosting is ruled out, the 2D app mode (browser panel
     plus the game's own "Press A") is the fallback under test, and the
     build now has a `-PappMode=2D` switch.
+
+29. **B9 resolved by the unfiltered log.** The browser prints
+    `cr_OriginVerifier: Verification failed for http://127.0.0.1:17777 as not
+    https or localhost`, then `cr_WebXRCustomTabActivity: TWA verification was
+    unsuccessful! Exiting the activity.` Chromium's Trusted Web Activity
+    verifier has a development exception for the host name `localhost`
+    (no HTTPS needed) but not for the numeric loopback address. 3.15.4
+    addresses the game as `http://localhost:17777/`; the server also listens
+    on `::1` in case `localhost` resolves to IPv6 first. No hosting, no
+    browser window: the immersive activity should now verify and go straight
+    to `sessiongranted`.

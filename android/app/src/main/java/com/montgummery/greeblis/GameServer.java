@@ -38,7 +38,8 @@ public final class GameServer {
     private static GameServer sInstance;
 
     private final byte[] mDocument;
-    private final ServerSocket mSocket;
+    private final ServerSocket mSocket;      // 127.0.0.1
+    private ServerSocket mSocket6;           // ::1, same port, if available
     private final int mPort;
 
     /** Starts the server if needed and returns the URL the browser should open. */
@@ -54,9 +55,19 @@ public final class GameServer {
         mDocument = document;
         mSocket = bind();
         mPort = mSocket.getLocalPort();
-        Thread t = new Thread(this::acceptLoop, "greeblis-http");
+        Thread t = new Thread(() -> acceptLoop(mSocket), "greeblis-http");
         t.setDaemon(true);
         t.start();
+        // "localhost" may resolve to ::1 first on some systems; listen there too.
+        try {
+            mSocket6 = new ServerSocket(mPort, 16, InetAddress.getByName("::1"));
+            Thread t6 = new Thread(() -> acceptLoop(mSocket6), "greeblis-http6");
+            t6.setDaemon(true);
+            t6.start();
+        } catch (IOException e) {
+            mSocket6 = null;
+            Log.i(TAG, "IPv6 loopback not available: " + e.getMessage());
+        }
         Log.i(TAG, "Serving " + document.length + " bytes on " + url());
     }
 
@@ -64,8 +75,14 @@ public final class GameServer {
         this(readAsset(context));
     }
 
+    /**
+     * The browser verifies Trusted Web Activity origins; it accepts the host
+     * name "localhost" without HTTPS but rejects a numeric 127.0.0.1
+     * ("Verification failed ... as not https or localhost"). So the game is
+     * always addressed as localhost.
+     */
     public String url() {
-        return "http://127.0.0.1:" + mPort + "/";
+        return "http://localhost:" + mPort + "/";
     }
 
     public int port() {
@@ -75,6 +92,10 @@ public final class GameServer {
     public void close() {
         try {
             mSocket.close();
+        } catch (IOException ignored) {
+        }
+        try {
+            if (mSocket6 != null) mSocket6.close();
         } catch (IOException ignored) {
         }
     }
@@ -113,13 +134,13 @@ public final class GameServer {
         }
     }
 
-    private void acceptLoop() {
-        while (!mSocket.isClosed()) {
+    private void acceptLoop(ServerSocket server) {
+        while (!server.isClosed()) {
             final Socket client;
             try {
-                client = mSocket.accept();
+                client = server.accept();
             } catch (IOException e) {
-                if (!mSocket.isClosed()) {
+                if (!server.isClosed()) {
                     Log.w(TAG, "accept failed", e);
                 }
                 return;

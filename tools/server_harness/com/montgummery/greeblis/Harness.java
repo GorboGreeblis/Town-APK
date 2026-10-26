@@ -41,7 +41,7 @@ public final class Harness {
         failures += expect("GET /nope is 404", fetch(server.url() + "nope", "GET").status == 404);
         failures += expect("GET /favicon.ico is 404", fetch(server.url() + "favicon.ico", "GET").status == 404);
         failures += expect("POST / is 405", fetch(server.url(), "POST").status == 405);
-        failures += expect("bound to loopback port " + server.port(), server.url().startsWith("http://127.0.0.1:"));
+        failures += expect("addressed as http://localhost:" + server.port(), server.url().startsWith("http://localhost:"));
         // Ten quick parallel fetches: the server spawns a thread per connection.
         Thread[] ts = new Thread[10];
         final boolean[] ok = new boolean[10];
