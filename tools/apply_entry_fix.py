@@ -409,6 +409,17 @@ GAME_FIXES = [
         'hit=(o,d)=>{const D=new c0(...d).normalize();let t=2.4;while(t>0&&field(o[0]+D.x*t,o[1]+D.y*t,o[2]+D.z*t)>0)t-=.02;let lo=Math.max(0,t),hi=t+.02;',
         'hit=(o,d)=>{const D=new c0(...d).normalize();let t=2.4,st=.02,f=field(o[0]+D.x*t,o[1]+D.y*t,o[2]+D.z*t);while(t>0&&f>0){st=Math.min(.15,Math.max(.02,.8*f));t-=st;f=field(o[0]+D.x*t,o[1]+D.y*t,o[2]+D.z*t)}let lo=Math.max(0,t),hi=t+st;',
     ),
+    # B20 (author): z-fighting where the metal and the glowing parts of
+    # Hennrick's forearm cuffs overlap. The cuff is a cylinder of radius .36
+    # whose surface reaches z .41; its three cyan lights are boxes centred at
+    # z .40 with depth .02, so their front faces lie exactly on the cuff's
+    # surface. The lights now sit half inside the cuff (centre z .415: back
+    # face .405 inside the metal, front face .425 proud by 1.5 cm) and the cuff
+    # is .37 so it clears the forearm's noise-displaced skin (.34 + up to .018).
+    (
+        'R(T.cyl(.36,.36,.26,20),p,e,[.2*t,-1.12,.05]);for(let o=0;o<3;o++)R(T.box(.08,.04,.02),u,e,[.2*t,.06*o-1.07,.4]);',
+        'R(T.cyl(.37,.37,.26,20),p,e,[.2*t,-1.12,.05]);for(let o=0;o<3;o++)R(T.box(.08,.04,.02),u,e,[.2*t,.06*o-1.07,.415]);',
+    ),
     # B11: Nextessa (the pizza courier) pinned against the Ancient. Inside the
     # church she walked straight at the player; when the player stood on the far
     # side of the Ancient, the Ancient's solid part blocked the line and nothing

@@ -38,7 +38,8 @@ Living list. Done items move to the bottom with the date. Bugs live in
 
 - **3.15.19 passes the author's full headset run, no new issues.** It is the upload
   candidate (root APK, versionCode 20); RELEASE.md section 5. B12 closed.
-- 3.15.21 built: panel about 15 degrees at 5 m with a horizon in the loading sky (author:
+- 3.15.22 built: 3.15.21 plus B20 (Hennrick's cuff lights, author's report).
+- 3.15.21: panel about 15 degrees at 5 m with a horizon in the loading sky (author:
   25 degrees still too close), plus the page-start asset download (NOTES 51). Needs the
   author's loading-screen check; 3.15.19 stays the upload candidate until then.
 - Remaining: T4 store upload (author: comfort rating Moderate, add Standing, screenshots,

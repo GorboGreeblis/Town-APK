@@ -673,3 +673,16 @@ VR-entry fix; each item is for discussion first.
     session hidden/visible (frames resume), and a WebGL context loss, which
     showed B19.
 
+52. **B20, Hennrick's cuffs (3.15.22).** "Metal and the glowing part
+    overlapping": in `__R["hennrick"]` each forearm has a metal cuff
+    (`T.cyl(.36,.36,.26)` at z .05, surface at z .41) with three cyan lights
+    (`T.box(.08,.04,.02)` at z .40): the lights' front faces coincide with the
+    cuff's surface along the tangent line, which flickers at Quest depth
+    precision. The lights now sit half inside the cuff (centre z .415) and the
+    cuff is .37 (the forearm skin is an ellipsoid of z-radius .34 with up to
+    .018 of noise displacement, so .36 was within a few millimetres of it).
+    The three cyan strips on the upper arm were checked and left alone. A
+    jittered-render probe for one character turned out not to isolate the
+    cuffs: the arm parts are merged, so the metal and glow meshes are not
+    separate objects; the fix rests on the geometry.
+
