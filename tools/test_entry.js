@@ -117,8 +117,8 @@ async function run(scenario, srvUrl, browser) {
   const fatal = errors.filter((e) => !/GPU|WebGL|GL_|SwiftShader|gpu/i.test(e));
   const first = s.calls[0];
   expect('requestSession called exactly once, at page start (before the world was ready)', s.calls.length === 1 && !first.readyFlag);
-  expect('immersive-vr with local-floor/bounded-floor/layers', !!first && first.mode === 'immersive-vr' &&
-         JSON.stringify(first.opts.optionalFeatures) === JSON.stringify(['local-floor', 'bounded-floor', 'layers']));
+  expect('immersive-vr with local-floor/bounded-floor (no layers: the browser forbids baseLayer with it)', !!first && first.mode === 'immersive-vr' &&
+         JSON.stringify(first.opts.optionalFeatures) === JSON.stringify(['local-floor', 'bounded-floor']));
   expect('world ready flag set for the head script', s.gtXR && s.gtXR.ready);
   expect('game took the parked session over at the end of the boot', s.gtXR && s.gtXR.taken);
   expect('gate left "Loading..." (the rAF loop rewrites the gate text each frame while the fake session never resolves)', s.gate !== 'Loading...');
