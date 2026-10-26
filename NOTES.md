@@ -110,3 +110,20 @@ VR-entry fix; each item is for discussion first.
 18. **Spelling.** `tools/spellcheck_dialogue.py` finds no misspellings in the
     421 prose strings. Everything it flags is a name or deliberate sound
     (Goomp, Backpacka, Appterix, Cobourg) or font/engine text.
+
+## Runtime testing (round 2 results)
+
+19. **Simulated VR session works end to end.** With the fake WebXR device
+    (`tools/fakexr.js`) the game accepts the grant, three.js takes the
+    session, the gate hides ("Entering VR..."), stereo frames render, and on
+    session end the 2D gate returns, all with zero page errors. This is the
+    closest thing to a headset run available here; it does not exercise real
+    sensors, controllers or the Quest Browser.
+20. **NPCs only simulate while presenting.** In 2D (gate) mode no NPC moves
+    and the player cannot pick anything up, which is by design (the 2D gate
+    is only a holding screen). All behaviour tests therefore run inside the
+    fake session.
+21. **Software rendering is slow.** Stereo frames run at roughly 3 fps under
+    SwiftShader even with the framebuffer clamped to 320 px, so behaviour
+    scenarios run with large frame deltas (about 0.35 s). Results are valid
+    for logic, not for timing precision or frame-rate claims.
