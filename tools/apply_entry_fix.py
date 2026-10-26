@@ -2,6 +2,7 @@
 """Produce the APK copy of the game from the untouched original.
 
 Usage:  python3 tools/apply_entry_fix.py [src] [dst]
+        python3 tools/apply_entry_fix.py --experiment nobatch|noeffects|nogovernor [src] dst   (diagnostic variant)
         python3 tools/apply_entry_fix.py --entry-only [src] dst   (VR-entry edits only, no gameplay fixes)
         python3 tools/apply_entry_fix.py --verify [src] [dst]
 Default src: tools/uncompressed.html   Default dst: tools/android/app/src/main/assets/index.html
@@ -20,7 +21,26 @@ Every replacement must match exactly once; the script fails loudly otherwise.
 import sys, pathlib
 
 root = pathlib.Path(__file__).resolve().parent.parent
-args = [a for a in sys.argv[1:] if a not in ("--verify", "--entry-only")]
+# --experiment NAME: additionally apply one diagnostic variant (headset A/B tests for B12 etc.).
+# Variants are never used for the release asset; build_experiment.sh writes them elsewhere.
+EXPERIMENTS = {
+    # Draw every mesh individually: no gcEB batches, no custom vertex shader.
+    "nobatch": [("const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[]};",
+                 "const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[],off:!0};")],
+    # No pickup effects: no sparkle particles, no floating labels, no HUD/label texture churn from pickups.
+    "noeffects": [("gcEB.ready=!0;", "gcEB.ready=!0;Nt.sparkle=()=>{};Ut.at=()=>{};Ut.above=()=>{};")],
+    # Quality governor frozen: foveation stays 0 and the layer is never rebuilt.
+    "nogovernor": [("quality:[1,1,1,1,1],foveation:[0,.25,.5,.75,1],sosScale:.82,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:30,",
+                    "quality:[1,1,1,1,1],foveation:[0,0,0,0,0],sosScale:1,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:0,")],
+}
+experiment = None
+_argv = sys.argv[1:]
+if "--experiment" in _argv:
+    experiment = _argv[_argv.index("--experiment") + 1]
+    if experiment not in EXPERIMENTS:
+        sys.exit("unknown experiment %r; known: %s" % (experiment, ", ".join(EXPERIMENTS)))
+    _argv = [a for i, a in enumerate(_argv) if a != "--experiment" and (i == 0 or _argv[i - 1] != "--experiment")]
+args = [a for a in _argv if a not in ("--verify", "--entry-only")]
 verify = "--verify" in sys.argv[1:]
 # --entry-only: write src + the 4 VR-entry edits only (no gameplay fixes), for before/after comparisons in the harness.
 entry_only = "--entry-only" in sys.argv[1:]
@@ -148,7 +168,7 @@ GAME_FIXES = [
     ),
 ]
 
-for old, new in EDITS + ([] if entry_only else GAME_FIXES):
+for old, new in EDITS + ([] if entry_only else GAME_FIXES) + (EXPERIMENTS[experiment] if experiment else []):
     n = html.count(old)
     if n != 1:
         sys.exit(f"ERROR: anchor found {n} times (expected 1): {old[:80]!r}")
