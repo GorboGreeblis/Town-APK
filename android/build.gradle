@@ -1,0 +1,5 @@
+// Root build file. The Android Gradle Plugin version matches the one Meta's
+// bubblewrap template for Quest uses.
+plugins {
+    id 'com.android.application' version '8.9.1' apply false
+}
