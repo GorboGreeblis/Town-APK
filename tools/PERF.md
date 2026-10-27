@@ -91,10 +91,10 @@ GPU (programs, textures, geometries) and the frame-time spike around it
 
 | Action | New programs | New textures | New geometries | Worst frame vs baseline |
 | --- | --- | --- | --- | --- |
-| First blossom pickup of the session | 0 | 14 | 57 | 78 ms (all 9 frames over 2x) |
+| First blossom pickup of the session | 0 | 14 | 57 | 78 ms (all 9 frames over 2x); 3.15.26: 10.5 ms, 0 new programs (P2) |
 | Acorn pickup, later pickups, new label text | 0 | 0 | 0 | none |
 | Dialogue box open | 0 | 0 | 0 | 20 ms vs 15 |
-| Battle panel open | 1 | 1 | 1 | 1,154 ms vs 12 (shader compile) |
+| Battle panel open | 1 | 1 | 1 | 1,154 ms vs 12 (shader compile); 3.15.26: 16.8 ms, 0 new programs (P2) |
 | Garden Event start | 0 | 0 | 0 | 44 ms vs 10 (3 frames over 2x) |
 | During the Event | | | | p50 9.3 ms, p99 20.7 ms |
 
@@ -125,7 +125,24 @@ the author's sense except the last two, which change how assets are built.
 5. **Fewer programs**: 106 programs come from material variants (flat vs
    smooth, map vs none, fog on/off, vertex colours). Normalising a few
    variants would cut compile time at boot and state changes per frame.
-6. **Frame rate**: the game requests 72 Hz. Quest 2/3 support 90 Hz; with the
+6. **Frame rate** (closed by the author, 2026-10-28: not pursued, it adds GPU load): the game requests 72 Hz. Quest 2/3 support 90 Hz; with the
    CPU side this light, 90 Hz is plausible in normal play if the GPU keeps
    up, but it raises GPU load by 25% and must be measured on the headset
    first (T12). Not recommended before the flash issue is understood.
+
+## 6. Performance pass of 3.15.26 (NOTES 56)
+
+Done without visible change: P1 governor step-down after 36 over-budget
+frames (was 72); P2 light-on shader variants compiled during loading (the
+game's pre-warm had been throwing silently); P4 opacity-0 materials skipped
+before each render; P5 creature ground-fit scan throttled; P6 back-face culling
+for closed, outward, opaque meshes (the game had every material double-sided;
+297k of 659k source triangles now single-sided, checked pixel-identical by
+`tools/sides_check.js`). Tools:
+`tools/event_probe.js` (what the Event adds to the frame, every 2 s) and
+`tools/event_profile.js` (main-thread profile before and during the Event).
+Game logic with rendering stubbed: town 0.7 ms a frame, Event second half
+1.8-2.1 ms (p99 4.7 ms) headless. Levers left that change the look, for the
+author to decide after the headset readings: the Event's point light and
+night lighting (the lit shaders' cost doubles while they are on), Lambert on
+the garden flora, foveation at the start level, lower render scale.

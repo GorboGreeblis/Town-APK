@@ -62,6 +62,7 @@ VR-entry fix; each item is for discussion first.
 53. Curved z-fighting: a geometric test, the batcher's parked sources, B20 completed (3.15.23)
 54. The listed z-fighting instances: three fixed, seven that cannot be seen (3.15.24)
 55. The VRC check and the focus-aware fix (3.15.25)
+56. Performance pass and Zollod's kiosk (3.15.26)
 
 1. **Immersive launch from a loopback origin.** Meta's immersive app mode was
    designed for hosted PWAs whose Digital Asset Links the browser can verify.
@@ -768,3 +769,52 @@ VR-entry fix; each item is for discussion first.
     loopback-server packaging is not covered by any VRC; the submission notes
     should say in a sentence that the app is self-contained and uses no
     network, in case a reviewer asks.
+
+56. **Performance pass and Zollod's kiosk (3.15.26).** The author measured
+    the Event at 38 fps on the headset and asked for as much as can be done
+    without further testing, with the rule that nothing visible changes.
+    Headless facts: the Event adds almost no draw calls or triangles (the
+    `event_probe.js` counts barely move), the game logic with rendering
+    stubbed is 0.7 ms a frame in the town and 1.8-2.1 ms in the Event's second
+    half (`bend`, the per-vertex tentacle sway; the creature ground-fit scan;
+    `updateMatrixWorld` over 1,800 objects), roughly three times that on a
+    Quest, and the one profiled collapse (90% in `uniform3fv`) was a GPU sync
+    during the pillar and the night transition, the Event's fill-heavy
+    moment. Done: P1 governor reacts in half a second; P2 the pickup glow's
+    light-on shader variants are compiled during loading: the game's own
+    pre-warm threw on this three.js build (`getWorldDirection` missing) and
+    its call swallowed the error, so the variants compiled on the first
+    pickup (78 ms) and the battle panel's program on the first battle
+    (1,154 ms headless); both are gone (10 and 17 ms). P4 a sweep before
+    each render hides standard materials at opacity 0 (daytime stars, Event
+    props waiting at the campfire, the day sky at night), pure fill-rate
+    savings. P5 the ground-fit scan runs every second frame while a creature
+    moves and every eighth while it stands. Not done, because each would
+    change the look: fewer lights (the Event turns the point light on and the
+    scene to night, which doubles the lit shaders' cost), Lambert instead of
+    Phong on the garden flora, foveation at the start level, lower render
+    scale; and freezing static scenery's matrices, because the game animates
+    parts of buildings and the safe set cannot be told from the code. The
+    90 Hz idea is closed: it adds GPU load. Still to measure on the headset:
+    FPS in the garden before the Event (geometry) against during it (the
+    light, the night, the pillar), and the OVR Metrics GPU and CPU
+    utilisation during the Event; those decide between a content change the
+    author must approve and more logic trimming.
+
+    **P6, the single-sided pass.** The author's hunch that creatures cost the
+    most led to the biggest finding: the game patches every three.js material
+    constructor to default to DoubleSide, so the whole world (609k of 659k
+    source triangles) rendered without back-face culling, and each creature is
+    12k to 23k triangles, about as much as the town itself. On a tiled mobile
+    GPU every back face costs binning and rasterisation. Before an object tree
+    is batched, each geometry is classified once (closed: every edge shared by
+    two triangles after merging coincident vertices; outward: positive signed
+    volume) and a material whose meshes are all closed, outward and opaque is
+    set to FrontSide (297k triangles, 341 materials; a material with any open
+    user stays double-sided, and one flipped earlier is flipped back if a
+    later tree uses it on an open mesh). The batch material clones carry the
+    flag. `tools/sides_check.js` renders 184 views with the flips on and off in
+    the same frame: differences are one-pixel silhouette outlines (a grazing
+    triangle culled on one side only), no areas. Draw calls are unchanged
+    (120). Expected on the headset: roughly half the vertex and binning work of
+    everything closed, which is most of what is near the player.

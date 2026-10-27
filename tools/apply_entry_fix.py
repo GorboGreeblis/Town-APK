@@ -397,7 +397,7 @@ GAME_FIXES = [
     # BP (the Event module) is not visible from the boot's scope either; publish it.
     (
         '})();const VIGS={};',
-        '})();window.__gtBP=BP;const VIGS={};',
+        '})();window.__gtBP=BP;window.__gtGlowWarm=()=>Ut.warm();const VIGS={};',
     ),
     # Sharpness: render scale 1.2 / 1.1 at the top two quality levels, native
     # below; foveation only from level 3. The author compared 1.2 on the headset
@@ -493,6 +493,112 @@ GAME_FIXES = [
     (
         'else{const t=l.x-i.x,c=l.z-i.z,h=Math.hypot(t,c);if(h>o.stopDist+.001&&!n.wallNear&&"playing"===jt.top){const t=Math.min(h-o.stopDist,o.speed*e),a=it(i,l,!1);',
         'else{const t=l.x-i.x,c=l.z-i.z,h=Math.hypot(t,c),dv=me0&&plr&&h>o.stopDist+.001&&"playing"===jt.top?detour(i.x,i.z,l.x,l.z):[];if(dv.length)wp=dv,wi=0,we=!1,kn=0,mark(),n.moving=!0,r="arriving";else if(h>o.stopDist+.001&&!n.wallNear&&"playing"===jt.top){const t=Math.min(h-o.stopDist,o.speed*e),a=it(i,l,!1);',
+    ),
+    # P1 (author, FPS work, 2026-10-27): the render-scale governor steps down after half a
+    # second over budget instead of a full second (overFrames 72 -> 36 at 72 Hz). Nothing
+    # changes while frame time is within budget.
+    (
+        'overFrames:72,',
+        'overFrames:36,',
+    ),
+    # P2: the pickup glow's point light makes every lit material compile a second shader
+    # variant; `Ut.warm()` pre-compiles them (light on, `O.compile`) but ran at the moment of
+    # entering VR, right after the drop-in. It now also runs during the loading screen, with
+    # the other pre-warms (through a helper published where `B` is the camera), so the entry
+    # compiles nothing. Same visuals.
+    (
+        'try{window.__gtBuildUI&&window.__gtBuildUI()}catch(e){vo(e,"ui-prewarm")}try{window.__gtBP&&window.__gtBP.prewarm()}catch(e){vo(e,"event-prewarm")}',
+        'try{window.__gtBuildUI&&window.__gtBuildUI()}catch(e){vo(e,"ui-prewarm")}try{window.__gtBP&&window.__gtBP.prewarm()}catch(e){vo(e,"event-prewarm")}try{window.__gtGlowWarm&&window.__gtGlowWarm()}catch(e){vo(e,"glow-prewarm")}',
+    ),
+    # P4: fully transparent objects (opacity 0: the daytime stars, the Event props waiting
+    # at the campfire, finished fades) were still drawn every frame at zero opacity, pure
+    # fill-rate cost on the headset. A sweep before each render marks a standard material
+    # invisible while its opacity is 0 and visible again as soon as it rises; the list of
+    # transparent materials is refreshed every 120 frames. Nothing visible changes.
+    (
+        'gcEB.ready=!0;',
+        'gcEB.ready=!0;{let gbOpL=[],gbOpT=0;const gbOpPrev=C.onBeforeRender;C.onBeforeRender=function(){if(!(gbOpT++%120)){gbOpL=[];C.traverse((o=>{const m=o.material;m&&!Array.isArray(m)&&m.transparent&&!m.isShaderMaterial&&!m.isRawShaderMaterial&&gbOpL.push(m)}))}for(let i=0;i<gbOpL.length;i++){const m=gbOpL[i];m.visible=m.opacity>.002}return gbOpPrev?gbOpPrev.apply(this,arguments):void 0};}',
+    ),
+    # B25 (author, headset: Zollod walked into the side of his kiosk, jittering, before he
+    # got in): a keeper walks home by routing to the last point of the kiosk's exit path,
+    # local (2, 3.4), then follows the path in. That point is 0.95 m in front of the kiosk
+    # hull, inside the router's blocked margin around buildings (the walker's radius plus
+    # 0.35 m, up to 1.35 m), so the route ends short and the final straight leg crosses the
+    # side wall when the keeper comes from the side; the stuck handling then takes seconds.
+    # The exit path gets one more point, local (2, 4.4), outside the margin: the route ends
+    # in the open in front of the kiosk and the path leads in along the front. The same
+    # path is walked in reverse when a keeper leaves. `tools/test_npc_home.js` (Mushroom's
+    # kiosk, same exit path) measures the side approaches.
+    (
+        'exit:name=>[[0,-1.75],[2.0,-1.75],[2.0,1.85],[2.0,3.4]].map(',
+        'exit:name=>[[0,-1.75],[2.0,-1.75],[2.0,1.85],[2.0,3.4],[2.0,4.4]].map(',
+    ),
+    # B25 continued: the real causes of Zollod's bump, from `tools/test_npc_home.js` run on
+    # him (cast type "cutebex"). (1) His body radius .9 (collision .72 m) does not fit the
+    # kiosk's inner corridor between the stool and the side wall (parts 1.45 and 2.86, the
+    # path at local x 2) or the gap between the stools (local x +-.75); every other keeper
+    # is .8 and fits. Radius .8: the collision circle only, nothing visible. (2) A keeper
+    # within 4 m of home, or already inside the kiosk hull, walked straight to home, which
+    # from the customer side means into the desk; now a keeper in front of the desk line
+    # (0.9 m ahead of home along the kiosk axis) takes the exit path in, unless the home is
+    # raised (Mushroom hops onto his desk from the front, unchanged).
+    (
+        '["cutebex","ZOLLOD","born_zollod",{color:"#3cbe94",bodyR:.9,talkR:4.2,via:"kiosk:garden"},"kiosk:garden"]',
+        '["cutebex","ZOLLOD","born_zollod",{color:"#3cbe94",bodyR:.8,talkR:4.2,via:"kiosk:garden"},"kiosk:garden"]',
+    ),
+    (
+        'if(via&&via.length&&!t.visiting){const dh=Math.hypot(n.x-t.home.x,n.z-t.home.z);dh>4&&!(t.vbk>=0)&&!F.buildings.some((B=>F.inHull(B,n.x,n.z)&&F.inHull(B,t.home.x,t.home.z)))&&(t.vbk=via.length-1);',
+        'if(via&&via.length&&!t.visiting){const dh=Math.hypot(n.x-t.home.x,n.z-t.home.z),fwX=t.home.x-via[0][0],fwZ=t.home.z-via[0][1],fwL=Math.hypot(fwX,fwZ)||1,inFront=!((a&&a.y)>.5)&&((n.x-t.home.x)*fwX+(n.z-t.home.z)*fwZ)/fwL>.9;(dh>4||inFront)&&!(t.vbk>=0)&&!(!inFront&&F.buildings.some((B=>F.inHull(B,n.x,n.z)&&F.inHull(B,t.home.x,t.home.z))))&&(t.vbk=via.length-1);',
+    ),
+    # P2 continued: `Ut.warm()` itself threw on this three.js build (`B.getWorldDirection` does
+    # not exist here), silently at VR entry (its call is in a bare try) and loudly from the loading
+    # screen, so the light-on shader variants were never pre-compiled and compiled on the first
+    # pickup instead. The camera's forward direction is taken from its quaternion.
+    (
+        'B.getWorldPosition(p),B.getWorldDirection(d),p.addScaledVector(d,1.5)',
+        'B.getWorldPosition(p),d.set(0,0,-1).applyQuaternion(B.quaternion),p.addScaledVector(d,1.5)',
+    ),
+    # B25 continued (global): a walker sent straight to a kiosk home (an interrupted visit, the
+    # stuck handler, the Event's send-home) was routed to the open cell nearest the home point,
+    # which for a home near the back wall is behind the kiosk, and the final straight leg then
+    # went through the wall for good. Every route whose target is the walker's home now goes
+    # to the last point of the home's entry path (`def.via`) and follows the path in, unless the
+    # walker is already inside the same hull as the home. Mushroom's hop from the front is
+    # unchanged (he is inside the hull by then).
+    (
+        'function Ve(e,o,a){const n=.85*(e.bodyR||.9)+.35,r=e.group.position,s=[];',
+        'function Ve(e,o,a){const n=.85*(e.bodyR||.9)+.35,r=e.group.position,s=[];if(e.home&&o===e.home.x&&a===e.home.z&&e.def&&e.def.via&&e.def.via.length&&!F.buildings.some((B=>F.inHull(B,r.x,r.z)&&F.inHull(B,o,a)))){const v=e.def.via,w=v[v.length-1];return Ve(e,w[0],w[1]).concat(v.slice(0,-1).reverse().map((p=>[p[0],p[1]])),[[o,a]])}',
+    ),
+    # P5 (FPS work): a creature near the garden's stone ring fits its height to the stones by
+    # transforming every sixth vertex of every mesh it has (`gfS`), every frame while it moves
+    # and every fourth frame while it stands. During the Event several creatures move there
+    # at once and this was the largest game-logic cost in the profile. Now every second frame
+    # while moving and every eighth while standing: a one-frame lag in a smoothed height,
+    # not visible at 72 Hz.
+    (
+        'if(e.moving||e.gfN%4==1||null==e.gfS){',
+        'if(e.moving&&e.gfN%2==0||e.gfN%8==1||null==e.gfS){',
+    ),
+    # P6 (FPS work, the author: "creatures on screen"): the game patches every three.js
+    # material constructor to default to DoubleSide, so the whole world (609k of 659k source
+    # triangles) rendered without back-face culling, and on a tiled mobile GPU every back face
+    # costs binning and rasterisation. Back faces of a closed, outward-wound mesh are never
+    # seen, so before an object tree is batched, every mesh's geometry is classified once
+    # (closed: every edge shared by exactly two triangles after merging coincident vertices;
+    # outward: positive signed volume) and a material whose meshes are all closed and outward
+    # is set to FrontSide; a material with any open or transparent user stays DoubleSide, and
+    # one flipped earlier is flipped back if a later tree uses it on an open mesh. Pixel-identical
+    # by construction; `tools/sides_check.js` renders the town with the flips on and off and
+    # compares. Cost: one pass over each geometry at build time, cached on the geometry.
+    (
+        'function _e(t,e){if(!t||t.userData.gcEB||!function(){',
+        'function gbClosedOutward(g){const P=g.attributes.position,I=g.index,n=I?I.count:P.count,tris=n/3|0;if(tris<4||tris>60000||!P.array)return!1;const N=P.count,qx=new Int32Array(N),qy=new Int32Array(N),qz=new Int32Array(N),keys=new Map(),id=new Int32Array(N);let nv=0;for(let i=0;i<N;i++){const x=Math.round(1e5*P.getX(i)),y=Math.round(1e5*P.getY(i)),z=Math.round(1e5*P.getZ(i));qx[i]=x,qy[i]=y,qz[i]=z;let h=(73856093*x^19349663*y^83492791*z)|0,v=keys.get(h);for(;v!==void 0&&(qx[v]!==x||qy[v]!==y||qz[v]!==z);)h=(h+1)|0,v=keys.get(h);v===void 0&&(v=i,keys.set(h,i),nv++),id[i]=v}const edges=new Map();let vol=0;for(let i=0;i+2<n;i+=3){const ia=I?I.getX(i):i,ib=I?I.getX(i+1):i+1,ic=I?I.getX(i+2):i+2,a=id[ia],b=id[ib],c=id[ic];if(a===b||b===c||a===c)continue;const k0=a<b?a*262144+b:b*262144+a,k1=b<c?b*262144+c:c*262144+b,k2=c<a?c*262144+a:a*262144+c;edges.set(k0,(edges.get(k0)||0)+1),edges.set(k1,(edges.get(k1)||0)+1),edges.set(k2,(edges.get(k2)||0)+1);const ax=P.getX(ia),ay=P.getY(ia),az=P.getZ(ia),bx=P.getX(ib),by=P.getY(ib),bz=P.getZ(ib),cx=P.getX(ic),cy=P.getY(ic),cz=P.getZ(ic);vol+=ax*(by*cz-bz*cy)-ay*(bx*cz-bz*cx)+az*(bx*cy-by*cx)}for(const v of edges.values())if(2!==v)return!1;return vol>0}function gbSides(root){if(!root||!root.traverse)return;const FS=THREE.FrontSide,DS=THREE.DoubleSide,users=new Map();root.traverse((o=>{if(!o.isMesh||o.userData.xrUI)return;const m=o.material;if(!m||Array.isArray(m)||m.side!==DS&&!m.__gbFS||m.transparent||m.isShaderMaterial||m.isRawShaderMaterial)return;const g=o.geometry;if(!g||!g.attributes||!g.attributes.position)return;let c=g.__gbClosed;void 0===c&&(c=g.__gbClosed=gbClosedOutward(g));let u=users.get(m);u||users.set(m,u={safe:0,open:0}),c?u.safe++:u.open++}));users.forEach(((u,m)=>{u.open||m.__gbOpen?(m.__gbOpen=!0,m.__gbFS&&(m.__gbFS=!1,m.side=DS,m.needsUpdate=!0)):m.__gbFS||(m.__gbFS=!0,m.side=FS,m.needsUpdate=!0)}))}window.__gbSides=gbSides;function _e(t,e){try{gbSides(t)}catch(err){}if(!t||t.userData.gcEB||!function(){',
+    ),
+    # P6 continued: the batch material clone carries the flag, so tools can tell P6's flips apart
+    # from materials that were single-sided to begin with.
+    (
+        'const m=e.clone();m.userData={gcR:new Float32Array(16*t.length)}',
+        'const m=e.clone();m.__gbFS=e.__gbFS,m.userData={gcR:new Float32Array(16*t.length)}',
     ),
 ]
 

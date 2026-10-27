@@ -34,21 +34,19 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D6 | Mushroom fix confirmed: 17/17 return-home scenarios pass at real-time simulation | 2026-10-26 |
 | D7 | Visit system verified: host/visitor visits complete and interrupted (out, meet, back) all end with Mushroom on his desk at height | 2026-10-26 |
 
-## Resume point (2026-10-27, night: 3.15.25 built, VRC check done)
+## Resume point (2026-10-28: 3.15.26 built, performance pass and Zollod)
 
 - **3.15.19 passes the author's full headset run, no new issues.** Upload candidate
   until a later build is confirmed; RELEASE.md section 5.
-- **3.15.25** (root APK, versionCode 25): 3.15.24 (B20-B23 z-fighting, the 15-degree
-  loading panel) plus B24, focus-aware controller hiding for VRC.Quest.Input.4.
-  Standard tier passes. Needs the author's headset run with the VRC confirmations
-  in RELEASE.md step 7 (frame rate with the OVR Metrics Tool, seconds to the loading
-  panel, Universal Menu, recentre, play modes, controllers down and up) plus the
-  checks carried over (Hennrick's cuffs, the loading panel, nothing new on the Store
-  fronts, Mushroom's hat and the Robin).
-- **Before submitting**: upload `tools/store/privacy.html` (new section 8, deletion
-  requests) to neocities; fill the dashboard items marked AUTHOR in `tools/VRC.md`;
-  add one sentence to the submission notes that the app is self-contained and uses no
-  network (the loopback server).
-- Remaining: T4 store upload (author: comfort rating Moderate, Standing added,
-  screenshots, copy); T10 lore (author); T15 tools/docs upkeep; T12 further loading
-  cuts only with content changes (player build, kiosks).
+- **3.15.26** (root APK, versionCode 26, pushed to main): 3.15.25 plus the performance
+  pass (P1 governor, P2 light-on shaders pre-compiled, P4 opacity-0 objects skipped,
+  P5 ground-fit scan throttled; NOTES 56, PERF.md section 6) and B25 (Zollod's kiosk:
+  four shared-walker fixes, his scenarios all clean). Nothing visible changed (the
+  author's rule). Standard tier result in TEST_PLAN.md.
+- **The author's next headset run decides the Event**: FPS in the garden before the
+  Event and the OVR Metrics GPU/CPU utilisation during it (RELEASE.md step 7). The
+  levers left all change the look and need the author's yes: the Event's point light
+  and night lighting, Lambert flora, foveation at the start level, lower render scale.
+- Carried over: VRC confirmations (RELEASE.md step 7), the privacy page upload,
+  Hennrick's cuffs, the loading panel, the Store fronts, Mushroom's hat, the Robin.
+- Remaining: T4 store upload (author); T10 lore (author); T15 tools/docs upkeep.

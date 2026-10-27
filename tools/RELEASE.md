@@ -122,6 +122,13 @@ does not come back cleanly in `tools/BUGS.md`.
    - **Controllers down and up** (Input.7, for the note that hands are not
      supported): with Auto Enable Hands on, put the controllers down for ten seconds
      and pick them up; the game waits and continues.
+   - **Two readings for the Event's frame rate** (the author saw 38 fps in it):
+     the FPS standing in the garden before the Event starts (that is the
+     garden's geometry alone), and during the Event the OVR Metrics Tool's GPU
+     and CPU utilisation (the overlay's "GPU %" and "CPU %" lines). Geometry-bound
+     and GPU-bound mean a content change for the author to approve (the Event's
+     point light and night lighting, or lighter flora shading); CPU-bound means
+     more logic trimming (`tools/PERF.md` section 6).
    Then upload the updated privacy page (`tools/store/privacy.html`, section 8 on
    deletion requests) to neocities before submitting (VRC.Quest.Privacy.4).
 

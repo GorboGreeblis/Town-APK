@@ -32,7 +32,7 @@ fs.mkdirSync(outDir, { recursive: true });
 
 // Runs inside the page: frame-locked observer of one NPC.
 const observe = ({ id, maxS, standY }) => new Promise((resolve) => {
-  const D = window.__dbg, h = D.It.byId[id];
+  const D = window.__dbg, h = D.It.byId[id] || D.It.all.find((e) => e.def && e.def.__type === id);
   const home = h.def.at, trace = [];
   let last = null, teleports = 0, t0 = performance.now(), maxStuck = 0, maxY = 0, rePlans = 0, lastStuckN = h.gcStuckN || 0;
   const dist = () => Math.hypot(h.group.position.x - home[0], h.group.position.z - home[1]);
@@ -59,7 +59,9 @@ const observe = ({ id, maxS, standY }) => new Promise((resolve) => {
   const { page, errors } = g;
   console.log(`booted in ${g.bootS.toFixed(1)}s, presenting after ${g.presentS.toFixed(1)}s`);
   const info = await page.evaluate((id) => {
-    const D = window.__dbg, h = D.It.byId[id];
+    const D = window.__dbg; let h = D.It.byId[id] || D.It.all.find((e) => e.def && e.def.__type === id);
+    // Kiosk keepers (Zollod is cast type "cutebex") spawn on the game's schedule; spawn one now if needed.
+    if (!h && D.Mo) { try { D.Mo(id); } catch (e) { return { error: 'spawn failed: ' + (e && e.message) }; } h = D.It.byId[id] || D.It.all.find((e) => e.def && e.def.__type === id); }
     if (!h) return { error: 'no such npc: ' + id + '; ids: ' + Object.keys(D.It.byId).join(',') };
     return { name: h.def.name, at: h.def.at, via: h.def.via, standY: h.def.pattern && h.def.pattern[1] && h.def.pattern[1].y || 0, bodyR: h.bodyR,
       pos: [h.group.position.x, h.group.position.y, h.group.position.z], player: [D.At.position.x, D.At.position.z], hooks: Object.keys(D) };
@@ -95,7 +97,7 @@ const observe = ({ id, maxS, standY }) => new Promise((resolve) => {
   const results = [];
   for (const sc of (ONLY ? scenarios.slice(0, ONLY) : scenarios)) {
     const r = await page.evaluate(async ({ id, sc, maxS, standY, observeSrc }) => {
-      const D = window.__dbg, h = D.It.byId[id];
+      const D = window.__dbg, h = D.It.byId[id] || D.It.all.find((e) => e.def && e.def.__type === id);
       // Reset NPC state.
       h.group.position.set(sc.npc[0], 0, sc.npc[1]);
       h.home.set(h.def.at[0], h.home.y, h.def.at[1]);

@@ -60,6 +60,7 @@ if [ "$TIER" != quick ]; then
     # the probes report loading time, the handover, frame cost and texture sharpness for the record.
     run "z-fighting / flicker on environmental surfaces (jittered render)" node "$ROOT/tools/test_zfight.js" "$ASSET"
     run "z-fighting on curved surfaces (near-coincident geometry)" node "$ROOT/tools/test_coincident.js" "$ASSET"
+    run "single-sided pass is pixel-identical (edges aside)" node "$ROOT/tools/sides_check.js" "$ASSET"
     report "loading time (boot profile)" node "$ROOT/tools/boot_profile.js" "$ASSET"
     report "handover profile (frames after entering VR)" node "$ROOT/tools/entry_profile.js" "$ASSET"
     # Frame timings are only meaningful without the layers path (its MSAA resolve is software-rendered here),
@@ -68,6 +69,7 @@ if [ "$TIER" != quick ]; then
       && report "in-game hitches (pickups, dialogue, Event; no-layers variant)" node "$ROOT/tools/hitch_probe.js" "$ROOT/tools/.runs/hitch_nolayers.html" \
       || report "in-game hitches (pickups, dialogue, Event)" node "$ROOT/tools/hitch_probe.js" "$ASSET"
     report "scene cost (draw calls, triangles, materials)" node "$ROOT/tools/perf_probe.js" "$ASSET"
+    report "Garden Event frame cost (90 s)" node "$ROOT/tools/event_probe.js" "$ASSET" 90
     report "render sharpness (scale, foveation, texture filtering)" node "$ROOT/tools/sharpness_probe.js" "$ASSET"
   else skip "graphical and performance pass (z-fight, profiles, sharpness)" "$TIER tier; run --full"; fi
 else
