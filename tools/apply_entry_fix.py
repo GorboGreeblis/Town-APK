@@ -887,6 +887,16 @@ GAME_FIXES = [
      '/Quest 3(?!S)/.test(navigator.userAgent||"")&&!Ge.sos&&!Ge.ev&&(Ge.ev=1,window.__gtLog&&window.__gtLog("event scale "+e.evScale+" (Quest 3, from the start)")),Ae(e.quality.length-1),Ge.ev&&!Ge.sos&&gbLayer(Ge.ev>1?e.ev2Scale:e.evScale,e.foveation[e.quality.length-1]),Ge.evN=0,Ge.lockUntil=r+e.finaleLockMs,'),
     ('Be&&!Ge.sos&&!Ge.ev&&Ge.level===e.quality.length-1&&(Ge.ema>1e3/e.evFps?++Ge.evN>e.evFrames&&(Ge.ev=1,gbLayer(e.evScale,e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale "+e.evScale+" (under "+e.evFps+" fps for "+e.evFrames+" frames)")):Ge.evN=0),',
      'Be&&!Ge.sos&&Ge.ev<2&&Ge.level===e.quality.length-1&&(Ge.ema>1e3/(Ge.ev?e.ev2Fps:e.evFps)?++Ge.evN>e.evFrames&&(Ge.ev++,Ge.evN=0,gbLayer(Ge.ev>1?e.ev2Scale:e.evScale,e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale "+(Ge.ev>1?e.ev2Scale:e.evScale)+" (under "+(Ge.ev>1?e.ev2Fps:e.evFps)+" fps for "+e.evFrames+" frames)")):Ge.evN=0),'),
+    # P18 (VRC.Quest.Performance.4, recommended: render scale at least 85%, except "individual, non-consecutive
+    # sequences such as boss battles" that "return above 85% after"; the author: "let's do it"): the game's
+    # emergency drop (0.82 after three seconds at 1.6 times the frame budget) stayed for the rest of the
+    # session. When it fires during the planting Event it now ends with the Event, like P16 and P17, and the
+    # scale returns to the level's own. Fired in ordinary play, it keeps the game's rule and stays.
+    ('++Ge.hard>e.sosFrames&&(Ge.sos=1,gbLayer(e.sosScale,e.foveation[Ge.level]))',
+     '++Ge.hard>e.sosFrames&&(Ge.sos=1,Ge.sosEv=Be?1:0,gbLayer(e.sosScale,e.foveation[Ge.level]))'),
+    ('Ge.ev&&(Ge.ev=0,Ge.evN=0,Ge.sos||gbLayer(e.quality[Ge.level],e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale off: "+(Ge.sos?"the emergency scale "+e.sosScale+" stays":"back to "+e.quality[Ge.level])))}',
+     '(Ge.ev||Ge.sos&&Ge.sosEv)&&(Ge.sos&&Ge.sosEv&&(Ge.sos=0,Ge.hard=0),Ge.sosEv=0,Ge.ev=0,Ge.evN=0,Ge.sos||gbLayer(e.quality[Ge.level],e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale off: "+(Ge.sos?"the emergency scale "+e.sosScale+" stays (it fired before the Event)":"back to "+e.quality[Ge.level])))}'),
+    ('Ge.rebuilds=0,Ge.sos=0,Ge.hard=0,Ge.ev=0,Ge.evN=0,', 'Ge.rebuilds=0,Ge.sos=0,Ge.sosEv=0,Ge.hard=0,Ge.ev=0,Ge.evN=0,'),
 ]
 # Multiview (NOTES 65, 67): the experiment became the release in 3.15.34 (the author, after the headset
 # run: "We're going to use the Multiview version as the main build").

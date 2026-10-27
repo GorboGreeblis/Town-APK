@@ -1142,3 +1142,17 @@ VR-entry fix; each item is for discussion first.
     "Let's dance!" starts their battle when it closes; the battle module
     clears its state if a second battle opens over the first, which a player
     cannot do (no menu while a panel is open) but a test can.
+
+75. **The emergency drop ends with the Event (P18, 3.15.40).** Cross-checking
+    VRC.Quest.Performance.4 (recommended: render scale at least 85% for the
+    majority of the experience; "individual, non-consecutive sequences such
+    as boss battles may drop below 85% ... but must return above 85% after")
+    against the governor: P16 and P17 end with the Event, but the game's own
+    emergency drop (0.82 after three seconds at 1.6 times the frame budget,
+    about 45 fps) stayed for the rest of the session. The author chose to
+    end it with the Event too: when it fires during the Event it is marked
+    and cleared at the Event's end, and the level's own scale comes back.
+    Fired in ordinary play it stays, as the game always had it (and the
+    Event scale then stays out of the Event). `test_governor.js` covers all
+    three: the drop held off, fired during the Event (cleared at the end),
+    and fired in town (stays).

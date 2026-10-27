@@ -38,7 +38,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (49 blocks)
+## Gameplay, performance and other fixes (50 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -341,6 +341,13 @@ step on any headset: still under 60 fps for 216 frames at 0.9, the scale goes to
 own emergency scale, which otherwise waits for 1.6 times the frame budget, about 45 fps). Both end
 with the Event, like P16. Logged as "event scale 0.9 (Quest 3, from the start)" and "event scale
 0.82 (under 60 fps for 216 frames)".
+
+- **P18** (3 edits): (VRC.Quest.Performance.4, recommended: render scale at least 85%, except "individual, non-
+consecutive sequences such as boss battles" that "return above 85% after"; the author: "let's do
+it"): the game's emergency drop (0.82 after three seconds at 1.6 times the frame budget) stayed for
+the rest of the session. When it fires during the planting Event it now ends with the Event, like
+P16 and P17, and the scale returns to the level's own. Fired in ordinary play, it keeps the game's
+rule and stays.
 
 ## Multiview (release path since 3.15.34)
 

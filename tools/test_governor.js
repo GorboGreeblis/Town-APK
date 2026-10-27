@@ -6,8 +6,10 @@
 //      the Event lock, the 0.9 scale (under 62 fps, or at once on a Quest 3, in one layer swap), the second step to 0.82
 //      (under 60 fps at 0.9), frames and multiview live throughout, and the return to the level's own scale at the end;
 //   2. the normal budget and the same load: the emergency drop may fire as well; the Event starts with the governor
-//      already at its lowest level (a Quest 3 then takes the other branch to 0.9); at the end, if the emergency drop
-//      fired, it stays (the game's own rule), else the scale returns.
+//      already at its lowest level (a Quest 3 then takes the other branch to 0.9); at the end the scale returns to
+//      the level's own, an emergency drop that fired during the Event included (P18);
+//   3. the emergency drop fires in town first: the Event scale stays out of the Event, and at its end the emergency
+//      scale stays (the game's rule for a drop outside the Event).
 // In town, slow frames never trigger the Event scale.
 //
 //   GT_DEVICE=quest3s node tools/test_governor.js [file]
@@ -37,10 +39,15 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     const t1 = performance.now(); while (D.Ge.level !== 4 && performance.now() - t1 < 3000) await wait(20);   // the drop comes on the next XR frame
     return { active: D.me.active, level: D.Ge.level, ev: D.Ge.ev, sos: D.Ge.sos };
   });
-  const endEvent = () => page.evaluate(async () => { const D = window.__dbg; D.me.wrap(); await new Promise((r) => setTimeout(r, 6000)); clearInterval(window.__adv); return { active: D.me.active, ev: D.Ge.ev, evN: D.Ge.evN, sos: D.Ge.sos }; });
+  const endEvent = () => page.evaluate(async () => { const D = window.__dbg; D.me.wrap(); await new Promise((r) => setTimeout(r, 6000)); clearInterval(window.__adv); return { active: D.me.active, ev: D.Ge.ev, evN: D.Ge.evN, sos: D.Ge.sos, sosEv: D.Ge.sosEv }; });
 
-  for (const phase of [1, 2]) {
-    const tag = phase === 1 ? 'Event 1 (no emergency drop)' : 'Event 2 (normal budget)';
+  for (const phase of [1, 2, 3]) {
+    const tag = ['', 'Event 1 (no emergency drop)', 'Event 2 (normal budget)', 'Event 3 (emergency drop in town first)'][phase];
+    if (phase === 3) {
+      // the game's emergency drop fires in ordinary play: at the lowest level, frames far over a tiny budget for 216 frames
+      const sos = await page.evaluate(async () => { const Ge = window.__dbg.Ge, wait = (ms) => new Promise((r) => setTimeout(r, ms)); Ge.level = 4; Ge.lockout = 1e12; Ge.budget = 4; const t0 = performance.now(); while (!Ge.sos && performance.now() - t0 < 90000) await wait(100); Ge.budget = 1000 / 72; Ge.lockout = 0; return { sos: Ge.sos, sosEv: Ge.sosEv }; });
+      expect(`${tag}: the emergency drop fired in town and is marked as not the Event's`, sos.sos === 1 && !sos.sosEv, JSON.stringify(sos));
+    }
     // Event 1 starts from the top level, as on a headset in town (headless town frames are slow and the governor is
     // usually at its lowest level by now): the level drop at the Event start then picks the Event's scale itself
     if (phase === 1) {
@@ -60,7 +67,9 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     expect(`${tag}: the planting Event started at the governor's lowest level`, st.active === true && st.level === 4, JSON.stringify(st) + ', level before ' + levelBefore);
     if (phase === 1) await page.evaluate(() => { window.__dbg.Ge.budget = 1000 / 30; });   // the emergency drop needs 1.6x this: out of reach
     await page.waitForTimeout(1500);
-    if (q3) {
+    if (phase === 3) {
+      expect(`${tag}: with the emergency scale already on, the Event scale stays out (no 0.9, no swap at the start)`, after(/event scale 0\.9|swapped to scale 0\.9/).length === 0, after(/event scale|swapped/).join(' | '));
+    } else if (q3) {
       const q = after(/event scale 0\.9 \(Quest 3, from the start\)/), sw = after(/projection layer swapped to scale/);
       expect(`${tag}, Quest 3: the Event starts at the 0.9 scale at once` + (levelBefore === 4 ? ' (already at the lowest level)' : ''), q.length === 1, q.join(' | ') || after(/event scale|swapped/).join(' | '));
       expect(`${tag}, Quest 3: one layer swap at the Event start, straight to 0.9 (no undrawn intermediate layer)`, sw.length === 1 && /scale 0\.9$/.test(sw[0]), sw.join(' | '));
@@ -68,6 +77,7 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
       expect(`${tag}: not a Quest 3, so no Event scale before the frame rate asks for it`, after(/event scale/).length === 0, after(/event scale/).join(' | '));
       if (levelBefore !== 4) expect(`${tag}: the level drop at the Event start swaps in one layer at the level's scale (1)`, after(/projection layer swapped to scale/).length === 1 && /scale 1$/.test(after(/projection layer swapped to scale/)[0]), after(/swapped/).join(' | '));
     }
+    if (phase !== 3) {
     await slow(true);
     const t0 = Date.now(); while (!after(/swapped to scale 0\.82/).length && Date.now() - t0 < 150000) await page.waitForTimeout(500);   // two 216-frame windows; slow when the machine is busy
     await page.waitForTimeout(2000);
@@ -76,18 +86,20 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     expect(`${tag}: the 0.9 layer is swapped in once (behind the old one first, no undrawn frame)`, after(/projection layer swapped to scale 0\.9/).length === 1, after(/swapped/).join(' | '));
     expect(`${tag}: still under 60 fps at 0.9, the scale steps to 0.82`, em.length === 1, after(/event scale|swapped/).join(' | '));
     if (phase === 1) expect(`${tag}: the step to 0.82 is P17's (under 60 fps), not the emergency drop`, s2.length === 1, after(/event scale|swapped/).join(' | '));
-    const live = await page.evaluate(async () => { const f0 = window.__fakeXR.frames; await new Promise((r) => setTimeout(r, 3000)); return { frames: window.__fakeXR.frames - f0, mv: !!window.__gtXR.mvActive, err: window.__dbg.O.getContext().getError() }; });
+    await slow(false);   // the lower scale stays until the Event ends; measure without the busy loop starving the frames
+    const live = await page.evaluate(async () => { const f0 = window.__fakeXR.frames; await new Promise((r) => setTimeout(r, 4000)); return { frames: window.__fakeXR.frames - f0, mv: !!window.__gtXR.mvActive, err: window.__dbg.O.getContext().getError(), ev: window.__dbg.Ge.ev }; });
     expect(`${tag}: frames keep coming at the lower scale, multiview as planned, no GL error`, live.frames > 10 && live.mv === !!process.env.GT_MULTIVIEW && live.err === 0, JSON.stringify(live));
-    await slow(false);
+    }
     if (phase === 1) await page.evaluate(() => { window.__dbg.Ge.budget = 1000 / 72; });
     const en = await endEvent();
     note(`${tag}, layer log: ` + after(/projection layer|event scale|quality L/).slice(-6).join(' | '));
     const off = after(/event scale off/), all = (global.__pageLog || []).slice(n0), offAt = all.findIndex((m) => /event scale off/.test(m));
     const back = offAt < 0 ? [] : all.slice(offAt).filter((m) => /projection layer swapped to scale 1\b/.test(m));   // swaps after the Event ended
     expect(`${tag}: the Event ended and the Event scale state is cleared`, en.active === false && en.ev === 0 && en.evN === 0, JSON.stringify(en));
-    if (en.sos) expect(`${tag}: at the end the emergency scale stays (the game's rule) and nothing swaps back`, off.length === 1 && /emergency scale 0\.82 stays/.test(off[0]) && back.length === 0, off.concat(back).join(' | '));
-    else expect(`${tag}: at the end the scale returns to the level's own (1)`, off.length === 1 && /back to 1/.test(off[0]) && back.length === 1, off.concat(back).join(' | ') || 'no restore line');
-    note(`${tag}: emergency drop ${en.sos ? 'fired' : 'did not fire'}`);
+    const firedHere = phase !== 3 && after(/projection layer swapped to scale 0\.82/).length > 0 && !after(/event scale 0\.82 \(under 60 fps/).length;
+    if (phase === 3) expect(`${tag}: at the end the emergency scale stays, it fired before the Event (the game's rule; P18)`, en.sos === 1 && off.length === 0 && back.length === 0, JSON.stringify(en) + ' ' + off.concat(back).join(' | '));
+    else expect(`${tag}: at the end the scale returns to the level's own (1)${firedHere ? ', the emergency drop that fired during the Event included (P18)' : ''}`, en.sos === 0 && off.length === 1 && /back to 1/.test(off[0]) && back.length === 1, JSON.stringify(en) + ' ' + (off.concat(back).join(' | ') || 'no restore line'));
+    note(`${tag}: emergency drop ${firedHere ? 'fired during the Event' : phase === 3 ? 'fired in town' : 'did not fire'}`);
   }
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   await g.close();
