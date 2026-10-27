@@ -127,6 +127,12 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | Flicker / z-fighting on environmental objects | `tools/test_zfight.js` (fails the pass): every planar triangle bucketed by world plane; coplanar overlaps between different surfaces are rendered twice from 3 m with a 1 mm camera shift, the two surfaces alone on a private layer, and pixels that flip mean a depth fight | 3.15.13: 19 coplanar overlaps, 5 handled by offset/order, 8 same-look (invisible), 6 different-look, none flicker (max 0.31% edge pixels) |
 | Z-fighting on curved surfaces (a flat part tangent to or in the plane of a round one, which the planar test cannot see and the headless renderer does not show) | `tools/test_coincident.js` (fails the pass on new depth fights): the drawn triangles (batcher's parked sources) in a 5 cm hash; nearly parallel pairs of different looks sampled for points within 0.5 mm; the growth of that region at a fifth of the tolerance separates coplanar/tangent contacts (fail) from crossings (listed); accepted fights in `tools/zfight_baseline.json`; contacts the headset cannot show (undersides at ground level, closed solids resting back to back, contacts buried inside a third box) are listed as hidden | 3.15.24: the ten candidates of 3.15.23 resolved: B21 (parapet bands), B22 (Mushroom's hat band), B23 (Robin's tail) fixed, the other seven shown to be hidden contacts; baseline empty, both tests pass with 0 new depth fights |
 
+## 10b. Store submission (VRC)
+
+| What | How | Status |
+| --- | --- | --- |
+| Every active Meta Horizon Store VRC (80 checks, 2026-10-27 list) mapped to evidence, a headset step, a dashboard item, or N/A | `tools/VRC.md`; packaging checks in `tools/check_apk.sh`; focus-aware checks in `tools/test_input.js` (controllers hidden while blurred) and `tools/test_play.js` (rendering continues, game blurred) | 3.15.25: all packaging, security and functional checks pass by evidence; 4 headset confirmations listed in RELEASE.md step 7 (frame rate, time to the loading panel, Universal Menu, recentre) plus play modes and controllers down/up; one action for the author (privacy page section 8, deletion requests) |
+
 ## 10. Release parity
 
 | Item | How | Coverage |

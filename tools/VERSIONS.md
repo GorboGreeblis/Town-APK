@@ -6,6 +6,7 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 
 | Version | versionCode | What changed | Headset |
 | --- | --- | --- | --- |
+| 3.15.25 | 25 | Focus-aware (VRC.Quest.Input.4): controller rays and hand meshes hidden while the XR session is blurred by the system UI, shown again on return (B24); VRC check written up in `VRC.md` | pending |
 | 3.15.24 | 24 | The author asked for every listed z-fighting instance fixed: Store/Bank/Fire Station parapet bands 1 cm proud of the walls (B21), Mushroom's hat band sunk 3 mm into the brim (B22), the Robin's tail feathers and white tips offset by half a millimetre (B23). The other seven were contacts the headset cannot show (undersides at ground level, solids resting back to back, faces buried inside a roof or wall); both z-fight tests now classify those as hidden instead of reporting them [54] | pending |
 | 3.15.23 | 23 | B20 completed: the cuff lights also moved 1 cm up so the middle light's top face no longer lies in the plane of the cuff's top cap (found by the new curved z-fighting test) [53]; root `index.html` mirror | pending |
 | 3.15.22 | 22 | Hennrick's forearm cuff lights sunk into the cuff, cuff clears the skin (B20, first half) [52] | superseded by 3.15.23 before a headset run |

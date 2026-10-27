@@ -61,6 +61,7 @@ VR-entry fix; each item is for discussion first.
 52. B20, Hennrick's cuffs (3.15.22)
 53. Curved z-fighting: a geometric test, the batcher's parked sources, B20 completed (3.15.23)
 54. The listed z-fighting instances: three fixed, seven that cannot be seen (3.15.24)
+55. The VRC check and the focus-aware fix (3.15.25)
 
 1. **Immersive launch from a loopback origin.** Meta's immersive app mode was
    designed for hosted PWAs whose Digital Asset Links the browser can verify.
@@ -748,3 +749,22 @@ VR-entry fix; each item is for discussion first.
     since geometry types are not preserved), and contacts buried 2 mm or more
     inside a third box (boxes recognised by their 8 corners and 12 triangles).
     The baseline of accepted fights is empty again.
+
+55. **The VRC check and the focus-aware fix (3.15.25).** The author asked for
+    the build checked against all relevant VRCs as the last part of the test
+    pass, with a first-try pass as the goal. `tools/VRC.md` maps all 80 active
+    checks (Meta's list read on 2026-10-27) to evidence, a headset step, a
+    dashboard item or N/A. Two gaps came out of it. VRC.Quest.Input.4 wants
+    hands and controllers hidden while the system UI has focus: the game
+    already kept rendering and ignored input in the `visible-blurred` state,
+    but three.js stops updating controller poses then, so the rays and hand
+    meshes stayed frozen in view; B24 hides them on blur. VRC.Quest.Privacy.4
+    wants the policy to say how deletion is requested even when nothing is
+    collected: `tools/store/privacy.html` has the section, the author uploads
+    it. What cannot be shown from here is on the headset list in RELEASE.md
+    step 7: the frame rate as the reviewers measure it (OVR Metrics Tool, 60
+    fps outside loading), the seconds from the icon to the loading panel (the
+    4-second rule), the Universal Menu behaviour, and the recentre. The
+    loopback-server packaging is not covered by any VRC; the submission notes
+    should say in a sentence that the app is self-contained and uses no
+    network, in case a reviewer asks.

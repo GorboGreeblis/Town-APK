@@ -34,20 +34,21 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D6 | Mushroom fix confirmed: 17/17 return-home scenarios pass at real-time simulation | 2026-10-26 |
 | D7 | Visit system verified: host/visitor visits complete and interrupted (out, meet, back) all end with Mushroom on his desk at height | 2026-10-26 |
 
-## Resume point (2026-10-27, night: 3.15.24 built)
+## Resume point (2026-10-27, night: 3.15.25 built, VRC check done)
 
 - **3.15.19 passes the author's full headset run, no new issues.** Upload candidate
   until a later build is confirmed; RELEASE.md section 5.
-- **3.15.24** (root APK, versionCode 24): 3.15.23 (B20 complete, 15-degree loading
-  panel with a horizon) plus B21-B23, the three real z-fighting instances of the ten
-  the author asked fixed (parapet bands, Mushroom's hat band, the Robin's tail); the
-  other seven were contacts the headset cannot show and both z-fight tests now
-  classify them as hidden (NOTES 54). Standard tier passes. Needs the author's
-  headset check: Hennrick's cuffs, the loading panel, and nothing new on the Store
-  fronts, Mushroom's hat and the Robin.
-- Author's rules recorded: the root `index.html` mirrors the bundled game and the root
-  APK is always the latest build (`tools/git-hooks/pre-commit`, RELEASE.md section 6);
-  creature models are fixed with care and without changing their look.
-- Remaining: T4 store upload (author: comfort rating Moderate, add Standing,
+- **3.15.25** (root APK, versionCode 25): 3.15.24 (B20-B23 z-fighting, the 15-degree
+  loading panel) plus B24, focus-aware controller hiding for VRC.Quest.Input.4.
+  Standard tier passes. Needs the author's headset run with the VRC confirmations
+  in RELEASE.md step 7 (frame rate with the OVR Metrics Tool, seconds to the loading
+  panel, Universal Menu, recentre, play modes, controllers down and up) plus the
+  checks carried over (Hennrick's cuffs, the loading panel, nothing new on the Store
+  fronts, Mushroom's hat and the Robin).
+- **Before submitting**: upload `tools/store/privacy.html` (new section 8, deletion
+  requests) to neocities; fill the dashboard items marked AUTHOR in `tools/VRC.md`;
+  add one sentence to the submission notes that the app is self-contained and uses no
+  network (the loopback server).
+- Remaining: T4 store upload (author: comfort rating Moderate, Standing added,
   screenshots, copy); T10 lore (author); T15 tools/docs upkeep; T12 further loading
   cuts only with content changes (player build, kiosks).

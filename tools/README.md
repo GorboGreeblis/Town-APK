@@ -8,6 +8,7 @@ The repository root holds only the final build, `GreeblisTown-release.apk` (alwa
 | `index.compressed.html` | The compressed HTML release build, kept for reference and parity checks. |
 | `apply_entry_fix.py` | Generates `android/app/src/main/assets/index.html` (inside tools/, mirrored to `index.html` at the repository root) from `uncompressed.html` by applying the VR-entry edits (`EDITS`) and the approved gameplay fixes (`GAME_FIXES`: the Mushroom navigator fix, Hennrick's campfire line). `--verify` checks the asset equals the original plus exactly those edits. |
 | `GAME.md` | Basic documentation of the game as found in the code. |
+| `VRC.md` | The build checked against every Meta Horizon Store VRC: evidence per check, the headset confirmations that remain, the dashboard items for the author. |
 | `TASKS.md` / `BUGS.md` | Living lists of open tasks and open bugs (fixed items at the bottom). |
 | `run_tests.sh` | The test passes. `--smoke`: a few-minute spot check that touches every game element. Default: the standard pass. `--full`: every scenario with long soak times, meant for the final build only. `--quick`: static checks, no browser. |
 | `test_server.sh` | Compiles the APK's `GameServer` for a desktop JVM (`server_harness/` holds a stub `android.util.Log` and the `Harness` driver) and checks it serves the game byte-for-byte, plus HEAD/404/405/query handling and concurrency. `--serve` keeps it running at `http://127.0.0.1:17777/` so the game can be opened in a desktop browser exactly as the Quest Browser will see it. |

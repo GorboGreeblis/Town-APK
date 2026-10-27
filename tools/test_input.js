@@ -30,6 +30,20 @@ const file = process.argv[2];
   await page.waitForTimeout(1500);
   const bound = await page.evaluate(() => { const s = window.__fakeXR.sessions.at(-1); return s.inputSources.length; });
   expect('two fake controllers visible to the session', bound === 2, `${bound}`);
+  // Focus-aware (VRC.Quest.Input.4, B24): while the session is "visible-blurred" (system UI up) the game hides
+  // the controller rays and hand meshes and ignores input; on return they are visible again.
+  const blur = await page.evaluate(async () => {
+    const D = window.__dbg, O = D.O; const X = window.__gtXR; const sess = X && X.session; const real = sess && (sess.__real || sess);
+    const vis = () => [0, 1].map((i) => O.xr.getController(i).visible || O.xr.getControllerGrip(i).visible);
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    window.__fakeXR.poses = true;   // give the fake controllers poses so three.js shows them
+    await wait(400); const before = vis();
+    real.setVisibility('visible-blurred'); await wait(400); const during = vis(), blurred = D.we.blurred;
+    real.setVisibility('visible'); await wait(600); const after = vis();
+    window.__fakeXR.poses = false;
+    return { before, during, after, blurred };
+  });
+  expect('focus-aware: controllers shown, hidden while the session is blurred, shown again after', blur.before.every(Boolean) && blur.during.every((v) => !v) && blur.blurred === true && blur.after.every(Boolean), JSON.stringify(blur));
 
   mark('dead-zone');
   // Dead-zone.

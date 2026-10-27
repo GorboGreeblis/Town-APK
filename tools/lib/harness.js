@@ -118,4 +118,4 @@ function reporter() {
   return { failures, expect, note };
 }
 
-module.exports = { boot, reporter, root, HOOK_NAMES };
+module.exports = { boot, reporter, root, HOOK_NAMES, hooked };

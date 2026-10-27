@@ -25,7 +25,9 @@ const root = path.resolve(__dirname, '..');
 const file = path.resolve(process.argv[2] || path.join(root, 'tools/android/app/src/main/assets/index.html'));
 const which = process.argv[3] || 'all';
 const RUN_S = Number(process.argv[4] || 20);
-const html = fs.readFileSync(file);
+// The page is served with the harness's debug hook (window.__dbg: F, we, ...) so the checks can look at the
+// game's own objects, such as the controllers for the focus-aware check.
+const html = require('./lib/harness').hooked(file);
 const fakexr = fs.readFileSync(path.join(root, 'tools/fakexr.js'), 'utf8');
 const outDir = path.join(root, 'tools', '.runs');
 fs.mkdirSync(outDir, { recursive: true });
@@ -163,6 +165,20 @@ async function scenario(name, srvUrl, browser) {
       return { hiddenFrames, resumedFrames: window.__fakeXR.frames - f1, state: real.visibilityState };
     });
     expect('session hidden then visible: frames resume', vis.resumedFrames >= 5 && vis.state === 'visible', JSON.stringify(vis));
+    // Focus-aware (VRC.Quest.Input.4): while the system UI has focus the session is "visible-blurred"; the
+    // game must keep rendering, ignore input and hide its controllers (B24), then show them again.
+    const blur = await page.evaluate(async () => {
+      const real = window.__play.session, D = window.__dbg, O = D && D.O;
+      // The controller ray and grip groups are three.js's (what B24 hides); the hand meshes hang off the grips.
+      const shown = () => O && O.xr ? [0, 1].map((i) => O.xr.getController(i).visible && O.xr.getControllerGrip(i).visible) : null;
+      const before = shown(); const f0 = window.__fakeXR.frames;
+      real.setVisibility('visible-blurred'); await new Promise((r) => setTimeout(r, 700));
+      const during = shown(), blurredFrames = window.__fakeXR.frames - f0, blurredFlag = D.we && D.we.blurred;
+      real.setVisibility('visible'); await new Promise((r) => setTimeout(r, 400));
+      return { before, during, after: shown(), blurredFrames, blurredFlag, state: real.visibilityState };
+    });
+    expect('focus-aware: rendering continues and the game is blurred while the session is visible-blurred', blur.blurredFrames >= 5 && blur.blurredFlag === true && blur.state === 'visible', JSON.stringify(blur));
+    // (The controllers' hiding is checked in test_input.js, where fake controllers are connected.)
     // WebGL context loss and restore (WEBGL_lose_context): no page errors and frames resume.
     const ctxLoss = await page.evaluate(async () => {
       const cv = document.querySelector('#game canvas') || document.querySelector('canvas');

@@ -17,7 +17,7 @@
  *   fbMax                     max framebuffer width (default 320; software GL is fill-bound)
  */
 (function () {
-  const S = (window.__fakeXR = { sessions: [], frames: 0, pose: { y: 1.6, yaw: 0 }, inputs: [], supportLocalFloor: true, fbMax: 320 });
+  const S = (window.__fakeXR = { poses: false, sessions: [], frames: 0, pose: { y: 1.6, yaw: 0 }, inputs: [], supportLocalFloor: true, fbMax: 320 });
 
   function perspective(fovDeg, aspect, near, far) {
     const f = 1 / Math.tan((fovDeg * Math.PI) / 360), m = new Float32Array(16);
@@ -82,7 +82,14 @@
       const v = [new View('left', this.session), new View('right', this.session)];
       return { views: v, transform: new RigidTransform({ x: 0, y: this.session.floorSpace ? S.pose.y : 0, z: 0 }), emulatedPosition: false };
     }
-    getPose() { return null; }
+    // Controller poses are null unless a test turns them on (window.__fakeXR.poses = true): three.js shows a
+    // controller's ray and grip groups only while their spaces have poses, and the input test steers the rays
+    // itself, so poses are opt-in (left hand at x -0.2, right at +0.2, 1.2 m up, 0.3 m forward).
+    getPose(space) {
+      if (!S.poses || !space || (space.type !== 'ray' && space.type !== 'grip')) return null;
+      const right = this.session._sources.findIndex((src) => src && (src.targetRaySpace === space || src.gripSpace === space)) !== 0;
+      return { transform: new RigidTransform({ x: right ? 0.2 : -0.2, y: 1.2, z: -0.3 }), emulatedPosition: false };
+    }
     getJointPose() { return null; }
   }
   class Session extends EventTarget {

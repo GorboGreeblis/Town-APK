@@ -191,6 +191,16 @@ EDITS = [
 # Gameplay fixes (approved bug fixes; see tools/NOTES.md for the investigation).
 # ---------------------------------------------------------------------------
 GAME_FIXES = [
+    # B24 (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is
+    # "visible-blurred"; the game already keeps rendering and skips its update (no input), but
+    # three.js stops updating controller poses, so the controller rays and hand meshes stayed
+    # frozen in view. The renderer's controller groups (ray and grip, which carry the game's
+    # beam and hand meshes) are hidden while blurred; on return they are shown again and
+    # three.js resumes setting their visibility from the poses each frame.
+    (
+        'Oe.addEventListener("visibilitychange",(()=>{o.blurred=Oe&&"visible"!==Oe.visibilityState,o.blurred?Ho.capture():',
+        'Oe.addEventListener("visibilitychange",(()=>{o.blurred=Oe&&"visible"!==Oe.visibilityState,[0,1].forEach((i=>{try{O.xr.getController(i).visible=O.xr.getControllerGrip(i).visible=!o.blurred}catch(e){}})),o.blurred?Ho.capture():',
+    ),
     # B21 (author, "fix all instances of z-fighting listed"): the parapet band on the
     # Store, Bank and Fire Station fronts is a box as wide as the wall, so its side faces
     # lie in the wall's side planes and overlap them by 1 cm at the wall top (a shimmering

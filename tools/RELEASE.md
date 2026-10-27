@@ -99,6 +99,32 @@ seconds, resume, and confirm the game continues with sound; take the headset off
 and put it back on; leave the Guardian boundary and come back. Note anything that
 does not come back cleanly in `tools/BUGS.md`.
 
+7. The VRC confirmations (`tools/VRC.md` has the full check; these are the ones
+   only a headset can answer, written the way Meta's reviewers test them):
+   - **Frame rate** (VRC.Quest.Performance.1): install the OVR Metrics Tool from the
+     Meta Quest Developer Hub, turn its overlay on, play for 10 minutes through the
+     town, a kiosk, a dialogue and the Event, and read the FPS graph: at or above 60
+     everywhere outside the loading screen. Write the lowest value you saw and where.
+   - **Time to the loading panel** (Performance.3): from pressing the icon to seeing
+     the title panel; count the seconds. Under 4 s is the requirement; write the
+     number down either way (the OS splash before the page starts also counts as a
+     VR loading indicator, and the number goes into the submission notes).
+   - **Universal Menu** (Input.4, Functional.2): with the game running, press the Meta
+     button: the town keeps rendering behind the menu with no hands or rays and does
+     not react to the sticks; close the menu: hands and rays are back and the game
+     resumes. Then Quick Settings, Enter Passthrough, and back: everything paused,
+     everything resumes.
+   - **Recentre** (Functional.9): turn your body 180 degrees, long-press the Meta
+     button; the town faces you again.
+   - **Play modes** (Tracking.1): one pass seated on a chair (nothing needs standing
+     up, reaching to the ground or turning past 90 degrees: pickups, kiosks and
+     dialogue are all point-and-select), one pass standing in place.
+   - **Controllers down and up** (Input.7, for the note that hands are not
+     supported): with Auto Enable Hands on, put the controllers down for ten seconds
+     and pick them up; the game waits and continues.
+   Then upload the updated privacy page (`tools/store/privacy.html`, section 8 on
+   deletion requests) to neocities before submitting (VRC.Quest.Privacy.4).
+
 ## 4. Rebuilding yourself (only if something changes)
 
 1. Install a JDK 17 or newer, and the Android SDK command-line tools (or
