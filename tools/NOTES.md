@@ -881,3 +881,17 @@ VR-entry fix; each item is for discussion first.
     times against 5,166. `opt_identity.js` renders every view batched and
     unbatched in the same frame: identical pixels. The part limit per batch is
     recomputed for five rows (still 32 on a Quest's 256 vertex uniform vectors).
+
+61. **A blind spot in the identity check, found and closed.** Rendering from a
+    VR session (fake XR) left three.js's XR framebuffer bound, so a tool asking
+    for the canvas read black pixels. Two black images compare as identical:
+    `opt_identity.js`'s first Event-phase result for P8 and its first batched
+    against unbatched result for P9 had compared nothing. Found while building
+    the visibility census, which saw every mesh as never visible. Both tools now
+    clear the XR framebuffer override before rendering (the game's frame loop
+    binds it again on the next XR frame) and refuse blank or uniform images.
+    Re-run with real pixels: P8 and the batcher with P9 inside it render
+    identical pixels at load and 25 s into the planting Event. The earlier P8
+    load-phase result (desktop session) had been valid. The other pixel tools
+    boot desktop sessions, except `flash_probe.js`, which reads the XR frame on
+    purpose.

@@ -40,13 +40,17 @@ const OPTS = [
     const D = window.__dbg, C = D.C, O = D.O, T = window.THREE, gl = O.getContext(), t = D.t;
     const sw = new Function('v', opt.expr);
     const el = document.getElementById('gate'); if (el) el.style.display = 'none';
-    const xrWas = O.xr.enabled, rtWas = O.getRenderTarget(); O.xr.enabled = false; O.setRenderTarget(null);
+    // In a VR session three.js substitutes the XR framebuffer whenever the canvas is asked for; clear that
+    // override so the renders land on the canvas (the game's frame loop binds the XR one again next frame).
+    const xrWas = O.xr.enabled, rtWas = O.getRenderTarget(); O.xr.enabled = false; O.state.bindXRFramebuffer(null); O.setRenderTarget(null);
     const W = O.domElement.width, H = O.domElement.height, N = 320;
     const cam = new T.PerspectiveCamera(70, 1, 0.1, 400);
     const bufs = [new Uint8Array(N * N * 4), new Uint8Array(N * N * 4)];
     const stats = [{ calls: 0, tris: 0 }, { calls: 0, tris: 0 }];
     const shot = (k) => { O.setViewport(0, 0, N, N); O.setScissor(0, 0, N, N); O.setScissorTest(true); O.render(C, cam); stats[k].calls += O.info.render.calls; stats[k].tris += O.info.render.triangles; O.setScissorTest(false); O.setViewport(0, 0, W, H); gl.readPixels(0, 0, N, N, gl.RGBA, gl.UNSIGNED_BYTE, bufs[k]); };
     const mask = new Uint8Array(N * N);
+    // A blank or uniform image would compare as identical: count it as a failed view.
+    const blank = (b) => { let nz = 0; const r0 = b[0], g0 = b[1], b0 = b[2]; let uni = true; for (let i = 0; i < b.length; i += 4) { if (b[i] | b[i + 1] | b[i + 2]) nz++; if (uni && (b[i] !== r0 || b[i + 1] !== g0 || b[i + 2] !== b0)) uni = false; } return nz === 0 || uni; };
     const diff = () => { let n = 0, interior = 0, maxd = 0; const a = bufs[0], b = bufs[1]; for (let i = 0, p = 0; i < a.length; i += 4, p++) { const d = Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]); if (d > maxd) maxd = d; mask[p] = d > 24 ? 1 : 0; if (d > 24) n++; }
       for (let y = 1; y < N - 1; y++) for (let x = 1; x < N - 1; x++) { const p = y * N + x; if (mask[p] && mask[p - 1] && mask[p + 1] && mask[p - N] && mask[p + N]) interior++; }
       return { pct: 100 * n / (N * N), interior: 100 * interior / (N * N), maxd }; };
@@ -55,7 +59,7 @@ const OPTS = [
     const view = (vl, eye, target) => {
       cam.position.copy(eye); cam.lookAt(target); cam.updateMatrixWorld(true);
       sw(true); shot(0); sw(false); shot(1); sw(true);
-      const d = diff(); const v = { label: vl, pct: +d.pct.toFixed(3), interior: +d.interior.toFixed(3), maxd: d.maxd }; if (save && d.pct > 0) v.png = png(); views.push(v);
+      const d = diff(); const v = { label: vl, pct: +d.pct.toFixed(3), interior: +d.interior.toFixed(3), maxd: d.maxd, blank: blank(bufs[0]) || blank(bufs[1]) }; if (save && d.pct > 0) v.png = png(); views.push(v);
     };
     const half = t.parkHalf - 4, south = t.parkSouth - 4;
     for (let x = -half; x <= half; x += (2 * half) / 3) for (let z = -half; z <= south; z += (half + south) / 3) for (let h = 0; h < 4; h++) { const a = h * Math.PI / 2; const eye = new T.Vector3(x, 1.6, z); view(`town (${x.toFixed(0)}, ${z.toFixed(0)}) heading ${h * 90}`, eye, eye.clone().add(new T.Vector3(Math.sin(a) * 6, -0.8, Math.cos(a) * 6))); }
@@ -70,6 +74,8 @@ const OPTS = [
       const present = await page.evaluate((e) => { try { return eval(e); } catch (x) { return false; } }, opt.present);
       if (!present) { note(`${phase}: ${opt.name} not in this build, skipped`); continue; }
       const r = await run(phase, opt); results.push({ opt: opt.name, ...r });
+      const blanks = r.views.filter((v) => v.blank);
+      expect(`${phase}: ${opt.name}: every view rendered something (no blank or uniform image)`, blanks.length === 0, `${blanks.length} blank: ${blanks.slice(0, 4).map((v) => v.label).join(' | ')}`);
       const bad = r.views.filter((v) => v.pct > 0.02 || v.interior > 0);
       const [on, off] = r.stats;
       note(`${phase}: ${opt.name}: ${r.views.length} views (${r.mm} multi-material meshes); draw calls ${off.calls} -> ${on.calls} (${off.calls - on.calls} fewer), triangles ${off.tris} -> ${on.tris}`);
