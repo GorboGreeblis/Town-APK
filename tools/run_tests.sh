@@ -9,7 +9,11 @@
 #
 # Needs: python3, JDK 17+, node with playwright (browser tests), and
 # ANDROID_HOME for the server harness and the APK checker.
+# The whole pass lives in one function (called at the very end), so the shell reads this file completely before
+# running anything: editing it while a pass runs can no longer change or garble the running pass.
+main() {
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
+mkdir -p "$ROOT/tools/.runs"   # tools write their outputs here, whichever folder the pass is started from
 # GT_ASSET overrides the asset the browser tests load (e.g. an experiment build; with GT_MULTIVIEW=1 the
 # fake headset runs the multiview experiment without MSAA). The verify and APK stages always check the release.
 ASSET="${GT_ASSET:-$ROOT/tools/android/app/src/main/assets/index.html}"
@@ -49,6 +53,7 @@ if [ "$TIER" != quick ]; then
   run "uniform budget: every shader fits a Quest 3S's GPU limits (multiview and classic)" node "$ROOT/tools/uniform_budget.js" "$ASSET"
   run "quality governor, Quest 3S: the Event scale (P16, P17) engages under 62 / 60 fps in the Event only and ends with it" env GT_DEVICE=quest3s node "$ROOT/tools/test_governor.js" "$ASSET"
   run "quality governor, Quest 3: the Event starts at 0.9 in one layer swap (P17), steps to 0.82 under 60 fps, ends with it" env GT_DEVICE=quest3 node "$ROOT/tools/test_governor.js" "$ASSET"
+  run "game content: gifts, talk order, shyness, bribe, outfits, battles, the Ancient, the robin, Event lines, Backpacka" node "$ROOT/tools/test_content.js" "$ASSET"
   run "world: routes, hulls, pickups, watchdog (${WORLD_S}s)" node "$ROOT/tools/test_world.js" "$ASSET" "$WORLD_S"
   run "input and locomotion (fake controllers)" node "$ROOT/tools/test_input.js" "$ASSET"
   if [ "$TIER" = full ]; then run "progression incl. gardening event (--long)" node "$ROOT/tools/test_progression.js" "$ASSET" --long;
@@ -91,3 +96,5 @@ fi
 echo; echo "=== SUMMARY ($TIER) ==="; printf "$SUMMARY\n"
 [ $rc_all -eq 0 ] && echo "ALL TESTS PASSED" || echo "SOME TESTS FAILED"
 exit $rc_all
+}
+main "$@"

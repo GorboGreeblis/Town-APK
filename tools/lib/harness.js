@@ -18,8 +18,9 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..', '..');
+const TAGGED = [['Ge', 'const Ge={'], ['VIGS', 'const VIGS={}']];
 const HOOK_NAMES = ['It', 'JGP', 'F', 'E', 'lo', 'Be', 'De', 't', 'At', 'B', 'Re', 'uo', 'C', 'Kt', 'le', 'ce', 'we', 'Mo', 'G', 'Ut', 'O', 'me', 'bt', 'ue', 'Dbt', '_t', 'qt', 'jt',
-  'ne', 'oe', 'st', 'fe', 'xe', 'yo', 'Nt', 'ke', 'Ge', 'Ho', 'LIB', 'ARTS', 'VIGS', 'BP', 'JAZZ', 'gemTrade', 'shopText', 'battleText', 'Bulb', 'Eo', 'ot', 'E', 'gcEB'];
+  'ne', 'oe', 'st', 'fe', 'xe', 'yo', 'Nt', 'ke', 'Ge', 'Ho', 'LIB', 'ARTS', 'VIGS', 'BP', 'JAZZ', 'gemTrade', 'shopText', 'battleText', 'Bulb', 'Eo', 'ot', 'E', 'gcEB', 'z', 'te'];
 const UA = 'Mozilla/5.0 (X11; Linux x86_64; Quest 3) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/35.0 Chrome/128.0 VR Safari/537.36';
 
 function hooked(file) {
@@ -31,10 +32,11 @@ function hooked(file) {
   const anchor2 = 'const gcEB={list:[]';
   if (!html.includes(anchor2)) throw new Error('anchor2 not found in ' + file);
   html = html.replace(anchor2, 'window.__dbgT=t;' + anchor2);
-  // the quality governor lives in another scope than the hook point: tag it where it is declared (test copies only)
-  html = html.replace('const Ge={', 'const Ge=window.__dbgGe={');
+  // Objects declared in another scope than the hook point are tagged where they are declared (test copies only):
+  // the quality governor and the vignettes. `window.__dbg.<name>` reads them through a getter.
+  for (const [n, decl] of TAGGED) if (html.includes(decl)) html = html.replace(decl, decl.replace(`const ${n}=`, `const ${n}=window.__dbg_${n}=`));
   // A name declared after the hook point (still in its temporal dead zone there) is reached through a getter instead.
-  const hook = 'window.__dbg={};' + HOOK_NAMES.map((n) => `try{window.__dbg.${n}=${n}}catch(e){try{Object.defineProperty(window.__dbg,"${n}",{get:function(){try{return ${n}}catch(_){}},configurable:true,enumerable:true})}catch(_){}}`).join('') + 'Object.defineProperty(window.__dbg,"Ge",{get:function(){return window.__dbgGe},configurable:true,enumerable:true});window.__dbg.t=window.__dbgT;window.__dbgReady=true;';
+  const hook = 'window.__dbg={};' + HOOK_NAMES.map((n) => `try{window.__dbg.${n}=${n}}catch(e){try{Object.defineProperty(window.__dbg,"${n}",{get:function(){try{return ${n}}catch(_){}},configurable:true,enumerable:true})}catch(_){}}`).join('') + TAGGED.map(([n]) => `Object.defineProperty(window.__dbg,"${n}",{get:function(){return window.__dbg_${n}},configurable:true,enumerable:true});`).join('') + 'window.__dbg.t=window.__dbgT;window.__dbgReady=true;';
   return Buffer.from(html.replace(anchor, anchor + hook));
 }
 

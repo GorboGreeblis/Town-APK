@@ -93,14 +93,14 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | --- | --- | --- |
 | Blossom/acorn pickup, regrow timers (12 s), counts | `test_world.js` | partial (regrow check under review) |
 | Shop at Garden Supplies: prices, `owned`, `equip`, `shyBook`, `shyFree` gates | `test_progression.js` | partial |
-| Give a blossom → gift lines and `met`/`talkState` | headless | todo |
+| Give a blossom → gift lines and `met`/`talkState`; the bribe (phone), Gooward's goo, Sparkakus's romp, the dancers' battle invitation, the Ancient | `test_content.js` (standard tier) | done (3.15.38) |
 | Dance battles (Dbt): rock/paper/scissors, stamina, bow-out, first win awards an Artifact, `danceWins` | `test_progression.js` | done |
 | Garden event (`bt`): summoning pillar, gather timer `GATHER_S`, seeds/snacks/stone rewards, NPCs sent home afterwards (`fe`) within 90 s | `test_progression.js --long` | done (full tier) |
 | Pizza courier (`ue`): call, spawn 30 s later at 75 m, arrival, give-up after 100 s | `test_progression.js` | partial |
 | Long session stability: heap, programs, entity count over N minutes with all systems exercised (GPU counters are stubbed in the harness) | `test_soak.js` | Soak 10 min on 3.15.8: PASS, heap 119 -> 118 MB, programs 114 -> 114, 13 entities, no errors |
 | Pizza courier inside the church: detour around the Ancient to a player on the far side, deliver, walk back out (B11) | `test_courier.js` | yes |
 | Library finale: three Artifacts → Sparkakus awards the Gem | `test_progression.js` | done |
-| Backpacka sequence (`BP`) and jazz (`JAZZ`) timings | headless | todo |
+| Backpacka sequence (`BP`) and jazz (`JAZZ`) timings | `test_content.js`: Backpacka comes during the Event (`--long`: and leaves); jazz timings todo | partial |
 
 ## 8. Audio
 
@@ -119,6 +119,20 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Quality governor (`Ge`): the Event's lowest-level lock, its adaptive 0.9 scale (P16), the Quest 3 start at 0.9 and the step to 0.82 (P17): no trigger in town, one layer swap at each step, restore at the end, the emergency drop kept | `test_governor.js` (standard tier, run for the Quest 3S and the Quest 3; frames slowed by a busy loop; two Events per session, from level 0 and from the lowest level) | 3.15.38: passes for the 3S and the Quest 3, multiview and classic |
 | 72 Hz on Quest 3/3S (VRC.Quest.Performance; the original Quest and Quest 2 are not supported since 3.15.34, the Quest Pro since 3.15.35), loading indicator rule | headset; `perf_log.js` per-device verdicts against 72 and 60 | headset (3.15.33 on a Quest 3S: town 72, the Event 58-65) |
 | Console error de-dup shim, `vo` error reporting counts | `test_play.js` | done |
+
+## 9b. Game content (LORE.md)
+
+| What | How | Status |
+| --- | --- | --- |
+| Every pickable place has its menu (Sparkakus, the phone, the Ancient, the shyness book, the robin, the Summoning Pillar); Garden Supplies closed while Zollod is shy | `test_content.js` | done |
+| Talk lines come in order, one per talk, and wrap around (12 townsfolk, 73 lines) | `test_content.js` | done |
+| Gift lines for a Blossom (12 townsfolk), cost and `met`; the Sheriff's bribe opens the Portal and the phone; Gooward's goo; Sparkakus's romp at the Library; the Ancient's "..."; the dancers' battle invitation | `test_content.js` | done |
+| Zollod's shyness: "I'm shy", the book from the Library, the cure line, the shop opens, his work line | `test_content.js` | done |
+| Outfits: the price message, buying and wearing each, "Change out", putting on again for free | `test_content.js` | done |
+| Battle panels per dancer: title, stamina bar label, the three moves, "KING DINO on drums." | `test_content.js` | done |
+| The robin flies off when picked; the Ancient's talk line | `test_content.js` | done |
+| During the Event: each townsperson's gardening line, Fortizmo silent, no gifts, the Ancient's "Hello", Sparkakus's line, Backpacka comes | `test_content.js` | done |
+| Vignettes (the 90 PAIRS and the Ancient's 12) play as speech bubbles or Gree-mail tokens, counted and ended; the Ancient's only inside the church | `test_content.js` (a sample; all 102 with `--long`) | done |
 
 ## 10a. Graphical and performance pass (full tier)
 

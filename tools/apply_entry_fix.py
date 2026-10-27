@@ -845,11 +845,14 @@ GAME_FIXES = [
     # 50-1,000 ms stall on a headset). The Artifact module gains a `warm()` that builds the three Gem
     # pieces and one glue drop (the same cached geometry and materials the Speech uses), and the
     # effects warm-up adds them out of sight (y = -60), compiles the scene and takes them out again.
-    # Nothing is drawn differently; the Speech then reuses the compiled program.
+    # The Speech draws the Gem under Sparkakus's light bulb, whose point light changes the shader, so
+    # the scene is compiled a second time with the bulb's light on (`Bulb.warm()`, as the warm-up
+    # already does for everything else; 3.15.39, after the check caught the second variant).
+    # Nothing is drawn differently; the Speech then reuses the compiled programs.
     ('return{build(){L.push(((t2,dt)=>(Bulb.update(dt||.016),asm&&asm.step(Math.min(dt||.016,.1)))))},assemble:assemble,model:model}})()',
      'return{build(){L.push(((t2,dt)=>(Bulb.update(dt||.016),asm&&asm.step(Math.min(dt||.016,.1)))))},assemble:assemble,model:model,warm(){const g=new THREE.Group;[0,1,2].forEach((k=>g.add(model(k))));R(T.sphere(.045,8,6),drop(),g,null,null,[1,1.5,1]);return g}}})()'),
     ('Nt.splat(999,999,.5,"#ffffff")}catch(e){}})(),Ze(),',
-     'Nt.splat(999,999,.5,"#ffffff")}catch(e){}})(),(function(){try{const wg=ARTS.warm();wg.position.y=-60,C.add(wg),wg.updateMatrixWorld(!0),O.compile(C,B),C.remove(wg)}catch(e){vo(e,"gem-prewarm")}})(),Ze(),'),
+     'Nt.splat(999,999,.5,"#ffffff")}catch(e){}})(),(function(){try{const wg=ARTS.warm();wg.position.y=-60,C.add(wg),wg.updateMatrixWorld(!0),O.compile(C,B),Bulb.warm(),C.remove(wg)}catch(e){vo(e,"gem-prewarm")}})(),Ze(),'),
     # P16 (the author: "We just need to be steadily above 60 fps"; chose this over every other option): the
     # planting Event already drops the quality governor to its lowest level on its first frame (scale 1, full
     # foveation, locked; NOTES 71), and the headset still measured 58-65 fps there. The governor's only lower

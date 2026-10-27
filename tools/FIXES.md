@@ -315,8 +315,11 @@ flat-shaded, transparent Phong material that the game creates the first time the
 loading warm-up ever saw it and its shader compiled in the middle of the Speech (a 50-1,000 ms stall
 on a headset). The Artifact module gains a `warm()` that builds the three Gem pieces and one glue
 drop (the same cached geometry and materials the Speech uses), and the effects warm-up adds them out
-of sight (y = -60), compiles the scene and takes them out again. Nothing is drawn differently; the
-Speech then reuses the compiled program.
+of sight (y = -60), compiles the scene and takes them out again. The Speech draws the Gem under
+Sparkakus's light bulb, whose point light changes the shader, so the scene is compiled a second time
+with the bulb's light on (`Bulb.warm()`, as the warm-up already does for everything else; 3.15.39,
+after the check caught the second variant). Nothing is drawn differently; the Speech then reuses the
+compiled programs.
 
 - **P16** (6 edits): (the author: "We just need to be steadily above 60 fps"; chose this over every other option):
 the planting Event already drops the quality governor to its lowest level on its first frame (scale

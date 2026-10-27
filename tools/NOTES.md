@@ -1122,3 +1122,23 @@ VR-entry fix; each item is for discussion first.
     the frame rates themselves are estimates until a headset runs it. The
     harness now reaches the governor in its test copies (it lives in another
     scope than the debug hook).
+
+74. **B27's second variant, and checks that cannot be lucky (3.15.39).** The
+    3.15.38 standard tier failed `multiview_check.js` again on a flat-shaded
+    Phong program compiled during the Speech. The Speech draws the Gem under
+    Sparkakus's light bulb, whose point light is part of the shader key; the
+    3.15.35 warm-up compiled the Gem only with the town's lights, so the
+    check passed or failed depending on whether the bulb was lit when the
+    Gem first drew. The warm-up now also runs `Bulb.warm()` with the Gem in
+    the scene. To stop relying on timing, `multiview_check.js` now builds the
+    Gem pieces at load and compiles them both ways, counting only programs
+    the Gem's own materials use (a whole-scene compile also visits hidden
+    controller rays and labels): 3.15.38 fails it (one flat Phong program,
+    with the bulb), 3.15.39 passes. `test_content.js` fails on any program
+    compiled during its play, which covers far more of the game (gifts,
+    outfits, battles, the robin, vignette tokens, the Event, Backpacka): none.
+    Also from writing the content test: there are 90 two-line vignettes
+    between townsfolk (not 78) plus the Ancient's 12; a dancer's gift line
+    "Let's dance!" starts their battle when it closes; the battle module
+    clears its state if a second battle opens over the first, which a player
+    cannot do (no menu while a panel is open) but a test can.
