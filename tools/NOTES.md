@@ -1068,3 +1068,13 @@ VR-entry fix; each item is for discussion first.
     cache in 61). Not applied. Texture uploads were checked as well: once the
     town has been seen, the Event uploads a handful of 64x64 labels in ten
     seconds (0.002 MB a frame); nothing is re-uploaded unchanged.
+
+71. **The governor already meets the Event at its lowest level.** Proposed
+    and approved as a change (go straight to the Event's level instead of
+    stepping down over seconds), then found in the code: the XR update calls
+    `Fe(me.active)` the frame the planting Event starts, which sets the
+    lowest quality level at once (`Ae(quality.length-1)`: scale 1, full
+    foveation), locks the governor there for ten minutes (`finaleLockMs`)
+    and hides far scenery; the headset log showed level 4 throughout the
+    Event. The step-by-step climb (36 frames over budget, 2 s between steps)
+    applies only to ordinary play. Nothing to change.
