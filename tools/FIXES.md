@@ -38,7 +38,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (48 blocks)
+## Gameplay, performance and other fixes (49 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -328,6 +328,16 @@ smoothed frame rate stays under 62 fps for 216 frames (three seconds), the rende
 own scale when the Event ends (unless the emergency drop fired meanwhile, which by the game's own
 rule stays for the session). A headset with headroom never triggers it. Logged as "event scale 0.9
 (...)"; the emergency drop still applies on top.
+
+- **P17** (4 edits): (the author: "Apply 1 and 2"; closes the Event performance work): two refinements of P16. 1. On
+a Quest 3 (user agent "Quest 3", not "Quest 3S"), which renders noticeably more pixels per eye than
+a 3S, the Event starts at the 0.9 scale at once instead of after three slow seconds; at 0.9 it still
+draws about as many pixels as a 3S at full scale. The level drop and the scale come in one layer
+swap (the governor's level change picks the Event scale directly), never two in a row. 2. A second
+step on any headset: still under 60 fps for 216 frames at 0.9, the scale goes to 0.82 (the game's
+own emergency scale, which otherwise waits for 1.6 times the frame budget, about 45 fps). Both end
+with the Event, like P16. Logged as "event scale 0.9 (Quest 3, from the start)" and "event scale
+0.82 (under 60 fps for 216 frames)".
 
 ## Multiview (release path since 3.15.34)
 

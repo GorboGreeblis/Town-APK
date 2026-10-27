@@ -116,7 +116,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | --- | --- | --- |
 | Frame loop alive, no errors, flat JS heap over 20 s in 2D | `test_play.js 2d` | done |
 | Same over 10+ minutes, including events (garden, finale) | `test_play.js` long run | todo |
-| Quality governor (`Ge`): the Event's lowest-level lock and its adaptive 0.9 scale (P16): no trigger in town, trigger under 62 fps in the Event with a layer swap, restore at the end | `test_governor.js` (standard tier; frames slowed by a busy loop) | 3.15.37: passes |
+| Quality governor (`Ge`): the Event's lowest-level lock, its adaptive 0.9 scale (P16), the Quest 3 start at 0.9 and the step to 0.82 (P17): no trigger in town, one layer swap at each step, restore at the end, the emergency drop kept | `test_governor.js` (standard tier, run for the Quest 3S and the Quest 3; frames slowed by a busy loop; two Events per session, from level 0 and from the lowest level) | 3.15.38: passes for the 3S and the Quest 3, multiview and classic |
 | 72 Hz on Quest 3/3S (VRC.Quest.Performance; the original Quest and Quest 2 are not supported since 3.15.34, the Quest Pro since 3.15.35), loading indicator rule | headset; `perf_log.js` per-device verdicts against 72 and 60 | headset (3.15.33 on a Quest 3S: town 72, the Event 58-65) |
 | Console error de-dup shim, `vo` error reporting counts | `test_play.js` | done |
 

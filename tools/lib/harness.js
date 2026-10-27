@@ -31,7 +31,10 @@ function hooked(file) {
   const anchor2 = 'const gcEB={list:[]';
   if (!html.includes(anchor2)) throw new Error('anchor2 not found in ' + file);
   html = html.replace(anchor2, 'window.__dbgT=t;' + anchor2);
-  const hook = 'window.__dbg={};' + HOOK_NAMES.map((n) => `try{window.__dbg.${n}=${n}}catch(e){}`).join('') + 'window.__dbg.t=window.__dbgT;window.__dbgReady=true;';
+  // the quality governor lives in another scope than the hook point: tag it where it is declared (test copies only)
+  html = html.replace('const Ge={', 'const Ge=window.__dbgGe={');
+  // A name declared after the hook point (still in its temporal dead zone there) is reached through a getter instead.
+  const hook = 'window.__dbg={};' + HOOK_NAMES.map((n) => `try{window.__dbg.${n}=${n}}catch(e){try{Object.defineProperty(window.__dbg,"${n}",{get:function(){try{return ${n}}catch(_){}},configurable:true,enumerable:true})}catch(_){}}`).join('') + 'Object.defineProperty(window.__dbg,"Ge",{get:function(){return window.__dbgGe},configurable:true,enumerable:true});window.__dbg.t=window.__dbgT;window.__dbgReady=true;';
   return Buffer.from(html.replace(anchor, anchor + hook));
 }
 

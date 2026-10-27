@@ -47,7 +47,8 @@ if [ "$TIER" != quick ]; then
   run "runtime play (2D loop + fake VR session), ${PLAY_S}s" node "$ROOT/tools/test_play.js" "$ASSET" all "$PLAY_S"
   run "multiview: each eye matches the classic path, half the draw calls; no frame hazard or compile during play" node "$ROOT/tools/multiview_check.js" "$ASSET"
   run "uniform budget: every shader fits a Quest 3S's GPU limits (multiview and classic)" node "$ROOT/tools/uniform_budget.js" "$ASSET"
-  run "quality governor: the Event scale (P16) engages under 62 fps in the Event only and ends with it" node "$ROOT/tools/test_governor.js" "$ASSET"
+  run "quality governor, Quest 3S: the Event scale (P16, P17) engages under 62 / 60 fps in the Event only and ends with it" env GT_DEVICE=quest3s node "$ROOT/tools/test_governor.js" "$ASSET"
+  run "quality governor, Quest 3: the Event starts at 0.9 in one layer swap (P17), steps to 0.82 under 60 fps, ends with it" env GT_DEVICE=quest3 node "$ROOT/tools/test_governor.js" "$ASSET"
   run "world: routes, hulls, pickups, watchdog (${WORLD_S}s)" node "$ROOT/tools/test_world.js" "$ASSET" "$WORLD_S"
   run "input and locomotion (fake controllers)" node "$ROOT/tools/test_input.js" "$ASSET"
   if [ "$TIER" = full ]; then run "progression incl. gardening event (--long)" node "$ROOT/tools/test_progression.js" "$ASSET" --long;

@@ -868,6 +868,22 @@ GAME_FIXES = [
      'else Ve.forEach((t=>{t.visible=!0})),Ve=[],Ge.lockUntil=0,B.far=t.far,B.updateProjectionMatrix(),Ge.ev&&(Ge.ev=0,Ge.evN=0,Ge.sos||gbLayer(e.quality[Ge.level],e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale off: "+(Ge.sos?"the emergency scale "+e.sosScale+" stays":"back to "+e.quality[Ge.level])))}'),
     ('Ge.rebuilds=0,Ge.sos=0,Ge.hard=0,', 'Ge.rebuilds=0,Ge.sos=0,Ge.hard=0,Ge.ev=0,Ge.evN=0,'),
     ('const Ge={level:2,', 'const Ge={ev:0,evN:0,level:2,'),
+    # P17 (the author: "Apply 1 and 2"; closes the Event performance work): two refinements of P16.
+    # 1. On a Quest 3 (user agent "Quest 3", not "Quest 3S"), which renders noticeably more pixels per eye
+    #    than a 3S, the Event starts at the 0.9 scale at once instead of after three slow seconds; at 0.9 it
+    #    still draws about as many pixels as a 3S at full scale. The level drop and the scale come in one
+    #    layer swap (the governor's level change picks the Event scale directly), never two in a row.
+    # 2. A second step on any headset: still under 60 fps for 216 frames at 0.9, the scale goes to 0.82 (the
+    #    game's own emergency scale, which otherwise waits for 1.6 times the frame budget, about 45 fps).
+    # Both end with the Event, like P16. Logged as "event scale 0.9 (Quest 3, from the start)" and
+    # "event scale 0.82 (under 60 fps for 216 frames)".
+    ('evScale:.9,evFps:62,evFrames:216,', 'evScale:.9,evFps:62,evFrames:216,ev2Scale:.82,ev2Fps:60,'),
+    ('function Ae(t){(t=u(t,0,e.quality.length-1))!==Ge.level&&(Ge.level=t,gbLayer(Ge.sos?e.sosScale:e.quality[t],e.foveation[t]),',
+     'function Ae(t){(t=u(t,0,e.quality.length-1))!==Ge.level&&(Ge.level=t,gbLayer(Ge.sos?e.sosScale:Ge.ev?Ge.ev>1?e.ev2Scale:e.evScale:e.quality[t],e.foveation[t]),'),
+    ('Ae(e.quality.length-1),Ge.evN=0,Ge.lockUntil=r+e.finaleLockMs,',
+     '/Quest 3(?!S)/.test(navigator.userAgent||"")&&!Ge.sos&&!Ge.ev&&(Ge.ev=1,window.__gtLog&&window.__gtLog("event scale "+e.evScale+" (Quest 3, from the start)")),Ae(e.quality.length-1),Ge.ev&&!Ge.sos&&gbLayer(Ge.ev>1?e.ev2Scale:e.evScale,e.foveation[e.quality.length-1]),Ge.evN=0,Ge.lockUntil=r+e.finaleLockMs,'),
+    ('Be&&!Ge.sos&&!Ge.ev&&Ge.level===e.quality.length-1&&(Ge.ema>1e3/e.evFps?++Ge.evN>e.evFrames&&(Ge.ev=1,gbLayer(e.evScale,e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale "+e.evScale+" (under "+e.evFps+" fps for "+e.evFrames+" frames)")):Ge.evN=0),',
+     'Be&&!Ge.sos&&Ge.ev<2&&Ge.level===e.quality.length-1&&(Ge.ema>1e3/(Ge.ev?e.ev2Fps:e.evFps)?++Ge.evN>e.evFrames&&(Ge.ev++,Ge.evN=0,gbLayer(Ge.ev>1?e.ev2Scale:e.evScale,e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale "+(Ge.ev>1?e.ev2Scale:e.evScale)+" (under "+(Ge.ev>1?e.ev2Fps:e.evFps)+" fps for "+e.evFrames+" frames)")):Ge.evN=0),'),
 ]
 # Multiview (NOTES 65, 67): the experiment became the release in 3.15.34 (the author, after the headset
 # run: "We're going to use the Multiview version as the main build").

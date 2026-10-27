@@ -1097,3 +1097,28 @@ VR-entry fix; each item is for discussion first.
     Quest 3S, from the 3.15.33 run (58-65 fps at the lowest level): about
     64-70 fps once engaged, if three quarters of the Event's GPU time scales
     with pixels; the first three seconds of the Event stay as before.
+
+73. **The Quest 3 and a second step (P17, 3.15.38); the Event performance
+    work closed.** A Quest 3 renders noticeably more pixels per eye than a 3S,
+    and the author cannot test on one. Two refinements of P16, the author's
+    choice: (1) on a Quest 3 (user agent "Quest 3", not "Quest 3S") the Event
+    starts at the 0.9 scale at once; the governor's level change picks the
+    Event scale itself, so the drop and the scale come in one layer swap (two
+    swaps in a row could show the second, undrawn layer: the shim composites
+    a new layer behind the old one for two frames); (2) on any headset, still
+    under 60 fps for 216 frames at 0.9, the scale steps to 0.82 (the game's
+    emergency scale, which otherwise waits for about 45 fps). Both end with
+    the Event. Testing, as exhaustive as headless allows: `test_governor.js`
+    plays two Events per session. The first starts from level 0 (the
+    governor stepped up for real to a 1.2 layer, as in town on a headset)
+    with the budget raised so the emergency drop cannot fire, and checks the
+    town (no trigger), the drop to the lowest level, the Quest 3 start at
+    0.9 in one swap or the 3S's single swap to 1, 0.9 under 62 fps, 0.82
+    under 60, frames and multiview throughout, the return to 1 at the end.
+    The second starts at the lowest level (the Quest 3's other branch) with
+    the normal budget, where the emergency drop fires too and correctly
+    stays. Run for the Quest 3S and the Quest 3, multiview and classic: all
+    pass. The headless frames are slowed on purpose, so the steps are proven;
+    the frame rates themselves are estimates until a headset runs it. The
+    harness now reaches the governor in its test copies (it lives in another
+    scope than the debug hook).
