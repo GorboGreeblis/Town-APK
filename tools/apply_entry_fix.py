@@ -830,6 +830,17 @@ GAME_FIXES = [
     # each device separately.
     ('+" at="+Math.round(At.position.x)+","+Math.round(At.position.z)))}catch(e){}',
      r'+" at="+Math.round(At.position.x)+","+Math.round(At.position.z)+" dev="+(((navigator.userAgent||"").match(/Quest[^;)]*/)||["unknown"])[0].trim().replace(/\s+/g,"_"))))}catch(e){}'),
+    # B27 (multiview_check, 2 runs in 7): the Gem that the Speech assembles from the three Artifacts
+    # has a flat-shaded, transparent Phong material that the game creates the first time the Gem is
+    # built, so no loading warm-up ever saw it and its shader compiled in the middle of the Speech (a
+    # 50-1,000 ms stall on a headset). The Artifact module gains a `warm()` that builds the three Gem
+    # pieces and one glue drop (the same cached geometry and materials the Speech uses), and the
+    # effects warm-up adds them out of sight (y = -60), compiles the scene and takes them out again.
+    # Nothing is drawn differently; the Speech then reuses the compiled program.
+    ('return{build(){L.push(((t2,dt)=>(Bulb.update(dt||.016),asm&&asm.step(Math.min(dt||.016,.1)))))},assemble:assemble,model:model}})()',
+     'return{build(){L.push(((t2,dt)=>(Bulb.update(dt||.016),asm&&asm.step(Math.min(dt||.016,.1)))))},assemble:assemble,model:model,warm(){const g=new THREE.Group;[0,1,2].forEach((k=>g.add(model(k))));R(T.sphere(.045,8,6),drop(),g,null,null,[1,1.5,1]);return g}}})()'),
+    ('Nt.splat(999,999,.5,"#ffffff")}catch(e){}})(),Ze(),',
+     'Nt.splat(999,999,.5,"#ffffff")}catch(e){}})(),(function(){try{const wg=ARTS.warm();wg.position.y=-60,C.add(wg),wg.updateMatrixWorld(!0),O.compile(C,B),C.remove(wg)}catch(e){vo(e,"gem-prewarm")}})(),Ze(),'),
 ]
 # Multiview (NOTES 65, 67): the experiment became the release in 3.15.34 (the author, after the headset
 # run: "We're going to use the Multiview version as the main build").

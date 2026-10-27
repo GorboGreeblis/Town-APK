@@ -9,7 +9,7 @@ happy with the designs, so anything visible is their call (RELEASE.md section 6)
 
 | # | Bug | Where | Reproduce | Status |
 | --- | --- | --- | --- | --- |
-| B27 | Multiview: one shader program sometimes compiles during play (the clean standard tier on 3.15.34 failed `multiview_check.js` "no shader compiled during that play [1 programs]"; a standalone run had none). A compile stalls a Quest for 50-1,000 ms. | the warm-up (P2) misses a variant that a play path reaches only sometimes | `GT_MULTIVIEW=1 node tools/multiview_check.js`; the game now logs the program's name and cache key (`multiview: N shader program(s) compiled during play: ...`) | open: name the program, then pre-warm it |
+| B27 | Multiview: one shader program sometimes compiles during play (the clean standard tier on 3.15.34 failed `multiview_check.js` "no shader compiled during that play [1 programs]"; a standalone run had none). A compile stalls a Quest for 50-1,000 ms. | the warm-up (P2) misses a variant that a play path reaches only sometimes | `GT_MULTIVIEW=1 node tools/multiview_check.js`; the game now logs the program's name and cache key (`multiview: N shader program(s) compiled during play: ...`) | fix in 3.15.35 (the Gem's flat-shaded material, compiled during loading; NOTES 69); confirming with the hardened check |
 
 ## Fixed
 

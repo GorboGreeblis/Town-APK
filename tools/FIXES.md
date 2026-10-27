@@ -38,7 +38,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (46 blocks)
+## Gameplay, performance and other fixes (47 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -309,6 +309,14 @@ Full texts: tools/LICENSE.md. A comment only: nothing the page does changes.
 - **D1** (1 edit): (tool hardening; the author tests on a Quest 3S, the game must also run on a Quest 2): the perf
 line names the headset model (from the user agent, e.g. dev=Quest_3S), so tools/perf_log.js can
 judge each device separately.
+
+- **B27** (2 edits): (multiview_check, 2 runs in 7): the Gem that the Speech assembles from the three Artifacts has a
+flat-shaded, transparent Phong material that the game creates the first time the Gem is built, so no
+loading warm-up ever saw it and its shader compiled in the middle of the Speech (a 50-1,000 ms stall
+on a headset). The Artifact module gains a `warm()` that builds the three Gem pieces and one glue
+drop (the same cached geometry and materials the Speech uses), and the effects warm-up adds them out
+of sight (y = -60), compiles the scene and takes them out again. Nothing is drawn differently; the
+Speech then reuses the compiled program.
 
 ## Multiview (release path since 3.15.34)
 

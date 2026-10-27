@@ -23,6 +23,9 @@ const outDir = path.join(root, 'tools/.runs/multiview');
   global.__pageLog = [];
   const g = await boot({ file, vr: true, fastSim: false });
   const page = g.page;
+  // three.js's program parameter names, in key order, read from the asset (to name the field a mid-play compile differs in)
+  const pn = (require('fs').readFileSync(file, 'utf8').match(/f=\[("multiview","precision",[^\]]*)\]/) || [])[1];
+  if (pn) await page.evaluate((a) => { window.__gtParamNames = a; }, JSON.parse('[' + pn + ']'));
   await page.waitForTimeout(2000);
   const live = await page.evaluate(() => ({ plan: window.__gtXR.mvPlan, active: window.__gtXR.mvActive }));
   expect('multiview is planned and live', live.plan === true && live.active === true, JSON.stringify(live));
@@ -67,19 +70,36 @@ const outDir = path.join(root, 'tools/.runs/multiview');
   // framebuffer while a frame draws (the game counts them, tools/lib/xr_multiview.js). Pickups, a dialogue, the
   // shop, a battle panel and the Speech. Runs first, before the comparisons below switch programs to the classic path and back.
   const up = await page.evaluate(async () => {
-    const D = window.__dbg, X = window.__gtXR, wait = (ms) => new Promise((r) => setTimeout(r, ms)); const s0 = { ...X.mvStats, inFrameKinds: { ...X.mvStats.inFrameKinds } };
+    const D = window.__dbg, X = window.__gtXR, wait = (ms) => new Promise((r) => setTimeout(r, ms)); const s0 = { ...X.mvStats, inFrameKinds: { ...X.mvStats.inFrameKinds } }; const np0 = D.O.info.programs.length;
     const b = D.le.list.find((x) => x.visible && !x.userData.taken); if (b) { D.At.position.set(b.position.x, D.At.position.y, b.position.z); await wait(1500); }
     const a = D.ce.list.find((x) => x.visible && !x.userData.taken); if (a) { D.At.position.set(a.position.x, D.At.position.y, a.position.z); await wait(1500); }
     D.qt.open('TEST', '#ffffff', 'Hello there.|Second line.'); await wait(1500); while (D.qt.isOpen) { D.qt.advance(); await wait(300); }
     try { D.ne.open(); await wait(1500); D._t.close(); } catch (e) {}
     try { const m = D.It.all.find((h) => h.def && h.def.name === 'MONTGUMMERY'); D.Dbt.start(m); await wait(2000); D._t.close(); } catch (e) {}
-    try { D.Kt.artifacts = 3; D.LIB.talk(); const adv = setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250); await wait(8000); clearInterval(adv); } catch (e) {}
+    // the Speech: wait until the Gem it assembles is in the scene (B27: its shader was the one a fixed wait sometimes missed)
+    let gem = false;
+    try { D.Kt.artifacts = 3; D.LIB.talk(); const adv = setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250);
+      const isGem = () => { let f = false; D.C.traverse((o) => { const m = o.material; if (o.isMesh && m && !Array.isArray(m) && m.flatShading && m.transparent && m.vertexColors && o.position.y > -30 && o.parent && o.parent.position.y > -30) f = true; }); return f; };
+      const t0 = performance.now(); while (!(gem = isGem()) && performance.now() - t0 < 30000) await wait(250); await wait(2000); clearInterval(adv); } catch (e) {}
     await wait(500);
-    const s1 = X.mvStats; return { pickups: !!(a && b), preUploads: s1.preUploads - s0.preUploads, inFrame: s1.inFrame - s0.inFrame, kinds: s1.inFrameKinds, programs: s1.programsDuringPlay - s0.programsDuringPlay, names: (s1.newPrograms || []).slice((s0.newPrograms || []).length) };
+    const s1 = X.mvStats; return { pickups: !!(a && b), preUploads: s1.preUploads - s0.preUploads, inFrame: s1.inFrame - s0.inFrame, kinds: s1.inFrameKinds, gem, programs: s1.programsDuringPlay - s0.programsDuringPlay, names: (s1.newPrograms || []).slice((s0.newPrograms || []).length), why: diffNew(np0) };
+    // For each program compiled during the sequence: the closest program warmed before it (same shader, fewest
+    // differing key fields) and the fields that differ, named from three.js's parameter list where they line up.
+    function diffNew(n0) {
+      const all = D.O.info.programs, P = ['shaderID', ...(window.__gtParamNames || [])];
+      return all.slice(n0).map((p) => {
+        const k = String(p.cacheKey).split(','); let best = null;
+        for (const q of all.slice(0, n0)) { const kq = String(q.cacheKey).split(','); if (kq[0] !== k[0] || kq.length !== k.length) continue; const d = []; k.forEach((v, i) => { if (v !== kq[i]) d.push((P[i] || '#' + i) + ' ' + kq[i] + ' -> ' + v); }); if (!best || d.length < best.length) best = d; }
+        // who uses it: scene objects whose material currently holds this program
+        const users = []; D.C.traverse((o) => { const ms = Array.isArray(o.material) ? o.material : o.material ? [o.material] : []; for (const m of ms) { const pr = D.O.properties.get(m); if (pr && (pr.program === p || (pr.programs && [...pr.programs.values()].includes(p)))) { let n = [], q = o; while (q && q !== D.C) { n.push(q.name || q.type); q = q.parent; } users.push(m.type + (m.name ? ' ' + m.name : '') + ' #' + (m.color ? m.color.getHexString() : '') + ' on ' + n.slice(0, 4).join('<')); } } });
+        return p.name + ': ' + (best ? best.join('; ') : 'no warmed program with the same shader and key length') + '; used by ' + (users.slice(0, 4).join(', ') || 'nothing in the scene now');
+      });
+    }
   });
   note(`pickups, dialogue, shop: ${up.preUploads} texture uploads moved before the frame, ${up.inFrame} while a frame drew ${JSON.stringify(up.kinds)}, ${up.programs} programs compiled`);
   expect('nothing saves and reloads a half-drawn frame (uploads before the frame, no switch, read or blit while it draws), across pickups, dialogue, shop, battle and the Speech', up.preUploads > 0 && up.inFrame === 0, JSON.stringify(up));
-  expect('no shader compiled during that play', up.programs === 0, `${up.programs} programs: ${(up.names || []).join(' | ')}`);
+  expect('the Speech assembled the Gem (its shader is part of the play checked)', up.gem === true, JSON.stringify(up.gem));
+  expect('no shader compiled during that play', up.programs === 0, `${up.programs} programs: ${(up.names || []).join(' | ')}; differs from the closest warmed program in: ${(up.why || []).join(' | ')}`);
   await run('spawn');
   const centre = await page.evaluate(() => { const D = window.__dbg; const es = D.It.all.filter((e) => e.group && e.group.visible !== false); return es.reduce((a, e) => [a[0] + e.group.position.x / es.length, a[1] + e.group.position.z / es.length], [0, 0]); });
   await placeAt(centre[0], centre[1] + 4, 0); await page.waitForTimeout(800); await run('town centre');

@@ -1021,3 +1021,22 @@ VR-entry fix; each item is for discussion first.
     `draw_calls.js --at` (the headset's logged positions), `video_check.py`
     (flash frames and the OVR Metrics overlay from a recording), and
     `perf_log.js` per-device verdicts.
+
+69. **The Gem's shader, and where vertex work stands (3.15.35).** The clean
+    standard tier on 3.15.34 failed one check: a shader program compiled
+    during play (B27), in some runs only. The game now logs any such program
+    with its key, and `multiview_check.js` diffs the key against the warmed
+    programs and names the material: a Phong program identical to a warmed
+    one except `flatShading`, compiled in 2 of 7 runs. It belongs to the Gem
+    the Speech assembles from the three Artifacts, whose material the game
+    creates the first time the Gem is built; the check waited a fixed 8 s in
+    the Speech and only sometimes reached it. Fix: the Artifact module builds
+    the Gem pieces and a glue drop during the effects warm-up, out of sight,
+    the scene is compiled and they are removed. The check now waits until
+    the Gem is in the scene. Also measured, with the new
+    `tools/vertex_census.js`: in the Event at headset field of view the drawn
+    creature meshes are all but three indexed already (1,703 duplicate
+    vertices in all), batches and scenery none; indexing creatures, the last
+    vertex lever left without a visible change, would save nothing. Draw
+    order is already by program, then material, then depth (three.js's
+    opaque sort), so grouping draws by shader would change nothing either.
