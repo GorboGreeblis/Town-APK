@@ -10,7 +10,9 @@
 # Needs: python3, JDK 17+, node with playwright (browser tests), and
 # ANDROID_HOME for the server harness and the APK checker.
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-ASSET="$ROOT/tools/android/app/src/main/assets/index.html"
+# GT_ASSET overrides the asset the browser tests load (e.g. an experiment build; with GT_MULTIVIEW=1 the
+# fake headset runs the multiview experiment without MSAA). The verify and APK stages always check the release.
+ASSET="${GT_ASSET:-$ROOT/tools/android/app/src/main/assets/index.html}"
 APK="$ROOT/GreeblisTown-release.apk"; [ -f "$APK" ] || APK="$ROOT/tools/android/app/build/outputs/apk/release/app-release.apk"
 TIER=standard
 case "$1" in --smoke) TIER=smoke;; --full) TIER=full;; --quick) TIER=quick;; esac
@@ -63,6 +65,7 @@ if [ "$TIER" != quick ]; then
     run "z-fighting on curved surfaces (near-coincident geometry)" node "$ROOT/tools/test_coincident.js" "$ASSET"
     run "single-sided pass is pixel-identical (edges aside)" node "$ROOT/tools/sides_check.js" "$ASSET"
     run "optimisations render identical pixels (batcher, P8, P12) and save draws" node "$ROOT/tools/opt_identity.js" "$ASSET"
+    run "multiview experiment: each eye matches the classic path, half the draw calls" node "$ROOT/tools/multiview_check.js"
     run "performance report (script cost, shader compiles, scene load per situation)" node "$ROOT/tools/perf_report.js" "$ASSET"
     report "loading time (boot profile)" node "$ROOT/tools/boot_profile.js" "$ASSET"
     report "handover profile (frames after entering VR)" node "$ROOT/tools/entry_profile.js" "$ASSET"

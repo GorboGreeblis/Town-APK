@@ -137,3 +137,14 @@ It prints the frame rate by scene (town, the Event), the five lowest readings
 with where the player stood, the governor levels seen, and a verdict against
 the 72 fps target (the author's aim) and the Store's 60 fps floor, with the likely cause for each low reading (triangles,
 draw calls, or GPU-bound with the governor at its floor).
+
+## Multiview experiment lines
+
+```
+page: m=... multiview planned (webgl2 true, layers true, OVR_multiview2 true, antialias true, OCULUS_multiview true)
+page: m=... projection layer live, scale 1.2, msaa 4, multiview true
+page: m=... multiview live: 1680x1760 per eye, msaa 4
+```
+
+`multiview not used (...)` lists which condition failed; `multiview framebuffer
+incomplete (...)` means it fell back to the classic path at entry.

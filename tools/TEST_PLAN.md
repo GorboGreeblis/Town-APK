@@ -144,6 +144,8 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 
 ## Latest results (3.15.10/3.15.11 asset, headless harness)
 
+**3.15.33**: smoke tier passes (`tools/.runs/smoke_v33.log`). **Multiview experiment** (`GT_MULTIVIEW=1 GT_ASSET=tools/.runs/multiview.html tools/run_tests.sh`, `tools/.runs/std_mv.log`): every stage passes except the 2D frame-loop check, which failed identically on the release (the test timed the boot; fixed in `test_play.js`, NOTES 66; both builds pass it now). `multiview_check.js`: both eyes match the classic path, draw calls halved.
+
 **Standard tier on 3.15.32** (`tools/.runs/std_v32.log`): all stages pass (188 PASS lines, no FAIL) with P8-P13 in, including the new bend exactness test. Per optimisation, `opt_identity.js` (identical pixels), the sides check, both z-fight tests and the perf report's compile check passed (VERSIONS.md).
 
 **Standard tier on 3.15.27** (`tools/.runs/std_v27.log`): all stages pass (186 PASS lines, no FAIL) with P7 in. The new performance report passes on it (PERF.md section 7; baseline written from the run).

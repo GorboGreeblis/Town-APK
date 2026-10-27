@@ -107,6 +107,9 @@ async function scenario(name, srvUrl, browser) {
   const t0 = Date.now();
   await page.goto(srvUrl, { waitUntil: 'load', timeout: BOOT_TIMEOUT_MS });
   await page.waitForFunction(() => { const g = document.getElementById('gateText'); return g && g.textContent && g.textContent !== 'Loading...'; }, null, { timeout: BOOT_TIMEOUT_MS }).catch(() => {});
+  // The gate text changes before the boot's last slices (shader warm-up, first draw); on a slow machine those
+  // can outlast the run window, so wait for the game loop to start as the harness does.
+  await page.waitForFunction(() => window.__gtXR && window.__gtXR.booted === true, null, { timeout: BOOT_TIMEOUT_MS }).catch(() => {});
   const bootS = ((Date.now() - t0) / 1000).toFixed(1);
   let s = await state();
   console.log(`[${name}] booted in ${bootS}s; gate="${s.gate}" canvases=${s.canvases} heap=${s.heapMB}MB`);

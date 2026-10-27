@@ -44,6 +44,10 @@ EXPERIMENTS = {
     # Texture capture: record every pre-renderable canvas painter's output during
     # the boot (used by tools/prerender_textures.js, never shipped).
     "texcapture": [("X.tex={map:{},pr:{},n:{},on:!0};", "X.tex={map:{},pr:{},n:{},on:!0,capture:[]};")],
+    # Multiview (NOTES 65): both eyes in one pass (OVR_multiview2 / OCULUS_multiview) through a
+    # texture-array projection layer; every draw call issued once instead of twice. The list is
+    # built below, once the layers shim is read (it edits the shim too).
+    "multiview": [],
     # Direct request: once the world is ready, call the game's own VR request
     # (je) immediately without waiting for sessiongranted, and log the browser's
     # reason to the console (logcat shows it) if it refuses. Tests whether the
@@ -100,6 +104,111 @@ dst = pathlib.Path(args[1]) if len(args) > 1 else default_dst
 html = src.read_text(encoding="utf-8")
 
 SHIM = (root / "tools" / "lib" / "xr_layers_shim.js").read_text(encoding="utf-8")
+
+MVJS = (root / "tools" / "lib" / "xr_multiview.js").read_text(encoding="utf-8")
+
+
+def _multiview():
+    """Edits for the multiview experiment, in order. Three groups:
+    1. three.js: a `multiview` program parameter (part of the program key and of the
+       needs-a-new-program check); multiview programs get the extension, `num_views = 2`, and
+       macros that pick each eye's projection, view, model-view and normal matrices and camera
+       position (eye 0 reads the uniforms three.js always uploads; eye 1 reads gc*1 uniforms
+       computed on the CPU exactly as three.js computes them for that eye); lights are rotated
+       or moved into eye 1's view in the shader; the render loop draws each object once with
+       the left camera when the multiview layer is live.
+    2. The game: the batcher reserves vertex uniforms for the extra per-eye matrices; the renderer
+       is wrapped so the loading warm-up renders into a multiview target.
+    3. The layers shim: texture-array projection layer, multiview attachments, no resolve blit."""
+    E = []
+    def add(old, new):
+        E.append((old, new))
+    MVQ = '!!(window.__gtXR&&window.__gtXR.mvProg&&window.__gtXR.mvProg(%s))'
+    # 1a. program parameter, key and recompile check
+    add('customProgramCacheKey:r.customProgramCacheKey()}}',
+        'customProgramCacheKey:r.customProgramCacheKey(),multiview:' + MVQ % 'e' + '}}')
+    add('f=["precision","isWebGL2",', 'f=["multiview","precision","isWebGL2",')
+    add('n.version===h.__version?h.needsLights&&h.lightsStateVersion!==c.state.version||',
+        'n.version===h.__version?h.multiview!==' + MVQ % 'm' + '||h.needsLights&&h.lightsStateVersion!==c.state.version||')
+    add('i.environment=e.isMeshStandardMaterial?t.environment:null,i.fog=t.fog,',
+        'i.environment=e.isMeshStandardMaterial?t.environment:null,i.fog=t.fog,i.multiview=o.multiview,')
+    # 1b. shader text
+    add(r'n.isWebGL2&&!0!==n.isRawShaderMaterial&&(_="#version 300 es\n",',
+        r'n.isWebGL2&&!0!==n.isRawShaderMaterial&&(_="#version 300 es\n"+(n.multiview?"#extension GL_OVR_multiview2 : require\n":""),')
+    mvv = (r'#define GC_MULTIVIEW 1\nlayout(num_views = 2) in;\nuniform mat4 gcP1;\nuniform mat4 gcV1;\nuniform vec3 gcC1;\nuniform mat4 gcVD1;\nuniform mat4 gcMV1;\nuniform mat3 gcNM1;\n'
+           r'#define projectionMatrix (gl_ViewID_OVR==0u?projectionMatrix:gcP1)\n#define modelViewMatrix (gl_ViewID_OVR==0u?modelViewMatrix:gcMV1)\n'
+           r'#define normalMatrix (gl_ViewID_OVR==0u?normalMatrix:gcNM1)\n#define viewMatrix (gl_ViewID_OVR==0u?viewMatrix:gcV1)\n#define cameraPosition (gl_ViewID_OVR==0u?cameraPosition:gcC1)\n')
+    mvf = (r'#define GC_MULTIVIEW 1\nuniform mat4 gcV1;\nuniform vec3 gcC1;\nuniform mat4 gcVD1;\n'
+           r'#define viewMatrix (gl_ViewID_OVR==0u?viewMatrix:gcV1)\n#define cameraPosition (gl_ViewID_OVR==0u?cameraPosition:gcC1)\n')
+    add(r'"#define textureCubeGradEXT textureGrad"].join("\n")+"\n"+x);const v=_+g+a',
+        r'"#define textureCubeGradEXT textureGrad"].join("\n")+"\n"+x);n.multiview&&n.isWebGL2&&!0!==n.isRawShaderMaterial&&(g+="' + mvv + r'",x+="' + mvf + r'");const v=_+g+a')
+    # 1c. lights: eye 1 gets each light moved/rotated by D1 = V1 * inverse(V0)
+    add(r'return irradiance;\n}\n#endif\n",lights_phong_fragment:',
+        r'return irradiance;\n}\n#endif\n#ifdef GC_MULTIVIEW\n#if NUM_DIR_LIGHTS > 0\nDirectionalLight GCDL( DirectionalLight l ) { if ( gl_ViewID_OVR != 0u ) l.direction = mat3( gcVD1 ) * l.direction; return l; }\n#endif\n'
+        r'#if NUM_POINT_LIGHTS > 0\nPointLight GCPL( PointLight l ) { if ( gl_ViewID_OVR != 0u ) l.position = ( gcVD1 * vec4( l.position, 1.0 ) ).xyz; return l; }\n#endif\n'
+        r'#if NUM_HEMI_LIGHTS > 0\nHemisphereLight GCHL( HemisphereLight l ) { if ( gl_ViewID_OVR != 0u ) l.direction = mat3( gcVD1 ) * l.direction; return l; }\n#endif\n'
+        r'#else\n#define GCDL( l ) l\n#define GCPL( l ) l\n#define GCHL( l ) l\n#endif\n",lights_phong_fragment:')
+    for a in [r'getDirectionalDirectLightIrradiance( directionalLights[ i ], geometry, directLight );', r'directionalLight = directionalLights[ i ];']:
+        add(a, a.replace('directionalLights[ i ]', 'GCDL( directionalLights[ i ] )'))
+    for a in [r'getPointDirectLightIrradiance( pointLights[ i ], geometry, directLight );', r'pointLight = pointLights[ i ];']:
+        add(a, a.replace('pointLights[ i ]', 'GCPL( pointLights[ i ] )'))
+    for a in [r'vIndirectFront += getHemisphereLightIrradiance( hemisphereLights[ i ], geometry );', r'vIndirectBack += getHemisphereLightIrradiance( hemisphereLights[ i ], backGeometry );', r'irradiance += getHemisphereLightIrradiance( hemisphereLights[ i ], geometry );']:
+        add(a, a.replace('hemisphereLights[ i ]', 'GCHL( hemisphereLights[ i ] )'))
+    # 1d. render loop: one draw per object with the left camera; eye 1's matrices for the shader
+    add('if(n.isArrayCamera){const e=n.cameras;for(let n=0,i=e.length;n<i;n++){const i=e[n];a.layers.test(i.layers)&&(j.viewport(b.copy(i.viewport)),p.setupLightsView(i),Re(a,t,i,o,l,h))}}else Re(a,t,n,o,l,h)',
+        'if(n.isArrayCamera){const e=n.cameras;if(2===e.length&&window.__gtXR&&window.__gtXR.mvActive){const c0=e[0],c1=e[1];a.layers.test(c0.layers)&&(m.__mvC1=c1,m.__mvD=(m.__mvD||new c0.matrixWorld.constructor).multiplyMatrices(c1.matrixWorldInverse,c0.matrixWorld),j.viewport(b.copy(c0.viewport)),p.setupLightsView(c0),Re(a,t,c0,o,l,h),m.__mvC1=null)}else for(let n=0,i=e.length;n<i;n++){const i=e[n];a.layers.test(i.layers)&&(j.viewport(b.copy(i.viewport)),p.setupLightsView(i),Re(a,t,i,o,l,h))}}else Re(a,t,n,o,l,h)')
+    add('e.modelViewMatrix.multiplyMatrices(n.matrixWorldInverse,e.matrixWorld),e.normalMatrix.getNormalMatrix(e.modelViewMatrix),e.isImmediateRenderObject',
+        'e.modelViewMatrix.multiplyMatrices(n.matrixWorldInverse,e.matrixWorld),e.normalMatrix.getNormalMatrix(e.modelViewMatrix),m.__mvC1&&((e.__mvR||(e.__mvR={mv:new e.modelViewMatrix.constructor,nm:new e.normalMatrix.constructor})).mv.multiplyMatrices(m.__mvC1.matrixWorldInverse,e.matrixWorld),e.__mvR.nm.getNormalMatrix(e.__mvR.mv)),e.isImmediateRenderObject')
+    add('if(_.setValue(me,"projectionMatrix",e.projectionMatrix),',
+        'if(_.setValue(me,"projectionMatrix",e.projectionMatrix),m.__mvC1&&(_.setValue(me,"gcP1",m.__mvC1.projectionMatrix),_.setValue(me,"gcV1",m.__mvC1.matrixWorldInverse),_.setValue(me,"gcC1",(m.__mvV||(m.__mvV=V.clone())).setFromMatrixPosition(m.__mvC1.matrixWorld)),_.setValue(me,"gcVD1",m.__mvD)),')
+    add('_.setValue(me,"modelViewMatrix",i.modelViewMatrix),_.setValue(me,"normalMatrix",i.normalMatrix),_.setValue(me,"modelMatrix",i.matrixWorld),d}',
+        '_.setValue(me,"modelViewMatrix",i.modelViewMatrix),_.setValue(me,"normalMatrix",i.normalMatrix),_.setValue(me,"modelMatrix",i.matrixWorld),m.__mvC1&&i.__mvR&&(_.setValue(me,"gcMV1",i.__mvR.mv),_.setValue(me,"gcNM1",i.__mvR.nm)),d}')
+    # 2. the game: batch size leaves room for the per-eye uniforms; renderer wrap for the warm-up
+    add('Math.floor((e-96)/5)', 'Math.floor((e-96-(window.__gtXR&&window.__gtXR.mvPlanFor&&window.__gtXR.mvPlanFor(t)?24:0))/5)')
+    add('O=new THREE.WebGLRenderer({antialias:!0,powerPreference:"high-performance"})',
+        'O=(function(r){try{window.__gtXR&&window.__gtXR.mvWrap&&window.__gtXR.mvWrap(r)}catch(e){}return r})(new THREE.WebGLRenderer({antialias:!0,powerPreference:"high-performance"}))')
+    # 3. the layers shim
+    add('function loader(s){var c=document.createElement("canvas")', MVJS + 'function loader(s){var c=document.createElement("canvas")')
+    add('  if (msaa && W2) { try { samples = Math.min(4, g.getParameter(g.MAX_SAMPLES) || 0); } catch (e) { samples = 0; } }\n',
+        '  if (msaa && W2) { try { samples = Math.min(4, g.getParameter(g.MAX_SAMPLES) || 0); } catch (e) { samples = 0; } }\n'
+        '  var MV = !!(W2 && X.mvPlanFor && X.mvPlanFor(g)), mvx = MV ? g.getExtension("OVR_multiview2") : null, msx = MV && samples ? g.getExtension("OCULUS_multiview") : null, mvd = null, mvdW = 0, mvdH = 0, mvOk = false;\n'
+        '  if (MV && samples && !msx) { if (window.__fakeXR && window.__fakeXR.multiview) samples = 0; else MV = false; }\n'
+        '  X.mvActive = MV;\n')
+    add('var o = { textureType: "texture", colorFormat', 'var o = { textureType: MV ? "texture-array" : "texture", colorFormat')
+    add('    var vs = pose.views;\n', '    var vs = pose.views;\n    if (MV) return mvBegin(L, vs);\n')
+    add('  S.getViewport = function (v) {',
+        '  /* multiview: both eyes are slices of one texture array; one framebuffer with multiview attachments\n'
+        '     (multisampled through OCULUS_multiview, which resolves on the tile: no blit). */\n'
+        '  function mvBegin(L, vs) {\n'
+        '    var dt = null;\n'
+        '    for (var i = 0; i < vs.length; i++) {\n'
+        '      var si = bd.getViewSubImage(L, vs[i]);\n'
+        '      vp[i] = { eye: vs[i].eye, x: si.viewport.x, y: si.viewport.y, width: si.viewport.width, height: si.viewport.height };\n'
+        '      if (i === 0) { tex = si.colorTexture; tw = si.textureWidth; th = si.textureHeight; dt = si.depthStencilTexture; }\n'
+        '    }\n'
+        '    vp.length = vs.length; S.w = tw; S.h = th;\n'
+        '    var FB = g.FRAMEBUFFER, dep = samples ? null : dt;\n'
+        '    if (!dep) {\n'
+        '      if (!mvd || mvdW !== tw || mvdH !== th) { if (mvd) g.deleteTexture(mvd); mvd = g.createTexture(); g.bindTexture(g.TEXTURE_2D_ARRAY, mvd); g.texStorage3D(g.TEXTURE_2D_ARRAY, 1, g.DEPTH24_STENCIL8, tw, th, 2); g.bindTexture(g.TEXTURE_2D_ARRAY, null); mvdW = tw; mvdH = th; }\n'
+        '      dep = mvd;\n'
+        '    }\n'
+        '    g.bindFramebuffer(FB, fb);\n'
+        '    if (samples) { msx.framebufferTextureMultisampleMultiviewOVR(FB, g.COLOR_ATTACHMENT0, tex, 0, samples, 0, 2); msx.framebufferTextureMultisampleMultiviewOVR(FB, g.DEPTH_STENCIL_ATTACHMENT, dep, 0, samples, 0, 2); }\n'
+        '    else { mvx.framebufferTextureMultiviewOVR(FB, g.COLOR_ATTACHMENT0, tex, 0, 0, 2); mvx.framebufferTextureMultiviewOVR(FB, g.DEPTH_STENCIL_ATTACHMENT, dep, 0, 0, 2); }\n'
+        '    if (!mvOk) {\n'
+        '      var st = g.checkFramebufferStatus(FB);\n'
+        '      if (st !== g.FRAMEBUFFER_COMPLETE) { __gtLog("multiview framebuffer incomplete (" + st + "); back to the classic path"); MV = false; X.mvActive = false; S.create(S.scale || 1); return false; }\n'
+        '      mvOk = true; __gtLog("multiview live: " + tw + "x" + th + " per eye, msaa " + samples);\n'
+        '    }\n'
+        '    return true;\n'
+        '  }\n'
+        '  S.getViewport = function (v) {')
+    add('    if (samples && tex) {\n', '    if (samples && tex && !MV) {\n')
+    add('  var shim = null, fake = null;\n', '  var shim = null, fake = null;\n  try { s.addEventListener("end", function () { X.mvDone = true; X.mvActive = false; }); } catch (e) {}\n')
+    add('__gtLog("projection layer live, scale " + sc + ", msaa " + shim.samples);', '__gtLog("projection layer live, scale " + sc + ", msaa " + shim.samples + ", multiview " + !!X.mvActive);')
+    return E
+
+EXPERIMENTS["multiview"] = _multiview()
 
 EDITS = [
     # 1. Head script: request the VR session immediately on the Quest Browser (the
@@ -710,6 +819,12 @@ GAME_FIXES = [
     # (`test_bend_exact.js` runs both versions and compares the arrays).
     ('for(let i=0,j=0;i<P.count;i++,j+=3){let x0=p0[j],y0=p0[j+1],z0=p0[j+2],ny=n0[j+1],nz=n0[j+2];const sl=z0-.8;if(sl>0){const u=sl/L;x0+=amp*u*Math.sin(wph-6*u);if(lift){const q=Math.min(1,u/.25);y0+=lift*(q*q*(3-2*q)+.15*u*Math.sin(wph-5*u))}if(Rr){const a=kap*sl,c=Math.cos(a),sn=Math.sin(a),h=Rr-y0;y0=Rr-h*c,z0=.8+h*sn;const ny2=ny*c+nz*sn;nz=-ny*sn+nz*c,ny=ny2}}P.setXYZ(i,x0,y0,z0),N.setXYZ(i,n0[j],ny,nz)}',
      'const Pa=P.array,Na=N.array;let cz=NaN,dx=0,dy=0,c=1,sn=0;for(let i=0,j=0;i<P.count;i++,j+=3){let x0=p0[j],y0=p0[j+1],z0=p0[j+2],ny=n0[j+1],nz=n0[j+2];const sl=z0-.8;if(sl>0){if(z0!==cz){cz=z0;const u=sl/L;dx=amp*u*Math.sin(wph-6*u);if(lift){const q=Math.min(1,u/.25);dy=lift*(q*q*(3-2*q)+.15*u*Math.sin(wph-5*u))}if(Rr){const a=kap*sl;c=Math.cos(a),sn=Math.sin(a)}}x0+=dx;lift&&(y0+=dy);if(Rr){const h=Rr-y0;y0=Rr-h*c,z0=.8+h*sn;const ny2=ny*c+nz*sn;nz=-ny*sn+nz*c,ny=ny2}}Pa[j]=x0,Pa[j+1]=y0,Pa[j+2]=z0,Na[j]=n0[j],Na[j+1]=ny,Na[j+2]=nz}'),
+    # L1 (the author: "I want the game file to be CC0 1.0"): a notice right after the charset tag.
+    # The author's own work in the file is dedicated under CC0 1.0; the bundled three.js stays under
+    # its MIT license, whose copyright and permission notice must travel with every copy (it had been
+    # missing). Full texts: tools/LICENSE.md. A comment only: nothing the page does changes.
+    ('<head><meta charset="UTF-8">',
+     '<head><meta charset="UTF-8"><!-- Greeblis Town. To the extent possible under law, the author has waived all copyright and related or neighboring rights to Greeblis Town (its game code, art, text and sound in this file), dedicating them to the public domain under CC0 1.0 Universal: https://creativecommons.org/publicdomain/zero/1.0/ (full text in tools/LICENSE.md of the source repository). This file also includes three.js, which is not covered by that dedication: Copyright (c) 2010-2021 three.js authors, MIT License. Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->'),
 ]
 
 for old, new in EDITS + ([] if entry_only else GAME_FIXES) + (EXPERIMENTS[experiment] if experiment else []):

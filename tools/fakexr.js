@@ -165,7 +165,7 @@
   // (nothing is composited; the textures are plain WebGL textures of the binding's context).
   class FakeLayer {
     constructor(binding, kind, init) { this.binding = binding; this.kind = kind; this.init = init || {}; this.needsRedraw = true; this.fixedFoveation = 0; this.destroyed = false; this.layout = this.init.layout || 'default'; this.space = this.init.space; this.transform = this.init.transform; this.width = this.init.width; this.height = this.init.height; this.textureWidth = 0; this.textureHeight = 0; this._tex = null; }
-    destroy() { this.destroyed = true; if (this._tex) { this.binding.gl.deleteTexture(this._tex); this._tex = null; } }
+    destroy() { this.destroyed = true; if (this._tex) { this.binding.gl.deleteTexture(this._tex); this._tex = null; } if (this._dtex) { this.binding.gl.deleteTexture(this._dtex); this._dtex = null; } }
   }
   class XRWebGLBindingFake {
     constructor(session, gl) {
@@ -194,9 +194,25 @@
       const w = layer.init.viewPixelWidth || 256, h = layer.init.viewPixelHeight || 256; const tex = this._tex(layer, w, h, layer.kind === 'cube'); layer.needsRedraw = false;
       return { colorTexture: tex, depthStencilTexture: null, textureWidth: w, textureHeight: h, imageIndex: 0, viewport: { x: 0, y: 0, width: w, height: h } };
     }
+    // texture-array projection layers (multiview): one slice per eye, each the size of one eye's viewport,
+    // and a matching depth/stencil array when the layer asks for a depth format.
+    _arr(layer, w, h) {
+      const gl = this.gl; if (layer._tex && layer._w === w && layer._h === h) return layer._tex;
+      if (layer._tex) gl.deleteTexture(layer._tex); if (layer._dtex) { gl.deleteTexture(layer._dtex); layer._dtex = null; }
+      layer._tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D_ARRAY, layer._tex); gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, w, h, 2);
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      if (layer.init.depthFormat) { layer._dtex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D_ARRAY, layer._dtex); gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.DEPTH24_STENCIL8, w, h, 2); }
+      gl.bindTexture(gl.TEXTURE_2D_ARRAY, null); layer._w = w; layer._h = h; return layer._tex;
+    }
     getViewSubImage(layer, view) {
       this._check(layer); if (layer.kind !== 'projection') throw new TypeError('getViewSubImage: not a projection layer');
       const L = this.session.renderState.layers; if (!L || !L.includes(layer)) throw new DOMException('layer is not in the render state', 'InvalidStateError');
+      if (layer.init.textureType === 'texture-array') {
+        if (!(this.gl instanceof WebGL2RenderingContext)) throw new TypeError('texture-array layers need WebGL 2');
+        const sc = layer.init.scaleFactor || 1; const w = Math.max(8, Math.round(S.fbMax * sc)), h = Math.round(w * 9 / 16); const tex = this._arr(layer, w, h);
+        layer.textureWidth = w; layer.textureHeight = h; layer.textureArrayLength = 2; S.arrayLayers = (S.arrayLayers || 0) + (view.eye === 'left' ? 1 : 0);
+        return { colorTexture: tex, depthStencilTexture: layer._dtex || null, textureWidth: w, textureHeight: h, imageIndex: view.eye === 'right' ? 1 : 0, viewport: { x: 0, y: 0, width: w, height: h } };
+      }
       const sc = layer.init.scaleFactor || 1; const w = Math.max(8, Math.round(S.fbMax * sc)), h = Math.round(w * 9 / 16); const tex = this._tex(layer, 2 * w, h, false);
       layer.textureWidth = 2 * w; layer.textureHeight = h;
       return { colorTexture: tex, depthStencilTexture: null, textureWidth: 2 * w, textureHeight: h, imageIndex: 0, viewport: { x: view.eye === 'right' ? w : 0, y: 0, width: w, height: h } };

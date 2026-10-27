@@ -82,6 +82,9 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
   page.on('pageerror', (e) => errors.push('pageerror: ' + String(e).split('\n')[0] + (e && e.stack ? ' @ ' + String(e.stack).split('\n').slice(1, 3).join(' | ').trim() : '')));
   page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text().split('\n')[0]); });
   if (vr) await page.addInitScript(fs.readFileSync(path.join(root, 'tools/fakexr.js'), 'utf8'));
+  // GT_MULTIVIEW=1: the multiview experiment runs headless without MSAA (SwiftShader has OVR_multiview2 but
+  // not the multisampled OCULUS_multiview the headset uses).
+  if (vr && process.env.GT_MULTIVIEW) await page.addInitScript(() => { window.__fakeXR.multiview = true; });
   const t0 = Date.now();
   await page.goto(url, { waitUntil: 'load', timeout: timeoutMs });
   await page.waitForFunction(() => window.__dbgReady === true, null, { timeout: timeoutMs });

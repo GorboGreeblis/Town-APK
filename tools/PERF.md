@@ -270,3 +270,13 @@ is 60. `perf_log.js` reports both.
   scale. Multiview rendering (one draw for both eyes) would halve every draw
   call but needs a newer three.js or shader patches and an entry-script
   change, so it would ship first as an experiment APK.
+
+## 9. Multiview experiment (NOTES 65)
+
+Both eyes in one pass. Headless, same frames both ways: each eye matches the
+classic path (bit-identical apart from rounding on a few right-eye pixels) and
+draw calls halve: spawn 68 -> 34, town centre 264 -> 132, garden 320 -> 160,
+the Event 244 -> 122. On the headset it removes half the draw submission (three.js
+and the browser's GPU process) and, with MSAA, the per-frame resolve blit. It
+does not reduce pixel shading. Ships as an experiment APK first (RELEASE.md 6);
+the headset run decides whether it goes into the release.

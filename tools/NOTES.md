@@ -944,3 +944,42 @@ VR-entry fix; each item is for discussion first.
     the bend starts, zero curl, zero lift) and compares every output word:
     identical. 39 -> 14 microseconds per tentacle headless. Creature code, so
     the test sits in the standard tier.
+
+65. **Multiview, as an experiment (built on 3.15.33).** Every draw was issued
+    twice, once per eye, and in the Event about 300 draws per frame each pass
+    through three.js and the browser's GPU process. Multiview draws both eyes
+    in one pass. The bundled three.js (r128 or close) has no multiview, so the
+    experiment adds it:
+    - a texture-array projection layer, one slice per eye, attached with
+      `OVR_multiview2` (and `OCULUS_multiview` for the headset's 4x MSAA, which
+      resolves on the tile, so the per-frame resolve blit goes too);
+    - a `multiview` program parameter: such programs get the extension,
+      `num_views = 2` and macros that pick each eye's matrices; the left eye
+      reads the uniforms three.js always uploads, the right eye reads its own
+      model-view, normal, view and projection matrices, computed on the CPU
+      exactly as three.js computes them for that eye; lights for the right eye
+      are moved or rotated in the shader (rounding only);
+    - the render loop draws each object once with the left camera;
+    - the loading warm-up compiles and uploads the multiview programs (renders
+      go into a tiny multiview target while loading), so VR entry compiles
+      nothing; renders with XR switched off keep the ordinary programs;
+    - the batcher reserves vertex uniforms for the extra matrices (a Quest may
+      allow only 256 vectors);
+    - the decision is made once at boot (layers session, WebGL 2, the
+      extensions); an incomplete framebuffer logs and falls back to the
+      classic path.
+    `multiview_check.js` renders the same frame both ways in one step and
+    compares each eye: spawn, town centre, garden and the Event are
+    bit-identical apart from a handful of right-eye pixels differing by 2 in
+    channel sum, and draw calls are exactly halved (Event 244 -> 122, town
+    centre 264 -> 132). The standard tier on the experiment in multiview mode
+    passed apart from a 2D-mode check that failed the same way on the release
+    (see 66). Headless has `OVR_multiview2` but not `OCULUS_multiview`, so the
+    MSAA variant is the one thing only the headset can show.
+
+66. **The play test's 2D window measured the boot.** After the session moved
+    to a slower container, `test_play.js`'s 2D mode counted 15-35 frames in
+    20 s for the release and the experiment alike. It started timing when the
+    gate text left "Loading...", which happens before the shader warm-up; on
+    this machine the warm-up took about 28 s. The test now waits for the game
+    loop to start (as the harness does): 119 fps for both builds.
