@@ -191,6 +191,29 @@ same spelling as the listing name in the developer dashboard.
    (loading indicator, 64-bit wording), send me the exact text and we decide
    the fix together.
 
+## 5b. License
+
+The game file is dedicated under CC0 1.0 (the author's work); the bundled
+three.js stays under MIT, and its notice travels with the file (comment at the
+top of `index.html`). Full texts: `tools/LICENSE.md`. The author's name is not
+in either.
+
+## 5c. Multiview experiment (headset test before it can ship)
+
+`tools/.runs/GreeblisTown-exp-multiview.apk` (same package and version as the
+release; `adb install -r`, reinstall the release afterwards). With logcat open
+(`adb logcat -s GreeblisServer`):
+1. At boot the log says `multiview planned (... OCULUS_multiview true ...)`, and
+   at entry `projection layer live, ..., multiview true` and `multiview live:
+   WxH per eye, msaa 4`. `multiview not used` or `framebuffer incomplete` means
+   the headset fell back to the classic path; send the log.
+2. Both eyes look right: depth, lighting and the 3D effect are as in the
+   release (look at a lamp, a creature close up, the garden); no flicker in
+   one eye; edges as smooth as before (MSAA).
+3. Entering VR is as smooth as before (no stall after the drop-in).
+4. Run through the town and the planting Event, then `node tools/perf_log.js
+   run.txt`; compare with the same run on the release.
+
 ## 6. Every later update
 
 Rule for the VR-entry script (`EDITS` in `tools/apply_entry_fix.py`): it is

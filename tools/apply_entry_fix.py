@@ -44,6 +44,10 @@ EXPERIMENTS = {
     # Texture capture: record every pre-renderable canvas painter's output during
     # the boot (used by tools/prerender_textures.js, never shipped).
     "texcapture": [("X.tex={map:{},pr:{},n:{},on:!0};", "X.tex={map:{},pr:{},n:{},on:!0,capture:[]};")],
+    # Multiview (NOTES 65): both eyes in one pass (OVR_multiview2 / OCULUS_multiview) through a
+    # texture-array projection layer; every draw call issued once instead of twice. The list is
+    # built below, once the layers shim is read (it edits the shim too).
+    "multiview": [],
     # Direct request: once the world is ready, call the game's own VR request
     # (je) immediately without waiting for sessiongranted, and log the browser's
     # reason to the console (logcat shows it) if it refuses. Tests whether the
@@ -100,6 +104,111 @@ dst = pathlib.Path(args[1]) if len(args) > 1 else default_dst
 html = src.read_text(encoding="utf-8")
 
 SHIM = (root / "tools" / "lib" / "xr_layers_shim.js").read_text(encoding="utf-8")
+
+MVJS = (root / "tools" / "lib" / "xr_multiview.js").read_text(encoding="utf-8")
+
+
+def _multiview():
+    """Edits for the multiview experiment, in order. Three groups:
+    1. three.js: a `multiview` program parameter (part of the program key and of the
+       needs-a-new-program check); multiview programs get the extension, `num_views = 2`, and
+       macros that pick each eye's projection, view, model-view and normal matrices and camera
+       position (eye 0 reads the uniforms three.js always uploads; eye 1 reads gc*1 uniforms
+       computed on the CPU exactly as three.js computes them for that eye); lights are rotated
+       or moved into eye 1's view in the shader; the render loop draws each object once with
+       the left camera when the multiview layer is live.
+    2. The game: the batcher reserves vertex uniforms for the extra per-eye matrices; the renderer
+       is wrapped so the loading warm-up renders into a multiview target.
+    3. The layers shim: texture-array projection layer, multiview attachments, no resolve blit."""
+    E = []
+    def add(old, new):
+        E.append((old, new))
+    MVQ = '!!(window.__gtXR&&window.__gtXR.mvProg&&window.__gtXR.mvProg(%s))'
+    # 1a. program parameter, key and recompile check
+    add('customProgramCacheKey:r.customProgramCacheKey()}}',
+        'customProgramCacheKey:r.customProgramCacheKey(),multiview:' + MVQ % 'e' + '}}')
+    add('f=["precision","isWebGL2",', 'f=["multiview","precision","isWebGL2",')
+    add('n.version===h.__version?h.needsLights&&h.lightsStateVersion!==c.state.version||',
+        'n.version===h.__version?h.multiview!==' + MVQ % 'm' + '||h.needsLights&&h.lightsStateVersion!==c.state.version||')
+    add('i.environment=e.isMeshStandardMaterial?t.environment:null,i.fog=t.fog,',
+        'i.environment=e.isMeshStandardMaterial?t.environment:null,i.fog=t.fog,i.multiview=o.multiview,')
+    # 1b. shader text
+    add(r'n.isWebGL2&&!0!==n.isRawShaderMaterial&&(_="#version 300 es\n",',
+        r'n.isWebGL2&&!0!==n.isRawShaderMaterial&&(_="#version 300 es\n"+(n.multiview?"#extension GL_OVR_multiview2 : require\n":""),')
+    mvv = (r'#define GC_MULTIVIEW 1\nlayout(num_views = 2) in;\nuniform mat4 gcP1;\nuniform mat4 gcV1;\nuniform vec3 gcC1;\nuniform mat4 gcVD1;\nuniform mat4 gcMV1;\nuniform mat3 gcNM1;\n'
+           r'#define projectionMatrix (gl_ViewID_OVR==0u?projectionMatrix:gcP1)\n#define modelViewMatrix (gl_ViewID_OVR==0u?modelViewMatrix:gcMV1)\n'
+           r'#define normalMatrix (gl_ViewID_OVR==0u?normalMatrix:gcNM1)\n#define viewMatrix (gl_ViewID_OVR==0u?viewMatrix:gcV1)\n#define cameraPosition (gl_ViewID_OVR==0u?cameraPosition:gcC1)\n')
+    mvf = (r'#define GC_MULTIVIEW 1\nuniform mat4 gcV1;\nuniform vec3 gcC1;\nuniform mat4 gcVD1;\n'
+           r'#define viewMatrix (gl_ViewID_OVR==0u?viewMatrix:gcV1)\n#define cameraPosition (gl_ViewID_OVR==0u?cameraPosition:gcC1)\n')
+    add(r'"#define textureCubeGradEXT textureGrad"].join("\n")+"\n"+x);const v=_+g+a',
+        r'"#define textureCubeGradEXT textureGrad"].join("\n")+"\n"+x);n.multiview&&n.isWebGL2&&!0!==n.isRawShaderMaterial&&(g+="' + mvv + r'",x+="' + mvf + r'");const v=_+g+a')
+    # 1c. lights: eye 1 gets each light moved/rotated by D1 = V1 * inverse(V0)
+    add(r'return irradiance;\n}\n#endif\n",lights_phong_fragment:',
+        r'return irradiance;\n}\n#endif\n#ifdef GC_MULTIVIEW\n#if NUM_DIR_LIGHTS > 0\nDirectionalLight GCDL( DirectionalLight l ) { if ( gl_ViewID_OVR != 0u ) l.direction = mat3( gcVD1 ) * l.direction; return l; }\n#endif\n'
+        r'#if NUM_POINT_LIGHTS > 0\nPointLight GCPL( PointLight l ) { if ( gl_ViewID_OVR != 0u ) l.position = ( gcVD1 * vec4( l.position, 1.0 ) ).xyz; return l; }\n#endif\n'
+        r'#if NUM_HEMI_LIGHTS > 0\nHemisphereLight GCHL( HemisphereLight l ) { if ( gl_ViewID_OVR != 0u ) l.direction = mat3( gcVD1 ) * l.direction; return l; }\n#endif\n'
+        r'#else\n#define GCDL( l ) l\n#define GCPL( l ) l\n#define GCHL( l ) l\n#endif\n",lights_phong_fragment:')
+    for a in [r'getDirectionalDirectLightIrradiance( directionalLights[ i ], geometry, directLight );', r'directionalLight = directionalLights[ i ];']:
+        add(a, a.replace('directionalLights[ i ]', 'GCDL( directionalLights[ i ] )'))
+    for a in [r'getPointDirectLightIrradiance( pointLights[ i ], geometry, directLight );', r'pointLight = pointLights[ i ];']:
+        add(a, a.replace('pointLights[ i ]', 'GCPL( pointLights[ i ] )'))
+    for a in [r'vIndirectFront += getHemisphereLightIrradiance( hemisphereLights[ i ], geometry );', r'vIndirectBack += getHemisphereLightIrradiance( hemisphereLights[ i ], backGeometry );', r'irradiance += getHemisphereLightIrradiance( hemisphereLights[ i ], geometry );']:
+        add(a, a.replace('hemisphereLights[ i ]', 'GCHL( hemisphereLights[ i ] )'))
+    # 1d. render loop: one draw per object with the left camera; eye 1's matrices for the shader
+    add('if(n.isArrayCamera){const e=n.cameras;for(let n=0,i=e.length;n<i;n++){const i=e[n];a.layers.test(i.layers)&&(j.viewport(b.copy(i.viewport)),p.setupLightsView(i),Re(a,t,i,o,l,h))}}else Re(a,t,n,o,l,h)',
+        'if(n.isArrayCamera){const e=n.cameras;if(2===e.length&&window.__gtXR&&window.__gtXR.mvActive){const c0=e[0],c1=e[1];a.layers.test(c0.layers)&&(m.__mvC1=c1,m.__mvD=(m.__mvD||new c0.matrixWorld.constructor).multiplyMatrices(c1.matrixWorldInverse,c0.matrixWorld),j.viewport(b.copy(c0.viewport)),p.setupLightsView(c0),Re(a,t,c0,o,l,h),m.__mvC1=null)}else for(let n=0,i=e.length;n<i;n++){const i=e[n];a.layers.test(i.layers)&&(j.viewport(b.copy(i.viewport)),p.setupLightsView(i),Re(a,t,i,o,l,h))}}else Re(a,t,n,o,l,h)')
+    add('e.modelViewMatrix.multiplyMatrices(n.matrixWorldInverse,e.matrixWorld),e.normalMatrix.getNormalMatrix(e.modelViewMatrix),e.isImmediateRenderObject',
+        'e.modelViewMatrix.multiplyMatrices(n.matrixWorldInverse,e.matrixWorld),e.normalMatrix.getNormalMatrix(e.modelViewMatrix),m.__mvC1&&((e.__mvR||(e.__mvR={mv:new e.modelViewMatrix.constructor,nm:new e.normalMatrix.constructor})).mv.multiplyMatrices(m.__mvC1.matrixWorldInverse,e.matrixWorld),e.__mvR.nm.getNormalMatrix(e.__mvR.mv)),e.isImmediateRenderObject')
+    add('if(_.setValue(me,"projectionMatrix",e.projectionMatrix),',
+        'if(_.setValue(me,"projectionMatrix",e.projectionMatrix),m.__mvC1&&(_.setValue(me,"gcP1",m.__mvC1.projectionMatrix),_.setValue(me,"gcV1",m.__mvC1.matrixWorldInverse),_.setValue(me,"gcC1",(m.__mvV||(m.__mvV=V.clone())).setFromMatrixPosition(m.__mvC1.matrixWorld)),_.setValue(me,"gcVD1",m.__mvD)),')
+    add('_.setValue(me,"modelViewMatrix",i.modelViewMatrix),_.setValue(me,"normalMatrix",i.normalMatrix),_.setValue(me,"modelMatrix",i.matrixWorld),d}',
+        '_.setValue(me,"modelViewMatrix",i.modelViewMatrix),_.setValue(me,"normalMatrix",i.normalMatrix),_.setValue(me,"modelMatrix",i.matrixWorld),m.__mvC1&&i.__mvR&&(_.setValue(me,"gcMV1",i.__mvR.mv),_.setValue(me,"gcNM1",i.__mvR.nm)),d}')
+    # 2. the game: batch size leaves room for the per-eye uniforms; renderer wrap for the warm-up
+    add('Math.floor((e-96)/5)', 'Math.floor((e-96-(window.__gtXR&&window.__gtXR.mvPlanFor&&window.__gtXR.mvPlanFor(t)?24:0))/5)')
+    add('O=new THREE.WebGLRenderer({antialias:!0,powerPreference:"high-performance"})',
+        'O=(function(r){try{window.__gtXR&&window.__gtXR.mvWrap&&window.__gtXR.mvWrap(r)}catch(e){}return r})(new THREE.WebGLRenderer({antialias:!0,powerPreference:"high-performance"}))')
+    # 3. the layers shim
+    add('function loader(s){var c=document.createElement("canvas")', MVJS + 'function loader(s){var c=document.createElement("canvas")')
+    add('  if (msaa && W2) { try { samples = Math.min(4, g.getParameter(g.MAX_SAMPLES) || 0); } catch (e) { samples = 0; } }\n',
+        '  if (msaa && W2) { try { samples = Math.min(4, g.getParameter(g.MAX_SAMPLES) || 0); } catch (e) { samples = 0; } }\n'
+        '  var MV = !!(W2 && X.mvPlanFor && X.mvPlanFor(g)), mvx = MV ? g.getExtension("OVR_multiview2") : null, msx = MV && samples ? g.getExtension("OCULUS_multiview") : null, mvd = null, mvdW = 0, mvdH = 0, mvOk = false;\n'
+        '  if (MV && samples && !msx) { if (window.__fakeXR && window.__fakeXR.multiview) samples = 0; else MV = false; }\n'
+        '  X.mvActive = MV;\n')
+    add('var o = { textureType: "texture", colorFormat', 'var o = { textureType: MV ? "texture-array" : "texture", colorFormat')
+    add('    var vs = pose.views;\n', '    var vs = pose.views;\n    if (MV) return mvBegin(L, vs);\n')
+    add('  S.getViewport = function (v) {',
+        '  /* multiview: both eyes are slices of one texture array; one framebuffer with multiview attachments\n'
+        '     (multisampled through OCULUS_multiview, which resolves on the tile: no blit). */\n'
+        '  function mvBegin(L, vs) {\n'
+        '    var dt = null;\n'
+        '    for (var i = 0; i < vs.length; i++) {\n'
+        '      var si = bd.getViewSubImage(L, vs[i]);\n'
+        '      vp[i] = { eye: vs[i].eye, x: si.viewport.x, y: si.viewport.y, width: si.viewport.width, height: si.viewport.height };\n'
+        '      if (i === 0) { tex = si.colorTexture; tw = si.textureWidth; th = si.textureHeight; dt = si.depthStencilTexture; }\n'
+        '    }\n'
+        '    vp.length = vs.length; S.w = tw; S.h = th;\n'
+        '    var FB = g.FRAMEBUFFER, dep = samples ? null : dt;\n'
+        '    if (!dep) {\n'
+        '      if (!mvd || mvdW !== tw || mvdH !== th) { if (mvd) g.deleteTexture(mvd); mvd = g.createTexture(); g.bindTexture(g.TEXTURE_2D_ARRAY, mvd); g.texStorage3D(g.TEXTURE_2D_ARRAY, 1, g.DEPTH24_STENCIL8, tw, th, 2); g.bindTexture(g.TEXTURE_2D_ARRAY, null); mvdW = tw; mvdH = th; }\n'
+        '      dep = mvd;\n'
+        '    }\n'
+        '    g.bindFramebuffer(FB, fb);\n'
+        '    if (samples) { msx.framebufferTextureMultisampleMultiviewOVR(FB, g.COLOR_ATTACHMENT0, tex, 0, samples, 0, 2); msx.framebufferTextureMultisampleMultiviewOVR(FB, g.DEPTH_STENCIL_ATTACHMENT, dep, 0, samples, 0, 2); }\n'
+        '    else { mvx.framebufferTextureMultiviewOVR(FB, g.COLOR_ATTACHMENT0, tex, 0, 0, 2); mvx.framebufferTextureMultiviewOVR(FB, g.DEPTH_STENCIL_ATTACHMENT, dep, 0, 0, 2); }\n'
+        '    if (!mvOk) {\n'
+        '      var st = g.checkFramebufferStatus(FB);\n'
+        '      if (st !== g.FRAMEBUFFER_COMPLETE) { __gtLog("multiview framebuffer incomplete (" + st + "); back to the classic path"); MV = false; X.mvActive = false; S.create(S.scale || 1); return false; }\n'
+        '      mvOk = true; __gtLog("multiview live: " + tw + "x" + th + " per eye, msaa " + samples);\n'
+        '    }\n'
+        '    return true;\n'
+        '  }\n'
+        '  S.getViewport = function (v) {')
+    add('    if (samples && tex) {\n', '    if (samples && tex && !MV) {\n')
+    add('  var shim = null, fake = null;\n', '  var shim = null, fake = null;\n  try { s.addEventListener("end", function () { X.mvDone = true; X.mvActive = false; }); } catch (e) {}\n')
+    add('__gtLog("projection layer live, scale " + sc + ", msaa " + shim.samples);', '__gtLog("projection layer live, scale " + sc + ", msaa " + shim.samples + ", multiview " + !!X.mvActive);')
+    return E
+
+EXPERIMENTS["multiview"] = _multiview()
 
 EDITS = [
     # 1. Head script: request the VR session immediately on the Quest Browser (the
@@ -631,6 +740,91 @@ GAME_FIXES = [
         'for(let i=mmL.length-1;i>=0;i--){const r=mmL[i],o=r.o;let ok=o.geometry===r.n&&o.material===r.M&&o.material.length===r.s.length&&r.g.index&&r.g.index.version===r.v&&r.g.groups.length===r.gl;if(ok)for(let j=0;j<r.s.length;j++)if(o.material[j]!==r.s[j]||r.s[j].transparent){ok=!1;break}ok||(mmBack(r),mmL.splice(i,1))}}'
         'return mmPrev?mmPrev.apply(this,arguments):void 0};}{let gbOpL=[]',
     ),
+    # P9 (draw calls; NOTES 60): the batcher merged only parts whose materials agree on everything
+    # but colour (the colour travels per part); two Phong parts with different shininess or
+    # specular colour needed two batches. Each part now carries a fifth uniform row: its specular
+    # colour, and its shininess in the colour row's spare slot, written exactly as three.js would
+    # upload them (specular as is, shininess at least 1e-4) and read by the batch shader in place of
+    # the material's own uniforms (a flat varying, so the value is the part's own, not
+    # interpolated). Shininess and specular leave the grouping key. The part limit per batch is
+    # recomputed for five rows (32 on a Quest). Whole scene: 327 batchable draws per eye -> 247.
+    # Pixels identical batched against unbatched (`opt_identity.js`).
+    ('gcR:new Float32Array(16*t.length)', 'gcR:new Float32Array(20*t.length)'),
+    ('M=16*p.slot', 'M=20*p.slot'),
+    ('e.fill(0,M,M+16)', 'e.fill(0,M,M+20)'),
+    ('p.k=new Float64Array(15)', 'p.k=new Float64Array(19)'),
+    ('Math.floor((e-96)/4)', 'Math.floor((e-96)/5)'),
+    ('uniform vec4 gcR["+4*gcEB.N+"];', 'uniform vec4 gcR["+5*gcEB.N+"];\\nflat varying vec4 vGcSpec;'),
+    ('int gcI=int(gcPart+.5)*4;vec4 gcA=gcR[gcI],gcB=gcR[gcI+1],gcC=gcR[gcI+2],gcD=gcR[gcI+3];',
+     'int gcI=int(gcPart+.5)*5;vec4 gcA=gcR[gcI],gcB=gcR[gcI+1],gcC=gcR[gcI+2],gcD=gcR[gcI+3];vGcSpec=vec4(gcR[gcI+4].xyz,gcD.w);'),
+    ('vec3 transformed=vec3(dot(gcA,vec4(position,1.)),dot(gcB,vec4(position,1.)),dot(gcC,vec4(position,1.)));")}',
+     'vec3 transformed=vec3(dot(gcA,vec4(position,1.)),dot(gcB,vec4(position,1.)),dot(gcC,vec4(position,1.)));"),t.fragmentShader=t.fragmentShader.replace("#include <common>","#include <common>\\nflat varying vec4 vGcSpec;").replace("#include <lights_phong_fragment>","#include <lights_phong_fragment>\\nmaterial.specularColor=vGcSpec.rgb;material.specularShininess=vGcSpec.w;")}'),
+    ('const o=t.material.color,cr=o?o.r:1,cg=o?o.g:1,cb=o?o.b:1;(mv||cr!==k[12]||cg!==k[13]||cb!==k[14])&&(ch=!0,',
+     'const o=t.material.color,cr=o?o.r:1,cg=o?o.g:1,cb=o?o.b:1,sp=t.material.specular,sh=void 0===t.material.shininess?1:Math.max(t.material.shininess,1e-4),sr=sp?sp.r:0,sg=sp?sp.g:0,sb=sp?sp.b:0;(mv||cr!==k[12]||cg!==k[13]||cb!==k[14]||sh!==k[15]||sr!==k[16]||sg!==k[17]||sb!==k[18])&&(ch=!0,'),
+    ('e[M+14]=k[14]=cb)', 'e[M+14]=k[14]=cb,e[M+15]=k[15]=sh,e[M+16]=k[16]=sr,e[M+17]=k[17]=sg,e[M+18]=k[18]=sb)'),
+    ('e.specular?e.specular.getHex():"",e.shininess,', '"","",'),
+    # P10 (vertex work; NOTES 62): many of the town's and the creatures' meshes are non-indexed
+    # (three vertices per triangle, none shared), so the GPU runs the vertex shader three times per
+    # triangle and cannot reuse a transformed vertex; a tiled GPU runs the position part again for
+    # binning. The batcher now merges bit-identical vertices within each part while it builds a
+    # batch (position, normal, colour and uv all equal, compared as raw bits; never across parts).
+    # Same triangles in the same order, same values at every corner: nothing visible changes. The
+    # game's own geometry is untouched (only the batch's copy is indexed), so code that edits a
+    # mesh's vertices keeps the layout it expects. Whole scene: 829,776 vertex runs in batches ->
+    # 207,969.
+    ('p=[];let f=0,u=0;t.forEach(((t,e)=>{',
+     'p=[];let f=0,u=0;const rU=new Uint32Array(r.buffer),sU=new Uint32Array(s.buffer),iU=new Uint32Array(i.buffer),lU=l?new Uint32Array(l.buffer):null;t.forEach(((t,e)=>{'),
+    ('for(let t=0;t<n;t++){const o=f+t;r[3*o]=a.position.getX(t)',
+     'const RM=new Uint32Array(n),HM=new Map;let U=0;for(let t=0;t<n;t++){const o=f+U;r[3*o]=a.position.getX(t)'),
+    ('l&&(l[2*o]=a.uv.getX(t),l[2*o+1]=a.uv.getY(t)),c[o]=e}',
+     'l&&(l[2*o]=a.uv.getX(t),l[2*o+1]=a.uv.getY(t)),c[o]=e;'
+     'const q3=3*o,q2=2*o,hh=(rU[q3]^Math.imul(rU[q3+1],73856093)^Math.imul(rU[q3+2],19349663)^Math.imul(sU[q3],83492791)^Math.imul(sU[q3+1],668265263)^Math.imul(sU[q3+2],374761393)^Math.imul(iU[q3],2246822519)^Math.imul(iU[q3+1],3266489917)^Math.imul(iU[q3+2],668265261)^(l?Math.imul(lU[q2],2654435761)^Math.imul(lU[q2+1],40503):0))|0;'
+     'let L=HM.get(hh),hit=-1;if(L)for(const w of L){const w3=3*w,w2=2*w;if(rU[w3]===rU[q3]&&rU[w3+1]===rU[q3+1]&&rU[w3+2]===rU[q3+2]&&sU[w3]===sU[q3]&&sU[w3+1]===sU[q3+1]&&sU[w3+2]===sU[q3+2]&&iU[w3]===iU[q3]&&iU[w3+1]===iU[q3+1]&&iU[w3+2]===iU[q3+2]&&(!l||lU[w2]===lU[q2]&&lU[w2+1]===lU[q2+1])){hit=w;break}}'
+     'hit>=0?RM[t]=hit:(RM[t]=o,L?L.push(o):HM.set(hh,[o]),U++)}'),
+    ('h[u++]=e+f,h[u++]=(M?a:o)+f,h[u++]=(M?o:a)+f}', 'h[u++]=RM[e],h[u++]=RM[M?a:o],h[u++]=RM[M?o:a]}'),
+    ('t.layers.set(31),f+=n}', 't.layers.set(31),f+=U}'),
+    ('d.setAttribute("position",new THREE.BufferAttribute(r,3)),d.setAttribute("normal",new THREE.BufferAttribute(s,3)),d.setAttribute("color",new THREE.BufferAttribute(i,3)),l&&d.setAttribute("uv",new THREE.BufferAttribute(l,2)),d.setAttribute("gcPart",new THREE.BufferAttribute(c,1)),d.setIndex(new THREE.BufferAttribute(h,1))',
+     'd.setAttribute("position",new THREE.BufferAttribute(r.slice(0,3*f),3)),d.setAttribute("normal",new THREE.BufferAttribute(s.slice(0,3*f),3)),d.setAttribute("color",new THREE.BufferAttribute(i.slice(0,3*f),3)),l&&d.setAttribute("uv",new THREE.BufferAttribute(l.slice(0,2*f),2)),d.setAttribute("gcPart",new THREE.BufferAttribute(c.slice(0,f),1)),d.setIndex(new THREE.BufferAttribute(h,1))'),
+    # P12 (vertex work; NOTES 63): the scenery merge (`io` over every static town mesh while loading)
+    # builds each merged mesh non-indexed (it converts its inputs with toNonIndexed), so the kiosks,
+    # roofs and the garden bed run the vertex shader three times per triangle. For the scenery
+    # merge only, the merged geometry is now indexed where it is built: bit-identical vertices
+    # (position, normal, colour, uv) share one index. Same triangles in the same order, same values
+    # at every corner. Creature and pickup merges are left as they are (the creature ground-fit
+    # scan samples every sixth vertex of a creature's arrays and must see the same samples). The
+    # batcher's 4,000-vertex cap reads the merged mesh's original vertex count, so what is batched
+    # does not change.
+    ('function io(t){',
+     'function gcIdx(u){const P=u.attributes.position,Nn=u.attributes.normal,Cc=u.attributes.color,Uv=u.attributes.uv,n=P.count,Pa=P.array,Na=Nn.array,Ca=Cc.array,Ua=Uv?Uv.array:null,pU=new Uint32Array(Pa.buffer,Pa.byteOffset,3*n),nU=new Uint32Array(Na.buffer,Na.byteOffset,3*n),cU=new Uint32Array(Ca.buffer,Ca.byteOffset,3*n),uU=Ua?new Uint32Array(Ua.buffer,Ua.byteOffset,2*n):null,RM=new Uint32Array(n),first=[],HM=new Map;'
+     'for(let t=0;t<n;t++){const q3=3*t,q2=2*t,hh=(pU[q3]^Math.imul(pU[q3+1],73856093)^Math.imul(pU[q3+2],19349663)^Math.imul(nU[q3],83492791)^Math.imul(nU[q3+1],668265263)^Math.imul(nU[q3+2],374761393)^Math.imul(cU[q3],2246822519)^Math.imul(cU[q3+1],3266489917)^Math.imul(cU[q3+2],668265261)^(uU?Math.imul(uU[q2],2654435761)^Math.imul(uU[q2+1],40503):0))|0;let L=HM.get(hh),hit=-1;'
+     'if(L)for(const w of L){const s=first[w],w3=3*s,w2=2*s;if(pU[w3]===pU[q3]&&pU[w3+1]===pU[q3+1]&&pU[w3+2]===pU[q3+2]&&nU[w3]===nU[q3]&&nU[w3+1]===nU[q3+1]&&nU[w3+2]===nU[q3+2]&&cU[w3]===cU[q3]&&cU[w3+1]===cU[q3+1]&&cU[w3+2]===cU[q3+2]&&(!uU||uU[w2]===uU[q2]&&uU[w2+1]===uU[q2+1])){hit=w;break}}'
+     'hit>=0?RM[t]=hit:(RM[t]=first.length,L?L.push(first.length):HM.set(hh,[first.length]),first.push(t))}const m=first.length;if(m===n)return;'
+     'const cp=(A,k)=>{const o=new Float32Array(k*m);for(let i=0;i<m;i++)for(let j=0;j<k;j++)o[k*i+j]=A[k*first[i]+j];return o};u.setAttribute("position",new THREE.BufferAttribute(cp(Pa,3),3)),u.setAttribute("normal",new THREE.BufferAttribute(cp(Na,3),3)),u.setAttribute("color",new THREE.BufferAttribute(cp(Ca,3),3)),Ua&&u.setAttribute("uv",new THREE.BufferAttribute(cp(Ua,2),2));u.setIndex(new THREE.BufferAttribute(m>65535?RM:Uint16Array.from(RM),1));u.userData.gcN=n}'
+     'function io(t){'),
+    ('p&&u.setAttribute("uv",new THREE.BufferAttribute(p,2)),u.computeBoundingSphere();', 'p&&u.setAttribute("uv",new THREE.BufferAttribute(p,2)),io.idx&&gcIdx(u),u.computeBoundingSphere();'),
+    ("await __gtY('scenery-batch'),io(t)})()", "await __gtY('scenery-batch'),io.idx=1,io(t),io.idx=0})()"),
+    # P12 continued: the building merge (`v`) and the kiosk bin merge (`mergeBin`) build the biggest
+    # non-indexed meshes (kiosk bodies, roofs, the garden bed); their output is indexed the same way.
+    # Nothing edits these geometries after they are built (the vertex-editing code in the game works
+    # only on meshes marked keep, which never pass through these merges).
+    ('i.computeBoundingSphere(),i}function dropUnder', 'gcIdx(i),i.computeBoundingSphere(),i}function dropUnder'),
+    ('uvs&&out.setAttribute("uv",new THREE.BufferAttribute(uvs,2)),out.computeBoundingSphere(),out};const frame=', 'uvs&&out.setAttribute("uv",new THREE.BufferAttribute(uvs,2)),gcIdx(out),out.computeBoundingSphere(),out};const frame='),
+    ('||e&&t.geometry.attributes.position.count>e)return;', '||e&&(t.geometry.userData.gcN||t.geometry.attributes.position.count)>e)return;'),
+    # P13 (Event CPU; NOTES 64): while the tentacled creature dances (the planting Event), `bend`
+    # recomputes every tentacle vertex each frame with three to five sines and cosines per vertex.
+    # Those terms depend only on the vertex's distance along the tentacle, which the ten vertices of
+    # a ring share (the tube is built ring by ring); they are now computed once per ring and reused
+    # while the input is bit-identical, and the results are written straight into the arrays
+    # (setXYZ does the same store). Same arithmetic on the same inputs: bit-identical output
+    # (`test_bend_exact.js` runs both versions and compares the arrays).
+    ('for(let i=0,j=0;i<P.count;i++,j+=3){let x0=p0[j],y0=p0[j+1],z0=p0[j+2],ny=n0[j+1],nz=n0[j+2];const sl=z0-.8;if(sl>0){const u=sl/L;x0+=amp*u*Math.sin(wph-6*u);if(lift){const q=Math.min(1,u/.25);y0+=lift*(q*q*(3-2*q)+.15*u*Math.sin(wph-5*u))}if(Rr){const a=kap*sl,c=Math.cos(a),sn=Math.sin(a),h=Rr-y0;y0=Rr-h*c,z0=.8+h*sn;const ny2=ny*c+nz*sn;nz=-ny*sn+nz*c,ny=ny2}}P.setXYZ(i,x0,y0,z0),N.setXYZ(i,n0[j],ny,nz)}',
+     'const Pa=P.array,Na=N.array;let cz=NaN,dx=0,dy=0,c=1,sn=0;for(let i=0,j=0;i<P.count;i++,j+=3){let x0=p0[j],y0=p0[j+1],z0=p0[j+2],ny=n0[j+1],nz=n0[j+2];const sl=z0-.8;if(sl>0){if(z0!==cz){cz=z0;const u=sl/L;dx=amp*u*Math.sin(wph-6*u);if(lift){const q=Math.min(1,u/.25);dy=lift*(q*q*(3-2*q)+.15*u*Math.sin(wph-5*u))}if(Rr){const a=kap*sl;c=Math.cos(a),sn=Math.sin(a)}}x0+=dx;lift&&(y0+=dy);if(Rr){const h=Rr-y0;y0=Rr-h*c,z0=.8+h*sn;const ny2=ny*c+nz*sn;nz=-ny*sn+nz*c,ny=ny2}}Pa[j]=x0,Pa[j+1]=y0,Pa[j+2]=z0,Na[j]=n0[j],Na[j+1]=ny,Na[j+2]=nz}'),
+    # L1 (the author: "I want the game file to be CC0 1.0"): a notice right after the charset tag.
+    # The author's own work in the file is dedicated under CC0 1.0; the bundled three.js stays under
+    # its MIT license, whose copyright and permission notice must travel with every copy (it had been
+    # missing). Full texts: tools/LICENSE.md. A comment only: nothing the page does changes.
+    ('<head><meta charset="UTF-8">',
+     '<head><meta charset="UTF-8"><!-- Greeblis Town. To the extent possible under law, the author has waived all copyright and related or neighboring rights to Greeblis Town (its game code, art, text and sound in this file), dedicating them to the public domain under CC0 1.0 Universal: https://creativecommons.org/publicdomain/zero/1.0/ (full text in tools/LICENSE.md of the source repository). This file also includes three.js, which is not covered by that dedication: Copyright (c) 2010-2021 three.js authors, MIT License. Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->'),
 ]
 
 for old, new in EDITS + ([] if entry_only else GAME_FIXES) + (EXPERIMENTS[experiment] if experiment else []):

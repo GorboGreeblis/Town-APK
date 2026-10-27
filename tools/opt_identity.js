@@ -21,8 +21,10 @@ const OPTS = [
   // The batcher as a whole (and P9's per-part shininess and specular inside it): batches drawn, against
   // every source mesh drawn on its own with the batch meshes hidden.
   { name: 'batcher (merged parts vs their own meshes)', expr: 'window.__idBatch(v)', present: '!!(window.__dbg && window.__dbg.gcEB && window.__dbg.gcEB.list.length)', moreTris: true },
+  // P12 indexes merged scenery at load; the switch puts back the exact non-indexed layout (expanding an
+  // index reproduces the original arrays bit for bit, in the same triangle order).
+  { name: 'P12 indexed scenery', expr: 'window.__idIdx(v)', present: '!!window.__idIdx && window.__idIdx.count() > 0' },
   { name: 'P8 multi-material merge', expr: 'window.__gtMM && window.__gtMM.set(v)', present: '!!window.__gtMM' },
-  { name: 'P9 per-part shininess', expr: 'window.__gtShin && window.__gtShin.set(v)', present: '!!window.__gtShin' },
   { name: 'P10 matrix cache', expr: 'window.__gtMx && window.__gtMx.set(v)', present: '!!window.__gtMx' },
 ];
 (async () => {
@@ -35,19 +37,26 @@ const OPTS = [
   await page.evaluate(() => {
     const D = window.__dbg, C = D.C; let off = false; const prev = C.onBeforeRender; const moved = [];
     C.onBeforeRender = function () { const r = prev ? prev.apply(this, arguments) : undefined; if (off) for (const b of D.gcEB.list) { if (b.mesh.visible) { b.mesh.visible = false; moved.push(b.mesh); } for (const p of b.P) if (p.on && p.st === 1 && p.o.layers.mask !== 1) { p.o.layers.set(0); moved.push(p.o); } } return r; };
+    const idx = []; C.traverse((o) => { if (o.isMesh && o.layers.mask === 1 && o.geometry && o.geometry.userData && o.geometry.userData.gcN && o.geometry.index) idx.push([o, o.geometry, null]); });
+    window.__idIdx = (v) => { for (const r of idx) { if (!v) { r[2] = r[2] || r[1].toNonIndexed(); r[0].geometry = r[2]; } else r[0].geometry = r[1]; } };
+    window.__idIdx.count = () => idx.length;
     window.__idBatch = (v) => { off = !v; if (v) { for (const o of moved) { if (o.isMesh && o.parent === D.gcEB.root) o.visible = true; else o.layers.set(31); } moved.length = 0; } };
   });
   const run = (label, opt) => page.evaluate(({ label, opt, save }) => {
     const D = window.__dbg, C = D.C, O = D.O, T = window.THREE, gl = O.getContext(), t = D.t;
     const sw = new Function('v', opt.expr);
     const el = document.getElementById('gate'); if (el) el.style.display = 'none';
-    const xrWas = O.xr.enabled, rtWas = O.getRenderTarget(); O.xr.enabled = false; O.setRenderTarget(null);
+    // In a VR session three.js substitutes the XR framebuffer whenever the canvas is asked for; clear that
+    // override so the renders land on the canvas (the game's frame loop binds the XR one again next frame).
+    const xrWas = O.xr.enabled, rtWas = O.getRenderTarget(); O.xr.enabled = false; O.state.bindXRFramebuffer(null); O.setRenderTarget(null);
     const W = O.domElement.width, H = O.domElement.height, N = 320;
     const cam = new T.PerspectiveCamera(70, 1, 0.1, 400);
     const bufs = [new Uint8Array(N * N * 4), new Uint8Array(N * N * 4)];
     const stats = [{ calls: 0, tris: 0 }, { calls: 0, tris: 0 }];
     const shot = (k) => { O.setViewport(0, 0, N, N); O.setScissor(0, 0, N, N); O.setScissorTest(true); O.render(C, cam); stats[k].calls += O.info.render.calls; stats[k].tris += O.info.render.triangles; O.setScissorTest(false); O.setViewport(0, 0, W, H); gl.readPixels(0, 0, N, N, gl.RGBA, gl.UNSIGNED_BYTE, bufs[k]); };
     const mask = new Uint8Array(N * N);
+    // A blank or uniform image would compare as identical: count it as a failed view.
+    const blank = (b) => { let nz = 0; const r0 = b[0], g0 = b[1], b0 = b[2]; let uni = true; for (let i = 0; i < b.length; i += 4) { if (b[i] | b[i + 1] | b[i + 2]) nz++; if (uni && (b[i] !== r0 || b[i + 1] !== g0 || b[i + 2] !== b0)) uni = false; } return nz === 0 || uni; };
     const diff = () => { let n = 0, interior = 0, maxd = 0; const a = bufs[0], b = bufs[1]; for (let i = 0, p = 0; i < a.length; i += 4, p++) { const d = Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]); if (d > maxd) maxd = d; mask[p] = d > 24 ? 1 : 0; if (d > 24) n++; }
       for (let y = 1; y < N - 1; y++) for (let x = 1; x < N - 1; x++) { const p = y * N + x; if (mask[p] && mask[p - 1] && mask[p + 1] && mask[p - N] && mask[p + N]) interior++; }
       return { pct: 100 * n / (N * N), interior: 100 * interior / (N * N), maxd }; };
@@ -56,7 +65,7 @@ const OPTS = [
     const view = (vl, eye, target) => {
       cam.position.copy(eye); cam.lookAt(target); cam.updateMatrixWorld(true);
       sw(true); shot(0); sw(false); shot(1); sw(true);
-      const d = diff(); const v = { label: vl, pct: +d.pct.toFixed(3), interior: +d.interior.toFixed(3), maxd: d.maxd }; if (save && d.pct > 0) v.png = png(); views.push(v);
+      const d = diff(); const v = { label: vl, pct: +d.pct.toFixed(3), interior: +d.interior.toFixed(3), maxd: d.maxd, blank: blank(bufs[0]) || blank(bufs[1]) }; if (save && d.pct > 0) v.png = png(); views.push(v);
     };
     const half = t.parkHalf - 4, south = t.parkSouth - 4;
     for (let x = -half; x <= half; x += (2 * half) / 3) for (let z = -half; z <= south; z += (half + south) / 3) for (let h = 0; h < 4; h++) { const a = h * Math.PI / 2; const eye = new T.Vector3(x, 1.6, z); view(`town (${x.toFixed(0)}, ${z.toFixed(0)}) heading ${h * 90}`, eye, eye.clone().add(new T.Vector3(Math.sin(a) * 6, -0.8, Math.cos(a) * 6))); }
@@ -71,6 +80,8 @@ const OPTS = [
       const present = await page.evaluate((e) => { try { return eval(e); } catch (x) { return false; } }, opt.present);
       if (!present) { note(`${phase}: ${opt.name} not in this build, skipped`); continue; }
       const r = await run(phase, opt); results.push({ opt: opt.name, ...r });
+      const blanks = r.views.filter((v) => v.blank);
+      expect(`${phase}: ${opt.name}: every view rendered something (no blank or uniform image)`, blanks.length === 0, `${blanks.length} blank: ${blanks.slice(0, 4).map((v) => v.label).join(' | ')}`);
       const bad = r.views.filter((v) => v.pct > 0.02 || v.interior > 0);
       const [on, off] = r.stats;
       note(`${phase}: ${opt.name}: ${r.views.length} views (${r.mm} multi-material meshes); draw calls ${off.calls} -> ${on.calls} (${off.calls - on.calls} fewer), triangles ${off.tris} -> ${on.tris}`);

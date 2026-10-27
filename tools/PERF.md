@@ -229,3 +229,54 @@ view. The 63 ms script frame at the Event's start is the setup frame (B17).
 the same picture: frame rate by scene, the lowest readings with where the
 player stood, the governor levels, a verdict against 60 fps with the likely
 cause (triangles, draw calls, GPU-bound at the governor's floor).
+
+## 8. Draw calls and the matrix update (3.15.28-3.15.29, NOTES 59-61)
+
+Target: 72 fps (the headset's refresh rate, the author's aim); the Store's floor
+is 60. `perf_log.js` reports both.
+
+- **P8** (3.15.28): multi-material meshes draw one group per material instance;
+  the garden plots go from six draws to two. Event frame 390 -> 340 draws (both
+  eyes).
+- **P9** (3.15.29): shininess and specular per batch part; whole scene 327 ->
+  247 batchable draws per eye.
+- **Matrix cache (not done).** An exact skip of `updateMatrix` and the world
+  multiply for unchanged objects (position, rotation, scale, local and world
+  matrices compared, a stamp on recomputed parents): bit-identical to three.js
+  after 8 s of play, but 0.61 ms per scene update against 0.27 ms for three.js
+  itself over 2,576 objects. V8 composes and multiplies faster than the
+  comparisons; the cost is the walk, not the arithmetic.
+- **P10** (3.15.30): batch geometry indexed (bit-identical vertices merged within
+  a part): batch vertices 499,058 -> 215,258, same triangles, identical pixels.
+- **Big meshes as batches of one (tried, reverted).** Routing the big
+  non-indexed meshes (over the 4,000-vertex cap) through the batcher alone
+  would index them too: 761k vertex runs -> 406k over the whole scene. Three
+  costs: edge pixels changed (0.02%, single pixels where the garden plot meets
+  the bed: the batch shader's transform path rounds depth differently), the
+  spawn view submitted 56k more triangles (a 68,686-triangle mesh its own
+  bounding sphere had culled was drawn), and the batching slice grew from 438
+  to 738 ms. Not worth it; indexing those meshes needs to happen where they
+  are built, with the game's code that edits them checked first.
+- **P12** (3.15.31): indexed scenery, building and kiosk merges: 197
+  geometries, vertex runs of meshes drawn as themselves 1,062,441 -> 576,758.
+- **Ruled out, with numbers** (NOTES 63): transparent fill (0.04 layers per
+  pixel), opaque overdraw (1.82, front-to-back saves 5%), the Event's point
+  lights (off through the Event), garbage collection (2-3%), hidden geometry
+  (0.4%).
+- **Left, all of which change the look (the author's call):** level of detail
+  for dense meshes (several creature and kiosk parts carry 9,000-40,000
+  triangles for under 1,000 pixels at the census's resolution), anisotropy 16
+  -> 8 on the large textures, fixed foveation from the start level, render
+  scale. Multiview rendering (one draw for both eyes) would halve every draw
+  call but needs a newer three.js or shader patches and an entry-script
+  change, so it would ship first as an experiment APK.
+
+## 9. Multiview experiment (NOTES 65)
+
+Both eyes in one pass. Headless, same frames both ways: each eye matches the
+classic path (bit-identical apart from rounding on a few right-eye pixels) and
+draw calls halve: spawn 68 -> 34, town centre 264 -> 132, garden 320 -> 160,
+the Event 244 -> 122. On the headset it removes half the draw submission (three.js
+and the browser's GPU process) and, with MSAA, the per-frame resolve blit. It
+does not reduce pixel shading. Ships as an experiment APK first (RELEASE.md 6);
+the headset run decides whether it goes into the release.

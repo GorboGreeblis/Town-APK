@@ -868,3 +868,118 @@ VR-entry fix; each item is for discussion first.
     views). Next: shininess and specular per batch part (P9), which lets
     batches that differ only in those merge (327 to 247 batchable draws per eye
     over the whole scene).
+
+60. **Shininess and specular per batch part (3.15.29).** The batcher merged
+    only parts whose materials agreed on everything but colour, which travels
+    per part in the fourth uniform row. Phong parts that differed in shininess
+    or specular colour therefore needed separate batches, and the town has many
+    such pairs. P9 adds a fifth row per part (specular colour) and uses the
+    fourth row's spare slot for shininess, written exactly as three.js uploads
+    them, and the batch shader reads them through a flat varying in place of
+    the material's uniforms. Measured: the whole scene's batchable draws drop
+    from 327 to 247 per eye; over 40 town views the batched frame draws 4,580
+    times against 5,166. `opt_identity.js` renders every view batched and
+    unbatched in the same frame: identical pixels. The part limit per batch is
+    recomputed for five rows (still 32 on a Quest's 256 vertex uniform vectors).
+
+61. **A blind spot in the identity check, found and closed.** Rendering from a
+    VR session (fake XR) left three.js's XR framebuffer bound, so a tool asking
+    for the canvas read black pixels. Two black images compare as identical:
+    `opt_identity.js`'s first Event-phase result for P8 and its first batched
+    against unbatched result for P9 had compared nothing. Found while building
+    the visibility census, which saw every mesh as never visible. Both tools now
+    clear the XR framebuffer override before rendering (the game's frame loop
+    binds it again on the next XR frame) and refuse blank or uniform images.
+    Re-run with real pixels: P8 and the batcher with P9 inside it render
+    identical pixels at load and 25 s into the planting Event. The earlier P8
+    load-phase result (desktop session) had been valid. The other pixel tools
+    boot desktop sessions, except `flash_probe.js`, which reads the XR frame on
+    purpose.
+
+62. **The visibility census and indexed batches (3.15.30).**
+    `visibility_census.js` renders the town in ID colours from 103 standable
+    positions, three eye heights, six directions each, and counts every opaque
+    mesh's pixels. Only 7 meshes (0.4% of opaque triangles) are never visible,
+    so the town wastes almost nothing behind walls or underground. The finding
+    was density instead: several meshes carry thousands of triangles for a few
+    pixels of screen. Many meshes are also non-indexed, three vertices per
+    triangle with none shared, so the GPU cannot reuse a transformed vertex.
+    P10 indexes the batch copies (bit-identical vertices merged within a part):
+    batch vertices 499,058 -> 215,258 for the same triangles, identical pixels,
+    no loading cost. The unbatched big meshes (ground, kiosks, roofs; about
+    1.8 million vertex runs over the whole scene, half of them shareable) keep
+    their layout because game code may edit their vertices; see PERF.md 8.
+
+63. **Indexed scenery, and what the GPU side is not (3.15.31).** The biggest
+    meshes (kiosk bodies, roofs, the garden bed) come from three merge steps
+    in the game (`io` over static scenery, `v` for buildings, `mergeBin` for
+    the kiosks), all of which convert their inputs to non-indexed geometry.
+    P12 indexes their output where it is built: bit-identical vertices share
+    one index, same triangles in the same order. The creature merge is left as
+    it is, because the ground-fit scan samples every sixth vertex of a
+    creature's arrays and must keep seeing the same samples. Vertex runs of the
+    meshes drawn as themselves: 1,062,441 -> 576,758 over the whole scene. The
+    batcher's 4,000-vertex cap reads each mesh's original count, so batching is
+    unchanged. A first attempt (big meshes as batches of one) was reverted:
+    PERF.md 8.
+
+    Three new probes ruled out other GPU causes. `fill_probe.js`: transparent
+    layers average 0.04 per pixel (worst view 0.2), so fill is not the
+    problem. `overdraw_probe.js`: 1.82 opaque fragments shaded per covered
+    pixel in the game's order, and front to back would save only 5% (big
+    batches and the ground span many depths), so the sort stays. The Event's
+    two point lights (cut-off 11 and 12 m) stay off through its 90 s headless,
+    so lighting is not the Event's cost. `alloc_probe.js`: 7-35 KB/s allocated,
+    garbage collector 2-3% of main-thread time, so no collector pauses.
+    `visibility_census.js`: 0.4% of opaque triangles are never visible.
+
+64. **The tentacle bend (3.15.32).** While the tentacled creature dances (it
+    does in the planting Event), `bend` recomputed all six tentacles every
+    frame with three to five sines and cosines per vertex; late in the Event
+    it was a tenth of the game's script time. The terms depend only on a
+    vertex's distance along the tentacle, which the ten vertices of a ring
+    share, so P13 computes them once per ring and reuses them while the input
+    is bit-identical. `test_bend_exact.js` runs the original function and the
+    patched one on 400 generated tentacles (ring order, shuffled order, before
+    the bend starts, zero curl, zero lift) and compares every output word:
+    identical. 39 -> 14 microseconds per tentacle headless. Creature code, so
+    the test sits in the standard tier.
+
+65. **Multiview, as an experiment (built on 3.15.33).** Every draw was issued
+    twice, once per eye, and in the Event about 300 draws per frame each pass
+    through three.js and the browser's GPU process. Multiview draws both eyes
+    in one pass. The bundled three.js (r128 or close) has no multiview, so the
+    experiment adds it:
+    - a texture-array projection layer, one slice per eye, attached with
+      `OVR_multiview2` (and `OCULUS_multiview` for the headset's 4x MSAA, which
+      resolves on the tile, so the per-frame resolve blit goes too);
+    - a `multiview` program parameter: such programs get the extension,
+      `num_views = 2` and macros that pick each eye's matrices; the left eye
+      reads the uniforms three.js always uploads, the right eye reads its own
+      model-view, normal, view and projection matrices, computed on the CPU
+      exactly as three.js computes them for that eye; lights for the right eye
+      are moved or rotated in the shader (rounding only);
+    - the render loop draws each object once with the left camera;
+    - the loading warm-up compiles and uploads the multiview programs (renders
+      go into a tiny multiview target while loading), so VR entry compiles
+      nothing; renders with XR switched off keep the ordinary programs;
+    - the batcher reserves vertex uniforms for the extra matrices (a Quest may
+      allow only 256 vectors);
+    - the decision is made once at boot (layers session, WebGL 2, the
+      extensions); an incomplete framebuffer logs and falls back to the
+      classic path.
+    `multiview_check.js` renders the same frame both ways in one step and
+    compares each eye: spawn, town centre, garden and the Event are
+    bit-identical apart from a handful of right-eye pixels differing by 2 in
+    channel sum, and draw calls are exactly halved (Event 244 -> 122, town
+    centre 264 -> 132). The standard tier on the experiment in multiview mode
+    passed apart from a 2D-mode check that failed the same way on the release
+    (see 66). Headless has `OVR_multiview2` but not `OCULUS_multiview`, so the
+    MSAA variant is the one thing only the headset can show.
+
+66. **The play test's 2D window measured the boot.** After the session moved
+    to a slower container, `test_play.js`'s 2D mode counted 15-35 frames in
+    20 s for the release and the experiment alike. It started timing when the
+    gate text left "Loading...", which happens before the shader warm-up; on
+    this machine the warm-up took about 28 s. The test now waits for the game
+    loop to start (as the harness does): 119 fps for both builds.
