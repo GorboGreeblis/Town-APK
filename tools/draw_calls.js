@@ -57,7 +57,7 @@ const withEvent = process.argv.includes('--event');
     return { whys: Object.entries(whys).sort((a, b) => b[1].calls - a[1].calls).map(([k, v]) => [k, v.calls, v.tris, [...v.ex].slice(0, 6).join(', ')]), total: draws.length, tris: draws.reduce((a, d) => a + d.tris, 0), byCat, batchSigs: Object.keys(batches).length, mergeable, topBatches: Object.entries(batches).sort((a, b) => b[1].calls - a[1].calls).slice(0, 8), topNonBatch: Object.entries(nonBatch).sort((a, b) => b[1].calls - a[1].calls).slice(0, 12).map(([k, v]) => [k, { calls: v.calls, tris: v.tris, names: [...v.names].slice(0, 4).join(',') }]) };
   };
   const print = (label, s) => {
-    console.log(`\n== ${label}: ${s.total} draws, ${s.tris} triangles (one eye)`);
+    console.log(`\n== ${label}: ${s.total} draws, ${s.tris} triangles (both eyes)`);
     console.log('  by class: ' + Object.entries(s.byCat).map(([k, v]) => `${k} ${v.calls} calls / ${v.tris} tris`).join('; '));
     console.log(`  batches: ${s.byCat.batch ? s.byCat.batch.calls : 0} calls over ${s.batchSigs} material signatures; ${s.mergeable} calls exist only because of the part limit`);
     for (const [k, v] of s.topBatches) console.log(`    ${String(v.calls).padStart(3)} batches  ${String(v.parts).padStart(4)} parts  ${String(v.tris).padStart(7)} tris  ${k}`);

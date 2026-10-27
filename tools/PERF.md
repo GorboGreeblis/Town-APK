@@ -246,3 +246,14 @@ is 60. `perf_log.js` reports both.
   after 8 s of play, but 0.61 ms per scene update against 0.27 ms for three.js
   itself over 2,576 objects. V8 composes and multiplies faster than the
   comparisons; the cost is the walk, not the arithmetic.
+- **P10** (3.15.30): batch geometry indexed (bit-identical vertices merged within
+  a part): batch vertices 499,058 -> 215,258, same triangles, identical pixels.
+- **Big meshes as batches of one (tried, reverted).** Routing the big
+  non-indexed meshes (over the 4,000-vertex cap) through the batcher alone
+  would index them too: 761k vertex runs -> 406k over the whole scene. Three
+  costs: edge pixels changed (0.02%, single pixels where the garden plot meets
+  the bed: the batch shader's transform path rounds depth differently), the
+  spawn view submitted 56k more triangles (a 68,686-triangle mesh its own
+  bounding sphere had culled was drawn), and the batching slice grew from 438
+  to 738 ms. Not worth it; indexing those meshes needs to happen where they
+  are built, with the game's code that edits them checked first.
