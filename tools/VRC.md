@@ -114,10 +114,10 @@ stored on the headset (the game has no save: no localStorage, IndexedDB or cooki
 
 | Check | Status | Verdict | Evidence |
 | --- | --- | --- | --- |
-| Privacy.1 policy URL managed by the team | R | PASS | https://greeblistown.neocities.org/ (the author's page; source `tools/store/privacy.html`) |
+| Privacy.1 policy URL managed by the team | R | PASS | https://greeblistown.neocities.org/ (the author's page; source `tools/store/privacy.html`): public, HTTPS with a trusted certificate (checked 2026-10-27), not on another VR distribution platform |
 | Privacy.2 what data is collected | R | PASS | "does not collect, request, store, share, or transmit any personal information or user data"; nothing saved on the headset either |
 | Privacy.3 how data is used | R | PASS | none collected, stated |
-| Privacy.4 how to request deletion | R | **ACTION** | the live page had no deletion section; `tools/store/privacy.html` now has section 8 "Data deletion requests" (nothing to delete, email with the subject "Data deletion request", reply within 30 days, uninstalling removes everything). **Upload the updated page to neocities before submitting** |
+| Privacy.4 how to request deletion | R | PASS | live since 2026-10-27 (checked: https://greeblistown.neocities.org/ shows section 8 "Data deletion requests" and "Last Updated: October 27, 2026"): nothing to delete, email with the subject "Data deletion request", a reply within 30 days, uninstalling removes everything; source `tools/store/privacy.html` |
 | Privacy.5 data protection checks | R | AUTHOR | the dashboard's Data Use questionnaire: no data collected, no third-party SDKs |
 
 ## Publishing
@@ -143,4 +143,4 @@ options and no one-handed mode: recommendations, not required.
 3. **Universal Menu** (Input.4, Functional.2): town keeps rendering with no hands or rays while the menu is up; everything resumes after.
 4. **Recentre** (Functional.9): turn around, long-press the Meta button, the town faces you.
 
-Plus the dashboard items marked AUTHOR, and the privacy page upload (Privacy.4).
+Plus the dashboard items marked AUTHOR. (The privacy page upload, Privacy.4, is done: live since 2026-10-27.)

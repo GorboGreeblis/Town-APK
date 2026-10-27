@@ -129,8 +129,9 @@ does not come back cleanly in `tools/BUGS.md`.
      and GPU-bound mean a content change for the author to approve (the Event's
      point light and night lighting, or lighter flora shading); CPU-bound means
      more logic trimming (`tools/PERF.md` section 6).
-   Then upload the updated privacy page (`tools/store/privacy.html`, section 8 on
-   deletion requests) to neocities before submitting (VRC.Quest.Privacy.4).
+   The updated privacy page (`tools/store/privacy.html`, section 8 on deletion
+   requests) is live at https://greeblistown.neocities.org/ since 2026-10-27
+   (VRC.Quest.Privacy.4: done).
 
 ## 4. Rebuilding yourself (only if something changes)
 
