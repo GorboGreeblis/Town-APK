@@ -932,3 +932,15 @@ VR-entry fix; each item is for discussion first.
     so lighting is not the Event's cost. `alloc_probe.js`: 7-35 KB/s allocated,
     garbage collector 2-3% of main-thread time, so no collector pauses.
     `visibility_census.js`: 0.4% of opaque triangles are never visible.
+
+64. **The tentacle bend (3.15.32).** While the tentacled creature dances (it
+    does in the planting Event), `bend` recomputed all six tentacles every
+    frame with three to five sines and cosines per vertex; late in the Event
+    it was a tenth of the game's script time. The terms depend only on a
+    vertex's distance along the tentacle, which the ten vertices of a ring
+    share, so P13 computes them once per ring and reuses them while the input
+    is bit-identical. `test_bend_exact.js` runs the original function and the
+    patched one on 400 generated tentacles (ring order, shuffled order, before
+    the bend starts, zero curl, zero lift) and compares every output word:
+    identical. 39 -> 14 microseconds per tentacle headless. Creature code, so
+    the test sits in the standard tier.

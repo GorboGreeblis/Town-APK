@@ -34,6 +34,7 @@ echo "Greeblis Town test pass: $TIER"
 run "asset == original + the entry edits + the gameplay fixes (apply_entry_fix.py --verify)" python3 -I "$ROOT/tools/apply_entry_fix.py" --verify
 run "loopback server harness" "$ROOT/tools/test_server.sh"
 run "dialogue spell-check" sh -c "python3 '$ROOT/tools/spellcheck_dialogue.py' '$ROOT/tools/uncompressed.html' >/dev/null"
+run "tentacle bend is bit-identical to the original (P13)" node "$ROOT/tools/test_bend_exact.js" "$ASSET"
 if [ -f "$APK" ]; then run "APK store-rules check" "$ROOT/tools/check_apk.sh" "$APK"; else skip "APK store-rules check" "no APK built"; fi
 
 if [ "$TIER" != quick ]; then
@@ -61,6 +62,7 @@ if [ "$TIER" != quick ]; then
     run "z-fighting / flicker on environmental surfaces (jittered render)" node "$ROOT/tools/test_zfight.js" "$ASSET"
     run "z-fighting on curved surfaces (near-coincident geometry)" node "$ROOT/tools/test_coincident.js" "$ASSET"
     run "single-sided pass is pixel-identical (edges aside)" node "$ROOT/tools/sides_check.js" "$ASSET"
+    run "optimisations render identical pixels (batcher, P8, P12) and save draws" node "$ROOT/tools/opt_identity.js" "$ASSET"
     run "performance report (script cost, shader compiles, scene load per situation)" node "$ROOT/tools/perf_report.js" "$ASSET"
     report "loading time (boot profile)" node "$ROOT/tools/boot_profile.js" "$ASSET"
     report "handover profile (frames after entering VR)" node "$ROOT/tools/entry_profile.js" "$ASSET"

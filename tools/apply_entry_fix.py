@@ -701,6 +701,15 @@ GAME_FIXES = [
     ('i.computeBoundingSphere(),i}function dropUnder', 'gcIdx(i),i.computeBoundingSphere(),i}function dropUnder'),
     ('uvs&&out.setAttribute("uv",new THREE.BufferAttribute(uvs,2)),out.computeBoundingSphere(),out};const frame=', 'uvs&&out.setAttribute("uv",new THREE.BufferAttribute(uvs,2)),gcIdx(out),out.computeBoundingSphere(),out};const frame='),
     ('||e&&t.geometry.attributes.position.count>e)return;', '||e&&(t.geometry.userData.gcN||t.geometry.attributes.position.count)>e)return;'),
+    # P13 (Event CPU; NOTES 64): while the tentacled creature dances (the planting Event), `bend`
+    # recomputes every tentacle vertex each frame with three to five sines and cosines per vertex.
+    # Those terms depend only on the vertex's distance along the tentacle, which the ten vertices of
+    # a ring share (the tube is built ring by ring); they are now computed once per ring and reused
+    # while the input is bit-identical, and the results are written straight into the arrays
+    # (setXYZ does the same store). Same arithmetic on the same inputs: bit-identical output
+    # (`test_bend_exact.js` runs both versions and compares the arrays).
+    ('for(let i=0,j=0;i<P.count;i++,j+=3){let x0=p0[j],y0=p0[j+1],z0=p0[j+2],ny=n0[j+1],nz=n0[j+2];const sl=z0-.8;if(sl>0){const u=sl/L;x0+=amp*u*Math.sin(wph-6*u);if(lift){const q=Math.min(1,u/.25);y0+=lift*(q*q*(3-2*q)+.15*u*Math.sin(wph-5*u))}if(Rr){const a=kap*sl,c=Math.cos(a),sn=Math.sin(a),h=Rr-y0;y0=Rr-h*c,z0=.8+h*sn;const ny2=ny*c+nz*sn;nz=-ny*sn+nz*c,ny=ny2}}P.setXYZ(i,x0,y0,z0),N.setXYZ(i,n0[j],ny,nz)}',
+     'const Pa=P.array,Na=N.array;let cz=NaN,dx=0,dy=0,c=1,sn=0;for(let i=0,j=0;i<P.count;i++,j+=3){let x0=p0[j],y0=p0[j+1],z0=p0[j+2],ny=n0[j+1],nz=n0[j+2];const sl=z0-.8;if(sl>0){if(z0!==cz){cz=z0;const u=sl/L;dx=amp*u*Math.sin(wph-6*u);if(lift){const q=Math.min(1,u/.25);dy=lift*(q*q*(3-2*q)+.15*u*Math.sin(wph-5*u))}if(Rr){const a=kap*sl;c=Math.cos(a),sn=Math.sin(a)}}x0+=dx;lift&&(y0+=dy);if(Rr){const h=Rr-y0;y0=Rr-h*c,z0=.8+h*sn;const ny2=ny*c+nz*sn;nz=-ny*sn+nz*c,ny=ny2}}Pa[j]=x0,Pa[j+1]=y0,Pa[j+2]=z0,Na[j]=n0[j],Na[j+1]=ny,Na[j+2]=nz}'),
 ]
 
 for old, new in EDITS + ([] if entry_only else GAME_FIXES) + (EXPERIMENTS[experiment] if experiment else []):
