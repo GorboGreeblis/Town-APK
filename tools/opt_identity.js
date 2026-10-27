@@ -21,6 +21,9 @@ const OPTS = [
   // The batcher as a whole (and P9's per-part shininess and specular inside it): batches drawn, against
   // every source mesh drawn on its own with the batch meshes hidden.
   { name: 'batcher (merged parts vs their own meshes)', expr: 'window.__idBatch(v)', present: '!!(window.__dbg && window.__dbg.gcEB && window.__dbg.gcEB.list.length)', moreTris: true },
+  // P12 indexes merged scenery at load; the switch puts back the exact non-indexed layout (expanding an
+  // index reproduces the original arrays bit for bit, in the same triangle order).
+  { name: 'P12 indexed scenery', expr: 'window.__idIdx(v)', present: '!!window.__idIdx && window.__idIdx.count() > 0' },
   { name: 'P8 multi-material merge', expr: 'window.__gtMM && window.__gtMM.set(v)', present: '!!window.__gtMM' },
   { name: 'P10 matrix cache', expr: 'window.__gtMx && window.__gtMx.set(v)', present: '!!window.__gtMx' },
 ];
@@ -34,6 +37,9 @@ const OPTS = [
   await page.evaluate(() => {
     const D = window.__dbg, C = D.C; let off = false; const prev = C.onBeforeRender; const moved = [];
     C.onBeforeRender = function () { const r = prev ? prev.apply(this, arguments) : undefined; if (off) for (const b of D.gcEB.list) { if (b.mesh.visible) { b.mesh.visible = false; moved.push(b.mesh); } for (const p of b.P) if (p.on && p.st === 1 && p.o.layers.mask !== 1) { p.o.layers.set(0); moved.push(p.o); } } return r; };
+    const idx = []; C.traverse((o) => { if (o.isMesh && o.layers.mask === 1 && o.geometry && o.geometry.userData && o.geometry.userData.gcN && o.geometry.index) idx.push([o, o.geometry, null]); });
+    window.__idIdx = (v) => { for (const r of idx) { if (!v) { r[2] = r[2] || r[1].toNonIndexed(); r[0].geometry = r[2]; } else r[0].geometry = r[1]; } };
+    window.__idIdx.count = () => idx.length;
     window.__idBatch = (v) => { off = !v; if (v) { for (const o of moved) { if (o.isMesh && o.parent === D.gcEB.root) o.visible = true; else o.layers.set(31); } moved.length = 0; } };
   });
   const run = (label, opt) => page.evaluate(({ label, opt, save }) => {

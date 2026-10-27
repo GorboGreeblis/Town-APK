@@ -676,6 +676,31 @@ GAME_FIXES = [
     ('t.layers.set(31),f+=n}', 't.layers.set(31),f+=U}'),
     ('d.setAttribute("position",new THREE.BufferAttribute(r,3)),d.setAttribute("normal",new THREE.BufferAttribute(s,3)),d.setAttribute("color",new THREE.BufferAttribute(i,3)),l&&d.setAttribute("uv",new THREE.BufferAttribute(l,2)),d.setAttribute("gcPart",new THREE.BufferAttribute(c,1)),d.setIndex(new THREE.BufferAttribute(h,1))',
      'd.setAttribute("position",new THREE.BufferAttribute(r.slice(0,3*f),3)),d.setAttribute("normal",new THREE.BufferAttribute(s.slice(0,3*f),3)),d.setAttribute("color",new THREE.BufferAttribute(i.slice(0,3*f),3)),l&&d.setAttribute("uv",new THREE.BufferAttribute(l.slice(0,2*f),2)),d.setAttribute("gcPart",new THREE.BufferAttribute(c.slice(0,f),1)),d.setIndex(new THREE.BufferAttribute(h,1))'),
+    # P12 (vertex work; NOTES 63): the scenery merge (`io` over every static town mesh while loading)
+    # builds each merged mesh non-indexed (it converts its inputs with toNonIndexed), so the kiosks,
+    # roofs and the garden bed run the vertex shader three times per triangle. For the scenery
+    # merge only, the merged geometry is now indexed where it is built: bit-identical vertices
+    # (position, normal, colour, uv) share one index. Same triangles in the same order, same values
+    # at every corner. Creature and pickup merges are left as they are (the creature ground-fit
+    # scan samples every sixth vertex of a creature's arrays and must see the same samples). The
+    # batcher's 4,000-vertex cap reads the merged mesh's original vertex count, so what is batched
+    # does not change.
+    ('function io(t){',
+     'function gcIdx(u){const P=u.attributes.position,Nn=u.attributes.normal,Cc=u.attributes.color,Uv=u.attributes.uv,n=P.count,Pa=P.array,Na=Nn.array,Ca=Cc.array,Ua=Uv?Uv.array:null,pU=new Uint32Array(Pa.buffer,Pa.byteOffset,3*n),nU=new Uint32Array(Na.buffer,Na.byteOffset,3*n),cU=new Uint32Array(Ca.buffer,Ca.byteOffset,3*n),uU=Ua?new Uint32Array(Ua.buffer,Ua.byteOffset,2*n):null,RM=new Uint32Array(n),first=[],HM=new Map;'
+     'for(let t=0;t<n;t++){const q3=3*t,q2=2*t,hh=(pU[q3]^Math.imul(pU[q3+1],73856093)^Math.imul(pU[q3+2],19349663)^Math.imul(nU[q3],83492791)^Math.imul(nU[q3+1],668265263)^Math.imul(nU[q3+2],374761393)^Math.imul(cU[q3],2246822519)^Math.imul(cU[q3+1],3266489917)^Math.imul(cU[q3+2],668265261)^(uU?Math.imul(uU[q2],2654435761)^Math.imul(uU[q2+1],40503):0))|0;let L=HM.get(hh),hit=-1;'
+     'if(L)for(const w of L){const s=first[w],w3=3*s,w2=2*s;if(pU[w3]===pU[q3]&&pU[w3+1]===pU[q3+1]&&pU[w3+2]===pU[q3+2]&&nU[w3]===nU[q3]&&nU[w3+1]===nU[q3+1]&&nU[w3+2]===nU[q3+2]&&cU[w3]===cU[q3]&&cU[w3+1]===cU[q3+1]&&cU[w3+2]===cU[q3+2]&&(!uU||uU[w2]===uU[q2]&&uU[w2+1]===uU[q2+1])){hit=w;break}}'
+     'hit>=0?RM[t]=hit:(RM[t]=first.length,L?L.push(first.length):HM.set(hh,[first.length]),first.push(t))}const m=first.length;if(m===n)return;'
+     'const cp=(A,k)=>{const o=new Float32Array(k*m);for(let i=0;i<m;i++)for(let j=0;j<k;j++)o[k*i+j]=A[k*first[i]+j];return o};u.setAttribute("position",new THREE.BufferAttribute(cp(Pa,3),3)),u.setAttribute("normal",new THREE.BufferAttribute(cp(Na,3),3)),u.setAttribute("color",new THREE.BufferAttribute(cp(Ca,3),3)),Ua&&u.setAttribute("uv",new THREE.BufferAttribute(cp(Ua,2),2));u.setIndex(new THREE.BufferAttribute(m>65535?RM:Uint16Array.from(RM),1));u.userData.gcN=n}'
+     'function io(t){'),
+    ('p&&u.setAttribute("uv",new THREE.BufferAttribute(p,2)),u.computeBoundingSphere();', 'p&&u.setAttribute("uv",new THREE.BufferAttribute(p,2)),io.idx&&gcIdx(u),u.computeBoundingSphere();'),
+    ("await __gtY('scenery-batch'),io(t)})()", "await __gtY('scenery-batch'),io.idx=1,io(t),io.idx=0})()"),
+    # P12 continued: the building merge (`v`) and the kiosk bin merge (`mergeBin`) build the biggest
+    # non-indexed meshes (kiosk bodies, roofs, the garden bed); their output is indexed the same way.
+    # Nothing edits these geometries after they are built (the vertex-editing code in the game works
+    # only on meshes marked keep, which never pass through these merges).
+    ('i.computeBoundingSphere(),i}function dropUnder', 'gcIdx(i),i.computeBoundingSphere(),i}function dropUnder'),
+    ('uvs&&out.setAttribute("uv",new THREE.BufferAttribute(uvs,2)),out.computeBoundingSphere(),out};const frame=', 'uvs&&out.setAttribute("uv",new THREE.BufferAttribute(uvs,2)),gcIdx(out),out.computeBoundingSphere(),out};const frame='),
+    ('||e&&t.geometry.attributes.position.count>e)return;', '||e&&(t.geometry.userData.gcN||t.geometry.attributes.position.count)>e)return;'),
 ]
 
 for old, new in EDITS + ([] if entry_only else GAME_FIXES) + (EXPERIMENTS[experiment] if experiment else []):

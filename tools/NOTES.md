@@ -909,3 +909,26 @@ VR-entry fix; each item is for discussion first.
     no loading cost. The unbatched big meshes (ground, kiosks, roofs; about
     1.8 million vertex runs over the whole scene, half of them shareable) keep
     their layout because game code may edit their vertices; see PERF.md 8.
+
+63. **Indexed scenery, and what the GPU side is not (3.15.31).** The biggest
+    meshes (kiosk bodies, roofs, the garden bed) come from three merge steps
+    in the game (`io` over static scenery, `v` for buildings, `mergeBin` for
+    the kiosks), all of which convert their inputs to non-indexed geometry.
+    P12 indexes their output where it is built: bit-identical vertices share
+    one index, same triangles in the same order. The creature merge is left as
+    it is, because the ground-fit scan samples every sixth vertex of a
+    creature's arrays and must keep seeing the same samples. Vertex runs of the
+    meshes drawn as themselves: 1,062,441 -> 576,758 over the whole scene. The
+    batcher's 4,000-vertex cap reads each mesh's original count, so batching is
+    unchanged. A first attempt (big meshes as batches of one) was reverted:
+    PERF.md 8.
+
+    Three new probes ruled out other GPU causes. `fill_probe.js`: transparent
+    layers average 0.04 per pixel (worst view 0.2), so fill is not the
+    problem. `overdraw_probe.js`: 1.82 opaque fragments shaded per covered
+    pixel in the game's order, and front to back would save only 5% (big
+    batches and the ground span many depths), so the sort stays. The Event's
+    two point lights (cut-off 11 and 12 m) stay off through its 90 s headless,
+    so lighting is not the Event's cost. `alloc_probe.js`: 7-35 KB/s allocated,
+    garbage collector 2-3% of main-thread time, so no collector pauses.
+    `visibility_census.js`: 0.4% of opaque triangles are never visible.

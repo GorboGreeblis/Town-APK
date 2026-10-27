@@ -257,3 +257,16 @@ is 60. `perf_log.js` reports both.
   bounding sphere had culled was drawn), and the batching slice grew from 438
   to 738 ms. Not worth it; indexing those meshes needs to happen where they
   are built, with the game's code that edits them checked first.
+- **P12** (3.15.31): indexed scenery, building and kiosk merges: 197
+  geometries, vertex runs of meshes drawn as themselves 1,062,441 -> 576,758.
+- **Ruled out, with numbers** (NOTES 63): transparent fill (0.04 layers per
+  pixel), opaque overdraw (1.82, front-to-back saves 5%), the Event's point
+  lights (off through the Event), garbage collection (2-3%), hidden geometry
+  (0.4%).
+- **Left, all of which change the look (the author's call):** level of detail
+  for dense meshes (several creature and kiosk parts carry 9,000-40,000
+  triangles for under 1,000 pixels at the census's resolution), anisotropy 16
+  -> 8 on the large textures, fixed foveation from the start level, render
+  scale. Multiview rendering (one draw for both eyes) would halve every draw
+  call but needs a newer three.js or shader patches and an entry-script
+  change, so it would ship first as an experiment APK.
