@@ -38,7 +38,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (47 blocks)
+## Gameplay, performance and other fixes (48 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -317,6 +317,17 @@ on a headset). The Artifact module gains a `warm()` that builds the three Gem pi
 drop (the same cached geometry and materials the Speech uses), and the effects warm-up adds them out
 of sight (y = -60), compiles the scene and takes them out again. Nothing is drawn differently; the
 Speech then reuses the compiled program.
+
+- **P16** (6 edits): (the author: "We just need to be steadily above 60 fps"; chose this over every other option):
+the planting Event already drops the quality governor to its lowest level on its first frame (scale
+1, full foveation, locked; NOTES 71), and the headset still measured 58-65 fps there. The governor's
+only lower step was an emergency 0.82 scale after three seconds at 1.6 times the frame budget (about
+45 fps), which 58 fps never reaches. Now, during the Event only, at the lowest level, when the
+smoothed frame rate stays under 62 fps for 216 frames (three seconds), the render scale drops to 0.9
+(19% fewer pixels; a slightly softer picture) for the rest of the Event, and returns to the level's
+own scale when the Event ends (unless the emergency drop fired meanwhile, which by the game's own
+rule stays for the session). A headset with headroom never triggers it. Logged as "event scale 0.9
+(...)"; the emergency drop still applies on top.
 
 ## Multiview (release path since 3.15.34)
 

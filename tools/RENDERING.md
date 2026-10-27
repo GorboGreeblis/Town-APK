@@ -13,7 +13,7 @@ that keep it fast and flash-free, each with the test that enforces it. Details a
 | Layers shim | `lib/xr_layers_shim.js` [42, 47] | The game's three.js only knows `baseLayer`, which the `layers` feature forbids. The game gets a facade session whose `baseLayer` is a projection layer; every frame callback is wrapped in `begin(frame)` / `end()`. Layer swaps (render scale changes) insert the new layer behind the old one, so no undrawn frame shows. |
 | Multiview | `lib/xr_multiview.js` and the `_multiview()` edits [65, 67] | Both eyes in one pass into a texture-array projection layer. The release path since 3.15.34. |
 | Batcher `gcEB` | the game, plus P8-P10, P12 | Merges opaque Phong/Lambert/Basic meshes into batches; per-part transform, colour, shininess and specular live in a uniform array read by a patched vertex shader. |
-| Quality governor `Ge` | the game, plus P1 [47] | Frame-time average against the 72 Hz budget; five levels, render scale [1.2, 1.1, 1, 1, 1] and fixed foveation [0, 0, 0, .5, 1]. |
+| Quality governor `Ge` | the game, plus P1 [47], P16 [72] | Frame-time average against the 72 Hz budget; five levels, render scale [1.2, 1.1, 1, 1, 1] and fixed foveation [0, 0, 0, .5, 1]. The planting Event locks the lowest level from its first frame [71]; in it, under 62 fps for 3 s drops the scale to 0.9 until the Event ends (P16). Emergency: 0.82 at 1.6x the budget, for the session. |
 
 ## 2. Boot to first frame
 

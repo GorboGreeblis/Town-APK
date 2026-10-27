@@ -850,6 +850,24 @@ GAME_FIXES = [
      'return{build(){L.push(((t2,dt)=>(Bulb.update(dt||.016),asm&&asm.step(Math.min(dt||.016,.1)))))},assemble:assemble,model:model,warm(){const g=new THREE.Group;[0,1,2].forEach((k=>g.add(model(k))));R(T.sphere(.045,8,6),drop(),g,null,null,[1,1.5,1]);return g}}})()'),
     ('Nt.splat(999,999,.5,"#ffffff")}catch(e){}})(),Ze(),',
      'Nt.splat(999,999,.5,"#ffffff")}catch(e){}})(),(function(){try{const wg=ARTS.warm();wg.position.y=-60,C.add(wg),wg.updateMatrixWorld(!0),O.compile(C,B),C.remove(wg)}catch(e){vo(e,"gem-prewarm")}})(),Ze(),'),
+    # P16 (the author: "We just need to be steadily above 60 fps"; chose this over every other option): the
+    # planting Event already drops the quality governor to its lowest level on its first frame (scale 1, full
+    # foveation, locked; NOTES 71), and the headset still measured 58-65 fps there. The governor's only lower
+    # step was an emergency 0.82 scale after three seconds at 1.6 times the frame budget (about 45 fps), which
+    # 58 fps never reaches. Now, during the Event only, at the lowest level, when the smoothed frame rate stays
+    # under 62 fps for 216 frames (three seconds), the render scale drops to 0.9 (19% fewer pixels; a slightly
+    # softer picture) for the rest of the Event, and returns to the level's own scale when the Event ends (unless
+    # the emergency drop fired meanwhile, which by the game's own rule stays for the session). A
+    # headset with headroom never triggers it. Logged as "event scale 0.9 (...)"; the emergency drop still
+    # applies on top.
+    ('maxLayerRebuilds:30,targetHz:72,', 'maxLayerRebuilds:30,evScale:.9,evFps:62,evFrames:216,targetHz:72,'),
+    ('t>0&&t<200&&(Ge.ema=(1-e.emaAlpha)*Ge.ema+e.emaAlpha*Math.min(t,2*Ge.budget),Ge.sos||Ge.level!==',
+     't>0&&t<200&&(Ge.ema=(1-e.emaAlpha)*Ge.ema+e.emaAlpha*Math.min(t,2*Ge.budget),Be&&!Ge.sos&&!Ge.ev&&Ge.level===e.quality.length-1&&(Ge.ema>1e3/e.evFps?++Ge.evN>e.evFrames&&(Ge.ev=1,gbLayer(e.evScale,e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale "+e.evScale+" (under "+e.evFps+" fps for "+e.evFrames+" frames)")):Ge.evN=0),Ge.sos||Ge.level!=='),
+    ('Ae(e.quality.length-1),Ge.lockUntil=r+e.finaleLockMs,', 'Ae(e.quality.length-1),Ge.evN=0,Ge.lockUntil=r+e.finaleLockMs,'),
+    ('else Ve.forEach((t=>{t.visible=!0})),Ve=[],Ge.lockUntil=0,B.far=t.far,B.updateProjectionMatrix()}',
+     'else Ve.forEach((t=>{t.visible=!0})),Ve=[],Ge.lockUntil=0,B.far=t.far,B.updateProjectionMatrix(),Ge.ev&&(Ge.ev=0,Ge.evN=0,Ge.sos||gbLayer(e.quality[Ge.level],e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale off: "+(Ge.sos?"the emergency scale "+e.sosScale+" stays":"back to "+e.quality[Ge.level])))}'),
+    ('Ge.rebuilds=0,Ge.sos=0,Ge.hard=0,', 'Ge.rebuilds=0,Ge.sos=0,Ge.hard=0,Ge.ev=0,Ge.evN=0,'),
+    ('const Ge={level:2,', 'const Ge={ev:0,evN:0,level:2,'),
 ]
 # Multiview (NOTES 65, 67): the experiment became the release in 3.15.34 (the author, after the headset
 # run: "We're going to use the Multiview version as the main build").

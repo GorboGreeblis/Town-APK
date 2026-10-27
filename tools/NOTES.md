@@ -1078,3 +1078,22 @@ VR-entry fix; each item is for discussion first.
     and hides far scenery; the headset log showed level 4 throughout the
     Event. The step-by-step climb (36 frames over budget, 2 s between steps)
     applies only to ordinary play. Nothing to change.
+
+72. **The Event's adaptive render scale (P16, 3.15.37).** Everything that
+    leaves the picture identical had been done (70, 71), and the author's
+    requirement is to stay steadily above 60 fps. Of the options put to the
+    author (an adaptive scale in the Event, coarser distant creatures,
+    anisotropy 16 to 8, waiting for the OVR reading) the author chose the
+    first. The governor's only step below its lowest level was the emergency
+    0.82 scale at 1.6 times the frame budget (about 45 fps), which the
+    Event's 58 fps never reaches. Now, in the Event and at the lowest level,
+    a smoothed frame rate under 62 fps for 216 frames drops the scale to 0.9
+    for the rest of the Event (19% fewer pixels; the picture is a little
+    softer), and the Event's end restores the level's own scale, unless the
+    emergency drop fired meanwhile, which by the game's rule stays for the
+    session. `tools/test_governor.js` slows frames on purpose (a busy loop)
+    and checks: no trigger in town, the trigger in the Event with a layer
+    swap and multiview still live, the end of it. Estimate on the author's
+    Quest 3S, from the 3.15.33 run (58-65 fps at the lowest level): about
+    64-70 fps once engaged, if three quarters of the Event's GPU time scales
+    with pixels; the first three seconds of the Event stay as before.
