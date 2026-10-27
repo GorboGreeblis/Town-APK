@@ -413,14 +413,20 @@ GAME_FIXES = [
     ),
     # B20 (author): z-fighting where the metal and the glowing parts of
     # Hennrick's forearm cuffs overlap. The cuff is a cylinder of radius .36
-    # whose surface reaches z .41; its three cyan lights are boxes centred at
-    # z .40 with depth .02, so their front faces lie exactly on the cuff's
-    # surface. The lights now sit half inside the cuff (centre z .415: back
-    # face .405 inside the metal, front face .425 proud by 1.5 cm) and the cuff
-    # is .37 so it clears the forearm's noise-displaced skin (.34 + up to .018).
+    # (height .26, so its top cap is at y -.99) whose surface reaches z .41;
+    # its three cyan lights are boxes .08 x .04 x .02 centred at z .40 and
+    # y -1.07 / -1.01 / -.95. Two exact coincidences: the lights' front faces
+    # lay on the cuff's surface, and the middle light's top face (y -.99) lay
+    # in the plane of the cuff's top cap, a cyan-on-metal sliver seen from
+    # above (tools/test_coincident.js finds it; 3.15.22 fixed only the first).
+    # The lights now sit half inside the cuff (centre z .415: back face .405
+    # inside the metal, front face .425 proud by 1.5 cm), 1 cm higher
+    # (y -1.06 / -1.00 / -.94, so the cap plane passes through the middle
+    # light's body instead of along a face), and the cuff is .37 so it clears
+    # the forearm's noise-displaced skin (.34 + up to .018).
     (
         'R(T.cyl(.36,.36,.26,20),p,e,[.2*t,-1.12,.05]);for(let o=0;o<3;o++)R(T.box(.08,.04,.02),u,e,[.2*t,.06*o-1.07,.4]);',
-        'R(T.cyl(.37,.37,.26,20),p,e,[.2*t,-1.12,.05]);for(let o=0;o<3;o++)R(T.box(.08,.04,.02),u,e,[.2*t,.06*o-1.07,.415]);',
+        'R(T.cyl(.37,.37,.26,20),p,e,[.2*t,-1.12,.05]);for(let o=0;o<3;o++)R(T.box(.08,.04,.02),u,e,[.2*t,.06*o-1.06,.415]);',
     ),
     # B11: Nextessa (the pizza courier) pinned against the Ancient. Inside the
     # church she walked straight at the player; when the player stood on the far

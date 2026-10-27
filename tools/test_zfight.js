@@ -1,7 +1,7 @@
 // Z-fighting / flicker candidates (graphical pass, T13): a static analysis of the
 // built world. Every visible, non-UI triangle is put in a bucket by its world
 // plane (normal and distance, quantised); inside a bucket, triangles that come
-// from different meshes (or from different source parts of a merged batch) and
+// from different meshes (the batcher's merged sources stand in for its batch meshes) and
 // overlap in the plane are coplanar overlaps: two surfaces drawn at the same
 // depth, which the GPU resolves differently from frame to frame (shimmer) unless
 // one of them is offset (polygonOffset) or ordered (depthTest off, renderOrder).
@@ -20,20 +20,27 @@ const limit = +(process.argv.find((a, i) => process.argv[i - 1] === '--limit') |
   const { expect, note, failures } = reporter();
   const g = await boot({ file, vr: false });
   const r = await g.page.evaluate((limit) => {
-    const D = window.__dbg, C = D.C, T = window.THREE, EB = (D.gcEB && D.gcEB.list) || [];
-    const batchOf = new Map(); for (const E of EB) batchOf.set(E.mesh, E);
+    const D = window.__dbg, C = D.C, T = window.THREE;
     const Q = 1000;                                   // plane quantisation: 1 mm and 0.001 in the normal
     const buckets = new Map(); let tris = 0, meshes = 0, skipped = 0;
     const v = [new T.Vector3(), new T.Vector3(), new T.Vector3()], n = new T.Vector3(), e1 = new T.Vector3(), e2 = new T.Vector3();
     const handled = (m) => !!(m && (m.polygonOffset || m.depthTest === false || m.depthWrite === false || m.transparent));
     C.updateMatrixWorld(true);
+    // The batcher merges small meshes into batch meshes whose geometry is stored per part in local space
+    // and placed by per-part uniforms in the vertex shader, so a batch mesh's vertices are not world
+    // positions. The merged sources stay in the scene, parked on layer 31 with live world matrices, so the
+    // world geometry is every drawn layer-0 mesh that is not a batch mesh, plus every parked source.
+    let batchMeshes = 0, parked = 0;
     C.traverse((o) => {
       if (!o.isMesh || !o.visible || o.userData.xrUI) return;
+      const onScreen = (o.layers.mask & 1) !== 0, isParked = (o.layers.mask & (1 << 31)) !== 0;
+      if (!onScreen && !isParked) return;
+      if (o.geometry.attributes.gcPart) { batchMeshes++; return; }
       let p = o; while (p) { if (p.visible === false || p.userData.xrUI) return; p = p.parent; }
       const geo = o.geometry, pos = geo.attributes.position; if (!pos) return;
       const count = geo.index ? geo.index.count : pos.count;
       if (count > 600000) { skipped++; return; }
-      meshes++;
+      meshes++; if (isParked) parked++;
       const mats = Array.isArray(o.material) ? o.material : [o.material];
       const groups = geo.groups && geo.groups.length ? geo.groups : [{ start: 0, count, materialIndex: 0 }];
       const inst = o.isInstancedMesh ? o.count : 1; const im = new T.Matrix4(), mw = new T.Matrix4();
@@ -53,9 +60,7 @@ const limit = +(process.argv.find((a, i) => process.argv[i - 1] === '--limit') |
             // Keep the triangle in plane coordinates (u,v) for the overlap test.
             const ax = Math.abs(n.x), ay = Math.abs(n.y), az = Math.abs(n.z); const drop = ax > ay && ax > az ? 'x' : ay > az ? 'y' : 'z';
             const pts = v.map((p) => drop === 'x' ? [p.y, p.z] : drop === 'y' ? [p.x, p.z] : [p.x, p.y]);
-            let part = -1, src = null; const E = batchOf.get(o);
-            if (E && geo.attributes.gcPart) { part = Math.round(geo.attributes.gcPart.getX(geo.index ? geo.index.getX(i) : i)); src = E.P[part] && E.P[part].o; if (src) { let q = src; while (q && q.parent && q.parent !== D.gcEB.root && q.parent !== C) q = q.parent; src = q; } }
-            b.push({ mesh: o, inst: k, part, src, pts, mat, c: [(v[0].x + v[1].x + v[2].x) / 3, (v[0].y + v[1].y + v[2].y) / 3, (v[0].z + v[1].z + v[2].z) / 3] });
+            b.push({ mesh: o, inst: k, part: -1, src: null, pts, mat, c: [(v[0].x + v[1].x + v[2].x) / 3, (v[0].y + v[1].y + v[2].y) / 3, (v[0].z + v[1].z + v[2].z) / 3] });
             tris++;
           }
         }
@@ -112,9 +117,10 @@ const limit = +(process.argv.find((a, i) => process.argv[i - 1] === '--limit') |
       const eye = at.clone().addScaledVector(n3, 2.4).addScaledVector(side, 1.7);
       // Isolate the two surfaces (and the lights) on a private layer so edge aliasing of the rest of the
       // scene cannot count as flips; only a depth fight between these two can change pixels.
+      // Layer 30 is free (the game uses 0, 1, 2 and the batcher's 31); the two meshes and the lights go there.
       const objs = [f.objA, f.objB].filter(Boolean); const moved = [];
-      C.traverse((o) => { if (o.isLight) moved.push(o); }); moved.push(...objs);
-      const masks = moved.map((o) => o.layers.mask); moved.forEach((o) => o.layers.set(31)); cam.layers.set(31);
+      C.traverse((o) => { if (o.isLight) moved.push(o); }); objs.forEach((o) => o.traverse((q) => moved.push(q)));
+      const masks = moved.map((o) => o.layers.mask); moved.forEach((o) => o.layers.set(30)); cam.layers.set(30);
       let flips = 0;
       for (let k = 0; k < 2; k++) {
         cam.position.copy(eye).addScaledVector(side, k * 0.001); cam.lookAt(at); cam.updateMatrixWorld(true);
@@ -126,9 +132,9 @@ const limit = +(process.argv.find((a, i) => process.argv[i - 1] === '--limit') |
     }
     O.setRenderTarget(prevRT); O.xr.enabled = prevXR;
     for (const f of list) { delete f.objA; delete f.objB; }
-    return { meshes, tris, skipped, buckets: buckets.size, candidates: list.filter((f) => !f.handled && !f.sameLook).slice(0, limit), sameLook: list.filter((f) => !f.handled && f.sameLook).slice(0, limit), handledPairs: list.filter((f) => f.handled).length, total: list.length };
+    return { meshes, parked, batchMeshes, tris, skipped, buckets: buckets.size, candidates: list.filter((f) => !f.handled && !f.sameLook).slice(0, limit), sameLook: list.filter((f) => !f.handled && f.sameLook).slice(0, limit), handledPairs: list.filter((f) => f.handled).length, total: list.length };
   }, limit);
-  note(`${r.meshes} meshes, ${r.tris} planar triangles in ${r.buckets} plane buckets (${r.skipped} huge meshes skipped)`);
+  note(`${r.meshes} meshes (${r.parked} batched sources in place of ${r.batchMeshes} batch meshes), ${r.tris} planar triangles in ${r.buckets} plane buckets (${r.skipped} huge meshes skipped)`);
   note(`${r.total} coplanar-overlap pairs, ${r.handledPairs} already handled (offset/order/transparent)`);
   for (const c of r.candidates) console.log(`  CAND  ${c.pair}  ${c.tris} tris  near (${c.at.join(', ')})  render flips ${c.flipPct}% of pixels with a 1 mm camera shift${c.flipPct >= 0.5 ? '  <- FLICKERS' : '  (stable)'}`);
   for (const c of r.candidates) if (c.flipPct >= 0.5) console.log(`        A ${JSON.stringify(c.A)}\n        B ${JSON.stringify(c.B)}`);

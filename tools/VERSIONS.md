@@ -6,7 +6,8 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 
 | Version | versionCode | What changed | Headset |
 | --- | --- | --- | --- |
-| 3.15.22 | 22 | Hennrick's forearm cuff lights sunk into the cuff, cuff clears the skin (B20) [52] | pending |
+| 3.15.23 | 23 | B20 completed: the cuff lights also moved 1 cm up so the middle light's top face no longer lies in the plane of the cuff's top cap (found by the new curved z-fighting test) [53]; root `index.html` mirror | pending |
+| 3.15.22 | 22 | Hennrick's forearm cuff lights sunk into the cuff, cuff clears the skin (B20, first half) [52] | superseded by 3.15.23 before a headset run |
 | 3.15.21 | 21 | Loading panel 1.3 x 0.65 m at 5 m (about 15 degrees) with a horizon in the loading sky [51]; the 3.15.20 page-start asset download | pending |
 | 3.15.20 | (not released) | Texture assets start downloading at page start (overlaps the script parse). Entry-script change: parked until a headset run [50] | not run |
 | **3.15.19** | **20** | Sphere-traced blob-body march: characters build about twice as fast, geometry identical [49]; native-start render-scale governor; build-time texture probe points (no capture readback) [45] | **Author's full run: passes, no new issues. Upload candidate.** |

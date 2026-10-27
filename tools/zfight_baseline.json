@@ -1,0 +1,11 @@
+{
+  "_about": "Depth fights tools/test_coincident.js found that the author has looked at and accepted (or not yet decided on). Key: the place and the two looks without texture ids. Only fights not listed here fail the pass. Pictures: run the test with --save and look in tools/.runs/coinc/.",
+  "accepted": [
+    { "key": "town | [Phong#5f5a68/e000000/map]  vs  [Phong#6f6a78/e000000/map]", "why": "two-tone pedestal at the town centre: the two boxes share their top face plane, 2.64 m up, out of sight from eye height; the author's call (2026-10-27)" },
+    { "key": "ANOMALEE | [Phong#ffffff/e000000/vc]  vs  [Phong#ffffff/e5a0a5a/map]", "why": "Anomalee's side screen lies in the plane of the panel it is mounted on; creature model, the author's call (2026-10-27)" },
+    { "key": "ANOMALEE | [Basic#ffffff/map]  vs  [Phong#ffffff/e000000/vc]", "why": "the top edge of Anomalee's chest screen lies in the plane of the body face; creature model, the author's call (2026-10-27)" },
+    { "key": "MUSHROOM | [Phong#3a2414/e000000]  vs  [Phong#ffffff/e000000/map/vc]", "why": "a dark brown patch against Mushroom's textured stem, growth 3.4 (nearly a crossing); creature model, the author's call (2026-10-27)" },
+    { "key": "town | [Phong#2c2a26/e000000]  vs  [Phong#4a4238/e000000]", "why": "a twig along a branch in one tree, two dark browns, 2.9 m up; the author's call (2026-10-27)" },
+    { "key": "town | [Phong#4a4238/e000000]  vs  [Phong#f0ece4/e000000]", "why": "twig end caps on a blossom cluster's surface in the same tree, 2.9 m up; the author's call (2026-10-27)" }
+  ]
+}

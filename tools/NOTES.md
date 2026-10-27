@@ -57,6 +57,9 @@ VR-entry fix; each item is for discussion first.
 48. Sharper Gallery painting (3.15.16/17)
 49. Loading: the blob-body march (3.15.19)
 50. 3.15.19 confirmed on the headset (author's full run, no new issues)
+51. Loading panel, third size, and a horizon (3.15.21)
+52. B20, Hennrick's cuffs (3.15.22)
+53. Curved z-fighting: a geometric test, the batcher's parked sources, B20 completed (3.15.23)
 
 1. **Immersive launch from a loopback origin.** Meta's immersive app mode was
    designed for hosted PWAs whose Digital Asset Links the browser can verify.
@@ -686,3 +689,37 @@ VR-entry fix; each item is for discussion first.
     cuffs: the arm parts are merged, so the metal and glow meshes are not
     separate objects; the fix rests on the geometry.
 
+53. **Curved z-fighting: a geometric test, the batcher's parked sources, B20
+    completed (3.15.23).** The author asked for any remaining z-fighting to be
+    caught. Two facts shaped the tool. First, the headless renderer cannot show
+    it: SwiftShader's depth precision is finer than the Quest's, so the pre-fix
+    cuff (a flat face tangent to a cylinder) does not flicker here under any
+    camera or near-plane jitter (`zfight_sweep.js`, 568 views, found nothing).
+    Second, the planar test had been reading the batch meshes' vertices as
+    world positions, but the batcher stores each part in its own local space
+    and places it with per-part uniforms in the vertex shader (`gcR`); the
+    merged source meshes stay in the scene, parked on layer 31 with live
+    matrices (the raycaster uses them). Both tests now take the parked sources
+    as the world geometry and skip the batch meshes, and isolate on layer 30
+    (31 belongs to the batcher). `tools/test_coincident.js` is geometric: every
+    drawn triangle up to 0.6 m goes into a 5 cm hash; pairs from different
+    surfaces with different looks and normals within 15 degrees are sampled
+    2 mm apart for points within 0.5 mm of the other's plane and inside it
+    (1 mm from its edges, so tiles meeting at an edge do not count). Counting
+    again at a fifth of the tolerance separates the cases by how the region
+    grows: coplanar faces 1x, a flat face tangent to a round one about 2.2x,
+    two surfaces crossing at an angle about 5x; only the first two fail. The
+    whole town is 640k triangles and 115k sampled pairs, about 7 minutes.
+    Every material in the character models is DoubleSide, so a face shows
+    both ways and the facing rule rarely excludes anything. On 3.15.22 the
+    test still found a depth fight on Hennrick's cuffs: the middle light's top
+    face (y -.99) lay exactly in the plane of the cuff's top cap, a cyan sliver
+    in the metal seen from above, the likelier reading of the author's "metal
+    and the glowing part overlapping" than the tangent front face 3.15.22
+    fixed. 3.15.23 moves the lights 1 cm up. Six other depth fights remain and
+    are the author's call (pictures in `tools/.runs/coinc/`, keys in
+    `tools/zfight_baseline.json`): Anomalee's two screens on their panels, a
+    brown patch on Mushroom's stem, the two-tone top of the pedestal at the
+    town centre (2.64 m up), and two twig ends inside one tree's blossom
+    cluster (2.9 m up). 37 crossings (strips through skin, caps through
+    bodies) are listed, not failed.
