@@ -1122,3 +1122,37 @@ VR-entry fix; each item is for discussion first.
     the frame rates themselves are estimates until a headset runs it. The
     harness now reaches the governor in its test copies (it lives in another
     scope than the debug hook).
+
+74. **B27's second variant, and checks that cannot be lucky (3.15.39).** The
+    3.15.38 standard tier failed `multiview_check.js` again on a flat-shaded
+    Phong program compiled during the Speech. The Speech draws the Gem under
+    Sparkakus's light bulb, whose point light is part of the shader key; the
+    3.15.35 warm-up compiled the Gem only with the town's lights, so the
+    check passed or failed depending on whether the bulb was lit when the
+    Gem first drew. The warm-up now also runs `Bulb.warm()` with the Gem in
+    the scene. To stop relying on timing, `multiview_check.js` now builds the
+    Gem pieces at load and compiles them both ways, counting only programs
+    the Gem's own materials use (a whole-scene compile also visits hidden
+    controller rays and labels): 3.15.38 fails it (one flat Phong program,
+    with the bulb), 3.15.39 passes. `test_content.js` fails on any program
+    compiled during its play, which covers far more of the game (gifts,
+    outfits, battles, the robin, vignette tokens, the Event, Backpacka): none.
+    Also from writing the content test: there are 90 two-line vignettes
+    between townsfolk (not 78) plus the Ancient's 12; a dancer's gift line
+    "Let's dance!" starts their battle when it closes; the battle module
+    clears its state if a second battle opens over the first, which a player
+    cannot do (no menu while a panel is open) but a test can.
+
+75. **The emergency drop ends with the Event (P18, 3.15.40).** Cross-checking
+    VRC.Quest.Performance.4 (recommended: render scale at least 85% for the
+    majority of the experience; "individual, non-consecutive sequences such
+    as boss battles may drop below 85% ... but must return above 85% after")
+    against the governor: P16 and P17 end with the Event, but the game's own
+    emergency drop (0.82 after three seconds at 1.6 times the frame budget,
+    about 45 fps) stayed for the rest of the session. The author chose to
+    end it with the Event too: when it fires during the Event it is marked
+    and cleared at the Event's end, and the level's own scale comes back.
+    Fired in ordinary play it stays, as the game always had it (and the
+    Event scale then stays out of the Event). `test_governor.js` covers all
+    three: the drop held off, fired during the Event (cleared at the end),
+    and fired in town (stays).

@@ -69,6 +69,19 @@ const outDir = path.join(root, 'tools/.runs/multiview');
   // half-drawn multiview frame: no texture upload or copy, mipmap build, pixel read, blit or switch to another
   // framebuffer while a frame draws (the game counts them, tools/lib/xr_multiview.js). Pickups, a dialogue, the
   // shop, a battle panel and the Speech. Runs first, before the comparisons below switch programs to the classic path and back.
+  // B27, deterministic: the Gem (the Speech) must be fully warmed, with and without Sparkakus's light bulb on. Compiling
+  // its pieces both ways now must create no program (a missed variant would otherwise only show in some runs).
+  const gemWarm = await page.evaluate(() => {
+    const D = window.__dbg, O = D.O; if (!D.ARTS || !D.ARTS.warm || !D.Bulb) return { skipped: true };
+    // only the Gem's own materials count: compile() also visits hidden objects (controller rays, labels) of no interest here
+    const before = new Set(O.info.programs), g = D.ARTS.warm(); g.position.set(0, -60, 0); D.C.add(g); g.updateMatrixWorld(true);
+    const mats = new Set(); g.traverse((o) => o.material && mats.add(o.material));
+    const fresh = () => { const n = []; for (const m of mats) { const pr = O.properties.get(m); for (const p of (pr.programs ? pr.programs.values() : [])) if (!before.has(p)) n.push(m.type + (m.flatShading ? ' flat' : '')); } return n; };
+    O.compile(D.C, D.B); const plain = fresh(); D.Bulb.warm(); const both = fresh(); D.C.remove(g);
+    return { plain: plain.length, bulb: both.length - plain.length, names: both };
+  });
+  if (gemWarm.skipped) note('Gem warm-up check skipped (a build before 3.15.35)');
+  else expect('the Gem\'s shaders are all warmed at load, with and without the light bulb (B27)', gemWarm.plain === 0 && gemWarm.bulb === 0, JSON.stringify(gemWarm));
   const up = await page.evaluate(async () => {
     const D = window.__dbg, X = window.__gtXR, wait = (ms) => new Promise((r) => setTimeout(r, ms)); const s0 = { ...X.mvStats, inFrameKinds: { ...X.mvStats.inFrameKinds } }; const np0 = D.O.info.programs.length;
     const b = D.le.list.find((x) => x.visible && !x.userData.taken); if (b) { D.At.position.set(b.position.x, D.At.position.y, b.position.z); await wait(1500); }

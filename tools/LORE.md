@@ -41,6 +41,7 @@ it is **Zollod** who is shy (the book cures him), the **Gem trade is Gemtoe's**,
 - **WANTED posters:** two kinds. One shows an alien face; the other shows a goo
   creature and the name **GLOOPERNAUGHT**. *(inference: the alien is how the
   Sheriff pictures the Human he is hunting.)*
+- **The robin:** a robin perches in the park; pick it and it flies off.
 - **Parcels at the Post Office:** addressed "To Montreal", "To Cobourg" and
   "To Bangkok" (and one without a label).
 - **The Portal.** A gateway between eras, currently locked: "All travel
@@ -179,9 +180,13 @@ Two nodes have no character in town: the **Ancient** (dark, bottom right) and **
 Gorbo's colour, high in the centre, tied only to Mama).
 
 Across the middle runs a row of twelve small tokens: a cube, a spore, a pixel, a crown, goo, a sprout,
-a letter, a note, a card, a gem, a tile, a coin. *(inference: one for each townsperson: Mont's cube,
-the Sheriff's spore, Anomalee's pixel, King Dino's crown, Gooward's goo, Zollod's sprout, Somlet's
-letter, Fortizmo's note, Sparkakus's card, Gemtoe's gem, Glyph's tile, King Dino's coin.)*
+a letter, a note, a card, a gem, a tile, a coin. They are the townsfolk's Gree-mail: in the vignettes each
+character sends their own token to the other (the game's `SIG` table): Hennrick a cube, the Sheriff a
+spore, Anomalee a pixel, King Dino a crown, Gooward and Mama Gorbo goo, Zollod a sprout, Somlet a letter,
+Fortizmo a note, Etcher and Sparkakus a card, Gemtoe a gem, Glyph a tile, Montgummery a coin, and the
+Ancient a spore. Each also has a gesture and an emote they show when an exchange starts (Hennrick nods
+"!", Anomalee glitches "?", King Dino puffs "★", Gooward wobbles "~", Zollod sways "✿", Somlet dozes "z",
+Fortizmo grooves "♪", Gemtoe twirls "✦", Glyph giggles "?", Mama Gorbo bows "♥", the Ancient dozes "…").
 
 ## Currency, items and rewards
 
@@ -229,12 +234,15 @@ editions.") and the Ancient texts.
 - **Dance battles** (vs Etcher, Glyph, Montgummery; "KING DINO on drums."):
   rock / scissors / paper as "Rock out!", "Do the splits like scissors!",
   "Go horizontal like paper!"; stamina 10; "BOW OUT" / "TAKE A BOW" ("You take a bow.", "The beat
-  won't let you go!"); first win: "<name> awards you an Ancient Artifact!". Each dancer has a signature
-  move: Montgummery "Robot steps", Etcher "Tentacle twists", Glyph "Macarena moves".
+  won't let you go!"); first win: "<name> awards you an Ancient Artifact!". Each dancer's stamina bar
+  counts their signature move: "Robot steps left" (Montgummery), "Tentacle twists left" (Etcher),
+  "Macarena moves left" (Glyph). A Blossom given to a dancer is an invitation: "Let's dance!", and the
+  battle starts when the line closes.
 - **Gardening event**: at the Summoning Pillar with Stone, Seeds and Snacks; townsfolk gather in a ring,
   plant, then go home. Each says their gardening line (below).
 - **Backpacka**: Fortizmo practises "a song for the coming of the legendary Backpacka". During the
-  planting Event Backpacka comes: a long-necked creature with green wings arrives, lands, drinks at the
+  planting Event, once the planting has begun and the townsfolk have taken their places, they form a
+  ring round the garden and, when the Seeds were brought, Fortizmo plays her horn; then Backpacka comes: a long-necked creature with green wings arrives, lands, drinks at the
   pond, rises, flies over the garden, spreads its wings and sprays water over it, then leaves (the
   animation's own stages: arrive, down, drink, up, to the garden, splay, spray, gone; about 70 s).
 - **Pizza**: the TELEPHONE calls Nextessa's inter-temporal pizza shop; a courier delivers, even into the
@@ -288,8 +296,10 @@ What each says when given a Blossom, and at the planting Event (the campfire lin
 
 ### Vignettes
 
-78 two-line exchanges between pairs (the `PAIRS` table) play out around town, plus the Ancient's twelve
-(above). `tools/spellcheck_dialogue.py --who X` prints every line per character. Recurring threads:
+90 two-line exchanges between pairs (the `PAIRS` table) play out around town, plus the Ancient's twelve
+(above), which only play while the player is inside the church (and there only they do). Each plays
+either as two speech bubbles over the speakers or as an exchange of their Gree-mail tokens (above);
+Zollod joins in only once he is cured of his shyness. `tools/spellcheck_dialogue.py --who X` prints every line per character. Recurring threads:
 Hennrick wanting to go home, everyone refusing King Dino's coins, Blossoms-only at the bar, Etcher
 etching everything (including citations and snores), Mont having eaten the Library's VHS tapes, Mama
 offering everyone a goo burger, Gemtoe claiming whatever is worth something.

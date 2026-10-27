@@ -38,7 +38,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (49 blocks)
+## Gameplay, performance and other fixes (50 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -315,8 +315,11 @@ flat-shaded, transparent Phong material that the game creates the first time the
 loading warm-up ever saw it and its shader compiled in the middle of the Speech (a 50-1,000 ms stall
 on a headset). The Artifact module gains a `warm()` that builds the three Gem pieces and one glue
 drop (the same cached geometry and materials the Speech uses), and the effects warm-up adds them out
-of sight (y = -60), compiles the scene and takes them out again. Nothing is drawn differently; the
-Speech then reuses the compiled program.
+of sight (y = -60), compiles the scene and takes them out again. The Speech draws the Gem under
+Sparkakus's light bulb, whose point light changes the shader, so the scene is compiled a second time
+with the bulb's light on (`Bulb.warm()`, as the warm-up already does for everything else; 3.15.39,
+after the check caught the second variant). Nothing is drawn differently; the Speech then reuses the
+compiled programs.
 
 - **P16** (6 edits): (the author: "We just need to be steadily above 60 fps"; chose this over every other option):
 the planting Event already drops the quality governor to its lowest level on its first frame (scale
@@ -338,6 +341,13 @@ step on any headset: still under 60 fps for 216 frames at 0.9, the scale goes to
 own emergency scale, which otherwise waits for 1.6 times the frame budget, about 45 fps). Both end
 with the Event, like P16. Logged as "event scale 0.9 (Quest 3, from the start)" and "event scale
 0.82 (under 60 fps for 216 frames)".
+
+- **P18** (3 edits): (VRC.Quest.Performance.4, recommended: render scale at least 85%, except "individual, non-
+consecutive sequences such as boss battles" that "return above 85% after"; the author: "let's do
+it"): the game's emergency drop (0.82 after three seconds at 1.6 times the frame budget) stayed for
+the rest of the session. When it fires during the planting Event it now ends with the Event, like
+P16 and P17, and the scale returns to the level's own. Fired in ordinary play, it keeps the game's
+rule and stays.
 
 ## Multiview (release path since 3.15.34)
 

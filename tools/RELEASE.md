@@ -187,6 +187,19 @@ same spelling as the listing name in the developer dashboard.
    comfort rating, Data Use Checkup (this app collects nothing), supported
    devices (Quest 3 and Quest 3S only, section 5c), pricing, and a privacy
    policy URL (required even for apps that collect no data).
+   **Age group self-certification** is a separate, mandatory step (Developer
+   Dashboard): an app cannot be published without it. Declaring a mixed
+   audience (under 13 and 13+) requires the app to call Meta's Get Age Category
+   API, and users under 10 must be kept out; a browser-packaged game has no
+   access to that API, so declare **teens and adults (13+)** unless you want to
+   take on the youth requirements. The privacy policy's children's section stays
+   true either way (nothing is collected from anyone). Comfort rating: Moderate
+   (stick locomotion and snap turn).
+   Meta's list of the checks most often failed at review: Asset.2 (cover art
+   branding), Asset.5 (screenshots captured on Quest, unedited), Functional.2
+   (pause), Functional.7, Security.1, Security.2, Performance.1, Input.7. The
+   ones that apply here are covered in `VRC.md`; give Asset.2 and Asset.5 extra
+   care (source: the CC0 VRC guide the author supplied, section 10).
 5. Submit for review. If the reviewer raises any of the items in `tools/NOTES.md`
    (loading indicator, 64-bit wording), send me the exact text and we decide
    the fix together.
