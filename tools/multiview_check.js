@@ -75,11 +75,11 @@ const outDir = path.join(root, 'tools/.runs/multiview');
     try { const m = D.It.all.find((h) => h.def && h.def.name === 'MONTGUMMERY'); D.Dbt.start(m); await wait(2000); D._t.close(); } catch (e) {}
     try { D.Kt.artifacts = 3; D.LIB.talk(); const adv = setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250); await wait(8000); clearInterval(adv); } catch (e) {}
     await wait(500);
-    const s1 = X.mvStats; return { pickups: !!(a && b), preUploads: s1.preUploads - s0.preUploads, inFrame: s1.inFrame - s0.inFrame, kinds: s1.inFrameKinds, programs: s1.programsDuringPlay - s0.programsDuringPlay };
+    const s1 = X.mvStats; return { pickups: !!(a && b), preUploads: s1.preUploads - s0.preUploads, inFrame: s1.inFrame - s0.inFrame, kinds: s1.inFrameKinds, programs: s1.programsDuringPlay - s0.programsDuringPlay, names: (s1.newPrograms || []).slice((s0.newPrograms || []).length) };
   });
   note(`pickups, dialogue, shop: ${up.preUploads} texture uploads moved before the frame, ${up.inFrame} while a frame drew ${JSON.stringify(up.kinds)}, ${up.programs} programs compiled`);
   expect('nothing saves and reloads a half-drawn frame (uploads before the frame, no switch, read or blit while it draws), across pickups, dialogue, shop, battle and the Speech', up.preUploads > 0 && up.inFrame === 0, JSON.stringify(up));
-  expect('no shader compiled during that play', up.programs === 0, `${up.programs} programs`);
+  expect('no shader compiled during that play', up.programs === 0, `${up.programs} programs: ${(up.names || []).join(' | ')}`);
   await run('spawn');
   const centre = await page.evaluate(() => { const D = window.__dbg; const es = D.It.all.filter((e) => e.group && e.group.visible !== false); return es.reduce((a, e) => [a[0] + e.group.position.x / es.length, a[1] + e.group.position.z / es.length], [0, 0]); });
   await placeAt(centre[0], centre[1] + 4, 0); await page.waitForTimeout(800); await run('town centre');

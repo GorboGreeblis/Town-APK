@@ -100,7 +100,12 @@ X.mvWrap = function (r) {
       try { return r0.apply(r, arguments); } finally {
         X.mvInFrame = false;
         var n2 = r.info.programs ? r.info.programs.length : 0;
-        if (n2 > np) { X.mvStats.programsDuringPlay += n2 - np; if (X.mvStats.programsDuringPlay <= 12) __gtLog("multiview: " + (n2 - np) + " shader program(s) compiled during play"); }
+        if (n2 > np) {
+          X.mvStats.programsDuringPlay += n2 - np;
+          var nm = r.info.programs.slice(np).map(function (p) { var k = String(p.cacheKey || ""); return p.name + " [" + k.slice(0, 40).replace(/\s+/g, " ") + "... " + k.length + " chars]"; });
+          (X.mvStats.newPrograms = X.mvStats.newPrograms || []).push.apply(X.mvStats.newPrograms, nm);
+          if (X.mvStats.programsDuringPlay <= 12) __gtLog("multiview: " + (n2 - np) + " shader program(s) compiled during play: " + nm.join(", "));
+        }
       }
     }
     var fb = X.mvScratchFor(r);
