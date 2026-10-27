@@ -86,7 +86,7 @@ Requirements: JDK 17+, Android SDK with `platforms;android-34` and
 `sdk.dir=...`). Gradle 8.14 via the wrapper.
 
 ```sh
-python3 tools/apply_entry_fix.py        # regenerate the asset from tools/uncompressed.html
+python3 tools/apply_entry_fix.py        # regenerate the asset from tools/uncompressed.html (also mirrored to index.html at the repo root)
 cd android
 ./gradlew assembleRelease               # -> app/build/outputs/apk/release/app-release.apk
 ```

@@ -1,12 +1,12 @@
 # tools/
 
-The repository root holds only the final build, `GreeblisTown-release.apk`, and this folder. Everything else lives here: the Android project (`android/`), the untouched original game (`uncompressed.html`), the build and release guides (`BUILD.md`, `RELEASE.md`), notes, task and bug lists, game documentation, and the test suite described below.
+The repository root holds only the final build, `GreeblisTown-release.apk`, the one-file game as bundled in it (`index.html`, the author's request: the whole game lives in one HTML file, and that file is kept at the root as well as inside the Android project; `apply_entry_fix.py` writes both and `--verify` and `check_apk.sh` check they match), and this folder. Everything else lives here: the Android project (`android/`), the untouched original game (`uncompressed.html`), the build and release guides (`BUILD.md`, `RELEASE.md`), notes, task and bug lists, game documentation, and the test suite described below.
 
 | File | Purpose |
 | --- | --- |
 | `uncompressed.html` | The untouched final HTML version of the game. Source of truth. |
 | `index.compressed.html` | The compressed HTML release build, kept for reference and parity checks. |
-| `apply_entry_fix.py` | Generates `android/app/src/main/assets/index.html` (inside tools/) from `uncompressed.html` by applying the VR-entry edits (`EDITS`) and the approved gameplay fixes (`GAME_FIXES`: the Mushroom navigator fix, Hennrick's campfire line). `--verify` checks the asset equals the original plus exactly those edits. |
+| `apply_entry_fix.py` | Generates `android/app/src/main/assets/index.html` (inside tools/, mirrored to `index.html` at the repository root) from `uncompressed.html` by applying the VR-entry edits (`EDITS`) and the approved gameplay fixes (`GAME_FIXES`: the Mushroom navigator fix, Hennrick's campfire line). `--verify` checks the asset equals the original plus exactly those edits. |
 | `GAME.md` | Basic documentation of the game as found in the code. |
 | `TASKS.md` / `BUGS.md` | Living lists of open tasks and open bugs (fixed items at the bottom). |
 | `run_tests.sh` | The test passes. `--smoke`: a few-minute spot check that touches every game element. Default: the standard pass. `--full`: every scenario with long soak times, meant for the final build only. `--quick`: static checks, no browser. |
@@ -25,6 +25,8 @@ The repository root holds only the final build, `GreeblisTown-release.apk`, and 
 | `test_npc_home.js` | Reproduction harness for NPC return-home behaviour (default: Mushroom, id `drifter`). Injects a debug hook into a temporary copy of the game only, places the NPC and the player in 15 scenarios (inside/outside the kiosk, nav return, forced stuck re-plan, player blocking the doorway, far player so the teleport rescue is allowed), and reports whether he reaches the desk at height, with teleports, re-plans and 0.5 s traces in `.runs/npc_home_<id>.json`. |
 | `spellcheck_dialogue.py` | Extracts prose strings from the game and reports words outside the dictionary and the game's own vocabulary; `--who HENNRICK` also lists one character's lines for proofreading. Needs `pip install pyspellchecker`. |
 | `test_zfight.js` | Graphical pass: every planar triangle of the built world bucketed by its world plane (batched parts resolved through the batcher's `gcPart` attribute); coplanar overlaps between different surfaces are confirmed by rendering the two surfaces alone twice with a 1 mm camera shift and counting flipped pixels. Fails the full pass on a real depth fight; lists the stable and same-look overlaps for the record. |
+| `test_coincident.js` | Graphical pass, the curved complement of `test_zfight.js`: every triangle of the drawn world (the batcher's merged sources in place of its batch meshes) up to 0.6 m across goes into a 5 cm spatial hash; pairs from different surfaces with different looks and nearly parallel normals are sampled 2 mm apart for points within 0.5 mm of the other's plane and inside it. The growth of that region at a fifth of the tolerance tells a coplanar or tangent contact (a depth fight, fails the pass) from two surfaces crossing at an angle (listed). Found the second half of B20. `--save` writes a context view and close-up per pair with the near points in red to `.runs/coinc/`; `--dump NAME` prints the triangles at a named spot. Geometric, because the headless renderer's depth precision is finer than the Quest's and such bands do not flicker here. |
+| `zfight_sweep.js` | Optional report: renders a grid of town views and a close orbit of every character three times (0.1 mm and 1 mm camera shifts) and flags views whose flips do not grow with the shift. Slow (about 20 minutes) and it did not catch B20 headless, for the reason above; kept for gross fights only, not part of the tiers. |
 | `sharpness_probe.js` | Report: render scale per quality level, fixed foveation, pixel ratio, MSAA samples, and every texture's size, mipmaps and anisotropy (what decides crispness on the headset). |
 | `entry_profile.js` | Report: the main thread across the VR handover (long gaps between renders, CPU attribution of the first 600 ms and the whole window), to prove nothing heavy runs after the user is dropped in (B16). |
 | `hitch_probe.js` | Report: worst frame and the shader programs, textures, geometries and scene objects created by the first pickup, a new label, a dialogue, the battle panel and the Event start. |
@@ -60,6 +62,7 @@ node tools/test_entry.js tools/uncompressed.html early
 node tools/test_parity.js
 node tools/test_play.js                      # 2d and vr scenarios, 20 s each
 node tools/test_zfight.js                    # coplanar overlaps / z-fighting in the built world
+node tools/test_coincident.js --save         # near-coincident curved surfaces (z-fighting), pictures in .runs/coinc/
 node tools/slice_profile.js --top 6          # CPU time per boot slice (loading-time work)
 node tools/geom_compare.js a.html b.html     # prove two assets build the same character meshes
 node tools/test_play.js <asset> vr-nofloor   # the local-floor fallback scenario

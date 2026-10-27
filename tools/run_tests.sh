@@ -56,9 +56,10 @@ if [ "$TIER" != quick ]; then
   else run "NPC return-home (Mushroom), first $NPC_N scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S" "$NPC_N"; fi
   if [ "$TIER" = full ]; then run "release parity (compressed build vs source)" node "$ROOT/tools/test_parity.js"; else skip "release parity" "$TIER tier; run --full"; fi
   if [ "$TIER" = full ]; then
-    # Graphical and performance pass (T12/T13): z-fighting on environmental surfaces fails the pass;
+    # Graphical and performance pass (T12/T13): z-fighting (planar and curved) fails the pass;
     # the probes report loading time, the handover, frame cost and texture sharpness for the record.
     run "z-fighting / flicker on environmental surfaces (jittered render)" node "$ROOT/tools/test_zfight.js" "$ASSET"
+    run "z-fighting on curved surfaces (near-coincident geometry)" node "$ROOT/tools/test_coincident.js" "$ASSET"
     report "loading time (boot profile)" node "$ROOT/tools/boot_profile.js" "$ASSET"
     report "handover profile (frames after entering VR)" node "$ROOT/tools/entry_profile.js" "$ASSET"
     # Frame timings are only meaningful without the layers path (its MSAA resolve is software-rendered here),

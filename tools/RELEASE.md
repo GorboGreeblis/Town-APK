@@ -169,5 +169,16 @@ only then into the main build. 3.15.11 skipped this and crashed at launch
 `adb logcat -s GreeblisServer GreeblisLauncher cr_VrShellDelegate` shows the
 page's own events and errors (`page: ...`).
 
+Rule for the creature models (the author, 2026-10-27): be careful fixing any
+issue on a creature model; the author is otherwise happy with their designs. A
+fix touches only the offending surfaces and leaves the look unchanged (B20 sank
+the cuff lights by millimetres); anything the author would notice is put to
+them first, with the candidate list from `tools/test_coincident.js`.
+
+Rule for the repository root (the author, 2026-10-27): the one-file game as
+bundled in the APK is kept at the root as `index.html` next to the APK.
+`tools/apply_entry_fix.py` writes it, `--verify` and `tools/check_apk.sh` check
+it, so a release commit carries the APK and the exact game file inside it.
+
 Same key, same package name, higher `versionCode`, rebuild, run
 `tools/check_apk.sh`, upload to Alpha, test, promote.

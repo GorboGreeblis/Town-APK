@@ -74,6 +74,8 @@ echo
 echo "Bundled game"
 SRC="$ROOT/tools/android/app/src/main/assets/index.html"
 if unzip -p "$APK" assets/index.html 2>/dev/null | cmp -s - "$SRC"; then ok "assets/index.html byte-identical to $SRC"; else bad "assets/index.html differs from $SRC"; fi
+ROOTCOPY="$ROOT/index.html"
+if [ -f "$ROOTCOPY" ] && unzip -p "$APK" assets/index.html 2>/dev/null | cmp -s - "$ROOTCOPY"; then ok "index.html at the repository root is the same game file"; else bad "index.html at the repository root is missing or differs from the APK's game (run tools/apply_entry_fix.py)"; fi
 echo
 if [ "$fail" = 0 ]; then echo "APK CHECK PASSED"; else echo "APK CHECK FAILED ($fail)"; fi
 exit $([ "$fail" = 0 ] && echo 0 || echo 1)

@@ -6,6 +6,7 @@ Usage:  python3 tools/apply_entry_fix.py [src] [dst]
         python3 tools/apply_entry_fix.py --entry-only [src] dst   (VR-entry edits only, no gameplay fixes)
         python3 tools/apply_entry_fix.py --verify [src] [dst]
 Default src: tools/uncompressed.html   Default dst: tools/android/app/src/main/assets/index.html
+(the default dst is also mirrored to index.html at the repository root; --verify checks both)
 
 --verify does not write anything: it re-derives the patched file from src and
 checks that dst is byte-identical to it, i.e. the APK copy differs from the
@@ -93,7 +94,8 @@ verify = "--verify" in sys.argv[1:]
 # --entry-only: write src + the 4 VR-entry edits only (no gameplay fixes), for before/after comparisons in the harness.
 entry_only = "--entry-only" in sys.argv[1:]
 src = pathlib.Path(args[0]) if len(args) > 0 else root / "tools" / "uncompressed.html"
-dst = pathlib.Path(args[1]) if len(args) > 1 else root / "tools" / "android" / "app" / "src" / "main" / "assets" / "index.html"
+default_dst = root / "tools" / "android" / "app" / "src" / "main" / "assets" / "index.html"
+dst = pathlib.Path(args[1]) if len(args) > 1 else default_dst
 
 html = src.read_text(encoding="utf-8")
 
@@ -411,14 +413,20 @@ GAME_FIXES = [
     ),
     # B20 (author): z-fighting where the metal and the glowing parts of
     # Hennrick's forearm cuffs overlap. The cuff is a cylinder of radius .36
-    # whose surface reaches z .41; its three cyan lights are boxes centred at
-    # z .40 with depth .02, so their front faces lie exactly on the cuff's
-    # surface. The lights now sit half inside the cuff (centre z .415: back
-    # face .405 inside the metal, front face .425 proud by 1.5 cm) and the cuff
-    # is .37 so it clears the forearm's noise-displaced skin (.34 + up to .018).
+    # (height .26, so its top cap is at y -.99) whose surface reaches z .41;
+    # its three cyan lights are boxes .08 x .04 x .02 centred at z .40 and
+    # y -1.07 / -1.01 / -.95. Two exact coincidences: the lights' front faces
+    # lay on the cuff's surface, and the middle light's top face (y -.99) lay
+    # in the plane of the cuff's top cap, a cyan-on-metal sliver seen from
+    # above (tools/test_coincident.js finds it; 3.15.22 fixed only the first).
+    # The lights now sit half inside the cuff (centre z .415: back face .405
+    # inside the metal, front face .425 proud by 1.5 cm), 1 cm higher
+    # (y -1.06 / -1.00 / -.94, so the cap plane passes through the middle
+    # light's body instead of along a face), and the cuff is .37 so it clears
+    # the forearm's noise-displaced skin (.34 + up to .018).
     (
         'R(T.cyl(.36,.36,.26,20),p,e,[.2*t,-1.12,.05]);for(let o=0;o<3;o++)R(T.box(.08,.04,.02),u,e,[.2*t,.06*o-1.07,.4]);',
-        'R(T.cyl(.37,.37,.26,20),p,e,[.2*t,-1.12,.05]);for(let o=0;o<3;o++)R(T.box(.08,.04,.02),u,e,[.2*t,.06*o-1.07,.415]);',
+        'R(T.cyl(.37,.37,.26,20),p,e,[.2*t,-1.12,.05]);for(let o=0;o<3;o++)R(T.box(.08,.04,.02),u,e,[.2*t,.06*o-1.06,.415]);',
     ),
     # B11: Nextessa (the pizza courier) pinned against the Ancient. Inside the
     # church she walked straight at the player; when the player stood on the far
@@ -453,9 +461,21 @@ if verify:
     current = dst.read_bytes() if dst.exists() else b""
     if current == html.encode("utf-8"):
         print(f"VERIFY OK: {dst} == {src} + {len(EDITS)} entry-fix edits + {len(GAME_FIXES)} gameplay fixes, nothing else")
+        root_copy = root / "index.html"
+        if dst == default_dst and not experiment and not entry_only:
+            if root_copy.exists() and root_copy.read_bytes() == current:
+                print(f"VERIFY OK: {root_copy} is the same file")
+            else:
+                sys.exit(f"VERIFY FAILED: {root_copy} is missing or differs from {dst} (run apply_entry_fix.py to refresh it)")
         sys.exit(0)
     sys.exit(f"VERIFY FAILED: {dst} is not the original plus the {len(EDITS)} entry-fix edits and {len(GAME_FIXES)} gameplay fixes")
 
 dst.parent.mkdir(parents=True, exist_ok=True)
 dst.write_text(html, encoding="utf-8")
 print(f"wrote {dst} ({len(html.encode('utf-8'))} bytes, {len(EDITS)} entry edits + {len(GAME_FIXES)} gameplay fixes)")
+# The author keeps the one-file game at the repository root as well (index.html): the release asset is
+# mirrored there whenever the default asset is written (experiments and temporary outputs are not).
+if dst == default_dst and not experiment and not entry_only:
+    root_copy = root / "index.html"
+    root_copy.write_text(html, encoding="utf-8")
+    print(f"wrote {root_copy} (the same file, kept at the repository root)")
