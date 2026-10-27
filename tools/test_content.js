@@ -237,14 +237,21 @@ const LONG = process.argv.includes('--long');
       // the game cuts a vignette short when a speaker is held (the player's last target while a dialogue is open,
       // or in a scene); the test's own earlier talks and the courier's delivery must not count as that
       await H.gwait(() => !D.qt.isOpen, 30, 120); D.xe.lastTarget = null;
+      // and when a speaker is busy (Sparkakus walks off to browse his shelves now and then): like the game's own pick,
+      // wait until both are free, and keep Sparkakus in place for the exchange as the game does when he hosts a visit
+      const sp = [A, B].find((e) => e === (D.st && D.st.ent));
+      if (sp && sp.stay) sp.stay();
+      const free = (e) => { try { if (e.sync) e.sync(); } catch (x) {} return !e.busy && !(e.scene && e.scene()) && !e.visiting && !e.hosting; };
+      await H.gwait(() => free(A) && free(B), 60, 300);
       const id = pk[0] + pk[1] + (text ? 't' : ''), n0 = V.plays[id] || 0;
       // count what the exchange adds to the scene (speech bubbles one after the other, or the flying tokens)
       let shown = 0; const add0 = C.add; C.add = function () { shown += arguments.length; return add0.apply(this, arguments); };
       const ok = V.play(A, B, text);
-      if (!ok) { C.add = add0; out.failed.push(id + ' refused'); return; }
+      if (!ok) { C.add = add0; if (sp && sp.browse) sp.browse(); out.failed.push(id + ' refused'); return; }
       // vignette time runs on game frames, so a slow machine stretches the 8.2 s of a text exchange
       const w = await H.gwait(() => !V.playing(), 40, 900);   // a text exchange lasts 8.2 game seconds
       C.add = add0;
+      if (sp && sp.browse) sp.browse();
       const r = { id, counted: (V.plays[id] || 0) === n0 + 1, ended: !V.playing(), shown, s: w.game, wall: w.wall };
       (r.counted && r.ended && r.shown >= (text ? 2 : 1) ? out.played : out.failed).push(r);
     };
