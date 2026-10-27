@@ -229,3 +229,20 @@ view. The 63 ms script frame at the Event's start is the setup frame (B17).
 the same picture: frame rate by scene, the lowest readings with where the
 player stood, the governor levels, a verdict against 60 fps with the likely
 cause (triangles, draw calls, GPU-bound at the governor's floor).
+
+## 8. Draw calls and the matrix update (3.15.28-3.15.29, NOTES 59-61)
+
+Target: 72 fps (the headset's refresh rate, the author's aim); the Store's floor
+is 60. `perf_log.js` reports both.
+
+- **P8** (3.15.28): multi-material meshes draw one group per material instance;
+  the garden plots go from six draws to two. Event frame 390 -> 340 draws (both
+  eyes).
+- **P9** (3.15.29): shininess and specular per batch part; whole scene 327 ->
+  247 batchable draws per eye.
+- **Matrix cache (not done).** An exact skip of `updateMatrix` and the world
+  multiply for unchanged objects (position, rotation, scale, local and world
+  matrices compared, a stamp on recomputed parents): bit-identical to three.js
+  after 8 s of play, but 0.61 ms per scene update against 0.27 ms for three.js
+  itself over 2,576 objects. V8 composes and multiplies faster than the
+  comparisons; the cost is the walk, not the arithmetic.

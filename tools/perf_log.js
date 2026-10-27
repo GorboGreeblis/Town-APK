@@ -1,7 +1,8 @@
 // Headset frame-rate log reader: turns the `perf` lines the game posts to logcat every ten seconds
 // (3.15.27, HEADSET_DIAG.md) into the same picture the performance report gives headless: frame rate
 // by scene (town, the planting Event), the lowest readings and where the player stood, the governor
-// levels, and a verdict against the Store's 60 fps line.
+// levels, and verdicts against the target (72 fps, the headset's refresh rate: the author's aim) and the
+// Store's floor (60 fps, VRC.Quest.Performance.1).
 //
 //   adb logcat -d -s GreeblisServer > run.txt      (on the computer the headset is plugged into)
 //   node tools/perf_log.js run.txt
@@ -23,7 +24,15 @@ console.log(`  governor levels (0-1 supersampled, 2 native, 3-4 foveated): ${JSO
 const low = rows.slice().sort((a, b) => a.fps - b.fps).slice(0, 5);
 console.log('  lowest readings:');
 for (const r of low) console.log(`    ${r.fps} fps at (${r.x}, ${r.z})${r.event ? ' during the Event' : ''}, level ${r.level}, ${r.calls} calls, ${r.tris} triangles`);
-const below = rows.filter((r) => r.fps < 60);
 const cause = (r) => r.tris > 300000 ? 'triangles' : r.calls > 200 ? 'draw calls' : r.level >= 4 ? 'GPU-bound (governor at its floor)' : 'CPU or GPU, governor not at its floor';
-if (below.length) { console.log(`  VERDICT: ${below.length} of ${rows.length} readings under 60 fps (VRC.Quest.Performance.1): ` + [...new Set(below.map(cause))].join('; ')); process.exit(1); }
-console.log('  VERDICT: every reading at or above 60 fps'); process.exit(0);
+// The governor's average reads a frame or two under the refresh rate when it is met (71.x at 72 Hz).
+const TARGET = 70.5, FLOOR = 60;
+const under = (lim) => rows.filter((r) => r.fps < lim);
+const floor = under(FLOOR), target = under(TARGET);
+const pct = (n) => (100 * n / rows.length).toFixed(0) + '%';
+console.log(`  target 72 fps: ${rows.length - target.length} of ${rows.length} readings meet it (${pct(rows.length - target.length)})` + (target.length ? `; short of it: ${[...new Set(target.map(cause))].join('; ')}` : ''));
+console.log(`  floor 60 fps (VRC.Quest.Performance.1): ${floor.length ? floor.length + ' readings under it: ' + [...new Set(floor.map(cause))].join('; ') : 'never under it'}`);
+const by = (list) => { const m = {}; for (const r of list) { const k = r.event ? 'the Event' : 'town'; m[k] = (m[k] || 0) + 1; } return JSON.stringify(m); };
+if (target.length) console.log(`  under the target by scene: ${by(target)}`);
+console.log(floor.length ? '  VERDICT: FAILS the 60 fps floor' : target.length ? '  VERDICT: passes the floor, misses the 72 fps target' : '  VERDICT: meets the 72 fps target throughout');
+process.exit(floor.length ? 1 : target.length ? 3 : 0);

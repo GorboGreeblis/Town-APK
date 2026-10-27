@@ -135,5 +135,5 @@ node tools/perf_log.js run.txt
 
 It prints the frame rate by scene (town, the Event), the five lowest readings
 with where the player stood, the governor levels seen, and a verdict against
-the Store's 60 fps line with the likely cause for each low reading (triangles,
+the 72 fps target (the author's aim) and the Store's 60 fps floor, with the likely cause for each low reading (triangles,
 draw calls, or GPU-bound with the governor at its floor).
