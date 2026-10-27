@@ -18,7 +18,9 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..', '..');
-const TAGGED = [['Ge', 'const Ge={'], ['VIGS', 'const VIGS={}']];
+// [name in window.__dbg, the declaration as the game writes it, the variable (when the name differs: the UI object is
+// another `F` than the world's collision registry)]
+const TAGGED = [['Ge', 'const Ge={'], ['VIGS', 'const VIGS={}'], ['UI', 'const F={};function W(', 'F']];
 const HOOK_NAMES = ['It', 'JGP', 'F', 'E', 'lo', 'Be', 'De', 't', 'At', 'B', 'Re', 'uo', 'C', 'Kt', 'le', 'ce', 'we', 'Mo', 'G', 'Ut', 'O', 'me', 'bt', 'ue', 'Dbt', '_t', 'qt', 'jt',
   'ne', 'oe', 'st', 'fe', 'xe', 'yo', 'Nt', 'ke', 'Ge', 'Ho', 'LIB', 'ARTS', 'VIGS', 'BP', 'JAZZ', 'gemTrade', 'shopText', 'battleText', 'Bulb', 'Eo', 'ot', 'E', 'gcEB', 'z', 'te'];
 const UA = 'Mozilla/5.0 (X11; Linux x86_64; Quest 3) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/35.0 Chrome/128.0 VR Safari/537.36';
@@ -34,7 +36,7 @@ function hooked(file) {
   html = html.replace(anchor2, 'window.__dbgT=t;' + anchor2);
   // Objects declared in another scope than the hook point are tagged where they are declared (test copies only):
   // the quality governor and the vignettes. `window.__dbg.<name>` reads them through a getter.
-  for (const [n, decl] of TAGGED) if (html.includes(decl)) html = html.replace(decl, decl.replace(`const ${n}=`, `const ${n}=window.__dbg_${n}=`));
+  for (const [n, decl, v = n] of TAGGED) if (html.includes(decl)) html = html.replace(decl, decl.replace(`const ${v}=`, `const ${v}=window.__dbg_${n}=`));
   // A name declared after the hook point (still in its temporal dead zone there) is reached through a getter instead.
   const hook = 'window.__dbg={};' + HOOK_NAMES.map((n) => `try{window.__dbg.${n}=${n}}catch(e){try{Object.defineProperty(window.__dbg,"${n}",{get:function(){try{return ${n}}catch(_){}},configurable:true,enumerable:true})}catch(_){}}`).join('') + TAGGED.map(([n]) => `Object.defineProperty(window.__dbg,"${n}",{get:function(){return window.__dbg_${n}},configurable:true,enumerable:true});`).join('') + 'window.__dbg.t=window.__dbgT;window.__dbgReady=true;';
   return Buffer.from(html.replace(anchor, anchor + hook));

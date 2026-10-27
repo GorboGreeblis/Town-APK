@@ -121,6 +121,9 @@
           src = this._sources[i] = { handedness: d.handedness || 'right', targetRayMode: 'tracked-pointer', profiles: ['oculus-touch-v3'],
             targetRaySpace: new Space('ray'), gripSpace: new Space('grip'),
             gamepad: { axes: [0, 0, 0, 0], buttons: [], connected: true, mapping: 'xr-standard', hapticActuators: [] } };
+          // a haptic actuator that records each pulse (hand, strength, ms) in S.pulses, as the Quest's does the rumble
+          const hand = src.handedness;
+          src.gamepad.hapticActuators = [{ type: 'vibration', pulse: (v, ms) => { (S.pulses = S.pulses || []).push([hand, v, ms]); return Promise.resolve(true); } }];
         }
         src.gamepad.axes = d.axes || [0, 0, 0, 0];
         src.gamepad.buttons = (d.buttons || []).map((b) => ({ pressed: !!b.pressed, touched: !!b.touched, value: b.value || 0 }));

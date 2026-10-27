@@ -85,7 +85,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Every talk line, gift line, campfire line renders without overflow and has no spelling errors | `spellcheck_dialogue.py`; text-fit shim exists in code | partial (spelling done; layout todo) |
 | Talk flow: `Talk to`, cycling lines, `|` page breaks, typewriter speed | `test_progression.js` (every line shown) | partial |
 | Panels (`_t`): shop, campfire/garden event, battle; buttons CLOSE/DONE/LEAVE | `test_progression.js` | partial |
-| HUD counts (blossoms, acorns, artifacts) update | headless | todo |
+| HUD counts (blossoms, acorns, artifacts) update; the wrist HUD on the left grip shows the Event checkboxes and every held item, redraws only on change; haptic pulses on a gained Blossom (0.3, 35 ms) and a new friend (0.5, 70 ms) | `test_hud.js` (standard tier; fake controllers record pulses) | done |
 
 ## 7. Economy and progression (`Kt`)
 
