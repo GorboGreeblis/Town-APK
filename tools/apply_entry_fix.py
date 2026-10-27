@@ -6,6 +6,7 @@ Usage:  python3 tools/apply_entry_fix.py [src] [dst]
         python3 tools/apply_entry_fix.py --entry-only [src] dst   (VR-entry edits only, no gameplay fixes)
         python3 tools/apply_entry_fix.py --verify [src] [dst]
 Default src: tools/uncompressed.html   Default dst: tools/android/app/src/main/assets/index.html
+(the default dst is also mirrored to index.html at the repository root; --verify checks both)
 
 --verify does not write anything: it re-derives the patched file from src and
 checks that dst is byte-identical to it, i.e. the APK copy differs from the
@@ -93,7 +94,8 @@ verify = "--verify" in sys.argv[1:]
 # --entry-only: write src + the 4 VR-entry edits only (no gameplay fixes), for before/after comparisons in the harness.
 entry_only = "--entry-only" in sys.argv[1:]
 src = pathlib.Path(args[0]) if len(args) > 0 else root / "tools" / "uncompressed.html"
-dst = pathlib.Path(args[1]) if len(args) > 1 else root / "tools" / "android" / "app" / "src" / "main" / "assets" / "index.html"
+default_dst = root / "tools" / "android" / "app" / "src" / "main" / "assets" / "index.html"
+dst = pathlib.Path(args[1]) if len(args) > 1 else default_dst
 
 html = src.read_text(encoding="utf-8")
 
@@ -453,9 +455,21 @@ if verify:
     current = dst.read_bytes() if dst.exists() else b""
     if current == html.encode("utf-8"):
         print(f"VERIFY OK: {dst} == {src} + {len(EDITS)} entry-fix edits + {len(GAME_FIXES)} gameplay fixes, nothing else")
+        root_copy = root / "index.html"
+        if dst == default_dst and not experiment and not entry_only:
+            if root_copy.exists() and root_copy.read_bytes() == current:
+                print(f"VERIFY OK: {root_copy} is the same file")
+            else:
+                sys.exit(f"VERIFY FAILED: {root_copy} is missing or differs from {dst} (run apply_entry_fix.py to refresh it)")
         sys.exit(0)
     sys.exit(f"VERIFY FAILED: {dst} is not the original plus the {len(EDITS)} entry-fix edits and {len(GAME_FIXES)} gameplay fixes")
 
 dst.parent.mkdir(parents=True, exist_ok=True)
 dst.write_text(html, encoding="utf-8")
 print(f"wrote {dst} ({len(html.encode('utf-8'))} bytes, {len(EDITS)} entry edits + {len(GAME_FIXES)} gameplay fixes)")
+# The author keeps the one-file game at the repository root as well (index.html): the release asset is
+# mirrored there whenever the default asset is written (experiments and temporary outputs are not).
+if dst == default_dst and not experiment and not entry_only:
+    root_copy = root / "index.html"
+    root_copy.write_text(html, encoding="utf-8")
+    print(f"wrote {root_copy} (the same file, kept at the repository root)")

@@ -41,7 +41,7 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | Leaving VR: session end restores 2D camera, gate returns, audio wakes | `test_play.js vr` | partial |
 | Reference space fallback `local-floor` → `local` with `floorOffset` | `test_play.js` scenario `vr-nofloor` (`fakexr.supportLocalFloor=false`) | done (standard tier) |
 | Visibility/blur handling in session (`visibilitychange`, `Ho.capture/restore`) | `test_play.js` vr scenario: hidden then visible, frames resume | done |
-| WebGL context loss and restore (`Ho`) | `test_play.js` vr scenario: `WEBGL_lose_context` lose/restore | reported: frames do not resume (B19, known, low) |
+| WebGL context loss and restore (`Ho`) | `test_play.js` vr scenario: `WEBGL_lose_context` lose/restore | reported: frames do not resume headless (B19, closed as will-not-fix: no headset reproduction, visibility path resumes) |
 | Real headset: direct-to-VR launch, floor height, comfort settings | sideload | headset |
 
 ## 3. Input and locomotion (`we`, `t.xr`)

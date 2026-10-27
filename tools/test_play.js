@@ -175,9 +175,9 @@ async function scenario(name, srvUrl, browser) {
       return { resumedFrames: window.__fakeXR.frames - f1, lost: gl.isContextLost() };
     });
     if (ctxLoss.skipped) console.log(`  NOTE  context loss check skipped (${ctxLoss.skipped})`);
-    // Known limitation (BUGS B19): XR frames do not resume after a context loss headless, with or without the
+    // Known limitation (BUGS B19, closed as will-not-fix): XR frames do not resume after a context loss headless, with or without the
     // layers path (the original game behaves the same); reported, not failed, until a Quest reproduction exists.
-    else console.log(`  ${ctxLoss.resumedFrames >= 5 ? 'PASS' : 'NOTE'}  WebGL context lost and restored: ${ctxLoss.resumedFrames >= 5 ? 'frames resume' : 'frames did not resume (B19, known)'}  [${JSON.stringify(ctxLoss)}]`);
+    else console.log(`  ${ctxLoss.resumedFrames >= 5 ? 'PASS' : 'NOTE'}  WebGL context lost and restored: ${ctxLoss.resumedFrames >= 5 ? 'frames resume' : 'frames did not resume (B19, closed: will not fix)'}  [${JSON.stringify(ctxLoss)}]`);
     const errs2 = await page.evaluate(() => window.__play.errors);
     for (const e of errs2) if (!errors.includes(e)) errors.push(e);
     expect('no page errors across visibility change and context loss', errors.length === 0, errors.slice(0, 3).join(' | '));

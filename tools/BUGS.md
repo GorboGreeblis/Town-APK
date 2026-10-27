@@ -1,19 +1,21 @@
 # Open bugs
 
 Living list. Each entry: what, where, how to reproduce, status. Fixed bugs
-move to the bottom. Longer investigations live in `NOTES.md`.
+move to the bottom. Longer investigations live in `NOTES.md`. Author's rule for
+creature models: fix with care and without changing the look; the author is
+happy with the designs, so anything visible is their call (RELEASE.md section 6).
 
 ## Open
 
 | # | Bug | Where | Reproduce | Status |
 | --- | --- | --- | --- | --- |
-| B19 | After a WebGL context loss and restore during the VR session (`WEBGL_lose_context` headless), the XR frame loop does not resume, with or without the layers path; the original game behaves the same, and the game's own restore handler (`Ho.restore`) only repaints textures. No Quest reproduction: context loss there needs a GPU reset or memory eviction, which the system menu / visibility path does not cause (that path is tested and resumes). Low | three.js XR loop after `webglcontextrestored` | `node tools/test_play.js <asset> vr` (context-loss NOTE) | open, low; the play test reports it |
-| B9 | 3.15.2 on the headset: the launcher starts the Quest Browser's `WebXRCustomTabActivity` with `http://127.0.0.1:17777/`, the activity closes itself within ~300 ms every time, and the OS loading screen never clears. The browser logs no reason; the author's capture also contains no lines from our process. Most likely the immersive activity accepts only a verified HTTPS web-app origin, which a loopback origin cannot be. Hosting is ruled out, so the candidates are: Meta's 2D app mode (browser panel, then "Press A"), or finding a self-contained form the immersive activity accepts | `LauncherActivity` / Quest Browser | launch 3.15.2 | **cause found in the unfiltered log**: `cr_OriginVerifier: Verification failed for http://127.0.0.1:17777 as not https or localhost` then `WebXRCustomTabActivity: TWA verification was unsuccessful! Exiting`. Chromium accepts the host name `localhost` without HTTPS. Fix applied in 3.15.4: the server is addressed as `http://localhost:17777/` (and also listens on ::1). Headset log for 3.15.4: origin accepted, but the next step failed: `Digital Asset Links endpoint responded with code 404` → `TWA verification was unsuccessful`. 3.15.5 serves `/.well-known/assetlinks.json` (package + own signing-certificate fingerprint, built at runtime). 3.15.6: no session grant (`no navigation - no activation`), cause read from the browser's code (NOTES 33). Diagnostic build proved a page-initiated request is accepted without a press (NOTES 34). 3.15.7: request at page start, sliced boot, in-VR loading screen. Awaiting headset confirmation of 3.15.7 |
+| (none) | No open bugs. B19 was closed as will-not-fix on 2026-10-27 (see Closed); everything else is fixed. | | | |
 
 ## Fixed
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| F-B9 | 3.15.2 on the headset: the immersive browser activity closed itself within 300 ms of launch (OS loading screen never cleared). Cause, from the unfiltered log: `TWA verification was unsuccessful` because `http://127.0.0.1:17777` is neither HTTPS nor `localhost`, then a 404 on the Digital Asset Links file. Fix: the server is addressed as `http://localhost:17777/` (3.15.4) and serves `/.well-known/assetlinks.json` with the signing certificate's fingerprint, built at runtime (3.15.5); the VR session is requested at page start because a fresh immersive launch never grants one on a user press (3.15.7). Launch has been stable since 3.15.12 (NOTES 29-34, 41) | `LauncherActivity`, `GameServer`, entry script | 2026-10-24 |
 | F-B18 | One black frame after loading in on the `sharp` experiment: a projection-layer swap (the quality governor stepping 1.2 to 1.1) showed the new, undrawn layer for a frame. Fix: the new layer is composited behind the old one until it has been drawn (NOTES 47). The release never swapped layers before (native scale at every level) except in its emergency 0.82 step; it now uses an adaptive scale, so the fix matters | `tools/lib/xr_layers_shim.js`, 3.15.16 | 2026-10-26 |
 | F-B13 | Loading screen: black bars when turning the head (stale re-projected frames during long boot slices). Fix: with the WebXR `layers` feature the loading screen is a cube layer (sky) plus a quad layer (panel) that the compositor re-renders every vsync whatever the page does, and the game renders through an `XRProjectionLayer` behind a session facade that shows three.js its usual base layer (NOTES 42). Author on the experiment build: "no black bars or loading-in perf issues". Promoted into 3.15.13; panel moved from 2.2 m to 3.6 m (about 40 degrees wide, slightly below the eye line) after "too close to the face" | `tools/lib/xr_layers_shim.js`, entry script, `fakexr.js` | 2026-10-26 |
 | F-B16 | One instance of black bars right after being dropped into the town: the VR UI build ran inside the entry routine and 2.5 s later a pixel readback of every painted canvas texture (seconds in the handover profile). Both moved into the loading phase (UI before the shader slices, capture in small slices before the boot ends; the post-entry capture is one texture per task). `tools/entry_profile.js` shows no long gap after the handover | `GAME_FIXES` B16, 3.15.13 | 2026-10-26 |
@@ -36,6 +38,12 @@ move to the bottom. Longer investigations live in `NOTES.md`.
 | F3 | Hennrick's campfire line missing its subject | text fix (`GAME_FIXES`) | 2026-10-26 |
 | F5 | Release build 3.15.1 crashed at launch on the headset: `SuperNotCalledException` in `LauncherActivity.onCreate`. The loopback server failed to bind because the manifest did not declare `android.permission.INTERNET` (Android requires it for any socket, loopback included), and the error path returned before `super.onCreate()`. Both fixed; `check_apk.sh` now checks the permission | manifest + `LauncherActivity` (3.15.2, versionCode 3) | 2026-10-26 |
 | F4 | (not a bug) Blossom/acorn regrow "failure" was the harness simulating at quarter speed; at real time both regrow at 12.0-12.1 s | harness fastSim | 2026-10-26 |
+
+## Closed (will not fix)
+
+| # | Bug | Why closed | Date |
+| --- | --- | --- | --- |
+| B19 | After a WebGL context loss and restore during the VR session (`WEBGL_lose_context` headless), the XR frame loop does not resume, with or without the layers path; the original game behaves the same (its restore handler `Ho.restore` only repaints textures). | Author's call. No Quest reproduction: context loss there needs a GPU reset or memory eviction; the paths a player hits (system menu, headset off and on) go through visibility handling, which is tested headless (frames resume) and passed the author's full headset run including the pause/resume step. Worst case is a frozen view and a relaunch; save data is unaffected. A fix would rebuild the projection layer and the three.js XR state after a restore, inside the entry script, which under the RELEASE.md rule needs an experiment APK and a headset run: risk added to the launch path for a case nobody has reproduced. The play test keeps reporting it as a NOTE. | 2026-10-27 |
 
 ## Possible fixes for the open bugs (not applied; the author decides)
 
