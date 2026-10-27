@@ -62,6 +62,7 @@ The repository root holds only the final build, `GreeblisTown-release.apk` (alwa
 | `boot_profile.js`, `perf_probe.js` | Reports: CPU profile of the sliced boot (loading time), and scene cost (draw calls, triangles, materials). |
 | `lib/xr_layers_shim.js` | The WebXR Layers mode of the entry script (embedded by `apply_entry_fix.py`): compositor layers for the loading screen, a projection layer behind a session facade for the game (NOTES 42). |
 | `build_experiment.sh NAME` | Builds an A/B variant APK into `.runs/`, same package and version as the release. The variants (`native`, `nolayers`, `nomultiview`, `nobatch`, `noeffects`, `nogovernor`, and the tool-only ones) are listed with what each changes in FIXES.md. |
+| `LORE.md`, `lore/` | The Lore Bible, compiled only from the game file (characters, eras, the Ancient, the gallery painting, quests, every gift and gardening line), and a reference image of Gooward's gallery painting (`lore/gallery_painting.jpg`). |
 | `VERSIONS.md` | Build history: every version, what changed, what the headset said. |
 | `server_harness/` | Desktop-JVM stub for `android.util.Log` plus the `Harness` driver used by `test_server.sh` (includes malformed-request, oversized-line, slow-client and path-traversal cases). |
 | `fakexr.js` | Minimal deterministic WebXR device (sessions, reference spaces, stereo views, frames, fake controllers, visibility, session end) installed into the page for the VR scenarios. No sensors or network. |
