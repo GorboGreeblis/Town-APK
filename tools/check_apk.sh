@@ -38,7 +38,7 @@ check "launcher activity excludeFromRecents=true" "$(printf '%s\n' "$XMLTREE" | 
 check "MAIN + LAUNCHER + com.oculus.intent.category.VR" "$(printf '%s\n' "$XMLTREE" | grep -q 'com.oculus.intent.category.VR' && printf '%s\n' "$BADGING" | grep -q 'launchable-activity' && echo 1 || echo 0)"
 check "com.oculus.supportedDevices meta-data" "$(printf '%s\n' "$XMLTREE" | grep -q 'com.oculus.supportedDevices' && echo 1 || echo 0)"
 # The exact device list (the author's decision in 3.15.34: Quest 3, 3S and Pro; Quest 2 not supported).
-check "supported devices are exactly questpro|quest3|quest3s" "$(printf '%s\n' "$XMLTREE" | grep -A2 'com.oculus.supportedDevices' | grep -q '"questpro|quest3|quest3s"' && echo 1 || echo 0)"
+check "supported devices are exactly quest3|quest3s" "$(printf '%s\n' "$XMLTREE" | grep -A2 'com.oculus.supportedDevices' | grep -q '"quest3|quest3s"' && echo 1 || echo 0)"
 check "no other VR platform names in manifest" "$(printf '%s\n' "$XMLTREE" | grep -qi 'steamvr\|openvr\|pico\|vive\|daydream\|cardboard' && echo 0 || echo 1)"
 echo
 echo "VRC.Quest.Packaging.2 (signature)"

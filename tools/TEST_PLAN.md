@@ -117,7 +117,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Frame loop alive, no errors, flat JS heap over 20 s in 2D | `test_play.js 2d` | done |
 | Same over 10+ minutes, including events (garden, finale) | `test_play.js` long run | todo |
 | Quality governor (`Ge`): levels change framebuffer scale/foveation when over/under budget, lock after finale | headless: fake frame times | todo |
-| 72 Hz on Quest 3/3S/Pro (VRC.Quest.Performance; the Quest 2 and original Quest are not supported since 3.15.34), loading indicator rule | headset; `perf_log.js` per-device verdicts against 72 and 60 | headset (3.15.33 on a Quest 3S: town 72, the Event 58-65) |
+| 72 Hz on Quest 3/3S (VRC.Quest.Performance; the original Quest and Quest 2 are not supported since 3.15.34, the Quest Pro since 3.15.35), loading indicator rule | headset; `perf_log.js` per-device verdicts against 72 and 60 | headset (3.15.33 on a Quest 3S: town 72, the Event 58-65) |
 | Console error de-dup shim, `vo` error reporting counts | `test_play.js` | done |
 
 ## 10a. Graphical and performance pass (full tier)

@@ -185,7 +185,7 @@ same spelling as the listing name in the developer dashboard.
      (`adb shell screencap` or the headset's capture button)
 4. Complete the required questionnaires: age rating (IARC), content and
    comfort rating, Data Use Checkup (this app collects nothing), supported
-   devices (Quest 2, Quest Pro, Quest 3, Quest 3S), pricing, and a privacy
+   devices (Quest 3 and Quest 3S only, section 5c), pricing, and a privacy
    policy URL (required even for apps that collect no data).
 5. Submit for review. If the reviewer raises any of the items in `tools/NOTES.md`
    (loading indicator, 64-bit wording), send me the exact text and we decide
@@ -200,12 +200,12 @@ in either.
 
 ## 5c. Supported devices
 
-Quest 3, Quest 3S and Quest Pro (manifest `com.oculus.supportedDevices` =
-`questpro|quest3|quest3s`; `tools/check_apk.sh` asserts it). The original
-Quest and the Quest 2 are not supported (the author, 3.15.34). Select the
-same headsets in the Developer Dashboard. Quest Pro (XR2+) is closer to a
-Quest 2 than to a 3S in GPU power: keep it only after a test on one, or drop
-it from the manifest and the dashboard.
+Quest 3 and Quest 3S (manifest `com.oculus.supportedDevices` =
+`quest3|quest3s`; `tools/check_apk.sh` asserts it). The original Quest and
+the Quest 2 are not supported (the author, 3.15.34), nor the Quest Pro (the
+author, 3.15.35: its XR2+ GPU is close to a Quest 2's, under half a 3S's,
+and the Event already runs 58-65 fps on a 3S). Select the same two headsets
+in the Developer Dashboard.
 
 ## 5d. Multiview (release path since 3.15.34; was the experiment below)
 

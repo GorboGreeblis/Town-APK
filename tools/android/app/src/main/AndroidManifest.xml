@@ -49,7 +49,7 @@
              supported"; its GPU cannot hold the planting Event at the frame-rate floor). -->
         <meta-data
             android:name="com.oculus.supportedDevices"
-            android:value="questpro|quest3|quest3s" />
+            android:value="quest3|quest3s" />
 
         <activity
             android:name=".LauncherActivity"
