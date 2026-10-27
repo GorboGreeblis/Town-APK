@@ -16,7 +16,8 @@
  *   battles    each dancer's battle panel: its title and stamina bar ("Robot steps left", ...), King Dino on drums
  *   ancient    the Ancient's talk line
  *   robin      the robin flies off when picked
- *   pizza      the courier ordered after the bribe comes through the glowing Portal; claiming it gives the line and Snacks
+ *   pizza      the courier ordered after the bribe comes through the glowing Portal and delivers (on its own when it
+ *              reaches the player, else when claimed): the line and the Snacks
  *   vignettes  the two-line exchanges: speech bubbles or Gree-mail tokens, counted and ended; the Ancient's only inside
  *              the church (a sample in the standard tier, all 102 with --long)
  *   event      during the planting Event each townsperson says their gardening line, Fortizmo has no talk,
@@ -208,17 +209,19 @@ const LONG = process.argv.includes('--long');
     const t0 = performance.now();
     while (performance.now() - t0 < 120000) {
       const st = D.ue.state; if (out.states[out.states.length - 1] !== st) out.states.push(st);
-      if (st === 'waiting') break;
+      if (st === 'waiting' || window.__said.some((r) => r.text.startsWith('One hot and ready pie!'))) break;
       await H.wait(200);
     }
-    out.portalLit = window.__portalLit > 0; out.snacks0 = Kt.rewards.snacks;
-    const n = window.__said.length; out.claimed = D.ue.claim(true); await H.wait(600);
+    out.portalLit = window.__portalLit > 0;
+    // the courier walks up to the player and delivers on its own when near; otherwise it waits to be claimed
+    if (D.ue.state === 'waiting' || D.ue.state === 'arriving') { out.claimed = D.ue.claim(true); await H.wait(600); }
     const t1 = performance.now(); while (D.qt.isOpen && performance.now() - t1 < 15000) await H.wait(100);
-    out.said = window.__said.slice(n).map((r) => r.text); out.snacks = Kt.rewards.snacks;
+    out.delivered = window.__said.filter((r) => r.text.startsWith('One hot and ready pie!|* +20 Snacks *|I love my job!')).map((r) => r.text);
+    out.snacks = Kt.rewards.snacks;
     return out;
   });
-  expect('pizza: the courier comes through the Portal (its light comes on) and waits for the player', pizza.states.includes('waiting') && pizza.portalLit, JSON.stringify(pizza.states) + ' portal lit ' + pizza.portalLit);
-  expect('pizza: claiming it: "One hot and ready pie!|* +20 Snacks *|I love my job!" and the Snacks', pizza.claimed === true && (pizza.said[0] || '').startsWith('One hot and ready pie!|* +20 Snacks *|I love my job!') && pizza.snacks === true, JSON.stringify(pizza));
+  expect('pizza: the courier comes through the Portal (its light comes on) and reaches the player', pizza.portalLit && pizza.states.some((x) => x === 'speaking' || x === 'waiting' || x === 'leaving'), JSON.stringify(pizza.states) + ' portal lit ' + pizza.portalLit);
+  expect('pizza: the delivery: "One hot and ready pie!|* +20 Snacks *|I love my job!" and the Snacks', pizza.delivered.length >= 1 && pizza.snacks === true, JSON.stringify(pizza));
 
   // ---- vignettes: the two-line exchanges (90 between townsfolk, the Ancient's 12 inside the church). A text vignette
   // shows the two lines as speech bubbles over the speakers; a token vignette sends their Gree-mail tokens
@@ -231,6 +234,9 @@ const LONG = process.argv.includes('--long');
     const sample = (arr, n) => arr.filter((_, i) => i % Math.max(1, Math.floor(arr.length / n)) === 0).slice(0, n);
     const runOne = async (pk, text) => {
       const A = m[pk[0]], B = m[pk[1]]; if (!A || !B) { out.failed.push(pk[0] + pk[1] + ' not in the line-up'); return; }
+      // the game cuts a vignette short when a speaker is held (the player's last target while a dialogue is open,
+      // or in a scene); the test's own earlier talks and the courier's delivery must not count as that
+      await H.gwait(() => !D.qt.isOpen, 30, 120); D.xe.lastTarget = null;
       const id = pk[0] + pk[1] + (text ? 't' : ''), n0 = V.plays[id] || 0;
       // count what the exchange adds to the scene (speech bubbles one after the other, or the flying tokens)
       let shown = 0; const add0 = C.add; C.add = function () { shown += arguments.length; return add0.apply(this, arguments); };
