@@ -600,6 +600,37 @@ GAME_FIXES = [
         'const m=e.clone();m.userData={gcR:new Float32Array(16*t.length)}',
         'const m=e.clone();m.__gbFS=e.__gbFS,m.userData={gcR:new Float32Array(16*t.length)}',
     ),
+    # P7 (diagnostics, the author cannot measure much right now): every ten seconds in VR the
+    # game posts one line to logcat (`page: m=perf ...`): frame rate from the governor's
+    # frame-time average, the governor level, draw calls and triangles of the last frame,
+    # whether the planting Event is running, and where the player stands. A headset run
+    # then documents its own frame rate: `adb logcat -s GreeblisServer | grep perf`.
+    (
+        'o.lastFrame=n,_e();F.ctrls.forEach(',
+        'o.lastFrame=n,_e();try{n-(o.perfAt||0)>1e4&&(o.perfAt=n,window.__gtLog&&window.__gtLog("perf fps="+(1e3/Ge.ema).toFixed(1)+" level="+Ge.level+" calls="+O.info.render.calls+" tris="+O.info.render.triangles+(me&&me.active?" event":"")+" at="+Math.round(At.position.x)+","+Math.round(At.position.z)))}catch(e){}F.ctrls.forEach(',
+    ),
+    # P8 (draw calls; NOTES 59): a multi-material mesh costs one draw per geometry group, per eye.
+    # The garden plots (one at load, thirteen more in the planting Event) are boxes whose five
+    # sides share one material instance and whose top carries the soil texture: six draws each
+    # where two do. Before each frame's culling pass, a multi-material mesh whose groups repeat
+    # a material instance gets a copy of its geometry with the index reordered so each instance's
+    # triangles are contiguous, one group per instance (same triangles, same attributes, opaque
+    # only). The copy is cached per geometry and sharing pattern. Every frame the mesh's material
+    # slots are compared by identity with the ones the copy was made for; any change (a slot
+    # swapped, the geometry replaced or its index edited) puts the original geometry back before
+    # the frame is drawn. Nothing visible changes; `window.__gtMM.set(false)` turns it off.
+    (
+        'gcEB.ready=!0;{let gbOpL=[]',
+        'gcEB.ready=!0;{let mmL=[],mmT=0,mmOn=!0;const mmC=new Map,mmPrev=C.onBeforeRender,'
+        'mmPat=o=>{const M=o.material;return o.geometry.groups.map(g=>M.indexOf(M[g.materialIndex])).join(",")},'
+        'mmMake=(g,M)=>{if(!g.index||g.groups.length<2||Object.keys(g.morphAttributes).length)return null;const I=g.index.array,ord=[],seen=new Map;for(const gr of g.groups){const m=M[gr.materialIndex];if(!m||m.transparent)return null;let k=seen.get(m);void 0===k&&(k=ord.length,seen.set(m,k),ord.push({mi:gr.materialIndex,r:[]}));ord[k].r.push([gr.start,Math.min(gr.count,I.length-gr.start)])}if(ord.length===g.groups.length)return null;'
+        'const out=new I.constructor(I.length);let q=0;const n=new THREE.BufferGeometry;for(const k in g.attributes)n.setAttribute(k,g.attributes[k]);for(const o of ord){const st=q;for(const[a,c]of o.r)out.set(I.subarray(a,a+c),q),q+=c;n.addGroup(st,q-st,o.mi)}n.setIndex(new THREE.BufferAttribute(out.slice(0,q),1));g.boundingSphere||g.computeBoundingSphere();g.boundingBox||g.computeBoundingBox();n.boundingSphere=g.boundingSphere.clone();n.boundingBox=g.boundingBox.clone();n.__mmOf=g;return n},'
+        'mmBack=r=>{r.o.geometry===r.n&&(r.o.geometry=r.g),r.o.__mm=0};'
+        'window.__gtMM={list:mmL,set(v){mmOn=!!v;if(!mmOn){mmL.forEach(mmBack);mmL.length=0}else mmT=0}};'
+        'C.onBeforeRender=function(){if(mmOn){if(!(mmT++%120))C.traverse((o=>{if(!o.isMesh||o.isInstancedMesh||!Array.isArray(o.material)||o.__mm||!o.geometry||o.geometry.__mmOf)return;o.__mm=1;try{const g=o.geometry,k=g.uuid+"|"+mmPat(o);let n=mmC.get(k);void 0===n&&(n=mmMake(g,o.material),mmC.set(k,n));if(!n)return;o.geometry=n;mmL.push({o,g,n,M:o.material,s:o.material.slice(),v:g.index.version,gl:g.groups.length})}catch(e){}}));'
+        'for(let i=mmL.length-1;i>=0;i--){const r=mmL[i],o=r.o;let ok=o.geometry===r.n&&o.material===r.M&&o.material.length===r.s.length&&r.g.index&&r.g.index.version===r.v&&r.g.groups.length===r.gl;if(ok)for(let j=0;j<r.s.length;j++)if(o.material[j]!==r.s[j]||r.s[j].transparent){ok=!1;break}ok||(mmBack(r),mmL.splice(i,1))}}'
+        'return mmPrev?mmPrev.apply(this,arguments):void 0};}{let gbOpL=[]',
+    ),
 ]
 
 for old, new in EDITS + ([] if entry_only else GAME_FIXES) + (EXPERIMENTS[experiment] if experiment else []):

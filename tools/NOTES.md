@@ -63,6 +63,7 @@ VR-entry fix; each item is for discussion first.
 54. The listed z-fighting instances: three fixed, seven that cannot be seen (3.15.24)
 55. The VRC check and the focus-aware fix (3.15.25)
 56. Performance pass and Zollod's kiosk (3.15.26)
+57. The frame-rate log line and what was not done (3.15.27)
 
 1. **Immersive launch from a loopback origin.** Meta's immersive app mode was
    designed for hosted PWAs whose Digital Asset Links the browser can verify.
@@ -818,3 +819,52 @@ VR-entry fix; each item is for discussion first.
     triangle culled on one side only), no areas. Draw calls are unchanged
     (120). Expected on the headset: roughly half the vertex and binning work of
     everything closed, which is most of what is near the player.
+
+57. **The frame-rate log line and what was not done (3.15.27).** With the
+    author unable to test for a while, the game now measures itself: every
+    ten seconds in VR it posts `perf fps= level= calls= tris= [event] at=`
+    to logcat through the loopback server (HEADSET_DIAG.md), so one run through
+    the town, a kiosk, a dialogue and the planting Event gives the frame-rate
+    picture with the scene named. PERF.md section 6 records the levers
+    investigated after 3.15.26 and why they were not pulled: per-part culling
+    inside batches (47% of submitted batched triangles are off-screen when
+    facing the town, but a tiled GPU already rejects them in binning), freezing
+    static matrices (not safe from the code), and the look-changing ones
+    (precision, Lambert, lights, foveation, scale) that wait for the author.
+    Creature LOD beyond 20-25 m is the one invisible lever left for vertex
+    cost, proposed.
+
+58. **Hardening the performance tools (3.15.27).** The author asked for the
+    performance tools to capture issues and their causes. `perf_report.js`
+    (PERF.md section 7) runs the game's situations in one booted session
+    (town, walking, among the creatures, dialogue, shop, battle, the Speech,
+    the Event in three phases) and fails on a shader compile during play, a
+    script p99 over 12 ms (16 in the Event), a script frame over 120 ms, or a
+    rise against `perf_baseline.json`; each verdict carries the top script
+    functions with source excerpts as the cause, and the scene's load (calls,
+    triangles, transparent objects, lights, creatures in range) sits beside
+    it. Building it showed the software GL compiling its own pipelines mid-run
+    (a dialogue advance blocked a GL call for 7 s; the Event for 20 s), which
+    had been polluting every headless frame-time figure; the report stubs the
+    draw calls by default and times the GL calls separately, so script cost is
+    now measured clean. `perf_log.js` turns a headset logcat with the 3.15.27
+    `perf` lines into frame rate by scene with a 60 fps verdict and the likely
+    cause. First result: no compiles anywhere, script 2-4 ms headless in every
+    situation (`updateMatrixWorld` the largest item), the town centre and the
+    garden at 300-390 draw calls and 500k triangles both eyes against 66 calls
+    and 160k at the spawn.
+
+59. **Draw calls (3.15.28).** `draw_calls.js` showed where the frame's draws
+    go: at the town centre about 145 per eye, in the planting Event about 195.
+    Every draw happens twice (one per eye; this three.js has no multiview).
+    The garden plots were multi-material boxes, five sides sharing one material
+    instance and a textured top, so six draws each where two do; thirteen
+    appear in the Event. P8 reorders such a mesh's index so each material
+    instance's triangles are contiguous, one group per instance, checked every
+    frame against the slots it was made for. `opt_identity.js` renders the same
+    views with P8 on and off in the same frame: identical pixels, 1,400 fewer
+    draws over 92 Event views. The same tool checks the batcher itself
+    (identical pixels; 11,283 draws unbatched against 5,166 batched over 40 town
+    views). Next: shininess and specular per batch part (P9), which lets
+    batches that differ only in those merge (327 to 247 batchable draws per eye
+    over the whole scene).

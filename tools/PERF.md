@@ -148,3 +148,84 @@ Game logic with rendering stubbed: town 0.7 ms a frame, Event second half
 author to decide after the headset readings: the Event's point light and
 night lighting (the lit shaders' cost doubles while they are on), Lambert on
 the garden flora, foveation at the start level, lower render scale.
+
+Investigated after 3.15.26 and not done, with the reason:
+
+- **Per-part culling inside batches.** Measured: when facing the town, 40-47% of
+  the triangles in batches that pass whole-batch culling belong to parts outside
+  the view (`cullgain` probe, 36 views). Collapsing those parts would save
+  nothing on a tiled GPU: its binning pass already rejects off-screen triangles
+  after a position-only vertex pass, which collapsed triangles cost too. Only
+  fewer submitted vertices (per-part draw ranges, which undoes the batching)
+  would help.
+- **Freezing static scenery's matrices** (`matrixAutoUpdate = false`, about a
+  third of the game logic's frame time goes to `updateMatrixWorld` over 1,800
+  objects). Not safe from the code alone: parts of buildings animate and a
+  frozen one would stop.
+- **mediump fragment precision, Lambert for Phong, fewer lights, foveation at
+  the start level, lower render scale**: each changes the look; the author
+  decides after the headset readings.
+- **Creature LOD** (a coarser blob march beyond 20-25 m): the one lever left
+  for vertex cost that would be hard to notice; doubles the character build
+  time unless built after the drop-in. Proposed, not built.
+- **3.15.27 adds the frame-rate log line** so the next headset run measures
+  itself (HEADSET_DIAG.md).
+
+## 7. The performance report (3.15.27, NOTES 58)
+
+`tools/perf_report.js` is the pass/fail performance stage of the full tier. It
+boots once into VR and runs the game's situations in sequence, measuring each
+the same way, and names the cause when a line is crossed:
+
+- **Frame time split into script and GL.** The software GL here (SwiftShader)
+  compiles its own pipelines on first use and blocks a GL call for seconds when
+  it does (7 s after a dialogue advance, 20 s in the Event in one run), which
+  is this machine, not the game. So the draw calls are stubbed by default: all
+  other GL calls run (uniform and texture uploads), the renderer's counters are
+  kept, nothing is rasterised. Script time then carries to a headset (about
+  three times slower there); `--draw` rasterises for real when the GPU-side
+  shape is wanted.
+- **The cause.** The CDP profiler's top script functions by self time with a
+  source excerpt, so a spike has a name (`updateMatrixWorld`, `Qe` the
+  batcher's per-part placement, `Ae` three.js's projectObject, `bend` the
+  Event's tentacles).
+- **What the renderer created on the spot**: new shader programs (a compile
+  is a 50-1,000 ms hitch on a headset, so any during play fails), textures,
+  geometries, scene objects.
+- **The scene's load**: draw calls, triangles (both eyes), visible transparent
+  objects, lights, creatures within 25 m of the player, heap.
+- **Lines**: shader compile during play; script p99 over 12 ms (16 in the
+  Event); a script frame over 120 ms; 40% rise in p50 or p99 or 15% in
+  triangles against `tools/perf_baseline.json` (written with
+  `--update-baseline` on a known-good build). Triangles over 320k, transparent
+  objects over 120 and draw calls over 200 are noted as GPU and CPU risks.
+
+Result on 3.15.27 (headless, draws stubbed, baseline written from this run):
+
+| Situation | script p50 / p99 / max ms | calls | tris (both eyes) | transp | creatures < 25 m | top script cost |
+| --- | --- | --- | --- | --- | --- | --- |
+| town, standing (spawn) | 2.1 / 3.5 / 7.3 | 66 | 160k | 89 | 2 | updateMatrixWorld 16%, Qe 16%, Ae 9% |
+| town, walking | 2.1 / 6.6 / 13.1 | 64 | 123k | 89 | 0 | Qe 18%, updateMatrixWorld 17%, Ae 11% |
+| town, among the creatures (centre) | 2.2 / 3.6 / 4.1 | 304 | 498k | 87 | 3 | Qe 17%, updateMatrixWorld 15%, Ae 11% |
+| dialogue open | 2.2 / 5.5 / 7.2 | 280 | 473k | 88 | 3 | updateMatrixWorld 17%, Ae 14%, Qe 12% |
+| shop panel | 2.6 / 5.8 / 14.9 | 378 | 485k | 92 | 2 | updateMatrixWorld 15%, Qe 9%, Ae 8% |
+| battle panel | 2.3 / 5.5 / 14.7 | 302 | 498k | 89 | 1 | updateMatrixWorld 13%, Qe 10%, Ae 9% |
+| the Speech | 2.2 / 4.1 / 7.1 | 302 | 433k | 98 | 1 | updateMatrixWorld 16%, Qe 12%, Ae 7% |
+| the Event, 0-30 s | 2.6 / 7.4 / 63 | 370 | 532k | 75 | 11 | updateMatrixWorld 18%, Qe 9%, Ae 6% |
+| the Event, 30-60 s | 2.8 / 6.5 / 10.3 | 388 | 506k | 75 | 11 | updateMatrixWorld 18%, Qe 9%, Ae 6% |
+| the Event, 60-90 s | 3.6 / 6.7 / 12.5 | 384 | 506k | 78 | 11 | updateMatrixWorld 16%, bend 10%, Qe 7% |
+
+What it says: no shader compiles during play anywhere (P2 holds); script cost
+is 2-4 ms headless everywhere, so on a headset roughly 6-12 ms of the 13.9 ms
+(72 Hz) frame, with `updateMatrixWorld` over the scene's 1,800 objects the
+single largest item in every situation; the GPU-side load is the difference
+between the spawn (66 calls, 160k triangles) and the town centre or the garden
+(300-390 calls, 500k triangles both eyes, eleven creatures in range during the
+Event). The author's 38 fps reading in the Event is consistent with GPU-bound
+there: the Event adds the point light and night lighting on top of the heaviest
+view. The 63 ms script frame at the Event's start is the setup frame (B17).
+
+`tools/perf_log.js` reads the headset's own `perf` lines (HEADSET_DIAG.md) into
+the same picture: frame rate by scene, the lowest readings with where the
+player stood, the governor levels, a verdict against 60 fps with the likely
+cause (triangles, draw calls, GPU-bound at the governor's floor).
