@@ -631,6 +631,29 @@ GAME_FIXES = [
         'for(let i=mmL.length-1;i>=0;i--){const r=mmL[i],o=r.o;let ok=o.geometry===r.n&&o.material===r.M&&o.material.length===r.s.length&&r.g.index&&r.g.index.version===r.v&&r.g.groups.length===r.gl;if(ok)for(let j=0;j<r.s.length;j++)if(o.material[j]!==r.s[j]||r.s[j].transparent){ok=!1;break}ok||(mmBack(r),mmL.splice(i,1))}}'
         'return mmPrev?mmPrev.apply(this,arguments):void 0};}{let gbOpL=[]',
     ),
+    # P9 (draw calls; NOTES 60): the batcher merged only parts whose materials agree on everything
+    # but colour (the colour travels per part); two Phong parts with different shininess or
+    # specular colour needed two batches. Each part now carries a fifth uniform row: its specular
+    # colour, and its shininess in the colour row's spare slot, written exactly as three.js would
+    # upload them (specular as is, shininess at least 1e-4) and read by the batch shader in place of
+    # the material's own uniforms (a flat varying, so the value is the part's own, not
+    # interpolated). Shininess and specular leave the grouping key. The part limit per batch is
+    # recomputed for five rows (32 on a Quest). Whole scene: 327 batchable draws per eye -> 247.
+    # Pixels identical batched against unbatched (`opt_identity.js`).
+    ('gcR:new Float32Array(16*t.length)', 'gcR:new Float32Array(20*t.length)'),
+    ('M=16*p.slot', 'M=20*p.slot'),
+    ('e.fill(0,M,M+16)', 'e.fill(0,M,M+20)'),
+    ('p.k=new Float64Array(15)', 'p.k=new Float64Array(19)'),
+    ('Math.floor((e-96)/4)', 'Math.floor((e-96)/5)'),
+    ('uniform vec4 gcR["+4*gcEB.N+"];', 'uniform vec4 gcR["+5*gcEB.N+"];\\nflat varying vec4 vGcSpec;'),
+    ('int gcI=int(gcPart+.5)*4;vec4 gcA=gcR[gcI],gcB=gcR[gcI+1],gcC=gcR[gcI+2],gcD=gcR[gcI+3];',
+     'int gcI=int(gcPart+.5)*5;vec4 gcA=gcR[gcI],gcB=gcR[gcI+1],gcC=gcR[gcI+2],gcD=gcR[gcI+3];vGcSpec=vec4(gcR[gcI+4].xyz,gcD.w);'),
+    ('vec3 transformed=vec3(dot(gcA,vec4(position,1.)),dot(gcB,vec4(position,1.)),dot(gcC,vec4(position,1.)));")}',
+     'vec3 transformed=vec3(dot(gcA,vec4(position,1.)),dot(gcB,vec4(position,1.)),dot(gcC,vec4(position,1.)));"),t.fragmentShader=t.fragmentShader.replace("#include <common>","#include <common>\\nflat varying vec4 vGcSpec;").replace("#include <lights_phong_fragment>","#include <lights_phong_fragment>\\nmaterial.specularColor=vGcSpec.rgb;material.specularShininess=vGcSpec.w;")}'),
+    ('const o=t.material.color,cr=o?o.r:1,cg=o?o.g:1,cb=o?o.b:1;(mv||cr!==k[12]||cg!==k[13]||cb!==k[14])&&(ch=!0,',
+     'const o=t.material.color,cr=o?o.r:1,cg=o?o.g:1,cb=o?o.b:1,sp=t.material.specular,sh=void 0===t.material.shininess?1:Math.max(t.material.shininess,1e-4),sr=sp?sp.r:0,sg=sp?sp.g:0,sb=sp?sp.b:0;(mv||cr!==k[12]||cg!==k[13]||cb!==k[14]||sh!==k[15]||sr!==k[16]||sg!==k[17]||sb!==k[18])&&(ch=!0,'),
+    ('e[M+14]=k[14]=cb)', 'e[M+14]=k[14]=cb,e[M+15]=k[15]=sh,e[M+16]=k[16]=sr,e[M+17]=k[17]=sg,e[M+18]=k[18]=sb)'),
+    ('e.specular?e.specular.getHex():"",e.shininess,', '"","",'),
 ]
 
 for old, new in EDITS + ([] if entry_only else GAME_FIXES) + (EXPERIMENTS[experiment] if experiment else []):

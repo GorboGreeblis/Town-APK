@@ -22,7 +22,6 @@ const OPTS = [
   // every source mesh drawn on its own with the batch meshes hidden.
   { name: 'batcher (merged parts vs their own meshes)', expr: 'window.__idBatch(v)', present: '!!(window.__dbg && window.__dbg.gcEB && window.__dbg.gcEB.list.length)', moreTris: true },
   { name: 'P8 multi-material merge', expr: 'window.__gtMM && window.__gtMM.set(v)', present: '!!window.__gtMM' },
-  { name: 'P9 per-part shininess', expr: 'window.__gtShin && window.__gtShin.set(v)', present: '!!window.__gtShin' },
   { name: 'P10 matrix cache', expr: 'window.__gtMx && window.__gtMx.set(v)', present: '!!window.__gtMx' },
 ];
 (async () => {

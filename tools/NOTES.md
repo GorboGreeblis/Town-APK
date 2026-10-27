@@ -868,3 +868,16 @@ VR-entry fix; each item is for discussion first.
     views). Next: shininess and specular per batch part (P9), which lets
     batches that differ only in those merge (327 to 247 batchable draws per eye
     over the whole scene).
+
+60. **Shininess and specular per batch part (3.15.29).** The batcher merged
+    only parts whose materials agreed on everything but colour, which travels
+    per part in the fourth uniform row. Phong parts that differed in shininess
+    or specular colour therefore needed separate batches, and the town has many
+    such pairs. P9 adds a fifth row per part (specular colour) and uses the
+    fourth row's spare slot for shininess, written exactly as three.js uploads
+    them, and the batch shader reads them through a flat varying in place of
+    the material's uniforms. Measured: the whole scene's batchable draws drop
+    from 327 to 247 per eye; over 40 town views the batched frame draws 4,580
+    times against 5,166. `opt_identity.js` renders every view batched and
+    unbatched in the same frame: identical pixels. The part limit per batch is
+    recomputed for five rows (still 32 on a Quest's 256 vertex uniform vectors).
