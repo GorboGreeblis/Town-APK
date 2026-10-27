@@ -11,11 +11,13 @@
 // --root-static: the scene root stops recomposing its own (identity) matrix every frame, so it no longer forces every
 // world matrix in the scene to be recomputed (P15). After each frame's update every object's world matrix is then
 // checked bit for bit against a fresh parent x local product: any difference fails, naming the object.
+// --ab: alternates the root setting every 60 frames in one session and times the scene update each way (the
+// fair comparison: whatever else runs on the machine hits both halves alike).
 const path = require('path');
 const { boot } = require('./lib/harness');
 const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : undefined;
 const withEvent = process.argv.includes('--event');
-const rootStatic = process.argv.includes('--root-static');
+const rootStatic = process.argv.includes('--root-static'); const ab = process.argv.includes('--ab');
 const secs = Number((process.argv[process.argv.indexOf('--seconds') + 1]) || 20) || 20;
 (async () => {
   const g = await boot({ file, vr: true, fastSim: false });
@@ -32,6 +34,18 @@ const secs = Number((process.argv[process.argv.indexOf('--seconds') + 1]) || 20)
     });
     console.log(ok ? 'the planting Event, 20 s in' : 'the Event did not start; town');
   } else console.log('town, standing at the spawn');
+  if (ab) {
+    const t = await page.evaluate(async (secs) => {
+      const C = window.__dbg.C, u0 = C.updateMatrixWorld, was = C.matrixAutoUpdate, tm = { on: [], off: [] }; let f = 0;
+      C.updateMatrixWorld = function () { const st = Math.floor(f / 60) % 2 === 1; C.matrixAutoUpdate = !st; const t0 = performance.now(); const r = u0.apply(this, arguments); (st ? tm.on : tm.off).push(performance.now() - t0); f++; return r; };
+      await new Promise((r) => setTimeout(r, secs * 1000)); C.updateMatrixWorld = u0; C.matrixAutoUpdate = was;
+      const st = (a) => { a.sort((x, y) => x - y); return { n: a.length, mean: a.reduce((x, y) => x + y, 0) / a.length, p50: a[a.length >> 1], p90: a[Math.floor(a.length * 0.9)] }; };
+      return { root_static: st(tm.on), as_now: st(tm.off) };
+    }, secs);
+    for (const [k, v] of Object.entries(t)) console.log(`${k.padEnd(12)} ${v.n} updates: mean ${v.mean.toFixed(3)} p50 ${v.p50.toFixed(3)} p90 ${v.p90.toFixed(3)} ms`);
+    console.log(`P15 saves ${(100 * (1 - t.root_static.mean / t.as_now.mean)).toFixed(1)}% of the scene update (mean)`);
+    await g.close(); return;
+  }
   const r = await page.evaluate(async ([secs, rootStatic]) => {
     const D = window.__dbg, C = D.C, wait = (ms) => new Promise((res) => setTimeout(res, ms));
     const last = new Map(), changed = new Map(), top = new Map();

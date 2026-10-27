@@ -1061,6 +1061,10 @@ VR-entry fix; each item is for discussion first.
     creatures) changing every frame, 41% in subtrees that never change; the
     scene root recomposes its identity matrix every frame and so forces
     every world matrix to be recomputed. Turning that off (P15) leaves all
-    2.36 million checked world matrices bit-identical, but no time saving
-    showed in the first, noisy measurement; not applied until a clean A/B
-    shows one.
+    2.36 million checked world matrices bit-identical, but saves nothing:
+    alternated every 60 frames in one session (`matrix_trace.js --ab`), the
+    update took 2.107 ms with it and 2.094 ms without (mean). The walk over
+    the objects is the cost, not the multiplies it skips (as with the matrix
+    cache in 61). Not applied. Texture uploads were checked as well: once the
+    town has been seen, the Event uploads a handful of 64x64 labels in ten
+    seconds (0.002 MB a frame); nothing is re-uploaded unchanged.
