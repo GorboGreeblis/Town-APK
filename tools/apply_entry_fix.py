@@ -191,6 +191,41 @@ EDITS = [
 # Gameplay fixes (approved bug fixes; see tools/NOTES.md for the investigation).
 # ---------------------------------------------------------------------------
 GAME_FIXES = [
+    # B21 (author, "fix all instances of z-fighting listed"): the parapet band on the
+    # Store, Bank and Fire Station fronts is a box as wide as the wall, so its side faces
+    # lie in the wall's side planes and overlap them by 1 cm at the wall top (a shimmering
+    # line along the roof edge), and its back face lies in the back wall's plane. The band
+    # is now 2 cm wider (1 cm proud on each side) and its back is 2 cm proud; the front
+    # edge stays where it was.
+    (
+        'B.box(bin,o2.col,0,h/2,-D/2,w,h,D).box("plain","#5a5a60",0,h+.15,-(D+.32)/2,w,.3,D-.32)',
+        'B.box(bin,o2.col,0,h/2,-D/2,w,h,D).box("plain","#5a5a60",0,h+.15,-(D+.34)/2,w+.02,.3,D-.3)',
+    ),
+    (
+        'B.box("stone",st,0,h/2,-D/2,w,h,D).box("plain","#5a5a60",0,h+.15,-(D+.32)/2,w,.3,D-.32)',
+        'B.box("stone",st,0,h/2,-D/2,w,h,D).box("plain","#5a5a60",0,h+.15,-(D+.34)/2,w+.02,.3,D-.3)',
+    ),
+    (
+        'B.box("brick",brick,0,h/2,-D/2,w,h,D).box("plain","#5a5a60",0,h+.15,-(D+.32)/2,w,.3,D-.32)',
+        'B.box("brick",brick,0,h/2,-D/2,w,h,D).box("plain","#5a5a60",0,h+.15,-(D+.34)/2,w+.02,.3,D-.3)',
+    ),
+    # B22 (author): Mushroom's hat band (a six-sided torus tube) rested with its flat
+    # underside exactly on the brim's top surface, a sliding contact seen from below the
+    # brim. The band sits 3 mm lower, so its underside is inside the brim (3 cm thick there)
+    # and the brim's surface crosses the tube at an angle. Nothing visible changes.
+    (
+        'R(T.torus(.375,.022,6,40),x.clay("#3a2414",{shininess:30}),hat,[0,.05,0],[Math.PI/2,0,0])',
+        'R(T.torus(.375,.022,6,40),x.clay("#3a2414",{shininess:30}),hat,[0,.047,0],[Math.PI/2,0,0])',
+    ),
+    # B23 (author): the Robin's three tail feathers are flat boxes 22 mm wide on 20 mm
+    # centres, so their top and bottom faces share planes in the 2 mm overlaps; the white
+    # tips' undersides lay in the feathers' undersides. The middle feather is 1 mm thicker
+    # (its faces half a millimetre proud of its neighbours') and the tips sit half a
+    # millimetre higher, with their undersides inside the feathers.
+    (
+        'R(T.box(.022,.008,.24-.02*Math.abs(j)),j?back:dark,tail,[j*.02,0,-.11],[0,-.06*j,0]);j&&R(T.box(.022,.009,.03),white,tail,[j*.02+.0005*j,.0005,-.215],[0,-.06*j,0])',
+        'R(T.box(.022,j?.008:.009,.24-.02*Math.abs(j)),j?back:dark,tail,[j*.02,0,-.11],[0,-.06*j,0]);j&&R(T.box(.022,.009,.03),white,tail,[j*.02+.0005*j,.001,-.215],[0,-.06*j,0])',
+    ),
     # Mushroom stuck beside/behind his kiosk. The navigator's segment test
     # ignored a building entirely whenever BOTH ends of the segment lay inside
     # the building's clearance margin, so a route from a spot beside the kiosk

@@ -15,8 +15,11 @@
 // the tolerance tells a coplanar or tangent contact (a depth fight, fails the
 // pass) from two surfaces crossing at an angle (an ordinary intersection line,
 // listed only). Same-look pairs (invisible fights) are listed, not failed.
-// Depth fights the author has looked at and accepted live in
-// tools/zfight_baseline.json with the reason; only new ones fail.
+// Contacts the headset can never show are listed as hidden: undersides at
+// ground level, two closed solids resting back to back (each hides the contact
+// behind its own body), and contacts buried inside a third box. Depth fights the
+// author has looked at and accepted live in tools/zfight_baseline.json with the
+// reason; only new ones fail.
 //
 //   node tools/test_coincident.js [file] [--tol 0.0005] [--limit N] [--save] [--dump WHERE] [--baseline tools/zfight_baseline.json]
 //   (--save: a picture per pair in tools/.runs/coinc/, context view and close-up; --dump: print the triangles of the pairs at WHERE)
@@ -153,6 +156,35 @@ const outDir = path.join(__dirname, '.runs', 'coinc');
       return 'town';
     };
     const nameOf = (t) => { const o = drawn[MESH[t]]; return label(o) + ' <' + chainOf(o.parent) + (o.isInstancedMesh ? '#' + INST[t] : ''); };
+    // Contacts the headset can never show. (1) Undersides at ground level: faces pointing down at y <= 5 cm
+    // are seen from below the ground only. (2) Resting contacts: two closed solids touching back to back
+    // (opposite normals; only DoubleSide lets them pass the facing rule) hide each other's contact faces
+    // behind their own bodies. (3) Buried: the contact lies inside a third box (a roof slab over wall tops).
+
+    // Geometry facts, cached per geometry: distinct corner count, triangle count, whether the mesh is closed
+    // (every edge shared by two triangles) and whether it is a box (8 corners, 12 triangles). Types are not
+    // reliable here: helpers and the texturing pass rebuild geometries as plain BufferGeometry.
+    const geoCache = new Map();
+    const geoInfo = (geo) => {
+      let gi = geoCache.get(geo); if (gi) return gi;
+      const pos = geo.attributes.position, idx = geo.index, n = idx ? idx.count : pos.count;
+      const vid = new Map(), remap = new Int32Array(pos.count);
+      for (let i = 0; i < pos.count; i++) { const k = Math.round(pos.getX(i) * 1e5) + ',' + Math.round(pos.getY(i) * 1e5) + ',' + Math.round(pos.getZ(i) * 1e5); let v = vid.get(k); if (v === undefined) { v = vid.size; vid.set(k, v); } remap[i] = v; }
+      const edges = new Map(); let tris = 0;
+      for (let i = 0; i + 2 < n; i += 3) {
+        const a = remap[idx ? idx.getX(i) : i], b = remap[idx ? idx.getX(i + 1) : i + 1], c = remap[idx ? idx.getX(i + 2) : i + 2]; if (a === b || b === c || a === c) continue; tris++;
+        for (const [p, q] of [[a, b], [b, c], [c, a]]) { const k = p < q ? p * 4194304 + q : q * 4194304 + p; edges.set(k, (edges.get(k) || 0) + 1); }
+      }
+      let open = 0; for (const v of edges.values()) if (v !== 2) open++;
+      geo.computeBoundingBox();
+      gi = { corners: vid.size, tris, closed: open === 0 && tris > 0, box: vid.size === 8 && tris === 12 };
+      geoCache.set(geo, gi); return gi;
+    };
+    const closed = (t) => geoInfo(drawn[MESH[t]].geometry).closed;
+    const boxes = drawn.filter((o) => geoInfo(o.geometry).box && !(Array.isArray(o.material) ? o.material[0] : o.material).transparent).map((o) => ({ o, inv: new T.Matrix4().copy(o.matrixWorld).invert(), bb: o.geometry.boundingBox, sc: o.getWorldScale(new T.Vector3()) }));
+    const lp = new T.Vector3();
+    const buriedIn = (x, y, z, oa, ob) => { for (const b of boxes) { if (b.o === oa || b.o === ob) continue; lp.set(x, y, z).applyMatrix4(b.inv); const m = 0.002; if (lp.x > b.bb.min.x + m / b.sc.x && lp.x < b.bb.max.x - m / b.sc.x && lp.y > b.bb.min.y + m / b.sc.y && lp.y < b.bb.max.y - m / b.sc.y && lp.z > b.bb.min.z + m / b.sc.z && lp.z < b.bb.max.z - m / b.sc.z) return b.o; } return null; };
+    let hiddenCount = 0;
     const seen = new Set(); const found = new Map(); let pairsTested = 0, done = 0;
     let multi = 0;
     for (const c of cells.values()) {
@@ -177,12 +209,16 @@ const outDir = path.join(__dirname, '.runs', 'coinc');
         const A = tri(a), B = tri(b); const ab = near(A, B), ba = near(B, A); const hits = ab.hits + ba.hits; if (!hits) continue;
         // Identical triangles (the same three corners) are a double draw, not a sliding fight: listed apart.
         let same3 = true; for (let q = 0; q < 9 && same3; q++) if (Math.abs(P[a * 9 + q] - P[b * 9 + q]) > 1e-6) same3 = false;
+        let hidden = null;
+        if (NV[a * 4 + 1] < -0.9 && NV[b * 4 + 1] < -0.9 && A.p[0][1] <= 0.05 && B.p[0][1] <= 0.05) hidden = 'underside at ground level';
+        else if (dn < -COS && closed(a) && closed(b)) hidden = 'resting contact of two closed solids (' + geoInfo(drawn[MESH[a]].geometry).tris + ' and ' + geoInfo(drawn[MESH[b]].geometry).tris + ' triangles)';
+        else { const pts = ab.pts.length ? ab.pts : ba.pts; if (pts.length >= 3) { const box = buriedIn(pts[0], pts[1], pts[2], drawn[MESH[a]], drawn[MESH[b]]); if (box) hidden = 'buried inside ' + label(box); } }
         const k = [nameOf(a) + ' [' + looks[LOOK[a]] + ']', nameOf(b) + ' [' + looks[LOOK[b]] + ']'].sort().join('  vs  ');
         const handled = [mats[MAT[a]], mats[MAT[b]]].some((m) => m.polygonOffset || m.depthTest === false || m.depthWrite === false || m.transparent);
         const at = [0, 1, 2].map((q) => +((A.p[0][q] + A.p[1][q] + A.p[2][q]) / 3).toFixed(2));
-        const f = found.get(k) || { pair: k, tris: 0, hits: 0, tight: 0, dup: 0, minGap: Infinity, sameLook: LOOK[a] === LOOK[b], handled, at, where: whereOf(at[0], at[1], at[2]), owners: new Set(), pts: [], n: [NV[a * 4], NV[a * 4 + 1], NV[a * 4 + 2]], objs: [drawn[MESH[a]], drawn[MESH[b]]] };
-        f.tris++; if (same3) f.dup++; f.tight += ab.tight + ba.tight; if (f.pts.length < 6000) f.pts.push(...ab.pts, ...ba.pts);
-        if (dump && f.where === dump) { f.dumped = f.dumped || []; if (f.dumped.length < 6) f.dumped.push({ A: A.p.map((q) => q.map((v) => +v.toFixed(4))), nA: A.n.map((v) => +v.toFixed(3)), B: B.p.map((q) => q.map((v) => +v.toFixed(4))), nB: B.n.map((v) => +v.toFixed(3)), gaps: [ab.minGap, ba.minGap].map((v) => +(v * 1000).toFixed(3)), hits: [ab.hits, ba.hits] }); } f.hits += hits; f.minGap = Math.min(f.minGap, ab.minGap, ba.minGap); f.owners.add(OWN[a]); f.owners.add(OWN[b]); found.set(k, f);
+        const f = found.get(k) || { pair: k, tris: 0, hits: 0, tight: 0, dup: 0, minGap: Infinity, hidden, sameLook: LOOK[a] === LOOK[b], handled, at, where: whereOf(at[0], at[1], at[2]), owners: new Set(), pts: [], n: [NV[a * 4], NV[a * 4 + 1], NV[a * 4 + 2]], objs: [drawn[MESH[a]], drawn[MESH[b]]] };
+        f.tris++; if (same3) f.dup++; f.tight += ab.tight + ba.tight; if (!hidden) f.hidden = null; if (f.pts.length < 6000) f.pts.push(...ab.pts, ...ba.pts);
+        if (dump && (dump === 'all' || dump.split(',').includes(f.where))) { f.dumped = f.dumped || []; if (f.dumped.length < 8) f.dumped.push({ A: A.p.map((q) => q.map((v) => +v.toFixed(4))), nA: A.n.map((v) => +v.toFixed(3)), B: B.p.map((q) => q.map((v) => +v.toFixed(4))), nB: B.n.map((v) => +v.toFixed(3)), gaps: [ab.minGap, ba.minGap].map((v) => +(v * 1000).toFixed(3)), hits: [ab.hits, ba.hits] }); } f.hits += hits; f.minGap = Math.min(f.minGap, ab.minGap, ba.minGap); f.owners.add(OWN[a]); f.owners.add(OWN[b]); found.set(k, f);
       }
     }
     console.log(`coincident: ${pairsTested} pairs sampled, ${found.size} near, heap ${mem()}`);
@@ -231,7 +267,9 @@ const outDir = path.join(__dirname, '.runs', 'coinc');
   const keyOf = (f) => f.where + ' | ' + f.pair.replace(/<[^\]]*\[/g, '[').replace(/\/map[0-9A-F]{8}/g, '/map').replace(/Kt#[0-9a-f]{6} /g, '').replace(/MeshPhongMaterial/g, 'Phong').replace(/MeshBasicMaterial/g, 'Basic').replace(/MeshLambertMaterial/g, 'Lambert');
   const accepted = new Map((baseline.accepted || []).map((e) => [e.key, e]));
   for (const f of r.list) { f.key = keyOf(f); f.accepted = accepted.get(f.key); }
-  const bad = r.list.filter((f) => !f.sameLook && !f.handled && !f.crossing && !f.accepted), known = r.list.filter((f) => !f.sameLook && !f.handled && !f.crossing && f.accepted), cross = r.list.filter((f) => !f.sameLook && !f.handled && f.crossing), same = r.list.filter((f) => f.sameLook && !f.handled), handled = r.list.filter((f) => f.handled);
+  const hid = r.list.filter((f) => f.hidden && !f.sameLook && !f.handled);
+  for (const f of hid) console.log(`  hid   ${f.where} (${f.at.join(', ')}): ${f.pair}  ${f.hits} points, never seen: ${f.hidden}`);
+  const bad = r.list.filter((f) => !f.sameLook && !f.handled && !f.crossing && !f.accepted && !f.hidden), known = r.list.filter((f) => !f.sameLook && !f.handled && !f.crossing && !f.hidden && f.accepted), cross = r.list.filter((f) => !f.sameLook && !f.handled && f.crossing && !f.hidden), same = r.list.filter((f) => f.sameLook && !f.handled), handled = r.list.filter((f) => f.handled);
   if (save) { fs.rmSync(outDir, { recursive: true, force: true }); fs.mkdirSync(outDir, { recursive: true }); }
   for (const f of bad) {
     let pic = ''; if (f.png) { const name = `${String(f.pic).padStart(2, '0')}_${f.where.replace(/[^\w]+/g, '_')}.png`; fs.writeFileSync(path.join(outDir, name), Buffer.from(f.png.split(',')[1], 'base64')); pic = `  -> .runs/coinc/${name}`; }
@@ -241,6 +279,7 @@ const outDir = path.join(__dirname, '.runs', 'coinc');
   for (const f of known) {
     let pic = ''; if (f.png) { const name = `k${String(f.pic).padStart(2, '0')}_${f.where.replace(/[^\w]+/g, '_')}.png`; fs.writeFileSync(path.join(outDir, name), Buffer.from(f.png.split(',')[1], 'base64')); pic = `  -> .runs/coinc/${name}`; }
     console.log(`  known ${f.where} (${f.at.join(', ')}): ${f.key}  ${f.hits} points (growth ${f.ratio})  accepted: ${f.accepted.why}${pic}`);
+    if (f.dumped) for (const d of f.dumped) console.log(`        A ${JSON.stringify(d.A)} n ${JSON.stringify(d.nA)}\n        B ${JSON.stringify(d.B)} n ${JSON.stringify(d.nB)}  gaps ${d.gaps.join('/')} mm, hits ${d.hits.join('/')}`);
   }
   for (const f of cross) {
     let pic = ''; if (f.png) { const name = `x${String(f.pic).padStart(2, '0')}_${f.where.replace(/[^\w]+/g, '_')}.png`; fs.writeFileSync(path.join(outDir, name), Buffer.from(f.png.split(',')[1], 'base64')); pic = `  -> .runs/coinc/${name}`; }
@@ -248,7 +287,7 @@ const outDir = path.join(__dirname, '.runs', 'coinc');
   }
   for (const f of same) console.log(`  same  ${f.where} (${f.at.join(', ')}): ${f.pair}  ${f.tris} pairs, closest ${f.minGap} mm  (same look both sides, not visible)`);
   for (const f of handled) console.log(`  hand  ${f.where} (${f.at.join(', ')}): ${f.pair}  ${f.tris} pairs, closest ${f.minGap} mm  (offset/order/transparent)`);
-  note(`${r.total} near-coincident pairs: ${bad.length} new depth fights, ${known.length} accepted (baseline), ${cross.length} crossings, ${same.length} same-look, ${handled.length} handled`);
+  note(`${r.total} near-coincident pairs: ${bad.length} new depth fights, ${known.length} accepted (baseline), ${cross.length} crossings, ${hid.length} never seen (undersides, resting contacts, buried), ${same.length} same-look, ${handled.length} handled`);
   expect('no two different-looking surfaces lie within ' + tol * 1000 + ' mm of each other (curved z-fighting)', bad.length === 0, bad.map((f) => f.where + ' (' + f.at.join(', ') + ')').join(' | '));
   expect('no page errors', g.errors.length === 0, g.errors.join(' | '));
   await g.close();

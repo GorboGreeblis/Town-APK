@@ -87,6 +87,7 @@ Requirements: JDK 17+, Android SDK with `platforms;android-34` and
 
 ```sh
 python3 tools/apply_entry_fix.py        # regenerate the asset from tools/uncompressed.html (also mirrored to index.html at the repo root)
+git config core.hooksPath tools/git-hooks   # once per clone: refuses a commit whose root index.html is stale
 cd android
 ./gradlew assembleRelease               # -> app/build/outputs/apk/release/app-release.apk
 ```

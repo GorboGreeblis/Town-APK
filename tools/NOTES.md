@@ -60,6 +60,7 @@ VR-entry fix; each item is for discussion first.
 51. Loading panel, third size, and a horizon (3.15.21)
 52. B20, Hennrick's cuffs (3.15.22)
 53. Curved z-fighting: a geometric test, the batcher's parked sources, B20 completed (3.15.23)
+54. The listed z-fighting instances: three fixed, seven that cannot be seen (3.15.24)
 
 1. **Immersive launch from a loopback origin.** Meta's immersive app mode was
    designed for hosted PWAs whose Digital Asset Links the browser can verify.
@@ -723,3 +724,27 @@ VR-entry fix; each item is for discussion first.
     town centre (2.64 m up), and two twig ends inside one tree's blossom
     cluster (2.9 m up). 37 crossings (strips through skin, caps through
     bodies) are listed, not failed.
+
+54. **The listed z-fighting instances: three fixed, seven that cannot be seen
+    (3.15.24).** The author asked for all ten candidates fixed. Reading the
+    triangles behind each one (`--dump` in both tests) sorted them into two
+    kinds. Three are real and are fixed by millimetre nudges that change
+    nothing visible: the parapet band on the Store, Bank and Fire Station
+    fronts shared the wall planes and overlapped them by 1 cm (B21; the
+    "perimeter wall against the hills" was the Fire Station's back wall seen
+    from outside the town); Mushroom's hat band rested flat on the brim (B22);
+    the Robin's tail feathers overlapped in one plane and the white tips sat in
+    the feathers' undersides (B23). The other seven are contacts the headset
+    cannot show: the juice stand pair was the undersides of a floor slab and a
+    plank at y 0, seen only from below the ground; the two church pairs were
+    wall tops buried inside the roof slab and a wall end buried inside the end
+    wall; the pedestal pair was a cone base resting on a cylinder cap, each
+    hidden behind the other's body (the test paired them only because the
+    materials are DoubleSide); Anomalee's two screens are thin boxes glued to
+    their panels, whose back faces coincide with the panel but are hidden
+    behind the screens' own front faces. Both tests now classify these as
+    hidden instead of reporting them: faces pointing down at ground level,
+    two closed solids touching back to back (closedness from the edge count,
+    since geometry types are not preserved), and contacts buried 2 mm or more
+    inside a third box (boxes recognised by their 8 corners and 12 triangles).
+    The baseline of accepted fights is empty again.

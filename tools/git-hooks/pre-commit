@@ -1,0 +1,21 @@
+#!/bin/sh
+# Refuses a commit in which the bundled game, its root copy index.html and the root APK disagree.
+# Install once per clone:  git config core.hooksPath tools/git-hooks
+# The author's rules: the one-file game as bundled in the APK is kept at the repository root
+# (index.html) and the APK at the root is always the latest build. tools/apply_entry_fix.py writes
+# the asset and the root copy; --verify checks both; the APK's bundled game must equal the asset.
+ROOT="$(git rev-parse --show-toplevel)"
+ASSET="$ROOT/tools/android/app/src/main/assets/index.html"
+if git diff --cached --name-only | grep -qE '^(index\.html|GreeblisTown-release\.apk|tools/android/app/src/main/assets/index\.html|tools/apply_entry_fix\.py|tools/uncompressed\.html|tools/android/app/build\.gradle)$'; then
+  if ! python3 -I "$ROOT/tools/apply_entry_fix.py" --verify >/dev/null 2>&1; then
+    echo "pre-commit: the bundled game, its root copy index.html and the recorded edits disagree." >&2
+    echo "            Run: python3 tools/apply_entry_fix.py && git add index.html tools/android/app/src/main/assets/index.html" >&2
+    exit 1
+  fi
+  if ! unzip -p "$ROOT/GreeblisTown-release.apk" assets/index.html 2>/dev/null | cmp -s - "$ASSET"; then
+    echo "pre-commit: GreeblisTown-release.apk at the root does not contain the current game asset (stale build)." >&2
+    echo "            Rebuild: (cd tools/android && ./gradlew assembleRelease) && cp tools/android/app/build/outputs/apk/release/app-release.apk GreeblisTown-release.apk" >&2
+    exit 1
+  fi
+fi
+exit 0

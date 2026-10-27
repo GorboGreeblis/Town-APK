@@ -177,8 +177,14 @@ them first, with the candidate list from `tools/test_coincident.js`.
 
 Rule for the repository root (the author, 2026-10-27): the one-file game as
 bundled in the APK is kept at the root as `index.html` next to the APK.
-`tools/apply_entry_fix.py` writes it, `--verify` and `tools/check_apk.sh` check
-it, so a release commit carries the APK and the exact game file inside it.
+`tools/apply_entry_fix.py` writes it, `--verify` (every test tier) and
+`tools/check_apk.sh` check it, and the pre-commit hook in `tools/git-hooks/`
+(`git config core.hooksPath tools/git-hooks`, once per clone) refuses a commit
+in which the two differ, or in which the root APK does not contain the current
+asset, so a release commit carries the latest build and the exact game file
+inside it. Rule for the root APK (the author, 2026-10-27): `GreeblisTown-release.apk`
+at the root is always the latest build; every change to the asset is followed by
+a rebuild and a version bump before it is committed.
 
 Same key, same package name, higher `versionCode`, rebuild, run
 `tools/check_apk.sh`, upload to Alpha, test, promote.

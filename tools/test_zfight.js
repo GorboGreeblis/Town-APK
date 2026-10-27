@@ -11,7 +11,7 @@
 // information: the headless depth precision is finer than the Quest's) and
 // fails the pass unless it is accepted in tools/zfight_baseline.json.
 //
-//   node tools/test_zfight.js [file] [--limit N] [--save] [--baseline tools/zfight_baseline.json]
+//   node tools/test_zfight.js [file] [--limit N] [--save] [--dump WHERE,WHERE|all] [--baseline tools/zfight_baseline.json]
 //   (--save: a picture per candidate in tools/.runs/zfight/, the pair alone and in context)
 const path = require('path');
 const { boot, reporter, root } = require('./lib/harness');
@@ -19,6 +19,7 @@ const { boot, reporter, root } = require('./lib/harness');
 const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : undefined;
 const limit = +(process.argv.find((a, i) => process.argv[i - 1] === '--limit') || 40);
 const save = process.argv.includes('--save');
+const dump = process.argv.find((a, i) => process.argv[i - 1] === '--dump') || '';
 const fs = require('fs');
 const outDir = path.join(__dirname, '.runs', 'zfight');
 const baselinePath = process.argv.find((a, i) => process.argv[i - 1] === '--baseline') || path.join(__dirname, 'zfight_baseline.json');
@@ -68,7 +69,7 @@ const baseline = fs.existsSync(baselinePath) ? JSON.parse(fs.readFileSync(baseli
             // Keep the triangle in plane coordinates (u,v) for the overlap test.
             const ax = Math.abs(n.x), ay = Math.abs(n.y), az = Math.abs(n.z); const drop = ax > ay && ax > az ? 'x' : ay > az ? 'y' : 'z';
             const pts = v.map((p) => drop === 'x' ? [p.y, p.z] : drop === 'y' ? [p.x, p.z] : [p.x, p.y]);
-            b.push({ mesh: o, inst: k, part: -1, src: null, pts, mat, c: [(v[0].x + v[1].x + v[2].x) / 3, (v[0].y + v[1].y + v[2].y) / 3, (v[0].z + v[1].z + v[2].z) / 3] });
+            b.push({ mesh: o, inst: k, part: -1, src: null, pts, w: v.map((p) => [+p.x.toFixed(4), +p.y.toFixed(4), +p.z.toFixed(4)]), mat, c: [(v[0].x + v[1].x + v[2].x) / 3, (v[0].y + v[1].y + v[2].y) / 3, (v[0].z + v[1].z + v[2].z) / 3] });
             tris++;
           }
         }
@@ -104,8 +105,8 @@ const baseline = fs.existsSync(baselinePath) ? JSON.parse(fs.readFileSync(baseli
         const sameLook = ca === cb && (A.mat && A.mat.type) === (B.mat && B.mat.type) && ((A.mat && A.mat.map) || null) === ((B.mat && B.mat.map) || null);
         const desc = (t) => { const o = t.src || t.mesh; const bb = new T.Box3().setFromObject(o); const sz = bb.getSize(new T.Vector3()); const chain = []; let q = o; while (q && q !== C && chain.length < 5) { chain.push(q.name || (q.constructor && q.constructor.name) || q.type); q = q.parent; } return { geo: o.geometry && (o.geometry.type || o.geometry.constructor.name), size: [sz.x, sz.y, sz.z].map((x) => +x.toFixed(2)), min: [bb.min.x, bb.min.y, bb.min.z].map((x) => +x.toFixed(2)), chain, ud: Object.keys(o.userData || {}), part: t.part }; };
         const lookOf = (m) => (m.type || '?') + (m.color ? '#' + m.color.getHexString() : '') + (m.emissive ? '/e' + m.emissive.getHexString() : '') + (m.map ? '/map' : '') + (m.vertexColors ? '/vc' : '');
-        const f = found.get(k) || { pair: k, tris: 0, handled: h, sameLook, at: A.c.map((x) => +x.toFixed(1)), plane: key, A: desc(A), B: desc(B), objA: A.src || A.mesh, objB: B.src || B.mesh, looks: [lookOf(A.mat), lookOf(B.mat)].sort() };
-        f.tris++; found.set(k, f);
+        const f = found.get(k) || { pair: k, tris: 0, handled: h, sameLook, at: A.c.map((x) => +x.toFixed(1)), atExact: A.c.slice(), plane: key, A: desc(A), B: desc(B), objA: A.src || A.mesh, objB: B.src || B.mesh, looks: [lookOf(A.mat), lookOf(B.mat)].sort() };
+        f.tris++; if (f.tris <= 6) (f.dumped = f.dumped || []).push({ A: A.w, B: B.w, meshA: A.mesh.id, meshB: B.mesh.id }); found.set(k, f);
       }
     }
     const list = [...found.values()].sort((a, b) => b.tris - a.tris);
@@ -118,6 +119,35 @@ const baseline = fs.existsSync(baselinePath) ? JSON.parse(fs.readFileSync(baseli
       if (F && F.buildings) { for (const B of F.buildings) if (F.inHull(B, x, z, 1.5)) return B.name || 'building'; }
       return 'town';
     };
+    // Contacts the headset can never show: undersides at ground level (faces pointing down at y <= 5 cm) and
+    // overlaps buried inside a third opaque box (wall tops under a roof slab).
+
+    // Geometry facts, cached per geometry: distinct corner count, triangle count, whether the mesh is closed
+    // (every edge shared by two triangles) and whether it is a box (8 corners, 12 triangles). Types are not
+    // reliable here: helpers and the texturing pass rebuild geometries as plain BufferGeometry.
+    const geoCache = new Map();
+    const geoInfo = (geo) => {
+      let gi = geoCache.get(geo); if (gi) return gi;
+      const pos = geo.attributes.position, idx = geo.index, n = idx ? idx.count : pos.count;
+      const vid = new Map(), remap = new Int32Array(pos.count);
+      for (let i = 0; i < pos.count; i++) { const k = Math.round(pos.getX(i) * 1e5) + ',' + Math.round(pos.getY(i) * 1e5) + ',' + Math.round(pos.getZ(i) * 1e5); let v = vid.get(k); if (v === undefined) { v = vid.size; vid.set(k, v); } remap[i] = v; }
+      const edges = new Map(); let tris = 0;
+      for (let i = 0; i + 2 < n; i += 3) {
+        const a = remap[idx ? idx.getX(i) : i], b = remap[idx ? idx.getX(i + 1) : i + 1], c = remap[idx ? idx.getX(i + 2) : i + 2]; if (a === b || b === c || a === c) continue; tris++;
+        for (const [p, q] of [[a, b], [b, c], [c, a]]) { const k = p < q ? p * 4194304 + q : q * 4194304 + p; edges.set(k, (edges.get(k) || 0) + 1); }
+      }
+      let open = 0; for (const v of edges.values()) if (v !== 2) open++;
+      geo.computeBoundingBox();
+      gi = { corners: vid.size, tris, closed: open === 0 && tris > 0, box: vid.size === 8 && tris === 12 };
+      geoCache.set(geo, gi); return gi;
+    };
+    const boxes = []; C.traverse((o) => { if (o.isMesh && o.visible && ((o.layers.mask & 1) || (o.layers.mask & (1 << 31))) && !o.geometry.attributes.gcPart && o.geometry.attributes.position && o.geometry.attributes.position.count <= 60 && geoInfo(o.geometry).box && !(Array.isArray(o.material) ? o.material[0] : o.material).transparent) boxes.push({ o, inv: new T.Matrix4().copy(o.matrixWorld).invert(), bb: o.geometry.boundingBox, sc: o.getWorldScale(new T.Vector3()) }); });
+    const lp = new T.Vector3();
+    for (const f of list) {
+      const nrm = f.plane.split(',').map(Number);
+      if (nrm[1] / Q < -0.9 && f.at[1] <= 0.05) { f.hidden = 'underside at ground level'; continue; }
+      for (const b of boxes) { if (b.o === f.objA || b.o === f.objB) continue; lp.set(f.atExact[0], f.atExact[1], f.atExact[2]).applyMatrix4(b.inv); const m = 0.002; if (lp.x > b.bb.min.x + m / b.sc.x && lp.x < b.bb.max.x - m / b.sc.x && lp.y > b.bb.min.y + m / b.sc.y && lp.y < b.bb.max.y - m / b.sc.y && lp.z > b.bb.min.z + m / b.sc.z && lp.z < b.bb.max.z - m / b.sc.z) { f.hidden = 'buried inside ' + label(b.o); break; } }
+    }
     for (const f of list) { f.where = whereOf(f.at[0], f.at[1], f.at[2]); f.key = f.where + ' | planar ' + f.looks.map((l) => '[' + l.replace(/MeshPhongMaterial/, 'Phong').replace(/MeshBasicMaterial/, 'Basic').replace(/MeshLambertMaterial/, 'Lambert') + ']').join('  vs  '); }
     // Confirmation by rendering: look at each candidate spot from 3 m, render twice with a
     // 1 mm camera shift, and count the pixels that change colour. Coplanar surfaces with
@@ -174,12 +204,15 @@ const baseline = fs.existsSync(baselinePath) ? JSON.parse(fs.readFileSync(baseli
   // Accepted overlaps live in tools/zfight_baseline.json (the author's call); only new ones fail.
   const accepted = new Map((baseline.accepted || []).map((e) => [e.key, e]));
   if (save) { fs.rmSync(outDir, { recursive: true, force: true }); fs.mkdirSync(outDir, { recursive: true }); }
-  const fresh = r.candidates.filter((c) => !accepted.has(c.key)), known = r.candidates.filter((c) => accepted.has(c.key));
+  const hid = r.candidates.filter((c) => c.hidden);
+  for (const c of hid) console.log(`  hid   ${c.where} (${c.at.join(', ')}): ${c.pair}  ${c.tris} tris, never seen: ${c.hidden}`);
+  const fresh = r.candidates.filter((c) => !c.hidden && !accepted.has(c.key)), known = r.candidates.filter((c) => !c.hidden && accepted.has(c.key));
   r.candidates.forEach((c, i) => { if (c.png) { const name = `${String(i).padStart(2, '0')}_${c.where.replace(/[^\w]+/g, '_')}.png`; fs.writeFileSync(path.join(outDir, name), Buffer.from(c.png.split(',')[1], 'base64')); c.pic = `  -> .runs/zfight/${name}`; } });
-  for (const c of fresh) console.log(`  CAND  ${c.where} (${c.at.join(', ')}): ${c.pair}  ${c.tris} tris, render flips ${c.flipPct}% with a 1 mm camera shift${c.pic || ''}\n        key: ${c.key}\n        A ${JSON.stringify(c.A)}\n        B ${JSON.stringify(c.B)}`);
-  for (const c of known) console.log(`  known ${c.where} (${c.at.join(', ')}): ${c.key}  ${c.tris} tris  accepted: ${accepted.get(c.key).why}${c.pic || ''}`);
+  const dumpOf = (c) => dump && (dump === 'all' || dump.split(',').includes(c.where)) && c.dumped ? c.dumped.map((d) => `\n        A ${JSON.stringify(d.A)} (mesh ${d.meshA})\n        B ${JSON.stringify(d.B)} (mesh ${d.meshB})`).join('') : '';
+  for (const c of fresh) console.log(`  CAND  ${c.where} (${c.at.join(', ')}): ${c.pair}  ${c.tris} tris, render flips ${c.flipPct}% with a 1 mm camera shift${c.pic || ''}\n        key: ${c.key}\n        A ${JSON.stringify(c.A)}\n        B ${JSON.stringify(c.B)}${dumpOf(c)}`);
+  for (const c of known) console.log(`  known ${c.where} (${c.at.join(', ')}): ${c.key}  ${c.tris} tris  accepted: ${accepted.get(c.key).why}${c.pic || ''}\n        A ${JSON.stringify(c.A)}\n        B ${JSON.stringify(c.B)}${dumpOf(c)}`);
   for (const c of r.sameLook) console.log(`  same  ${c.pair}  ${c.tris} tris  near (${c.at.join(', ')})  (same colour both sides, not visible)`);
-  note(`${r.candidates.length} different-looking coplanar overlaps: ${fresh.length} new, ${known.length} accepted (baseline)`);
+  note(`${r.candidates.length} different-looking coplanar overlaps: ${fresh.length} new, ${known.length} accepted (baseline), ${hid.length} never seen (undersides, buried)`);
   expect('no new coplanar overlap of two different-looking surfaces (planar z-fighting)', fresh.length === 0, fresh.map((c) => c.where + ' (' + c.at.join(', ') + ')').join(' | '));
   expect('no page errors', g.errors.length === 0, g.errors.join(' | '));
   await g.close();

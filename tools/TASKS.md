@@ -34,20 +34,20 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D6 | Mushroom fix confirmed: 17/17 return-home scenarios pass at real-time simulation | 2026-10-26 |
 | D7 | Visit system verified: host/visitor visits complete and interrupted (out, meet, back) all end with Mushroom on his desk at height | 2026-10-26 |
 
-## Resume point (2026-10-27, late: 3.15.23 built, PR #12 open)
+## Resume point (2026-10-27, night: 3.15.24 built)
 
 - **3.15.19 passes the author's full headset run, no new issues.** Upload candidate
   until a later build is confirmed; RELEASE.md section 5.
-- **3.15.23** (root APK, versionCode 23, PR #12): 3.15.21's loading panel (15 degrees
-  at 5 m with a horizon) plus B20 complete (cuff lights half inside the cuff and 1 cm
-  up; `tools/test_coincident.js` reports no depth fight on Hennrick). Needs the
-  author's headset check: cuffs, loading panel.
-- New: `tools/test_coincident.js` (curved z-fighting, geometric, in the full tier),
-  both z-fight tests read the batcher's parked sources, `tools/zfight_baseline.json`
-  holds the accepted fights (six, the author's call: Anomalee's screens, a patch on
-  Mushroom, the pedestal top, two twig contacts in one tree; pictures sent to the
-  author). Root `index.html` mirrors the bundled game. B19 closed, B9 moved to fixed.
+- **3.15.24** (root APK, versionCode 24): 3.15.23 (B20 complete, 15-degree loading
+  panel with a horizon) plus B21-B23, the three real z-fighting instances of the ten
+  the author asked fixed (parapet bands, Mushroom's hat band, the Robin's tail); the
+  other seven were contacts the headset cannot show and both z-fight tests now
+  classify them as hidden (NOTES 54). Standard tier passes. Needs the author's
+  headset check: Hennrick's cuffs, the loading panel, and nothing new on the Store
+  fronts, Mushroom's hat and the Robin.
+- Author's rules recorded: the root `index.html` mirrors the bundled game and the root
+  APK is always the latest build (`tools/git-hooks/pre-commit`, RELEASE.md section 6);
+  creature models are fixed with care and without changing their look.
 - Remaining: T4 store upload (author: comfort rating Moderate, add Standing,
   screenshots, copy); T10 lore (author); T15 tools/docs upkeep; T12 further loading
-  cuts only with content changes (player build, kiosks); the standard tier on the
-  3.15.23 asset is recorded in TEST_PLAN.md once it finishes.
+  cuts only with content changes (player build, kiosks).
