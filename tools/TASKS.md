@@ -34,11 +34,23 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D6 | Mushroom fix confirmed: 17/17 return-home scenarios pass at real-time simulation | 2026-10-26 |
 | D7 | Visit system verified: host/visitor visits complete and interrupted (out, meet, back) all end with Mushroom on his desk at height | 2026-10-26 |
 
-## Resume point (2026-10-28: 3.15.26 built, performance pass and Zollod)
+## Resume point (2026-10-28: 3.15.27 built, frame-rate line and the performance report)
+
+- **3.15.27** (branch `claude/gallant-fermi-pydail`, draft PR): the frame-rate log
+  line (P7), `perf_report.js` as a pass/fail stage of the full tier with
+  `perf_baseline.json`, `perf_log.js` for the headset's log (NOTES 57, 58; PERF.md
+  section 7). Standard tier passed; the perf report passed.
+- Next: the author's headset run with 3.15.27, then `node tools/perf_log.js run.txt`
+  on the logcat; RELEASE.md step 7 items unchanged.
+
+## Earlier resume point (3.15.26 built, performance pass and Zollod)
 
 - **3.15.19 passes the author's full headset run, no new issues.** Upload candidate
   until a later build is confirmed; RELEASE.md section 5.
-- **3.15.26** (root APK, versionCode 26, pushed to main): 3.15.25 plus the performance
+- **3.15.27** (root APK, versionCode 27, draft PR): 3.15.26 plus P7, a frame-rate line
+  every ten seconds in logcat while presenting (HEADSET_DIAG.md), so the author's next
+  run measures itself. PERF.md lists what was investigated after 3.15.26 and why not done.
+- **3.15.26** (pushed to main): 3.15.25 plus the performance
   pass (P1 governor, P2 light-on shaders pre-compiled, P4 opacity-0 objects skipped,
   P5 ground-fit scan throttled; NOTES 56, PERF.md section 6) and B25 (Zollod's kiosk:
   four shared-walker fixes, his scenarios all clean). Nothing visible changed (the

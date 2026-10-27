@@ -600,6 +600,15 @@ GAME_FIXES = [
         'const m=e.clone();m.userData={gcR:new Float32Array(16*t.length)}',
         'const m=e.clone();m.__gbFS=e.__gbFS,m.userData={gcR:new Float32Array(16*t.length)}',
     ),
+    # P7 (diagnostics, the author cannot measure much right now): every ten seconds in VR the
+    # game posts one line to logcat (`page: m=perf ...`): frame rate from the governor's
+    # frame-time average, the governor level, draw calls and triangles of the last frame,
+    # whether the planting Event is running, and where the player stands. A headset run
+    # then documents its own frame rate: `adb logcat -s GreeblisServer | grep perf`.
+    (
+        'o.lastFrame=n,_e();F.ctrls.forEach(',
+        'o.lastFrame=n,_e();try{n-(o.perfAt||0)>1e4&&(o.perfAt=n,window.__gtLog&&window.__gtLog("perf fps="+(1e3/Ge.ema).toFixed(1)+" level="+Ge.level+" calls="+O.info.render.calls+" tris="+O.info.render.triangles+(me&&me.active?" event":"")+" at="+Math.round(At.position.x)+","+Math.round(At.position.z)))}catch(e){}F.ctrls.forEach(',
+    ),
 ]
 
 for old, new in EDITS + ([] if entry_only else GAME_FIXES) + (EXPERIMENTS[experiment] if experiment else []):

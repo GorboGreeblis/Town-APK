@@ -1,0 +1,96 @@
+{
+ "date": "2026-10-27T06:16:34.018Z",
+ "file": "tools/android/app/src/main/assets/index.html",
+ "scenarios": {
+  "town, standing": {
+   "p50": 2.1,
+   "p99": 3.5,
+   "max": 7.3,
+   "tris": 160062,
+   "calls": 66,
+   "transparent": 89,
+   "newPrograms": 0
+  },
+  "town, walking": {
+   "p50": 2.1,
+   "p99": 6.6,
+   "max": 13.1,
+   "tris": 122626,
+   "calls": 64,
+   "transparent": 89,
+   "newPrograms": 0
+  },
+  "town, among creatures": {
+   "p50": 2.2,
+   "p99": 3.6,
+   "max": 4.1,
+   "tris": 498126,
+   "calls": 304,
+   "transparent": 87,
+   "newPrograms": 0
+  },
+  "dialogue open": {
+   "p50": 2.2,
+   "p99": 5.5,
+   "max": 7.2,
+   "tris": 472682,
+   "calls": 280,
+   "transparent": 88,
+   "newPrograms": 0
+  },
+  "shop panel": {
+   "p50": 2.6,
+   "p99": 5.8,
+   "max": 14.9,
+   "tris": 484566,
+   "calls": 378,
+   "transparent": 92,
+   "newPrograms": 0
+  },
+  "battle panel": {
+   "p50": 2.3,
+   "p99": 5.5,
+   "max": 14.7,
+   "tris": 498122,
+   "calls": 302,
+   "transparent": 89,
+   "newPrograms": 0
+  },
+  "the Speech (library finale)": {
+   "p50": 2.2,
+   "p99": 4.1,
+   "max": 7.1,
+   "tris": 432597,
+   "calls": 302,
+   "transparent": 98,
+   "newPrograms": 0
+  },
+  "the Event, start (0-30 s)": {
+   "p50": 2.6,
+   "p99": 7.4,
+   "max": 63,
+   "tris": 531744,
+   "calls": 370,
+   "transparent": 75,
+   "newPrograms": 0
+  },
+  "the Event, middle (30-60 s)": {
+   "p50": 2.8,
+   "p99": 6.5,
+   "max": 10.3,
+   "tris": 505964,
+   "calls": 388,
+   "transparent": 75,
+   "newPrograms": 0
+  },
+  "the Event, late (60-90 s)": {
+   "p50": 3.6,
+   "p99": 6.7,
+   "max": 12.5,
+   "tris": 505956,
+   "calls": 384,
+   "transparent": 78,
+   "newPrograms": 0
+  }
+ }
+}

@@ -61,6 +61,7 @@ if [ "$TIER" != quick ]; then
     run "z-fighting / flicker on environmental surfaces (jittered render)" node "$ROOT/tools/test_zfight.js" "$ASSET"
     run "z-fighting on curved surfaces (near-coincident geometry)" node "$ROOT/tools/test_coincident.js" "$ASSET"
     run "single-sided pass is pixel-identical (edges aside)" node "$ROOT/tools/sides_check.js" "$ASSET"
+    run "performance report (script cost, shader compiles, scene load per situation)" node "$ROOT/tools/perf_report.js" "$ASSET"
     report "loading time (boot profile)" node "$ROOT/tools/boot_profile.js" "$ASSET"
     report "handover profile (frames after entering VR)" node "$ROOT/tools/entry_profile.js" "$ASSET"
     # Frame timings are only meaningful without the layers path (its MSAA resolve is software-rendered here),

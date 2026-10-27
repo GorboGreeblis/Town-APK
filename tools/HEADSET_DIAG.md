@@ -109,3 +109,31 @@ quality in the town compared with 3.15.12.
   should accompany any of these.
 - `entry failed`, `loader ... failed`, `[xr-enter]`, `[boot]`: must be absent.
 
+## Frame-rate lines (3.15.27)
+
+While presenting, the game posts one line every ten seconds:
+
+```
+page: m=perf fps=71.8 level=2 calls=118 tris=201240 at=-36,-20
+page: m=perf fps=41.2 level=4 calls=131 tris=266812 event at=2,-3
+```
+
+`fps` is 1000 over the governor's frame-time average, `level` the governor's
+quality level (0-1 supersampled, 2 native, 3-4 native with fixed foveation),
+`calls` and `tris` the last frame's draw calls and triangles (both eyes),
+`event` while the planting Event runs, `at` the player's x,z. Read it with
+`adb logcat -s GreeblisServer | grep perf`. A run through the town, a kiosk, a
+dialogue and the Event gives the frame-rate picture the OVR Metrics Tool would,
+with the scene named.
+
+Save the whole log and let the reader summarise it:
+
+```
+adb logcat -d -s GreeblisServer > run.txt
+node tools/perf_log.js run.txt
+```
+
+It prints the frame rate by scene (town, the Event), the five lowest readings
+with where the player stood, the governor levels seen, and a verdict against
+the Store's 60 fps line with the likely cause for each low reading (triangles,
+draw calls, or GPU-bound with the governor at its floor).
