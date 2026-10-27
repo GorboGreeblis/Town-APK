@@ -54,8 +54,9 @@ that keep it fast and flash-free, each with the test that enforces it. Details a
      - a framebuffer bind other than the shim's own.
 
      Programs compiled during the frame are also counted and named.
-4. `end()` has nothing to resolve in multiview: the MSAA resolves on the tile. The classic path blits its
-   MSAA renderbuffer here.
+4. `end()` has nothing to resolve in multiview: the MSAA resolves on the tile. It discards the depth buffer
+   (P14: `invalidateFramebuffer`), so the tiled GPU does not write it back to memory; nothing reads it after
+   the frame. The classic path blits its MSAA renderbuffer here.
 
 The classic fallback (no `OCULUS_multiview`, an incomplete framebuffer, or the `nomultiview` experiment)
 draws every object twice, once per eye, into an MSAA renderbuffer and blits at the end. It is pixel-identical

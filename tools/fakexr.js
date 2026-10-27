@@ -16,6 +16,8 @@
  *   supportLocalFloor         set false to make `local-floor` reject
  *   fbMax                     max framebuffer width (default 320; software GL is fill-bound)
  *   headsetFov                true: Quest 3-like eye field of view for culling and draw counts (96 x 100 deg)
+ *   layerDepth                false: texture-array layers come without a depth texture, so the game renders into
+ *                             its own depth buffer as on the headset (4x MSAA) and its end-of-frame depth discard runs
  */
 (function () {
   const S = (window.__fakeXR = { poses: false, sessions: [], frames: 0, pose: { y: 1.6, yaw: 0 }, inputs: [], supportLocalFloor: true, fbMax: 320 });
@@ -203,7 +205,7 @@
       if (layer._tex) gl.deleteTexture(layer._tex); if (layer._dtex) { gl.deleteTexture(layer._dtex); layer._dtex = null; }
       layer._tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D_ARRAY, layer._tex); gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, w, h, 2);
       gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      if (layer.init.depthFormat) { layer._dtex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D_ARRAY, layer._dtex); gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.DEPTH24_STENCIL8, w, h, 2); }
+      if (layer.init.depthFormat && S.layerDepth !== false) { layer._dtex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D_ARRAY, layer._dtex); gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.DEPTH24_STENCIL8, w, h, 2); }
       gl.bindTexture(gl.TEXTURE_2D_ARRAY, null); layer._w = w; layer._h = h; return layer._tex;
     }
     getViewSubImage(layer, view) {

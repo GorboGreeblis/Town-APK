@@ -79,8 +79,9 @@ X.mvWrap = function (r) {
   try {
     var gl = r.getContext();
     /* Anything that makes the GPU save and reload a half-drawn multiview frame: texture uploads and copies,
-       mipmap builds, pixel reads, blits, and binding any framebuffer other than the headset's. */
-    ["texImage2D", "texSubImage2D", "texImage3D", "texSubImage3D", "generateMipmap", "copyTexImage2D", "copyTexSubImage2D", "readPixels", "blitFramebuffer", "bindFramebuffer"].forEach(function (k) {
+       mipmap builds, pixel reads, blits, and binding any framebuffer other than the headset's; and a
+       framebuffer invalidation, which mid-frame would throw away what is drawn (P14 runs after the frame). */
+    ["texImage2D", "texSubImage2D", "texImage3D", "texSubImage3D", "generateMipmap", "copyTexImage2D", "copyTexSubImage2D", "readPixels", "blitFramebuffer", "bindFramebuffer", "invalidateFramebuffer"].forEach(function (k) {
       var f = gl[k]; if (typeof f !== "function") return;
       gl[k] = function () {
         if (X.mvInFrame && (k !== "bindFramebuffer" || !(X.shim && arguments[1] === X.shim.fb))) { var st = X.mvStats; st.inFrame++; st.inFrameKinds[k] = (st.inFrameKinds[k] || 0) + 1; if (st.inFrame <= 12) __gtLog("multiview: " + k + " while a frame draws (" + st.inFrame + ")"); }

@@ -19,7 +19,7 @@ X.projShim = function (s, g, msaa) {
   var bd = new XRWebGLBinding(s, g), ref = X.ref || null, fb = g.createFramebuffer(), rfb = g.createFramebuffer();
   var ms = null, msd = null, msW = 0, msH = 0, vp = [], tex = null, tw = 0, th = 0, fov = 0, samples = 0;
   if (msaa && W2) { try { samples = Math.min(4, g.getParameter(g.MAX_SAMPLES) || 0); } catch (e) { samples = 0; } }
-  var MV = !!(W2 && X.mvPlanFor && X.mvPlanFor(g)), mvx = MV ? g.getExtension("OVR_multiview2") : null, msx = MV && samples ? g.getExtension("OCULUS_multiview") : null, mvd = null, mvdW = 0, mvdH = 0, mvOk = false;
+  var MV = !!(W2 && X.mvPlanFor && X.mvPlanFor(g)), mvx = MV ? g.getExtension("OVR_multiview2") : null, msx = MV && samples ? g.getExtension("OCULUS_multiview") : null, mvd = null, mvdW = 0, mvdH = 0, mvOk = false, mvOwn = false;
   if (MV && samples && !msx) { if (window.__fakeXR && window.__fakeXR.multiview) samples = 0; else MV = false; }
   X.mvActive = MV;
   var S = { fb: fb, layer: null, w: 0, h: 0, samples: samples };
@@ -88,7 +88,7 @@ X.projShim = function (s, g, msaa) {
       if (!mvd || mvdW !== tw || mvdH !== th) { if (mvd) g.deleteTexture(mvd); mvd = g.createTexture(); g.bindTexture(g.TEXTURE_2D_ARRAY, mvd); g.texStorage3D(g.TEXTURE_2D_ARRAY, 1, g.DEPTH24_STENCIL8, tw, th, 2); g.bindTexture(g.TEXTURE_2D_ARRAY, null); mvdW = tw; mvdH = th; }
       dep = mvd;
     }
-    g.bindFramebuffer(FB, fb);
+    g.bindFramebuffer(FB, fb); mvOwn = dep === mvd;
     if (samples) { msx.framebufferTextureMultisampleMultiviewOVR(FB, g.COLOR_ATTACHMENT0, tex, 0, samples, 0, 2); msx.framebufferTextureMultisampleMultiviewOVR(FB, g.DEPTH_STENCIL_ATTACHMENT, dep, 0, samples, 0, 2); }
     else { mvx.framebufferTextureMultiviewOVR(FB, g.COLOR_ATTACHMENT0, tex, 0, 0, 2); mvx.framebufferTextureMultiviewOVR(FB, g.DEPTH_STENCIL_ATTACHMENT, dep, 0, 0, 2); }
     if (!mvOk) {
@@ -101,6 +101,7 @@ X.projShim = function (s, g, msaa) {
   S.getViewport = function (v) { for (var i = 0; i < vp.length; i++) if (vp[i].eye === v.eye) return vp[i]; return vp[0] || { x: 0, y: 0, width: tw, height: th }; };
   /* end(): resolve the MSAA buffer into the eye texture (the framebuffer stays bound, as three.js's cache expects). */
   S.end = function () {
+    if (MV && mvOk && mvOwn && tex && !X.keepDepth) { try { g.bindFramebuffer(g.FRAMEBUFFER, fb); g.invalidateFramebuffer(g.FRAMEBUFFER, [g.DEPTH_STENCIL_ATTACHMENT]); X.depthDiscards = (X.depthDiscards || 0) + 1; } catch (e) {} }
     if (samples && tex && !MV) {
       g.bindFramebuffer(g.READ_FRAMEBUFFER, fb); g.bindFramebuffer(g.DRAW_FRAMEBUFFER, rfb);
       g.blitFramebuffer(0, 0, tw, th, 0, 0, tw, th, g.COLOR_BUFFER_BIT, g.NEAREST);
@@ -239,8 +240,9 @@ X.mvWrap = function (r) {
   try {
     var gl = r.getContext();
     /* Anything that makes the GPU save and reload a half-drawn multiview frame: texture uploads and copies,
-       mipmap builds, pixel reads, blits, and binding any framebuffer other than the headset's. */
-    ["texImage2D", "texSubImage2D", "texImage3D", "texSubImage3D", "generateMipmap", "copyTexImage2D", "copyTexSubImage2D", "readPixels", "blitFramebuffer", "bindFramebuffer"].forEach(function (k) {
+       mipmap builds, pixel reads, blits, and binding any framebuffer other than the headset's; and a
+       framebuffer invalidation, which mid-frame would throw away what is drawn (P14 runs after the frame). */
+    ["texImage2D", "texSubImage2D", "texImage3D", "texSubImage3D", "generateMipmap", "copyTexImage2D", "copyTexSubImage2D", "readPixels", "blitFramebuffer", "bindFramebuffer", "invalidateFramebuffer"].forEach(function (k) {
       var f = gl[k]; if (typeof f !== "function") return;
       gl[k] = function () {
         if (X.mvInFrame && (k !== "bindFramebuffer" || !(X.shim && arguments[1] === X.shim.fb))) { var st = X.mvStats; st.inFrame++; st.inFrameKinds[k] = (st.inFrameKinds[k] || 0) + 1; if (st.inFrame <= 12) __gtLog("multiview: " + k + " while a frame draws (" + st.inFrame + ")"); }

@@ -91,6 +91,9 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
   if (vr && device) await page.addInitScript((d) => { window.__fakeXR.applyDevice(d); }, device);
   // GT_HEADSET_FOV=1: the fake eyes take a Quest 3-like field of view (draw counts and culling as on the headset).
   if (vr && process.env.GT_HEADSET_FOV) await page.addInitScript(() => { window.__fakeXR.headsetFov = true; });
+  // GT_LAYER_DEPTH=0: the layer brings no depth texture, so multiview renders into the game's own depth buffer as on
+  // the headset and its end-of-frame depth discard (P14) runs.
+  if (vr && process.env.GT_LAYER_DEPTH === '0') await page.addInitScript(() => { window.__fakeXR.layerDepth = false; });
   const t0 = Date.now();
   await page.goto(url, { waitUntil: 'load', timeout: timeoutMs });
   await page.waitForFunction(() => window.__dbgReady === true, null, { timeout: timeoutMs });

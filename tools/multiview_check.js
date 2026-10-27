@@ -80,7 +80,7 @@ const outDir = path.join(root, 'tools/.runs/multiview');
     let gem = false;
     try { D.Kt.artifacts = 3; D.LIB.talk(); const adv = setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250);
       const isGem = () => { let f = false; D.C.traverse((o) => { const m = o.material; if (o.isMesh && m && !Array.isArray(m) && m.flatShading && m.transparent && m.vertexColors && o.position.y > -30 && o.parent && o.parent.position.y > -30) f = true; }); return f; };
-      const t0 = performance.now(); while (!(gem = isGem()) && performance.now() - t0 < 30000) await wait(250); await wait(2000); clearInterval(adv); } catch (e) {}
+      const t0 = performance.now(); while (!(gem = isGem()) && performance.now() - t0 < 90000) await wait(250); await wait(2000); clearInterval(adv); } catch (e) {}
     await wait(500);
     const s1 = X.mvStats; return { pickups: !!(a && b), preUploads: s1.preUploads - s0.preUploads, inFrame: s1.inFrame - s0.inFrame, kinds: s1.inFrameKinds, gem, programs: s1.programsDuringPlay - s0.programsDuringPlay, names: (s1.newPrograms || []).slice((s0.newPrograms || []).length), why: diffNew(np0) };
     // For each program compiled during the sequence: the closest program warmed before it (same shader, fewest
@@ -111,6 +111,10 @@ const outDir = path.join(root, 'tools/.runs/multiview');
   // the game keeps running in multiview afterwards (no errors, frames advance; software GL is slow after the Event)
   const after = await page.evaluate(async () => { const f0 = window.__fakeXR.frames; await new Promise((r) => setTimeout(r, 6000)); return { frames: window.__fakeXR.frames - f0, active: window.__gtXR.mvActive, err: window.__dbg.O.getContext().getError() }; });
   expect('the game keeps rendering in multiview after the checks', after.frames > 5 && after.active && after.err === 0, JSON.stringify(after));
+  // P14: the end-of-frame depth discard runs when the game renders into its own depth buffer (the headset's MSAA path;
+  // headless with GT_LAYER_DEPTH=0), and never while a frame draws (the hazard watch above counts invalidations too)
+  const dd = await page.evaluate(() => ({ discards: window.__gtXR.depthDiscards || 0, own: window.__fakeXR.layerDepth === false }));
+  if (dd.own) expect('own depth buffer: the depth discard runs at the end of every frame (P14)', dd.discards > 100, JSON.stringify(dd)); else note(`depth discards ${dd.discards} (the fake layer brings its own depth; GT_LAYER_DEPTH=0 mirrors the headset)`);
   const logs = (global.__pageLog || []).filter((m) => /multiview|incomplete/i.test(m));
   note('page log: ' + logs.join(' | '));
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 4).join(' | '));

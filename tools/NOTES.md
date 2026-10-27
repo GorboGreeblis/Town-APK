@@ -1040,3 +1040,27 @@ VR-entry fix; each item is for discussion first.
     vertex lever left without a visible change, would save nothing. Draw
     order is already by program, then material, then depth (three.js's
     opaque sort), so grouping draws by shader would change nothing either.
+
+70. **What is left that changes nothing on screen (3.15.36).** With the
+    Event most likely GPU-bound on the headset (the script time measured
+    here, scaled, is 8-11 ms against the 13.9 ms budget), the per-pixel work
+    was checked for waste. Lights: a hemisphere light and two directional
+    lights all the time; both point lights are hidden, not left on at zero,
+    so no shader pays for them. Vertices: see 69. What was found: the
+    headset path renders into the game's own multisampled depth buffer
+    (`OCULUS_multiview` resolves on the tile), and nothing told the driver
+    that depth was finished, so a tiled GPU writes the whole resolved depth
+    buffer back to memory every frame (2 x 1832 x 1920 x 4 bytes, about
+    28 MB; 1.7 GB/s at 60 fps). P14 invalidates the depth-stencil
+    attachment after the frame's last draw (outside the frame: the hazard
+    watch now counts invalidations, which mid-frame would discard the
+    picture). Headless with `GT_LAYER_DEPTH=0` (the game's own depth buffer,
+    as on the headset) it runs every frame and every multiview pixel
+    comparison still matches. The CPU side: `tools/matrix_trace.js` shows
+    2,692 objects in the Event scene, about 1,400 of them (the dancing
+    creatures) changing every frame, 41% in subtrees that never change; the
+    scene root recomposes its identity matrix every frame and so forces
+    every world matrix to be recomputed. Turning that off (P15) leaves all
+    2.36 million checked world matrices bit-identical, but no time saving
+    showed in the first, noisy measurement; not applied until a clean A/B
+    shows one.

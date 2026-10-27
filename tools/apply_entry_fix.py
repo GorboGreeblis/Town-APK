@@ -171,7 +171,7 @@ def _multiview():
     add('function loader(s){var c=document.createElement("canvas")', MVJS + 'function loader(s){var c=document.createElement("canvas")')
     add('  if (msaa && W2) { try { samples = Math.min(4, g.getParameter(g.MAX_SAMPLES) || 0); } catch (e) { samples = 0; } }\n',
         '  if (msaa && W2) { try { samples = Math.min(4, g.getParameter(g.MAX_SAMPLES) || 0); } catch (e) { samples = 0; } }\n'
-        '  var MV = !!(W2 && X.mvPlanFor && X.mvPlanFor(g)), mvx = MV ? g.getExtension("OVR_multiview2") : null, msx = MV && samples ? g.getExtension("OCULUS_multiview") : null, mvd = null, mvdW = 0, mvdH = 0, mvOk = false;\n'
+        '  var MV = !!(W2 && X.mvPlanFor && X.mvPlanFor(g)), mvx = MV ? g.getExtension("OVR_multiview2") : null, msx = MV && samples ? g.getExtension("OCULUS_multiview") : null, mvd = null, mvdW = 0, mvdH = 0, mvOk = false, mvOwn = false;\n'
         '  if (MV && samples && !msx) { if (window.__fakeXR && window.__fakeXR.multiview) samples = 0; else MV = false; }\n'
         '  X.mvActive = MV;\n')
     add('var o = { textureType: "texture", colorFormat', 'var o = { textureType: MV ? "texture-array" : "texture", colorFormat')
@@ -192,7 +192,7 @@ def _multiview():
         '      if (!mvd || mvdW !== tw || mvdH !== th) { if (mvd) g.deleteTexture(mvd); mvd = g.createTexture(); g.bindTexture(g.TEXTURE_2D_ARRAY, mvd); g.texStorage3D(g.TEXTURE_2D_ARRAY, 1, g.DEPTH24_STENCIL8, tw, th, 2); g.bindTexture(g.TEXTURE_2D_ARRAY, null); mvdW = tw; mvdH = th; }\n'
         '      dep = mvd;\n'
         '    }\n'
-        '    g.bindFramebuffer(FB, fb);\n'
+        '    g.bindFramebuffer(FB, fb); mvOwn = dep === mvd;\n'
         '    if (samples) { msx.framebufferTextureMultisampleMultiviewOVR(FB, g.COLOR_ATTACHMENT0, tex, 0, samples, 0, 2); msx.framebufferTextureMultisampleMultiviewOVR(FB, g.DEPTH_STENCIL_ATTACHMENT, dep, 0, samples, 0, 2); }\n'
         '    else { mvx.framebufferTextureMultiviewOVR(FB, g.COLOR_ATTACHMENT0, tex, 0, 0, 2); mvx.framebufferTextureMultiviewOVR(FB, g.DEPTH_STENCIL_ATTACHMENT, dep, 0, 0, 2); }\n'
         '    if (!mvOk) {\n'
@@ -204,6 +204,15 @@ def _multiview():
         '  }\n'
         '  S.getViewport = function (v) {')
     add('    if (samples && tex) {\n', '    if (samples && tex && !MV) {\n')
+    # P14 (GPU bandwidth, nothing drawn differently): on the headset's tiled GPU, a depth attachment that
+    # is not invalidated is written back to memory at the end of every frame (both eyes, 4x MSAA resolved:
+    # about 28 MB a frame). Nothing reads that depth: the compositor never sees it (the layer gets colour
+    # only) and the next frame clears it. So after the frame's last draw the depth-stencil attachment is
+    # invalidated, the standard Quest advice. Only our own depth buffer (the MSAA path): a depth texture the
+    # layer itself provides may be used by the compositor. `__gtXR.keepDepth = true` switches it off.
+    add('  S.end = function () {\n',
+        '  S.end = function () {\n'
+        '    if (MV && mvOk && mvOwn && tex && !X.keepDepth) { try { g.bindFramebuffer(g.FRAMEBUFFER, fb); g.invalidateFramebuffer(g.FRAMEBUFFER, [g.DEPTH_STENCIL_ATTACHMENT]); X.depthDiscards = (X.depthDiscards || 0) + 1; } catch (e) {} }\n')
     add('  var shim = null, fake = null;\n', '  var shim = null, fake = null;\n  try { s.addEventListener("end", function () { X.mvDone = true; X.mvActive = false; }); } catch (e) {}\n')
     add('__gtLog("projection layer live, scale " + sc + ", msaa " + shim.samples);', '__gtLog("projection layer live, scale " + sc + ", msaa " + shim.samples + ", multiview " + !!X.mvActive);')
     return E
