@@ -34,7 +34,18 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D6 | Mushroom fix confirmed: 17/17 return-home scenarios pass at real-time simulation | 2026-10-26 |
 | D7 | Visit system verified: host/visitor visits complete and interrupted (out, meet, back) all end with Mushroom on his desk at height | 2026-10-26 |
 
-## Resume point (2026-10-28: 3.15.27 built, frame-rate line and the performance report)
+## Resume point (3.15.32 built: draw calls and vertex work, nothing visible changed)
+
+- **3.15.28-3.15.32** (P8 merged with PR #14; P9-P13 on branch `claude/gallant-fermi-pydail`, draft
+  PR #15): Event frame about 390 -> 300 draws (both eyes), batch vertices -57%, scenery vertex runs
+  -46%, tentacle bend 2.8x faster; every change pixel- or bit-identical (NOTES 59-64, PERF.md 8).
+  Standard tier passed on 3.15.32. Probes ruled out fill, overdraw, the Event's lights, GC and hidden
+  geometry as the remaining cost.
+- **Next needs the author:** a headset run with `perf_log.js` (or OVR Metrics in the Event) to say
+  CPU-bound or GPU-bound; then the look-changing levers in PERF.md 8 (LOD for dense meshes,
+  anisotropy, start-level foveation, render scale) or the multiview experiment.
+
+## Earlier resume point (3.15.27 built, frame-rate line and the performance report)
 
 - **3.15.27** (branch `claude/gallant-fermi-pydail`, draft PR): the frame-rate log
   line (P7), `perf_report.js` as a pass/fail stage of the full tier with
