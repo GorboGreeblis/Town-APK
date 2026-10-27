@@ -60,6 +60,9 @@ const LONG = process.argv.includes('--long');
         const t0 = performance.now(); while ((D.qt.isOpen || D._t.state) && performance.now() - t0 < 15000) { if (D._t.state && !D.qt.isOpen) break; await wait(60); }
         return rec.slice(n).map((r) => r.text);
       },
+      // waits in game seconds (the game's own clock, Re.t), so a busy machine slows the wait with the game; the wall cap
+      // is only a safety net
+      async gwait(cond, gameS, wallCapS = 900) { const g0 = D.Re.t, w0 = performance.now(); while (!cond() && D.Re.t - g0 < gameS && performance.now() - w0 < wallCapS * 1000) await wait(100); return { ok: !!cond(), game: +(D.Re.t - g0).toFixed(1), wall: +((performance.now() - w0) / 1000).toFixed(1) }; },
       async run(fn, settle = 400) { const n = rec.length; fn(); await wait(settle); const t0 = performance.now(); while (D.qt.isOpen && performance.now() - t0 < 15000) await wait(60); return rec.slice(n).map((r) => r.text); },
     };
   });
@@ -234,9 +237,9 @@ const LONG = process.argv.includes('--long');
       const ok = V.play(A, B, text);
       if (!ok) { C.add = add0; out.failed.push(id + ' refused'); return; }
       // vignette time runs on game frames, so a slow machine stretches the 8.2 s of a text exchange
-      const t0 = performance.now(); while (V.playing() && performance.now() - t0 < 90000) await H.wait(100);
+      const w = await H.gwait(() => !V.playing(), 40, 900);   // a text exchange lasts 8.2 game seconds
       C.add = add0;
-      const r = { id, counted: (V.plays[id] || 0) === n0 + 1, ended: !V.playing(), shown, s: +((performance.now() - t0) / 1000).toFixed(1) };
+      const r = { id, counted: (V.plays[id] || 0) === n0 + 1, ended: !V.playing(), shown, s: w.game, wall: w.wall };
       (r.counted && r.ended && r.shown >= (text ? 2 : 1) ? out.played : out.failed).push(r);
     };
     const T = LONG ? town : sample(town, 8), K = LONG ? [] : sample(town.slice(1), 4);
@@ -253,7 +256,7 @@ const LONG = process.argv.includes('--long');
     }
     return out;
   }, LONG);
-  note(`vignettes: ${vig.total} in all (${vig.town} between townsfolk, ${vig.ancient} with the Ancient); line-up ${vig.cast}; played ${vig.played.length}: ` + vig.played.map((r) => `${r.id} ${r.s}s`).join(', '));
+  note(`vignettes: ${vig.total} in all (${vig.town} between townsfolk, ${vig.ancient} with the Ancient); line-up ${vig.cast}; played ${vig.played.length} (game seconds): ` + vig.played.map((r) => `${r.id} ${r.s}s`).join(', '));
   expect('vignettes: the game knows all 102 exchanges (90 between townsfolk + the Ancient\'s 12)', vig.total === 102 && vig.town === 90 && vig.ancient === 12, JSON.stringify([vig.total, vig.town, vig.ancient]));
   expect('vignettes: the line-up includes the Ancient and, once cured, Zollod', /SL/.test(vig.cast) && /ZL/.test(vig.cast) && /SP/.test(vig.cast), vig.cast);
   expect(`vignettes: every exchange played shows its bubbles or tokens, is counted, and ends (${vig.played.length} played)`, vig.failed.length === 0 && vig.played.length >= (LONG ? 102 : 15), JSON.stringify(vig.failed.slice(0, 4)));
@@ -277,8 +280,8 @@ const LONG = process.argv.includes('--long');
     out.spark = await H.act(H.zone('stump'), /^Talk to /);
     out.giftOffered = D.It.all.some((e) => e.kind && H.labels(e).includes('Give a blossom'));
     // Backpacka: comes during the Event (its visit starts with the planting)
-    const t1 = performance.now(); while (!D.JGP.backpacka.busy() && performance.now() - t1 < 240000) await H.wait(500);   // after the gathering, the ring and the horn
-    out.bpCame = D.JGP.backpacka.busy(); out.bpAt = Math.round((performance.now() - t1) / 1000);
+    const bw = await H.gwait(() => D.JGP.backpacka.busy(), 300, 1500);   // after the gathering, the ring and the horn (game seconds)
+    out.bpCame = D.JGP.backpacka.busy(); out.bpAt = bw.game + ' game s (' + bw.wall + ' s)';
     return out;
   });
   expect('event: the planting Event started', ev.active === true, JSON.stringify(ev.active));
@@ -290,7 +293,7 @@ const LONG = process.argv.includes('--long');
   expect('event: nobody takes a Blossom during the Event', ev.giftOffered === false);
   expect('event: the Ancient says "Hello"', ev.ancient && ev.ancient[0] === 'Hello', JSON.stringify(ev.ancient));
   expect('event: Sparkakus: "Digging in the dirt like an animal? …don’t tell the others at the genealogical society."', ev.spark && ev.spark[0] === 'Digging in the dirt like an animal? …don’t tell the others at the genealogical society.', JSON.stringify(ev.spark));
-  expect('event: Backpacka comes during the Event', ev.bpCame === true, `after ${ev.bpAt} s`);
+  expect('event: Backpacka comes during the Event', ev.bpCame === true, `after ${ev.bpAt}`);
   if (LONG) {
     const bp = await page.evaluate(async () => { const D = window.__dbg, wait = (ms) => new Promise((r) => setTimeout(r, ms)); const t0 = performance.now(); while (D.JGP.backpacka.busy() && performance.now() - t0 < 200000) await wait(1000); return { gone: !D.JGP.backpacka.busy(), s: Math.round((performance.now() - t0) / 1000), active: D.me.active }; });
     expect('event (--long): Backpacka leaves again', bp.gone === true, JSON.stringify(bp));
