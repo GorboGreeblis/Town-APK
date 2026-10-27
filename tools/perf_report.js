@@ -20,7 +20,11 @@
 // script frame over 120 ms fails with the top script functions as the cause; triangles over 320k,
 // transparent objects over 120 or draw calls over 200 are reported as GPU risks; textures or geometries
 // created during play are noted (an upload is a small hitch). A baseline (tools/perf_baseline.json, written
-// with --update-baseline) turns a 40% rise in p50 or p99, or 15% in triangles, into a failure too.
+// with --update-baseline) turns a 40% rise in p50 or p99, or 15% in triangles, into a failure too. Script times
+// depend on the machine, so the baseline keeps the time of a fixed in-page workload (matrix maths and small
+// objects, like the game's own script) measured on the machine that wrote it; each run measures it again (before
+// and after the situations) and scales the baseline's times, and the absolute frame-time limits on a slower machine,
+// by the ratio (clamped to 0.5-4), so a busy or slower machine does not fail a good build.
 //
 //   node tools/perf_report.js [file] [--update-baseline] [--json out.json] [--only <regex>] [--no-profile] [--draw]
 // --only runs the situations whose names match; --no-profile skips the CDP profiler (pure timing run).
@@ -94,8 +98,21 @@ const excerpt = (line, col) => { const l = assetLines[line]; if (!l) return ''; 
     results.push(r); return r;
   };
 
-  // --- the situations
+  // --- machine speed: a fixed workload, the median of nine runs
+  const calibrate = () => page.evaluate(() => {
+    const T = window.THREE, times = [];
+    for (let r = 0; r < 9; r++) {
+      const t0 = performance.now(); let acc = 0;
+      if (T) { const m = new T.Matrix4(), n = new T.Matrix4().makeRotationY(0.3), v = new T.Vector3(); for (let i = 0; i < 60000; i++) { m.multiplyMatrices(n, m.copy(n)); v.set(i, 1, 2).applyMatrix4(m); const o = { a: i, b: [v.x, acc] }; acc += o.b.length + v.x * 1e-9; } }
+      else { const a = new Float64Array(16); for (let i = 0; i < 60000 * 40; i++) { a[i & 15] = a[(i + 5) & 15] * 1.0000001 + i; acc += a[i & 15] * 1e-12; } }
+      times.push(performance.now() - t0 + acc * 0);
+    }
+    times.sort((a, b) => a - b); return +times[4].toFixed(2);
+  });
   await wait(2000);
+  const calib0 = await calibrate();
+
+  // --- the situations
   await scenario('town, standing', async () => {}, 6000);
   await scenario('town, walking', async () => { await page.evaluate(() => window.__fakeXR.setInputs([{ handedness: 'left', axes: [0, 0, 0, -1], buttons: [{}, {}, {}, {}, {}, {}, {}] }, { handedness: 'right', axes: [0, 0, 0, 0], buttons: [{}, {}, {}, {}, {}, {}, {}] }])); }, 6000,
     { teardown: () => page.evaluate(() => window.__fakeXR.setInputs([])) });
@@ -114,6 +131,9 @@ const excerpt = (line, col) => { const l = assetLines[line]; if (!l) return ''; 
   await scenario('the Event, late (60-90 s)', async () => {}, 30000);
 
   // --- verdicts
+  const calib1 = await calibrate(), calib = +((calib0 + calib1) / 2).toFixed(2);
+  const k = baseline && baseline.calib ? Math.min(4, Math.max(0.5, calib / baseline.calib)) : 1, kAbs = Math.max(1, k);
+  console.log(`  machine speed: workload ${calib0} / ${calib1} ms` + (baseline && baseline.calib ? ` (baseline machine ${baseline.calib} ms: times scaled by ${k.toFixed(2)})` : ' (the baseline has no calibration: times compared as they are)'));
   const lines = [];
   console.log(realDraw ? '  draws rasterised (software GL: GL stalls are this machine)' : '  draw calls stubbed (script and upload costs only; renderer counters kept)');
   const fmt = (r) => `${r.name.padEnd(28)} frames ${String(r.frames).padStart(4)}  script p50 ${String(r.p50).padStart(5)} p99 ${String(r.p99).padStart(5)} max ${String(r.max).padStart(6)} ms  GL p50 ${String(r.glP50).padStart(5)} p99 ${String(r.glP99).padStart(7)} ms  calls ${String(r.calls).padStart(3)}  tris ${String(r.tris).padStart(6)}  transp ${String(r.transparent).padStart(3)}  lights ${r.lights}  creatures<25m ${r.creaturesNear}  +prog ${r.newPrograms} +tex ${r.newTextures} +geo ${r.newGeometries}  heap ${r.heapMB} MB${r.level !== 'n/a' ? '  level ' + r.level : ''}`;
@@ -132,8 +152,8 @@ const excerpt = (line, col) => { const l = assetLines[line]; if (!l) return ''; 
     expect(`${r.name}: no shader program compiled during play`, r.newPrograms === 0, `${r.newPrograms} new: ${r.newProgramNames.join(', ')}`);
     if (r.frames < 60) note(`${r.name}: only ${r.frames} frames measured (GL stalls on this machine), frame-time verdicts skipped`);
     else {
-      expect(`${r.name}: script p99 under ${isEvent ? 16 : 12} ms headless (cause: ${cause})`, r.p99 < (isEvent ? 16 : 12), `p99 ${r.p99} ms`);
-      expect(`${r.name}: no script frame over 120 ms (cause: ${cause})`, r.max < 120, `max ${r.max} ms`);
+      expect(`${r.name}: script p99 under ${+((isEvent ? 16 : 12) * kAbs).toFixed(1)} ms headless (cause: ${cause})`, r.p99 < (isEvent ? 16 : 12) * kAbs, `p99 ${r.p99} ms`);
+      expect(`${r.name}: no script frame over ${Math.round(120 * kAbs)} ms (cause: ${cause})`, r.max < 120 * kAbs, `max ${r.max} ms`);
     }
     if (r.newTextures > 0 || r.newGeometries > 0) note(`${r.name}: ${r.newTextures} textures and ${r.newGeometries} geometries created during play (each upload is a small hitch on a headset)`);
     if (r.glP99 > 100) note(`${r.name}: GL calls blocked up to ${r.glMax} ms (software GL draining; on a headset this is where GPU-bound time would show)`);
@@ -142,14 +162,14 @@ const excerpt = (line, col) => { const l = assetLines[line]; if (!l) return ''; 
     if (r.calls > 200) note(`${r.name}: CPU risk, ${r.calls} draw calls`);
     const b = base && base[r.name];
     if (b && r.frames >= 60) {
-      expect(`${r.name}: script p50 and p99 within 40% of the baseline (${b.p50} / ${b.p99} ms)`, r.p50 <= b.p50 * 1.4 + 1 && r.p99 <= b.p99 * 1.4 + 1.5, `now ${r.p50} / ${r.p99} ms`);
+      expect(`${r.name}: script p50 and p99 within 40% of the baseline (${+(b.p50 * k).toFixed(1)} / ${+(b.p99 * k).toFixed(1)} ms on this machine)`, r.p50 <= b.p50 * k * 1.4 + 1 && r.p99 <= b.p99 * k * 1.4 + 1.5, `now ${r.p50} / ${r.p99} ms`);
       expect(`${r.name}: triangles within 15% of the baseline (${b.tris})`, r.tris <= b.tris * 1.15 + 1000, `now ${r.tris}`);
     }
   }
   if (!base) note('no baseline yet (tools/perf_baseline.json): run with --update-baseline on a known-good build');
   fs.mkdirSync(path.dirname(jsonOut), { recursive: true });
   fs.writeFileSync(jsonOut, JSON.stringify({ file: path.relative(root, file), date: new Date().toISOString(), scenarios: Object.fromEntries(results.map((r) => [r.name, r])) }, null, 1));
-  if (updateBaseline) { fs.writeFileSync(baselinePath, JSON.stringify({ date: new Date().toISOString(), file: path.relative(root, file), scenarios: Object.fromEntries(results.map((r) => [r.name, { p50: r.p50, p99: r.p99, max: r.max, tris: r.tris, calls: r.calls, transparent: r.transparent, newPrograms: r.newPrograms }])) }, null, 1)); note(`baseline written to ${path.relative(root, baselinePath)}`); }
+  if (updateBaseline) { fs.writeFileSync(baselinePath, JSON.stringify({ date: new Date().toISOString(), file: path.relative(root, file), calib, scenarios: Object.fromEntries(results.map((r) => [r.name, { p50: r.p50, p99: r.p99, max: r.max, tris: r.tris, calls: r.calls, transparent: r.transparent, newPrograms: r.newPrograms }])) }, null, 1)); note(`baseline written to ${path.relative(root, baselinePath)}`); }
   expect('no page errors', g.errors.length === 0, g.errors.join(' | '));
   await g.close();
   console.log(failures.length ? `PERF REPORT FAILED (${failures.length})` : 'PERF REPORT PASSED'); process.exit(failures.length ? 1 : 0);

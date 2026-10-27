@@ -22,7 +22,7 @@ const root = path.resolve(__dirname, '..', '..');
 // another `F` than the world's collision registry)]
 const TAGGED = [['Ge', 'const Ge={'], ['VIGS', 'const VIGS={}'], ['UI', 'const F={};function W(', 'F']];
 const HOOK_NAMES = ['It', 'JGP', 'F', 'E', 'lo', 'Be', 'De', 't', 'At', 'B', 'Re', 'uo', 'C', 'Kt', 'le', 'ce', 'we', 'Mo', 'G', 'Ut', 'O', 'me', 'bt', 'ue', 'Dbt', '_t', 'qt', 'jt',
-  'ne', 'oe', 'st', 'fe', 'xe', 'yo', 'Nt', 'ke', 'Ge', 'Ho', 'LIB', 'ARTS', 'VIGS', 'BP', 'JAZZ', 'gemTrade', 'shopText', 'battleText', 'Bulb', 'Eo', 'ot', 'E', 'gcEB', 'z', 'te'];
+  'ne', 'oe', 'st', 'fe', 'xe', 'yo', 'Nt', 'ke', 'Ge', 'Ho', 'LIB', 'ARTS', 'VIGS', 'BP', 'JAZZ', 'gemTrade', 'shopText', 'battleText', 'Bulb', 'Eo', 'ot', 'E', 'gcEB', 'z', 'te', 'ee'];
 const UA = 'Mozilla/5.0 (X11; Linux x86_64; Quest 3) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/35.0 Chrome/128.0 VR Safari/537.36';
 
 function hooked(file) {
@@ -79,7 +79,7 @@ function serve(body) {
  *   noVisits: true (default) parks the random visit scheduler; test_visits forces
  *   its own pairs through JGP.visitAt, which still works.
  */
-async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/index.html'), vr = true, fastSim = true, noVisits = true, timeoutMs = 300000, onBeforeGrant = null } = {}) {
+async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/index.html'), vr = true, fastSim = true, noVisits = true, timeoutMs = 300000, onBeforeGrant = null, initScripts = [] } = {}) {
   const srv = await serve(hooked(path.resolve(file)));
   const url = `http://127.0.0.1:${srv.address().port}/`;
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--autoplay-policy=no-user-gesture-required'] });
@@ -101,6 +101,7 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
   // GT_LAYER_DEPTH=0: the layer brings no depth texture, so multiview renders into the game's own depth buffer as on
   // the headset and its end-of-frame depth discard (P14) runs.
   if (vr && process.env.GT_LAYER_DEPTH === '0') await page.addInitScript(() => { window.__fakeXR.layerDepth = false; });
+  for (const sc of initScripts) await page.addInitScript(sc);   // a test's own probes, before the game's first line
   const t0 = Date.now();
   await page.goto(url, { waitUntil: 'load', timeout: timeoutMs });
   await page.waitForFunction(() => window.__dbgReady === true, null, { timeout: timeoutMs });

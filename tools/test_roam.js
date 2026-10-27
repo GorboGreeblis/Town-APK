@@ -1,0 +1,61 @@
+// Roamers and creatures over minutes (standard tier: 3 game minutes; --long: 10). The park roamers (Mama Gorbo,
+// Gorbo), the dance-floor roamers (Etcher, Glyph, Montgummery's worker) and the creatures (kind "creature") pick
+// their own spots with JGP.roamFree: never inside a building hull, the Garden (15 m around the middle) or a solid zone (scenery, pools, the
+// phone, the stump), always inside the park. Every quarter second this samples where each of them stands and fails
+// on any of those, on two roamers standing in each other, and on a roamer that never moves.
+//
+//   node tools/test_roam.js [file] [--long]
+const path = require('path');
+const { boot, reporter } = require('./lib/harness');
+const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : undefined;
+const GAME_S = process.argv.includes('--long') ? 600 : 180;
+(async () => {
+  const { expect, note, failures } = reporter();
+  const g = await boot({ file });
+  const page = g.page;
+  await page.waitForTimeout(2000);
+  const r = await page.evaluate(async (GAME_S) => {
+    const D = window.__dbg, F = D.F, J = D.JGP, t = D.t, wait = (ms) => new Promise((res) => setTimeout(res, ms));
+    const ids = ['p_mamagorbo', 'gorbo', 'gratelet', 'p_etcher', 'p_glyph', 'w_mont'];
+    const ents = D.It.all.filter((h) => h.group && (ids.includes(h.id) || h.kind === 'creature'));
+    const floor = J.floor;   // [x0, z0, x1, z1]: the dance floor the floor roamers keep to
+    const onFloor = (x, z) => floor && x >= floor[0] - 0.3 && x <= floor[2] + 0.3 && z >= floor[1] - 0.3 && z <= floor[3] + 0.3;
+    const zl = () => (D.E && D.E.list && D.E.list.some((q) => q.tag)) ? D.E.list : D.z.list;
+    const solid = () => zl().filter((q) => /^(scenery|pool|phone|stump)$/.test(q.tag));
+    const st = new Map(ents.map((h) => [h, { name: (h.def && h.def.name) || h.id, kind: h.kind, hull: 0, garden: 0, zone: 0, minR: 99, oob: 0, overlap: 0, path: 0, last: null, samples: 0, where: [] }]));
+    const g0 = D.Re.t, w0 = performance.now();
+    while (D.Re.t - g0 < GAME_S && performance.now() - w0 < GAME_S * 6000) {
+      await wait(250);
+      for (const h of ents) {
+        const s = st.get(h);
+        if (!h.group.visible || h.heldBy || h.carried) continue;
+        const p = h.group.position, r0 = h.bodyR || 1; s.samples++;
+        if (s.last) s.path += Math.hypot(p.x - s.last[0], p.z - s.last[1]);
+        s.last = [p.x, p.z];
+        const add = (k, why) => { s[k]++; if (s.where.length < 3) s.where.push(why + ' at ' + p.x.toFixed(1) + ',' + p.z.toFixed(1)); };
+        const own = h.home && F.buildings.find((B) => F.inHull(B, h.home.x, h.home.z));
+        for (const B of F.buildings) if (B !== own && F.inHull(B, p.x, p.z, -0.1) && !(ids.slice(2).includes(h.id) && onFloor(p.x, p.z))) add('hull', 'in ' + (B.name || B.id || 'a building'));
+        s.minR = Math.min(s.minR, Math.hypot(p.x, p.z));
+        if (ids.includes(h.id) && Math.hypot(p.x, p.z) < 15 - 0.2) add('garden', 'in the Garden');
+        for (const q of solid()) if (Math.hypot(p.x - q.x, p.z - q.z) < q.r - 0.2) add('zone', 'in ' + q.tag);
+        if (Math.abs(p.x) > t.parkHalf + 0.5 || p.z < -t.parkHalf - 0.5 || p.z > t.parkSouth + 0.5) add('oob', 'outside the park');
+        for (const o of ents) if (o !== h && ids.includes(o.id) && ids.includes(h.id) && o.group.visible && Math.hypot(p.x - o.group.position.x, p.z - o.group.position.z) < 0.5 * (r0 + (o.bodyR || 1))) add('overlap', 'in ' + ((o.def && o.def.name) || o.id));
+      }
+    }
+    return { gameS: +(D.Re.t - g0).toFixed(0), list: [...st.values()].map((s) => ({ ...s, path: +s.path.toFixed(1), minR: +s.minR.toFixed(1), last: undefined })) };
+  }, GAME_S);
+  note(`${r.gameS} game seconds; ` + r.list.map((s) => `${s.name} (${s.kind}) walked ${s.path} m, nearest the middle ${s.minR} m`).join(', '));
+  const bad = (k) => r.list.filter((s) => s[k]).map((s) => `${s.name}: ${s[k]} (${s.where.join('; ')})`);
+  expect('the roamers and creatures were found', r.list.filter((s) => s.kind === 'creature').length > 0 && r.list.length >= 6, JSON.stringify(r.list.map((s) => s.name)));
+  expect(`over ${r.gameS} game seconds none stands inside a building it does not belong to`, bad('hull').length === 0, bad('hull').join(' | '));
+  expect('no roamer walks into the Garden', bad('garden').length === 0, bad('garden').join(' | '));
+  expect('none stands inside a solid zone (scenery, pool, the phone, the stump)', bad('zone').length === 0, bad('zone').join(' | '));
+  expect('none leaves the park', bad('oob').length === 0, bad('oob').join(' | '));
+  expect('no two roamers stand in each other', bad('overlap').length === 0, bad('overlap').join(' | '));
+  const still = r.list.filter((s) => s.samples > 20 && s.path < 1);
+  expect('every roamer and creature moves', still.length === 0, still.map((s) => s.name).join(', '));
+  expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
+  await g.close();
+  console.log(failures.length ? `ROAM TEST FAILED (${failures.length})` : 'ROAM TEST PASSED');
+  process.exit(failures.length ? 1 : 0);
+})().catch((e) => { console.error(e); process.exit(1); });
