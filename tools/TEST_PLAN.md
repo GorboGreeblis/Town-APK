@@ -169,6 +169,8 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 
 ## Latest results (3.15.10/3.15.11 asset, headless harness)
 
+**Standard tier on 3.15.41** (`tools/.runs/std_v41.log`, multiview): all stages pass (338 PASS lines, no FAIL), including the new greeting and wrist HUD tests, warm-up coverage with the P19 frame check, the quality governor for the Quest 3S and the Quest 3, and the game content test with its courier and vignette fixes.
+
 **Standard tier on 3.15.34** (`tools/.runs/std_v34c.log`, multiview): 218 PASS lines; one FAIL, B27 (one shader program compiled during the pickups/dialogue/shop sequence of `multiview_check.js`; a standalone run had none). Every other multiview check passes: per-eye pixel match, draw calls halved, no frame hazard (207 uploads moved before the frame), uniform budget in both modes.
 
 **3.15.33**: smoke tier passes (`tools/.runs/smoke_v33.log`). **Multiview experiment** (`GT_MULTIVIEW=1 GT_ASSET=tools/.runs/multiview.html tools/run_tests.sh`, `tools/.runs/std_mv.log`): every stage passes except the 2D frame-loop check, which failed identically on the release (the test timed the boot; fixed in `test_play.js`, NOTES 66; both builds pass it now). `multiview_check.js`: both eyes match the classic path, draw calls halved.
