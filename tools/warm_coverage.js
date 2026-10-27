@@ -31,7 +31,10 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     const was = lights.map((l) => [l, l.visible, l.parent ? l.parent.visible : true]);
     const shown = (o) => { for (let q = o; q; q = q.parent) if (q.visible === false) return false; return true; };
     const lazySet = new Set(); lazy.forEach(([, g]) => g && g.traverse((o) => lazySet.add(o)));
-    const states = [['none', []], ['Portal', [portal]], ['bulb', [bulb]], ['Portal + bulb', [portal, bulb]]];
+    // P19 holds the Portal's light off while the bulb is lit, so both together cannot happen there (checked frame by
+    // frame below); on builds without it the state is compiled like the others
+    out.p19 = !!(D.ot && D.ot.light);
+    const states = [['none', []], ['Portal', [portal]], ['bulb', [bulb]]].concat(out.p19 ? [] : [['Portal + bulb', [portal, bulb]]]);
     for (const [name, on] of states) {
       lights.forEach((l) => { l.visible = on.includes(l); for (let q = l.parent; q && q !== C; q = q.parent) if (on.includes(l)) q.visible = true; });
       const before = new Set(O.info.programs);
@@ -57,6 +60,23 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     lazy.forEach(([, g, mine]) => mine && g && g.parent && g.parent.remove(g));   // only what this check added
     return out;
   });
+  // P19, frame by frame: open the Portal (its light on), then light Sparkakus's bulb, and look at every rendered frame
+  const both = await page.evaluate(async () => {
+    const D = window.__dbg, O = D.O, wait = (ms) => new Promise((res) => setTimeout(res, ms));
+    if (!(D.ot && D.ot.light)) return { skipped: true };
+    let bulb = null; D.C.traverse((o) => { if (o.isPointLight && o.color.getHex() === 0xfff0c8) bulb = o; });
+    const portal = D.ot.light; let frames = 0, bothOn = 0, portalOn = 0, bulbOn = 0;
+    const r0 = O.render; O.render = function () { frames++; if (portal.visible) portalOn++; if (bulb.visible) bulbOn++; if (portal.visible && bulb.visible) bothOn++; return r0.apply(this, arguments); };
+    D.ot.activate(); await wait(1500); const portalLit = portalOn > 0;
+    const f0 = frames, b0 = bulbOn, p0 = portalOn;
+    D.Bulb.hold = true; D.Bulb.start(() => D.st.pos(), 3.6); await wait(3000);   // held lit, as during the Speech
+    const during = { frames: frames - f0, bothOn, bulbOn: bulbOn - b0, portalOn: portalOn - p0 };
+    D.Bulb.hold = false; D.Bulb.stop(); await wait(2500); D.ot.close(); await wait(800);
+    O.render = r0;
+    return { portalLit, during, after: { frames, bothOn, portalOn } };
+  });
+  if (both.skipped) note('Portal + bulb: no P19 in this build (compiled above instead)');
+  else expect('P19: with the Portal open and the bulb lit, no frame has both point lights on', both.portalLit && both.during.bulbOn > both.during.frames / 2 && both.after.bothOn === 0, JSON.stringify(both));
   note(`lights: ${r.lights.join(', ')}; built for the check: ${r.lazy.join(', ') || 'nothing'}`);
   for (const [state, list] of Object.entries(r.states)) {
     note(`${state}: ${list.length ? list.map((e) => `${e.material} (${e.seen} seen, ${e.hidden} hidden, ${e.lazy} first-use; ${e.where.join(' / ')})`).join(' | ') : 'nothing new'}`);

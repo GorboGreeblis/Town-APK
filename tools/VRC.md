@@ -1,4 +1,4 @@
-# VRC check: GREEBLIS TOWN against the Meta Horizon Store requirements (first written for 3.15.25; kept current, 3.15.40)
+# VRC check: GREEBLIS TOWN against the Meta Horizon Store requirements (first written for 3.15.25; kept current, 3.15.41)
 
 Cross-checked on 2026-10-27 against an independent, CC0 test guide the author supplied ("Meta Quest Virtual Reality Checks (VRCs)", v1.0, 2026-10-27, 80 test cases; not affiliated with Meta). It lists the same 80 checks as this file; the rows below follow its wording where it is more specific (Packaging.4: a declared network security configuration, asserted by `check_apk.sh`; Performance.4: the boss-battle exception).
 

@@ -76,7 +76,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Roamers (gorbo, gratelet, p_mamagorbo) pick free spots, never inside hulls or zones | headless: run 2-3 min, sample positions each frame | todo |
 | Wander/trek for creatures (`ho`), personal space, spreading | same | todo |
 | Mama+Gorbo meeting schedule (`meetAt`), visits (`visitPlan`), vignettes (`VIGS`) fire and release NPCs (`busy` cleared) | `test_visits.js` (visits incl. interruptions); meeting/vignettes todo | partial |
-| Greeting/freeze near the player (`greetR`, `proximityFreezeS`), gaze | headless: move player next to each NPC | todo |
+| Greeting/freeze near the player (`greetR` 3.2 m, `proximityFreezeS` 12 s, `greetClear` 6 m): a walking townsperson stops and faces the player, goes on after 12 s, is stopped again after the player was 6 m away; Sparkakus's "!" from 6 m | `test_greet.js` (standard tier) | done |
 
 ## 6. Dialogue and UI
 
@@ -132,6 +132,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Battle panels per dancer: title, stamina bar label, the three moves, "KING DINO on drums." | `test_content.js` | done |
 | The robin flies off when picked; the Ancient's talk line | `test_content.js` | done |
 | During the Event: each townsperson's gardening line, Fortizmo silent, no gifts, the Ancient's "Hello", Sparkakus's line, Backpacka comes | `test_content.js` | done |
+| Warm-up coverage: every lit material on show or built on first use (the Gem, Backpacka) has its shaders for each point-light state the game can reach (none, the Portal's, the bulb's); the Portal's light never on with the bulb's (P19, checked frame by frame) | `warm_coverage.js` (standard tier) | done (3.15.41) |
 | Vignettes (the 90 PAIRS and the Ancient's 12) play as speech bubbles or Gree-mail tokens, counted and ended; the Ancient's only inside the church | `test_content.js` (a sample; all 102 with `--long`) | done |
 
 ## 10a. Graphical and performance pass (full tier)

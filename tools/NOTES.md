@@ -1156,3 +1156,26 @@ VR-entry fix; each item is for discussion first.
     Event scale then stays out of the Event). `test_governor.js` covers all
     three: the drop held off, fired during the Event (cleared at the end),
     and fired in town (stays).
+
+76. **One light at a time (P19, 3.15.41).** `warm_coverage.js` builds what
+    the game creates on first use (the Gem pieces and the glue drop,
+    Backpacka), then compiles the whole scene under each point-light state
+    and lists every material that gets a program it did not have. Three.js
+    puts the number of point lights into every lit shader's key, and the
+    game has two: the Portal's blue light (on from the pizza call until the
+    courier is back) and Sparkakus's bulb (during the Speech). With none,
+    one or the other, every lit material on show is warmed at load (B27
+    covered the Gem under the bulb). With both, the town's lit materials
+    needed a third set of programs that nothing compiles: a player who
+    calls for pizza and reaches the Speech before the courier is back would
+    pay a compile stall on many materials at once, in the Speech. The
+    author chose to hold the Portal's light off while the bulb is lit
+    rather than warm a third set (more load time and memory for a rare
+    case). The lights are 16.3 m apart and the Portal's reaches 11 m, so
+    nothing near the bulb was lit by the Portal; the Portal's glow,
+    particles and mesh are unchanged. The check now runs both lights only
+    on builds without P19 and, on builds with it, opens the Portal, lights
+    the bulb and counts every rendered frame: 3.15.40 fails, 3.15.41
+    passes. Also new: `test_greet.js` for the townsfolk's greeting (stop
+    and face the player within 3.2 m, go on after 12 s, greet again only
+    after the player has been 6 m away; Sparkakus's "!" from 6 m).

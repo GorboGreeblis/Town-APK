@@ -38,7 +38,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (50 blocks)
+## Gameplay, performance and other fixes (51 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -348,6 +348,15 @@ it"): the game's emergency drop (0.82 after three seconds at 1.6 times the frame
 the rest of the session. When it fires during the planting Event it now ends with the Event, like
 P16 and P17, and the scale returns to the level's own. Fired in ordinary play, it keeps the game's
 rule and stays.
+
+- **P19** (3 edits): (found by tools/warm_coverage.js; the author chose this fix): the number of point lights is part
+of every lit shader's key, and the warm-up compiles the town with no point light, with the Portal's
+and with the bulb's, but not with both. Both could be on together: the Portal glows from the pizza
+call until the courier has gone back through (a minute or more) and Sparkakus's bulb lights the
+Speech, 16 m away; dozens of shaders would then compile mid-Speech, a stall of seconds on a Quest.
+While the bulb is lit the Portal's light is held off (its glowing doorway still shows; only its
+faint blue light on the surroundings goes for those seconds), from both sides so no frame has both:
+the Portal's own update and the bulb's.
 
 ## Multiview (release path since 3.15.34)
 
