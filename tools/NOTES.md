@@ -983,3 +983,41 @@ VR-entry fix; each item is for discussion first.
     gate text left "Loading...", which happens before the shader warm-up; on
     this machine the warm-up took about 28 s. The test now waits for the game
     loop to start (as the harness does): 119 fps for both builds.
+
+67. **The multiview flashes (3.15.34).** The 3.15.33 experiment ran at 72 fps
+    in town and 58-65 in the Event on the author's Quest 3S, but showed
+    full-screen flashes on pickups, on menu hovers and now and then otherwise.
+    The author's video (`video_check.py` finds them) shows one-frame
+    washed-out pictures, not black or broken ones. Cause: three.js uploads a
+    changed texture the first time it is drawn, in the middle of the frame;
+    in Chrome a canvas upload goes through the GPU process with its own
+    framebuffer, and switching framebuffers in the middle of a multisampled
+    multiview frame (rendered straight into the headset's image, resolved on
+    the tile) makes the GPU save and reload the half-drawn frame, which came
+    back brighter. The classic path rendered into ordinary buffers and
+    copied at the end, so it never showed this. Fix: every texture marked
+    dirty is uploaded before the frame starts drawing (the hook sits on
+    three.js's `Texture.needsUpdate`, reached through `CanvasTexture` because
+    the bundle exports no `Texture`). The game now counts any texture
+    upload, mipmap build, pixel read, blit or framebuffer switch while a
+    multiview frame draws and logs the first twelve; `multiview_check.js`
+    fails on any (pickups, dialogue, shop, battle, the Speech, the Event):
+    211 uploads moved before the frame, none during. The pre-pass uploads a
+    few small textures the classic path would not (repainted while unseen):
+    a few MB over a session.
+
+68. **Devices and tool hardening (3.15.34).** The author tests on a Quest 3S;
+    the Quest 2 (and the original Quest) are not supported (manifest
+    `questpro|quest3|quest3s`, asserted by `check_apk.sh`). Headless Chromium
+    reports far higher GPU limits than a Quest (4096 vertex uniform vectors
+    against 256), which would hide a shader that cannot link on the headset;
+    the fake headset now takes a device profile (`GT_DEVICE`: user agent and
+    GPU limits) and `uniform_budget.js` counts every compiled program against
+    it, in multiview and the classic fallback: worst vertex shader 191 of 256
+    (multiview, batch parts 27 per batch) and 197 (classic). The game logs
+    its real limits and GPU name at boot (`gpu: ...`), which confirms or
+    corrects the profile. Also: `GT_HEADSET_FOV=1` (Quest-shaped eyes: the
+    Event draws 260-330 per frame facing the garden, as the headset logged),
+    `draw_calls.js --at` (the headset's logged positions), `video_check.py`
+    (flash frames and the OVR Metrics overlay from a recording), and
+    `perf_log.js` per-device verdicts.

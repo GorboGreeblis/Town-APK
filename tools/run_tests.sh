@@ -13,6 +13,8 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 # GT_ASSET overrides the asset the browser tests load (e.g. an experiment build; with GT_MULTIVIEW=1 the
 # fake headset runs the multiview experiment without MSAA). The verify and APK stages always check the release.
 ASSET="${GT_ASSET:-$ROOT/tools/android/app/src/main/assets/index.html}"
+# Multiview is the headset's path since 3.15.34: the fake headset runs it (without MSAA) unless GT_MULTIVIEW=0.
+GT_MULTIVIEW=${GT_MULTIVIEW-1}; [ "$GT_MULTIVIEW" = 0 ] && GT_MULTIVIEW=""; export GT_MULTIVIEW
 APK="$ROOT/GreeblisTown-release.apk"; [ -f "$APK" ] || APK="$ROOT/tools/android/app/build/outputs/apk/release/app-release.apk"
 TIER=standard
 case "$1" in --smoke) TIER=smoke;; --full) TIER=full;; --quick) TIER=quick;; esac
@@ -42,6 +44,8 @@ if [ -f "$APK" ]; then run "APK store-rules check" "$ROOT/tools/check_apk.sh" "$
 if [ "$TIER" != quick ]; then
   run "VR entry wiring (early/late/no grant)" node "$ROOT/tools/test_entry.js" "$ASSET" all
   run "runtime play (2D loop + fake VR session), ${PLAY_S}s" node "$ROOT/tools/test_play.js" "$ASSET" all "$PLAY_S"
+  run "multiview: each eye matches the classic path, half the draw calls; no frame hazard or compile during play" node "$ROOT/tools/multiview_check.js" "$ASSET"
+  run "uniform budget: every shader fits a Quest 3S's GPU limits (multiview and classic)" node "$ROOT/tools/uniform_budget.js" "$ASSET"
   run "world: routes, hulls, pickups, watchdog (${WORLD_S}s)" node "$ROOT/tools/test_world.js" "$ASSET" "$WORLD_S"
   run "input and locomotion (fake controllers)" node "$ROOT/tools/test_input.js" "$ASSET"
   if [ "$TIER" = full ]; then run "progression incl. gardening event (--long)" node "$ROOT/tools/test_progression.js" "$ASSET" --long;
@@ -65,7 +69,6 @@ if [ "$TIER" != quick ]; then
     run "z-fighting on curved surfaces (near-coincident geometry)" node "$ROOT/tools/test_coincident.js" "$ASSET"
     run "single-sided pass is pixel-identical (edges aside)" node "$ROOT/tools/sides_check.js" "$ASSET"
     run "optimisations render identical pixels (batcher, P8, P12) and save draws" node "$ROOT/tools/opt_identity.js" "$ASSET"
-    run "multiview experiment: each eye matches the classic path, half the draw calls" node "$ROOT/tools/multiview_check.js"
     run "performance report (script cost, shader compiles, scene load per situation)" node "$ROOT/tools/perf_report.js" "$ASSET"
     report "loading time (boot profile)" node "$ROOT/tools/boot_profile.js" "$ASSET"
     report "handover profile (frames after entering VR)" node "$ROOT/tools/entry_profile.js" "$ASSET"

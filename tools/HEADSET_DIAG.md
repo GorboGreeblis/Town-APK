@@ -148,3 +148,13 @@ page: m=... multiview live: 1680x1760 per eye, msaa 4
 
 `multiview not used (...)` lists which condition failed; `multiview framebuffer
 incomplete (...)` means it fell back to the classic path at entry.
+
+```
+page: m=... gpu: Adreno (TM) 740; vertex_uniform_vectors=256 fragment_uniform_vectors=... ; device Quest 3S
+page: m=... perf fps=71.8 level=2 calls=118 tris=201240 at=-36,-20 dev=Quest_3S
+```
+
+The `gpu:` line (3.15.34) gives the headset's real GPU limits: the test tools
+assume Quest values (`tools/fakexr.js` S.DEVICES); if a limit differs, update
+the profile and rerun `tools/uniform_budget.js`. `multiview: ... while a frame
+draws` lines mean a frame hazard (the flash cause, NOTES 67): send the log.

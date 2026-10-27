@@ -44,10 +44,10 @@ EXPERIMENTS = {
     # Texture capture: record every pre-renderable canvas painter's output during
     # the boot (used by tools/prerender_textures.js, never shipped).
     "texcapture": [("X.tex={map:{},pr:{},n:{},on:!0};", "X.tex={map:{},pr:{},n:{},on:!0,capture:[]};")],
-    # Multiview (NOTES 65): both eyes in one pass (OVR_multiview2 / OCULUS_multiview) through a
-    # texture-array projection layer; every draw call issued once instead of twice. The list is
-    # built below, once the layers shim is read (it edits the shim too).
-    "multiview": [],
+    # No multiview (NOTES 65, 67): the release draws both eyes in one pass (multiview, headset-
+    # confirmed in 3.15.33's experiment); this variant plans it off, so the game takes the classic
+    # path (each eye drawn separately) for A/B comparisons.
+    "nomultiview": [("ok = !!(mv && (!aa || ms || force));", "ok = false; why = \"experiment nomultiview; \";")],
     # Direct request: once the world is ready, call the game's own VR request
     # (je) immediately without waiting for sessiongranted, and log the browser's
     # reason to the console (logcat shows it) if it refuses. Tests whether the
@@ -208,7 +208,7 @@ def _multiview():
     add('__gtLog("projection layer live, scale " + sc + ", msaa " + shim.samples);', '__gtLog("projection layer live, scale " + sc + ", msaa " + shim.samples + ", multiview " + !!X.mvActive);')
     return E
 
-EXPERIMENTS["multiview"] = _multiview()
+MULTIVIEW = _multiview()   # part of the release since 3.15.34 (appended to GAME_FIXES below)
 
 EDITS = [
     # 1. Head script: request the VR session immediately on the Quest Browser (the
@@ -825,7 +825,15 @@ GAME_FIXES = [
     # missing). Full texts: tools/LICENSE.md. A comment only: nothing the page does changes.
     ('<head><meta charset="UTF-8">',
      '<head><meta charset="UTF-8"><!-- Greeblis Town. To the extent possible under law, the author has waived all copyright and related or neighboring rights to Greeblis Town (its game code, art, text and sound in this file), dedicating them to the public domain under CC0 1.0 Universal: https://creativecommons.org/publicdomain/zero/1.0/ (full text in tools/LICENSE.md of the source repository). This file also includes three.js, which is not covered by that dedication: Copyright (c) 2010-2021 three.js authors, MIT License. Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->'),
+    # D1 (tool hardening; the author tests on a Quest 3S, the game must also run on a Quest 2): the perf
+    # line names the headset model (from the user agent, e.g. dev=Quest_3S), so tools/perf_log.js can judge
+    # each device separately.
+    ('+" at="+Math.round(At.position.x)+","+Math.round(At.position.z)))}catch(e){}',
+     r'+" at="+Math.round(At.position.x)+","+Math.round(At.position.z)+" dev="+(((navigator.userAgent||"").match(/Quest[^;)]*/)||["unknown"])[0].trim().replace(/\s+/g,"_"))))}catch(e){}'),
 ]
+# Multiview (NOTES 65, 67): the experiment became the release in 3.15.34 (the author, after the headset
+# run: "We're going to use the Multiview version as the main build").
+GAME_FIXES += MULTIVIEW
 
 for old, new in EDITS + ([] if entry_only else GAME_FIXES) + (EXPERIMENTS[experiment] if experiment else []):
     n = html.count(old)

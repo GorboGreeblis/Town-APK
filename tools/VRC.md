@@ -25,7 +25,7 @@ stored on the headset (the game has no save: no localStorage, IndexedDB or cooki
 
 | Check | Status | Verdict | Evidence |
 | --- | --- | --- | --- |
-| Packaging.1 manifest meets release requirements | R | PASS | `tools/check_apk.sh`: MAIN intent with `com.oculus.intent.category.VR`, `com.oculus.supportedDevices` = quest2, questpro, quest3, quest3s, `android.hardware.vr.headtracking` required, touchscreen not required, `debuggable` false, `allowBackup` false, landscape; Meta's upload check runs the same test on upload |
+| Packaging.1 manifest meets release requirements | R | PASS | `tools/check_apk.sh`: MAIN intent with `com.oculus.intent.category.VR`, `com.oculus.supportedDevices` = questpro, quest3, quest3s (Quest 2 dropped in 3.15.34, the author's decision), `android.hardware.vr.headtracking` required, touchscreen not required, `debuggable` false, `allowBackup` false, landscape; Meta's upload check runs the same test on upload |
 | Packaging.2 signed with APK Signature Scheme v2 | R | PASS | `check_apk.sh` verifies v2 with apksigner; the certificate is the one every upload must keep (RELEASE.md section 1) |
 | Packaging.3 no unsupported Android features | R | PASS | only `android.hardware.vr.headtracking` (required) and `android.hardware.screen.landscape` (implied); no camera, telephony, location, Bluetooth |
 | Packaging.4 supported SDK versions | R | PASS | minSdk 29, targetSdk 32, compileSdk 34 (`tools/android/app/build.gradle`), inside Meta's 29-34 / 32-34 ranges |

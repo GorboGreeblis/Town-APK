@@ -76,7 +76,10 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
   const srv = await serve(hooked(path.resolve(file)));
   const url = `http://127.0.0.1:${srv.address().port}/`;
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--autoplay-policy=no-user-gesture-required'] });
-  const ctx = await browser.newContext({ userAgent: UA, viewport: { width: 1280, height: 720 } });
+  // GT_DEVICE=quest2|quest3s|quest3: that headset's user agent and GPU limits (tools/fakexr.js S.DEVICES).
+  const device = process.env.GT_DEVICE || '';
+  const ua = device ? UA.replace('Quest 3', { quest2: 'Quest 2', quest3s: 'Quest 3S', quest3: 'Quest 3' }[device] || 'Quest 3') : UA;
+  const ctx = await browser.newContext({ userAgent: ua, viewport: { width: 1280, height: 720 } });
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push('pageerror: ' + String(e).split('\n')[0] + (e && e.stack ? ' @ ' + String(e.stack).split('\n').slice(1, 3).join(' | ').trim() : '')));
@@ -85,6 +88,9 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
   // GT_MULTIVIEW=1: the multiview experiment runs headless without MSAA (SwiftShader has OVR_multiview2 but
   // not the multisampled OCULUS_multiview the headset uses).
   if (vr && process.env.GT_MULTIVIEW) await page.addInitScript(() => { window.__fakeXR.multiview = true; });
+  if (vr && device) await page.addInitScript((d) => { window.__fakeXR.applyDevice(d); }, device);
+  // GT_HEADSET_FOV=1: the fake eyes take a Quest 3-like field of view (draw counts and culling as on the headset).
+  if (vr && process.env.GT_HEADSET_FOV) await page.addInitScript(() => { window.__fakeXR.headsetFov = true; });
   const t0 = Date.now();
   await page.goto(url, { waitUntil: 'load', timeout: timeoutMs });
   await page.waitForFunction(() => window.__dbgReady === true, null, { timeout: timeoutMs });

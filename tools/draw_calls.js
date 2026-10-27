@@ -4,7 +4,10 @@
 // signature so the calls that only exist because of the batcher's part limit (gcEB.N parts per batch)
 // show up as such.
 //
-//   node tools/draw_calls.js [file] [--event]
+//   node tools/draw_calls.js [file] [--event] [--at "x,z;x,z" --yaws 4]
+// --at: in the Event, stand at these positions (e.g. the ones a headset perf line logged) and look in
+// --yaws directions from each; prints each view's draws and the reasons summed over all of them.
+// With GT_HEADSET_FOV=1 the fake eyes are Quest 3-shaped; with GT_MULTIVIEW=1 each draw serves both eyes.
 const path = require('path');
 const { boot, root } = require('./lib/harness');
 const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : undefined;
@@ -74,7 +77,27 @@ const withEvent = process.argv.includes('--event');
   if (withEvent) {
     await page.evaluate(() => { window.__autoAdvance = setInterval(() => { try { const q = window.__dbg.qt; if (q && q.isOpen) q.advance(); } catch (e) {} }, 250); });
     const started = await page.evaluate(async () => { const D = window.__dbg, Kt = D.Kt; const wait = (ms) => new Promise((r) => setTimeout(r, ms)); Kt.rewards.stone = true; Kt.rewards.seeds = true; Kt.rewards.snacks = true; D.oe.open(); await wait(200); const yes = (D._t.state && D._t.state.items || []).find((i) => i.label === 'Yes'); if (yes) yes.onClick(); const t0 = performance.now(); while (!D.me.active && performance.now() - t0 < 10000) await wait(200); return D.me.active; });
-    if (started) { await wait(20000); print('the Event, 20 s in', summarise(await page.evaluate(() => window.__dcFrame()))); await wait(40000); print('the Event, 60 s in', summarise(await page.evaluate(() => window.__dcFrame()))); } else console.log('the Event did not start');
+    const atArg = process.argv.find((a, i) => process.argv[i - 1] === '--at');
+    if (started && atArg) {
+      await wait(30000);
+      const yaws = +(process.argv.find((a, i) => process.argv[i - 1] === '--yaws') || 4);
+      const pts = atArg.split(';').map((p) => p.split(',').map(Number));
+      const sumWhy = {}, sumCls = {}; let n = 0, tot = 0, tris = 0;
+      for (const [x, z] of pts) for (let k = 0; k < yaws; k++) {
+        const yaw = k * 2 * Math.PI / yaws;
+        await page.evaluate(([x, z, yaw]) => { const D = window.__dbg; D.At.position.x = x; D.At.position.z = z; window.__fakeXR.pose.yaw = yaw; }, [x, z, yaw]);
+        await wait(500);
+        const s = summarise(await page.evaluate(() => window.__dcFrame()));
+        n++; tot += s.total; tris += s.tris;
+        for (const [k2, c, t] of s.whys) { const w = sumWhy[k2] = sumWhy[k2] || { calls: 0, tris: 0 }; w.calls += c; w.tris += t; }
+        for (const [k2, v] of Object.entries(s.byCat)) { const w = sumCls[k2] = sumCls[k2] || { calls: 0, tris: 0 }; w.calls += v.calls; w.tris += v.tris; }
+        console.log(`  at (${x}, ${z}) yaw ${Math.round(yaw * 180 / Math.PI)}: ${s.total} draws, ${s.tris} triangles; ` + Object.entries(s.byCat).map(([k2, v]) => `${k2} ${v.calls}`).join(', '));
+      }
+      console.log(`\n== the Event, ${n} views at the given positions: average ${(tot / n).toFixed(0)} draws, ${(tris / n / 1000).toFixed(0)}k triangles per frame`);
+      console.log('  by class (average per view): ' + Object.entries(sumCls).sort((a, b) => b[1].calls - a[1].calls).map(([k2, v]) => `${k2} ${(v.calls / n).toFixed(0)} draws / ${(v.tris / n / 1000).toFixed(0)}k tris`).join('; '));
+      console.log('  unbatched draws by reason (average per view):');
+      for (const [k2, v] of Object.entries(sumWhy).sort((a, b) => b[1].calls - a[1].calls)) console.log(`    ${(v.calls / n).toFixed(1).padStart(6)} draws ${(v.tris / n / 1000).toFixed(1).padStart(6)}k tris  ${k2}`);
+    } else if (started) { await wait(20000); print('the Event, 20 s in', summarise(await page.evaluate(() => window.__dcFrame()))); await wait(40000); print('the Event, 60 s in', summarise(await page.evaluate(() => window.__dcFrame()))); } else console.log('the Event did not start');
   }
   if (process.argv.includes('--detail')) {
     const d = await page.evaluate(() => window.__dcFrame());

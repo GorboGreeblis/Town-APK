@@ -27,6 +27,12 @@ X.mvPlanFor = function (g) {
   } catch (e) { ok = false; why = String(e); }
   X.mvPlan = ok;
   __gtLog("multiview " + (ok ? "planned" : "not used") + " (" + why + ")");
+  /* The GPU's real limits and name, once per boot: the test tools assume Quest values (tools/fakexr.js
+     S.DEVICES), and this line is how a headset run confirms or corrects them. */
+  try {
+    var dri = g.getExtension("WEBGL_debug_renderer_info"), lim = ["MAX_VERTEX_UNIFORM_VECTORS", "MAX_FRAGMENT_UNIFORM_VECTORS", "MAX_VARYING_VECTORS", "MAX_TEXTURE_IMAGE_UNITS", "MAX_VERTEX_TEXTURE_IMAGE_UNITS", "MAX_SAMPLES", "MAX_TEXTURE_SIZE"].map(function (k) { return k.replace("MAX_", "").toLowerCase() + "=" + g.getParameter(g[k]); }).join(" ");
+    __gtLog("gpu: " + (dri ? g.getParameter(dri.UNMASKED_RENDERER_WEBGL) : g.getParameter(g.RENDERER)) + "; " + lim + "; device " + (((navigator.userAgent || "").match(/Quest[^;)]*/) || ["unknown"])[0]));
+  } catch (e) {}
   return ok;
 };
 X.mvProg = function (r) {
@@ -51,9 +57,52 @@ X.mvScratchFor = function (r) {
   try { r.state.reset(); } catch (e) {}
   return (X.mvScratch = fb);
 };
+/* Flash fix (the author saw full-screen flashes on pickups and menu hovers): three.js uploads a texture the
+   first time it is drawn after a change, i.e. in the middle of the frame. A canvas upload in Chrome goes
+   through the GPU process with its own framebuffer, and switching framebuffers in the middle of a
+   multisampled multiview frame (rendered straight into the headset's image, resolved on the tile) can
+   lose the frame. The classic path renders into ordinary buffers and copies at the end, so it never saw
+   this. Every texture marked dirty (Texture.needsUpdate) is now uploaded before the frame starts drawing.
+   Diagnostics: any upload, mipmap generation or copy that still happens while a multiview frame draws is
+   logged (first twelve), and so is a shader program compiled during play. */
 X.mvWrap = function (r) {
-  var r0 = r.render;
+  var r0 = r.render, dirty = new Set();
+  X.mvStats = { preUploads: 0, inFrame: 0, inFrameKinds: {}, programsDuringPlay: 0 };
+  try {
+    /* The bundle exports no Texture class; walk up from CanvasTexture to the prototype that owns the setter
+       (three.js's Texture), which every texture inherits. */
+    var TP = THREE.CanvasTexture && THREE.CanvasTexture.prototype, d = null;
+    while (TP && !(d = Object.getOwnPropertyDescriptor(TP, "needsUpdate"))) TP = Object.getPrototypeOf(TP);
+    if (d && d.set) { Object.defineProperty(TP, "needsUpdate", { configurable: true, enumerable: d.enumerable, get: d.get, set: function (v) { d.set.call(this, v); if (v === true) dirty.add(this); } }); X.mvHook = true; }
+    else __gtLog("multiview: texture hook not installed (no needsUpdate setter found)");
+  } catch (e) { __gtLog("multiview: texture hook failed " + e); }
+  try {
+    var gl = r.getContext();
+    /* Anything that makes the GPU save and reload a half-drawn multiview frame: texture uploads and copies,
+       mipmap builds, pixel reads, blits, and binding any framebuffer other than the headset's. */
+    ["texImage2D", "texSubImage2D", "texImage3D", "texSubImage3D", "generateMipmap", "copyTexImage2D", "copyTexSubImage2D", "readPixels", "blitFramebuffer", "bindFramebuffer"].forEach(function (k) {
+      var f = gl[k]; if (typeof f !== "function") return;
+      gl[k] = function () {
+        if (X.mvInFrame && (k !== "bindFramebuffer" || !(X.shim && arguments[1] === X.shim.fb))) { var st = X.mvStats; st.inFrame++; st.inFrameKinds[k] = (st.inFrameKinds[k] || 0) + 1; if (st.inFrame <= 12) __gtLog("multiview: " + k + " while a frame draws (" + st.inFrame + ")"); }
+        return f.apply(this, arguments);
+      };
+    });
+  } catch (e) {}
   r.render = function () {
+    var xr = r.xr, pres = xr && xr.isPresenting && xr.enabled;
+    if (pres && X.mvActive) {
+      if (dirty.size) {
+        dirty.forEach(function (t) { try { if (t.image && !t.isCubeTexture && !t.isDataTexture3D && !t.isDataTexture2DArray && !t.isVideoTexture) { r.initTexture(t); X.mvStats.preUploads++; } } catch (e) {} });
+        dirty.clear();
+      }
+      var np = r.info.programs ? r.info.programs.length : 0;
+      X.mvInFrame = true;
+      try { return r0.apply(r, arguments); } finally {
+        X.mvInFrame = false;
+        var n2 = r.info.programs ? r.info.programs.length : 0;
+        if (n2 > np) { X.mvStats.programsDuringPlay += n2 - np; if (X.mvStats.programsDuringPlay <= 12) __gtLog("multiview: " + (n2 - np) + " shader program(s) compiled during play"); }
+      }
+    }
     var fb = X.mvScratchFor(r);
     if (!fb) return r0.apply(r, arguments);
     r.state.bindXRFramebuffer(fb);
