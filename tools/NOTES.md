@@ -895,3 +895,17 @@ VR-entry fix; each item is for discussion first.
     load-phase result (desktop session) had been valid. The other pixel tools
     boot desktop sessions, except `flash_probe.js`, which reads the XR frame on
     purpose.
+
+62. **The visibility census and indexed batches (3.15.30).**
+    `visibility_census.js` renders the town in ID colours from 103 standable
+    positions, three eye heights, six directions each, and counts every opaque
+    mesh's pixels. Only 7 meshes (0.4% of opaque triangles) are never visible,
+    so the town wastes almost nothing behind walls or underground. The finding
+    was density instead: several meshes carry thousands of triangles for a few
+    pixels of screen. Many meshes are also non-indexed, three vertices per
+    triangle with none shared, so the GPU cannot reuse a transformed vertex.
+    P10 indexes the batch copies (bit-identical vertices merged within a part):
+    batch vertices 499,058 -> 215,258 for the same triangles, identical pixels,
+    no loading cost. The unbatched big meshes (ground, kiosks, roofs; about
+    1.8 million vertex runs over the whole scene, half of them shareable) keep
+    their layout because game code may edit their vertices; see PERF.md 8.

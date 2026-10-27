@@ -654,6 +654,28 @@ GAME_FIXES = [
      'const o=t.material.color,cr=o?o.r:1,cg=o?o.g:1,cb=o?o.b:1,sp=t.material.specular,sh=void 0===t.material.shininess?1:Math.max(t.material.shininess,1e-4),sr=sp?sp.r:0,sg=sp?sp.g:0,sb=sp?sp.b:0;(mv||cr!==k[12]||cg!==k[13]||cb!==k[14]||sh!==k[15]||sr!==k[16]||sg!==k[17]||sb!==k[18])&&(ch=!0,'),
     ('e[M+14]=k[14]=cb)', 'e[M+14]=k[14]=cb,e[M+15]=k[15]=sh,e[M+16]=k[16]=sr,e[M+17]=k[17]=sg,e[M+18]=k[18]=sb)'),
     ('e.specular?e.specular.getHex():"",e.shininess,', '"","",'),
+    # P10 (vertex work; NOTES 62): many of the town's and the creatures' meshes are non-indexed
+    # (three vertices per triangle, none shared), so the GPU runs the vertex shader three times per
+    # triangle and cannot reuse a transformed vertex; a tiled GPU runs the position part again for
+    # binning. The batcher now merges bit-identical vertices within each part while it builds a
+    # batch (position, normal, colour and uv all equal, compared as raw bits; never across parts).
+    # Same triangles in the same order, same values at every corner: nothing visible changes. The
+    # game's own geometry is untouched (only the batch's copy is indexed), so code that edits a
+    # mesh's vertices keeps the layout it expects. Whole scene: 829,776 vertex runs in batches ->
+    # 207,969.
+    ('p=[];let f=0,u=0;t.forEach(((t,e)=>{',
+     'p=[];let f=0,u=0;const rU=new Uint32Array(r.buffer),sU=new Uint32Array(s.buffer),iU=new Uint32Array(i.buffer),lU=l?new Uint32Array(l.buffer):null;t.forEach(((t,e)=>{'),
+    ('for(let t=0;t<n;t++){const o=f+t;r[3*o]=a.position.getX(t)',
+     'const RM=new Uint32Array(n),HM=new Map;let U=0;for(let t=0;t<n;t++){const o=f+U;r[3*o]=a.position.getX(t)'),
+    ('l&&(l[2*o]=a.uv.getX(t),l[2*o+1]=a.uv.getY(t)),c[o]=e}',
+     'l&&(l[2*o]=a.uv.getX(t),l[2*o+1]=a.uv.getY(t)),c[o]=e;'
+     'const q3=3*o,q2=2*o,hh=(rU[q3]^Math.imul(rU[q3+1],73856093)^Math.imul(rU[q3+2],19349663)^Math.imul(sU[q3],83492791)^Math.imul(sU[q3+1],668265263)^Math.imul(sU[q3+2],374761393)^Math.imul(iU[q3],2246822519)^Math.imul(iU[q3+1],3266489917)^Math.imul(iU[q3+2],668265261)^(l?Math.imul(lU[q2],2654435761)^Math.imul(lU[q2+1],40503):0))|0;'
+     'let L=HM.get(hh),hit=-1;if(L)for(const w of L){const w3=3*w,w2=2*w;if(rU[w3]===rU[q3]&&rU[w3+1]===rU[q3+1]&&rU[w3+2]===rU[q3+2]&&sU[w3]===sU[q3]&&sU[w3+1]===sU[q3+1]&&sU[w3+2]===sU[q3+2]&&iU[w3]===iU[q3]&&iU[w3+1]===iU[q3+1]&&iU[w3+2]===iU[q3+2]&&(!l||lU[w2]===lU[q2]&&lU[w2+1]===lU[q2+1])){hit=w;break}}'
+     'hit>=0?RM[t]=hit:(RM[t]=o,L?L.push(o):HM.set(hh,[o]),U++)}'),
+    ('h[u++]=e+f,h[u++]=(M?a:o)+f,h[u++]=(M?o:a)+f}', 'h[u++]=RM[e],h[u++]=RM[M?a:o],h[u++]=RM[M?o:a]}'),
+    ('t.layers.set(31),f+=n}', 't.layers.set(31),f+=U}'),
+    ('d.setAttribute("position",new THREE.BufferAttribute(r,3)),d.setAttribute("normal",new THREE.BufferAttribute(s,3)),d.setAttribute("color",new THREE.BufferAttribute(i,3)),l&&d.setAttribute("uv",new THREE.BufferAttribute(l,2)),d.setAttribute("gcPart",new THREE.BufferAttribute(c,1)),d.setIndex(new THREE.BufferAttribute(h,1))',
+     'd.setAttribute("position",new THREE.BufferAttribute(r.slice(0,3*f),3)),d.setAttribute("normal",new THREE.BufferAttribute(s.slice(0,3*f),3)),d.setAttribute("color",new THREE.BufferAttribute(i.slice(0,3*f),3)),l&&d.setAttribute("uv",new THREE.BufferAttribute(l.slice(0,2*f),2)),d.setAttribute("gcPart",new THREE.BufferAttribute(c.slice(0,f),1)),d.setIndex(new THREE.BufferAttribute(h,1))'),
 ]
 
 for old, new in EDITS + ([] if entry_only else GAME_FIXES) + (EXPERIMENTS[experiment] if experiment else []):
