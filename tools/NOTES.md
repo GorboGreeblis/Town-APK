@@ -853,3 +853,18 @@ VR-entry fix; each item is for discussion first.
     situation (`updateMatrixWorld` the largest item), the town centre and the
     garden at 300-390 draw calls and 500k triangles both eyes against 66 calls
     and 160k at the spawn.
+
+59. **Draw calls (3.15.28).** `draw_calls.js` showed where the frame's draws
+    go: at the town centre about 145 per eye, in the planting Event about 195.
+    Every draw happens twice (one per eye; this three.js has no multiview).
+    The garden plots were multi-material boxes, five sides sharing one material
+    instance and a textured top, so six draws each where two do; thirteen
+    appear in the Event. P8 reorders such a mesh's index so each material
+    instance's triangles are contiguous, one group per instance, checked every
+    frame against the slots it was made for. `opt_identity.js` renders the same
+    views with P8 on and off in the same frame: identical pixels, 1,400 fewer
+    draws over 92 Event views. The same tool checks the batcher itself
+    (identical pixels; 11,283 draws unbatched against 5,166 batched over 40 town
+    views). Next: shininess and specular per batch part (P9), which lets
+    batches that differ only in those merge (327 to 247 batchable draws per eye
+    over the whole scene).
