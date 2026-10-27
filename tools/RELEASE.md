@@ -195,7 +195,12 @@ same spelling as the listing name in the developer dashboard.
    access to that API, so declare **teens and adults (13+)** unless you want to
    take on the youth requirements. The privacy policy's children's section stays
    true either way (nothing is collected from anyone).
-   Done: the author filled in the age form (2026-10-27). Comfort rating: Moderate
+   Where: there is no separate form. After a build is uploaded (Alpha is fine),
+   My Apps -> the app -> the App Product Detail Page section -> the link to the
+   build -> the "Age Group Self-Certification" notice -> choose Teens and Adults
+   (13+) -> Confirm age group (Meta: developers.meta.com/horizon/resources/age-groups,
+   2026-04-02). Still open: no build has been uploaded yet (2026-10-27). The
+   age-rating questionnaire (IARC) is done. Comfort rating: Moderate
    (stick locomotion and snap turn).
    Meta's list of the checks most often failed at review: Asset.2 (cover art
    branding), Asset.5 (screenshots captured on Quest, unedited), Functional.2
