@@ -771,7 +771,7 @@ VR-entry fix; each item is for discussion first.
     network, in case a reviewer asks.
 
 56. **Performance pass and Zollod's kiosk (3.15.26).** The author measured
-    the Event at 38 fps on the headset and asked for as much as can be done
+    the Event (the planting event, GARDEN EVENT; not Sparkakus's Speech) at 38 fps on the headset and asked for as much as can be done
     without further testing, with the rule that nothing visible changes.
     Headless facts: the Event adds almost no draw calls or triangles (the
     `event_probe.js` counts barely move), the game logic with rendering

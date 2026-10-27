@@ -88,3 +88,6 @@ launch's grant is never dropped (see `apply_entry_fix.py`).
   with sine/square/sawtooth/triangle), with helpers like `G.bubbleBlip`,
   `G.toot`; the audio context uses `latencyHint: "balanced"` on Quest.
 - No save system: no `localStorage`, `sessionStorage` or IndexedDB use.
+
+Names: "the Event" is the planting event (GARDEN EVENT, `me` in the code, labelled
+"finale" there); "the Speech" is Sparkakus's library finale (`speech` in the code).

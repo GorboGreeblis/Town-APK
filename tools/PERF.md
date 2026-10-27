@@ -132,6 +132,8 @@ the author's sense except the last two, which change how assets are built.
 
 ## 6. Performance pass of 3.15.26 (NOTES 56)
 
+"The Event" below is the planting event (GARDEN EVENT), not Sparkakus's Speech.
+
 Done without visible change: P1 governor step-down after 36 over-budget
 frames (was 72); P2 light-on shader variants compiled during loading (the
 game's pre-warm had been throwing silently); P4 opacity-0 materials skipped

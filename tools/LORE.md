@@ -143,3 +143,12 @@ Library's VHS tapes.
 4. GLOOPERNAUGHT, PATCHOOLEE, STAPLERS, "works of Orson / Appterix": sign
    text only; any backstory?
 5. Hennrick's era: how far in the future, and who is the Consortium there?
+
+## Two names the author uses (keep them apart)
+
+- **The Event** is the planting event: the "GARDEN EVENT" the campfire panel
+  starts (Summoning Stone, Seeds, Snacks), the gardening at the garden with the
+  pillar and the night. In the code it is `me`, whose own label is "finale".
+  The performance notes, `event_probe.js` and `event_profile.js` all mean this.
+- **The Speech** is Sparkakus's finale in the library: with the three Artifacts
+  he assembles the Eye and awards the Gem. In the code it is `speech`.
