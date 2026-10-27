@@ -16,6 +16,7 @@
  *   battles    each dancer's battle panel: its title and stamina bar ("Robot steps left", ...), King Dino on drums
  *   ancient    the Ancient's talk line
  *   robin      the robin flies off when picked
+ *   pizza      the courier ordered after the bribe comes through the glowing Portal; claiming it gives the line and Snacks
  *   vignettes  the two-line exchanges: speech bubbles or Gree-mail tokens, counted and ended; the Ancient's only inside
  *              the church (a sample in the standard tier, all 102 with --long)
  *   event      during the planting Event each townsperson says their gardening line, Fortizmo has no talk,
@@ -43,6 +44,9 @@ const LONG = process.argv.includes('--long');
     const o0 = D.qt.open.bind(D.qt);
     D.qt.open = function (name, color, text, cb) { rec.push({ name: String(name), text: String(text) }); return o0(name, color, text, cb); };
     window.__adv = setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 120);
+    // the Portal's blue light: watched from the start, so its moment is not missed whenever the courier comes
+    window.__portalLit = 0; let portal = null; D.C.traverse((o) => { if (o.isPointLight && o.color.getHex() === 0x3aa8ff) portal = o; });
+    window.__portalWatch = setInterval(() => { if (portal && portal.visible && portal.intensity > 0) window.__portalLit++; }, 100);
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     window.__h = {
       wait,
@@ -193,6 +197,25 @@ const LONG = process.argv.includes('--long');
   // ---- the robin
   const robin = await page.evaluate(async () => { const H = window.__h, D = window.__dbg, z = H.zone('robin'); const b = window.__dbg.JGP.robin.bird; const p0 = b.getWorldPosition(new THREE.Vector3()); z.run(); await H.wait(1500); const p1 = b.getWorldPosition(new THREE.Vector3()); return { moved: +p0.distanceTo(p1).toFixed(2) }; });
   expect('robin: picking the robin makes it fly off', robin.moved > 0.3, JSON.stringify(robin));
+
+  // ---- the pizza delivery (ordered after the bribe above): the courier comes through the Portal, whose blue light is
+  // on while it opens (a light changes every lit shader: this play is part of the compile check at the end)
+  const pizza = await page.evaluate(async () => {
+    const H = window.__h, D = window.__dbg, Kt = D.Kt, out = { states: [] };
+    const t0 = performance.now();
+    while (performance.now() - t0 < 120000) {
+      const st = D.ue.state; if (out.states[out.states.length - 1] !== st) out.states.push(st);
+      if (st === 'waiting') break;
+      await H.wait(200);
+    }
+    out.portalLit = window.__portalLit > 0; out.snacks0 = Kt.rewards.snacks;
+    const n = window.__said.length; out.claimed = D.ue.claim(true); await H.wait(600);
+    const t1 = performance.now(); while (D.qt.isOpen && performance.now() - t1 < 15000) await H.wait(100);
+    out.said = window.__said.slice(n).map((r) => r.text); out.snacks = Kt.rewards.snacks;
+    return out;
+  });
+  expect('pizza: the courier comes through the Portal (its light comes on) and waits for the player', pizza.states.includes('waiting') && pizza.portalLit, JSON.stringify(pizza.states) + ' portal lit ' + pizza.portalLit);
+  expect('pizza: claiming it: "One hot and ready pie!|* +20 Snacks *|I love my job!" and the Snacks', pizza.claimed === true && (pizza.said[0] || '').startsWith('One hot and ready pie!|* +20 Snacks *|I love my job!') && pizza.snacks === true, JSON.stringify(pizza));
 
   // ---- vignettes: the two-line exchanges (90 between townsfolk, the Ancient's 12 inside the church). A text vignette
   // shows the two lines as speech bubbles over the speakers; a token vignette sends their Gree-mail tokens
