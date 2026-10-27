@@ -37,6 +37,7 @@ report() { name=$1; shift; echo; echo "=== report: $name ==="; "$@"; rc=$?
 echo "Greeblis Town test pass: $TIER"
 run "asset == original + the entry edits + the gameplay fixes (apply_entry_fix.py --verify)" python3 -I "$ROOT/tools/apply_entry_fix.py" --verify
 run "loopback server harness" "$ROOT/tools/test_server.sh"
+run "FIXES.md matches the fix list (gen_fixes_doc.py --check)" python3 -I "$ROOT/tools/gen_fixes_doc.py" --check
 run "dialogue spell-check" sh -c "python3 '$ROOT/tools/spellcheck_dialogue.py' '$ROOT/tools/uncompressed.html' >/dev/null"
 run "tentacle bend is bit-identical to the original (P13)" node "$ROOT/tools/test_bend_exact.js" "$ASSET"
 if [ -f "$APK" ]; then run "APK store-rules check" "$ROOT/tools/check_apk.sh" "$APK"; else skip "APK store-rules check" "no APK built"; fi
