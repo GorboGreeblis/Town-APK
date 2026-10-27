@@ -19,6 +19,11 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 - **Standard** (default): the everyday pass.
 - **Full** (`--full`): every scenario, long soak and sampling windows, plus
   the release parity check. Meant for the final build only.
+- **Quick** (`--quick`): the static checks only (asset verify, server harness,
+  spell-check, the bend test, the APK check, FIXES.md up to date). Seconds.
+
+Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
+`GT_MULTIVIEW=0` runs the classic fallback.
 
 ## 1. Packaging and launch (APK)
 
@@ -111,8 +116,8 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | --- | --- | --- |
 | Frame loop alive, no errors, flat JS heap over 20 s in 2D | `test_play.js 2d` | done |
 | Same over 10+ minutes, including events (garden, finale) | `test_play.js` long run | todo |
-| Quality governor (`Ge`): levels change framebuffer scale/foveation when over/under budget, lock after finale | headless: fake frame times | todo |
-| 72 Hz on Quest 2/3 (VRC.Quest.Performance), loading indicator rule | headset | headset |
+| Quality governor (`Ge`): the Event's lowest-level lock, its adaptive 0.9 scale (P16), the Quest 3 start at 0.9 and the step to 0.82 (P17): no trigger in town, one layer swap at each step, restore at the end, the emergency drop kept | `test_governor.js` (standard tier, run for the Quest 3S and the Quest 3; frames slowed by a busy loop; two Events per session, from level 0 and from the lowest level) | 3.15.38: passes for the 3S and the Quest 3, multiview and classic |
+| 72 Hz on Quest 3/3S (VRC.Quest.Performance; the original Quest and Quest 2 are not supported since 3.15.34, the Quest Pro since 3.15.35), loading indicator rule | headset; `perf_log.js` per-device verdicts against 72 and 60 | headset (3.15.33 on a Quest 3S: town 72, the Event 58-65) |
 | Console error de-dup shim, `vo` error reporting counts | `test_play.js` | done |
 
 ## 10a. Graphical and performance pass (full tier)
@@ -129,6 +134,11 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | Flicker / z-fighting on environmental objects | `tools/test_zfight.js` (fails the pass): every planar triangle bucketed by world plane; coplanar overlaps between different surfaces are rendered twice from 3 m with a 1 mm camera shift, the two surfaces alone on a private layer, and pixels that flip mean a depth fight | 3.15.13: 19 coplanar overlaps, 5 handled by offset/order, 8 same-look (invisible), 6 different-look, none flicker (max 0.31% edge pixels) |
 | Single-sided pass (P6) changes nothing visible | `tools/sides_check.js` (fails the pass on any area difference): 184 views, flips on and off in one frame, difference mask | 3.15.26: 138 of 184 views differ on one-pixel silhouette outlines only, none in an area |
 | Z-fighting on curved surfaces (a flat part tangent to or in the plane of a round one, which the planar test cannot see and the headless renderer does not show) | `tools/test_coincident.js` (fails the pass on new depth fights): the drawn triangles (batcher's parked sources) in a 5 cm hash; nearly parallel pairs of different looks sampled for points within 0.5 mm; the growth of that region at a fifth of the tolerance separates coplanar/tangent contacts (fail) from crossings (listed); accepted fights in `tools/zfight_baseline.json`; contacts the headset cannot show (undersides at ground level, closed solids resting back to back, contacts buried inside a third box) are listed as hidden | 3.15.24: the ten candidates of 3.15.23 resolved: B21 (parapet bands), B22 (Mushroom's hat band), B23 (Robin's tail) fixed, the other seven shown to be hidden contacts; baseline empty, both tests pass with 0 new depth fights |
+| Multiview draws the same pixels per eye as the classic path, half the draw calls | `tools/multiview_check.js` (standard tier, fails the pass): spawn, town centre, garden, the Event | 3.15.34: identical apart from rounding on a few right-eye pixels; calls exactly halved |
+| No texture upload, copy, pixel read, blit or foreign framebuffer bind while a multiview frame draws (the flash rule, F-B26), and no shader compiled during play | `tools/multiview_check.js` hazard sequence: pickups, dialogue, shop, battle, the Speech, the Event; names any program compiled | 3.15.34: 211 uploads moved before the frame, none during; one intermittent compile (B27, open) |
+| Every compiled program fits a Quest's uniform and sampler limits | `tools/uniform_budget.js` (standard tier; `GT_DEVICE`, default quest3s), multiview and classic | 3.15.34: worst vertex shader 191 of 256 (multiview), 197 (classic) |
+| Performance changes that claim no visible change | `tools/opt_identity.js` (full tier, switches on and off in one frame), `tools/test_bend_exact.js` (standard tier, P13) | 3.15.32: identical |
+| Headset recording: flash frames, OVR Metrics overlay | `tools/video_check.py` (report, run by hand on the author's video) | 3.15.33 video: the flashes found; 3.15.34 awaits a recording |
 
 ## 10b. Store submission (VRC)
 
@@ -143,6 +153,8 @@ Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
 | Compressed release build carries the same content as the APK source | `test_parity.js` | done |
 
 ## Latest results (3.15.10/3.15.11 asset, headless harness)
+
+**Standard tier on 3.15.34** (`tools/.runs/std_v34c.log`, multiview): 218 PASS lines; one FAIL, B27 (one shader program compiled during the pickups/dialogue/shop sequence of `multiview_check.js`; a standalone run had none). Every other multiview check passes: per-eye pixel match, draw calls halved, no frame hazard (207 uploads moved before the frame), uniform budget in both modes.
 
 **3.15.33**: smoke tier passes (`tools/.runs/smoke_v33.log`). **Multiview experiment** (`GT_MULTIVIEW=1 GT_ASSET=tools/.runs/multiview.html tools/run_tests.sh`, `tools/.runs/std_mv.log`): every stage passes except the 2D frame-loop check, which failed identically on the release (the test timed the boot; fixed in `test_play.js`, NOTES 66; both builds pass it now). `multiview_check.js`: both eyes match the classic path, draw calls halved.
 

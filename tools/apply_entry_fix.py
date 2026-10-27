@@ -44,10 +44,10 @@ EXPERIMENTS = {
     # Texture capture: record every pre-renderable canvas painter's output during
     # the boot (used by tools/prerender_textures.js, never shipped).
     "texcapture": [("X.tex={map:{},pr:{},n:{},on:!0};", "X.tex={map:{},pr:{},n:{},on:!0,capture:[]};")],
-    # Multiview (NOTES 65): both eyes in one pass (OVR_multiview2 / OCULUS_multiview) through a
-    # texture-array projection layer; every draw call issued once instead of twice. The list is
-    # built below, once the layers shim is read (it edits the shim too).
-    "multiview": [],
+    # No multiview (NOTES 65, 67): the release draws both eyes in one pass (multiview, headset-
+    # confirmed in 3.15.33's experiment); this variant plans it off, so the game takes the classic
+    # path (each eye drawn separately) for A/B comparisons.
+    "nomultiview": [("ok = !!(mv && (!aa || ms || force));", "ok = false; why = \"experiment nomultiview; \";")],
     # Direct request: once the world is ready, call the game's own VR request
     # (je) immediately without waiting for sessiongranted, and log the browser's
     # reason to the console (logcat shows it) if it refuses. Tests whether the
@@ -171,7 +171,7 @@ def _multiview():
     add('function loader(s){var c=document.createElement("canvas")', MVJS + 'function loader(s){var c=document.createElement("canvas")')
     add('  if (msaa && W2) { try { samples = Math.min(4, g.getParameter(g.MAX_SAMPLES) || 0); } catch (e) { samples = 0; } }\n',
         '  if (msaa && W2) { try { samples = Math.min(4, g.getParameter(g.MAX_SAMPLES) || 0); } catch (e) { samples = 0; } }\n'
-        '  var MV = !!(W2 && X.mvPlanFor && X.mvPlanFor(g)), mvx = MV ? g.getExtension("OVR_multiview2") : null, msx = MV && samples ? g.getExtension("OCULUS_multiview") : null, mvd = null, mvdW = 0, mvdH = 0, mvOk = false;\n'
+        '  var MV = !!(W2 && X.mvPlanFor && X.mvPlanFor(g)), mvx = MV ? g.getExtension("OVR_multiview2") : null, msx = MV && samples ? g.getExtension("OCULUS_multiview") : null, mvd = null, mvdW = 0, mvdH = 0, mvOk = false, mvOwn = false;\n'
         '  if (MV && samples && !msx) { if (window.__fakeXR && window.__fakeXR.multiview) samples = 0; else MV = false; }\n'
         '  X.mvActive = MV;\n')
     add('var o = { textureType: "texture", colorFormat', 'var o = { textureType: MV ? "texture-array" : "texture", colorFormat')
@@ -192,7 +192,7 @@ def _multiview():
         '      if (!mvd || mvdW !== tw || mvdH !== th) { if (mvd) g.deleteTexture(mvd); mvd = g.createTexture(); g.bindTexture(g.TEXTURE_2D_ARRAY, mvd); g.texStorage3D(g.TEXTURE_2D_ARRAY, 1, g.DEPTH24_STENCIL8, tw, th, 2); g.bindTexture(g.TEXTURE_2D_ARRAY, null); mvdW = tw; mvdH = th; }\n'
         '      dep = mvd;\n'
         '    }\n'
-        '    g.bindFramebuffer(FB, fb);\n'
+        '    g.bindFramebuffer(FB, fb); mvOwn = dep === mvd;\n'
         '    if (samples) { msx.framebufferTextureMultisampleMultiviewOVR(FB, g.COLOR_ATTACHMENT0, tex, 0, samples, 0, 2); msx.framebufferTextureMultisampleMultiviewOVR(FB, g.DEPTH_STENCIL_ATTACHMENT, dep, 0, samples, 0, 2); }\n'
         '    else { mvx.framebufferTextureMultiviewOVR(FB, g.COLOR_ATTACHMENT0, tex, 0, 0, 2); mvx.framebufferTextureMultiviewOVR(FB, g.DEPTH_STENCIL_ATTACHMENT, dep, 0, 0, 2); }\n'
         '    if (!mvOk) {\n'
@@ -204,11 +204,20 @@ def _multiview():
         '  }\n'
         '  S.getViewport = function (v) {')
     add('    if (samples && tex) {\n', '    if (samples && tex && !MV) {\n')
+    # P14 (GPU bandwidth, nothing drawn differently): on the headset's tiled GPU, a depth attachment that
+    # is not invalidated is written back to memory at the end of every frame (both eyes, 4x MSAA resolved:
+    # about 28 MB a frame). Nothing reads that depth: the compositor never sees it (the layer gets colour
+    # only) and the next frame clears it. So after the frame's last draw the depth-stencil attachment is
+    # invalidated, the standard Quest advice. Only our own depth buffer (the MSAA path): a depth texture the
+    # layer itself provides may be used by the compositor. `__gtXR.keepDepth = true` switches it off.
+    add('  S.end = function () {\n',
+        '  S.end = function () {\n'
+        '    if (MV && mvOk && mvOwn && tex && !X.keepDepth) { try { g.bindFramebuffer(g.FRAMEBUFFER, fb); g.invalidateFramebuffer(g.FRAMEBUFFER, [g.DEPTH_STENCIL_ATTACHMENT]); X.depthDiscards = (X.depthDiscards || 0) + 1; } catch (e) {} }\n')
     add('  var shim = null, fake = null;\n', '  var shim = null, fake = null;\n  try { s.addEventListener("end", function () { X.mvDone = true; X.mvActive = false; }); } catch (e) {}\n')
     add('__gtLog("projection layer live, scale " + sc + ", msaa " + shim.samples);', '__gtLog("projection layer live, scale " + sc + ", msaa " + shim.samples + ", multiview " + !!X.mvActive);')
     return E
 
-EXPERIMENTS["multiview"] = _multiview()
+MULTIVIEW = _multiview()   # part of the release since 3.15.34 (appended to GAME_FIXES below)
 
 EDITS = [
     # 1. Head script: request the VR session immediately on the Quest Browser (the
@@ -825,7 +834,60 @@ GAME_FIXES = [
     # missing). Full texts: tools/LICENSE.md. A comment only: nothing the page does changes.
     ('<head><meta charset="UTF-8">',
      '<head><meta charset="UTF-8"><!-- Greeblis Town. To the extent possible under law, the author has waived all copyright and related or neighboring rights to Greeblis Town (its game code, art, text and sound in this file), dedicating them to the public domain under CC0 1.0 Universal: https://creativecommons.org/publicdomain/zero/1.0/ (full text in tools/LICENSE.md of the source repository). This file also includes three.js, which is not covered by that dedication: Copyright (c) 2010-2021 three.js authors, MIT License. Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->'),
+    # D1 (tool hardening; the author tests on a Quest 3S, the game must also run on a Quest 2): the perf
+    # line names the headset model (from the user agent, e.g. dev=Quest_3S), so tools/perf_log.js can judge
+    # each device separately.
+    ('+" at="+Math.round(At.position.x)+","+Math.round(At.position.z)))}catch(e){}',
+     r'+" at="+Math.round(At.position.x)+","+Math.round(At.position.z)+" dev="+(((navigator.userAgent||"").match(/Quest[^;)]*/)||["unknown"])[0].trim().replace(/\s+/g,"_"))))}catch(e){}'),
+    # B27 (multiview_check, 2 runs in 7): the Gem that the Speech assembles from the three Artifacts
+    # has a flat-shaded, transparent Phong material that the game creates the first time the Gem is
+    # built, so no loading warm-up ever saw it and its shader compiled in the middle of the Speech (a
+    # 50-1,000 ms stall on a headset). The Artifact module gains a `warm()` that builds the three Gem
+    # pieces and one glue drop (the same cached geometry and materials the Speech uses), and the
+    # effects warm-up adds them out of sight (y = -60), compiles the scene and takes them out again.
+    # Nothing is drawn differently; the Speech then reuses the compiled program.
+    ('return{build(){L.push(((t2,dt)=>(Bulb.update(dt||.016),asm&&asm.step(Math.min(dt||.016,.1)))))},assemble:assemble,model:model}})()',
+     'return{build(){L.push(((t2,dt)=>(Bulb.update(dt||.016),asm&&asm.step(Math.min(dt||.016,.1)))))},assemble:assemble,model:model,warm(){const g=new THREE.Group;[0,1,2].forEach((k=>g.add(model(k))));R(T.sphere(.045,8,6),drop(),g,null,null,[1,1.5,1]);return g}}})()'),
+    ('Nt.splat(999,999,.5,"#ffffff")}catch(e){}})(),Ze(),',
+     'Nt.splat(999,999,.5,"#ffffff")}catch(e){}})(),(function(){try{const wg=ARTS.warm();wg.position.y=-60,C.add(wg),wg.updateMatrixWorld(!0),O.compile(C,B),C.remove(wg)}catch(e){vo(e,"gem-prewarm")}})(),Ze(),'),
+    # P16 (the author: "We just need to be steadily above 60 fps"; chose this over every other option): the
+    # planting Event already drops the quality governor to its lowest level on its first frame (scale 1, full
+    # foveation, locked; NOTES 71), and the headset still measured 58-65 fps there. The governor's only lower
+    # step was an emergency 0.82 scale after three seconds at 1.6 times the frame budget (about 45 fps), which
+    # 58 fps never reaches. Now, during the Event only, at the lowest level, when the smoothed frame rate stays
+    # under 62 fps for 216 frames (three seconds), the render scale drops to 0.9 (19% fewer pixels; a slightly
+    # softer picture) for the rest of the Event, and returns to the level's own scale when the Event ends (unless
+    # the emergency drop fired meanwhile, which by the game's own rule stays for the session). A
+    # headset with headroom never triggers it. Logged as "event scale 0.9 (...)"; the emergency drop still
+    # applies on top.
+    ('maxLayerRebuilds:30,targetHz:72,', 'maxLayerRebuilds:30,evScale:.9,evFps:62,evFrames:216,targetHz:72,'),
+    ('t>0&&t<200&&(Ge.ema=(1-e.emaAlpha)*Ge.ema+e.emaAlpha*Math.min(t,2*Ge.budget),Ge.sos||Ge.level!==',
+     't>0&&t<200&&(Ge.ema=(1-e.emaAlpha)*Ge.ema+e.emaAlpha*Math.min(t,2*Ge.budget),Be&&!Ge.sos&&!Ge.ev&&Ge.level===e.quality.length-1&&(Ge.ema>1e3/e.evFps?++Ge.evN>e.evFrames&&(Ge.ev=1,gbLayer(e.evScale,e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale "+e.evScale+" (under "+e.evFps+" fps for "+e.evFrames+" frames)")):Ge.evN=0),Ge.sos||Ge.level!=='),
+    ('Ae(e.quality.length-1),Ge.lockUntil=r+e.finaleLockMs,', 'Ae(e.quality.length-1),Ge.evN=0,Ge.lockUntil=r+e.finaleLockMs,'),
+    ('else Ve.forEach((t=>{t.visible=!0})),Ve=[],Ge.lockUntil=0,B.far=t.far,B.updateProjectionMatrix()}',
+     'else Ve.forEach((t=>{t.visible=!0})),Ve=[],Ge.lockUntil=0,B.far=t.far,B.updateProjectionMatrix(),Ge.ev&&(Ge.ev=0,Ge.evN=0,Ge.sos||gbLayer(e.quality[Ge.level],e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale off: "+(Ge.sos?"the emergency scale "+e.sosScale+" stays":"back to "+e.quality[Ge.level])))}'),
+    ('Ge.rebuilds=0,Ge.sos=0,Ge.hard=0,', 'Ge.rebuilds=0,Ge.sos=0,Ge.hard=0,Ge.ev=0,Ge.evN=0,'),
+    ('const Ge={level:2,', 'const Ge={ev:0,evN:0,level:2,'),
+    # P17 (the author: "Apply 1 and 2"; closes the Event performance work): two refinements of P16.
+    # 1. On a Quest 3 (user agent "Quest 3", not "Quest 3S"), which renders noticeably more pixels per eye
+    #    than a 3S, the Event starts at the 0.9 scale at once instead of after three slow seconds; at 0.9 it
+    #    still draws about as many pixels as a 3S at full scale. The level drop and the scale come in one
+    #    layer swap (the governor's level change picks the Event scale directly), never two in a row.
+    # 2. A second step on any headset: still under 60 fps for 216 frames at 0.9, the scale goes to 0.82 (the
+    #    game's own emergency scale, which otherwise waits for 1.6 times the frame budget, about 45 fps).
+    # Both end with the Event, like P16. Logged as "event scale 0.9 (Quest 3, from the start)" and
+    # "event scale 0.82 (under 60 fps for 216 frames)".
+    ('evScale:.9,evFps:62,evFrames:216,', 'evScale:.9,evFps:62,evFrames:216,ev2Scale:.82,ev2Fps:60,'),
+    ('function Ae(t){(t=u(t,0,e.quality.length-1))!==Ge.level&&(Ge.level=t,gbLayer(Ge.sos?e.sosScale:e.quality[t],e.foveation[t]),',
+     'function Ae(t){(t=u(t,0,e.quality.length-1))!==Ge.level&&(Ge.level=t,gbLayer(Ge.sos?e.sosScale:Ge.ev?Ge.ev>1?e.ev2Scale:e.evScale:e.quality[t],e.foveation[t]),'),
+    ('Ae(e.quality.length-1),Ge.evN=0,Ge.lockUntil=r+e.finaleLockMs,',
+     '/Quest 3(?!S)/.test(navigator.userAgent||"")&&!Ge.sos&&!Ge.ev&&(Ge.ev=1,window.__gtLog&&window.__gtLog("event scale "+e.evScale+" (Quest 3, from the start)")),Ae(e.quality.length-1),Ge.ev&&!Ge.sos&&gbLayer(Ge.ev>1?e.ev2Scale:e.evScale,e.foveation[e.quality.length-1]),Ge.evN=0,Ge.lockUntil=r+e.finaleLockMs,'),
+    ('Be&&!Ge.sos&&!Ge.ev&&Ge.level===e.quality.length-1&&(Ge.ema>1e3/e.evFps?++Ge.evN>e.evFrames&&(Ge.ev=1,gbLayer(e.evScale,e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale "+e.evScale+" (under "+e.evFps+" fps for "+e.evFrames+" frames)")):Ge.evN=0),',
+     'Be&&!Ge.sos&&Ge.ev<2&&Ge.level===e.quality.length-1&&(Ge.ema>1e3/(Ge.ev?e.ev2Fps:e.evFps)?++Ge.evN>e.evFrames&&(Ge.ev++,Ge.evN=0,gbLayer(Ge.ev>1?e.ev2Scale:e.evScale,e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale "+(Ge.ev>1?e.ev2Scale:e.evScale)+" (under "+(Ge.ev>1?e.ev2Fps:e.evFps)+" fps for "+e.evFrames+" frames)")):Ge.evN=0),'),
 ]
+# Multiview (NOTES 65, 67): the experiment became the release in 3.15.34 (the author, after the headset
+# run: "We're going to use the Multiview version as the main build").
+GAME_FIXES += MULTIVIEW
 
 for old, new in EDITS + ([] if entry_only else GAME_FIXES) + (EXPERIMENTS[experiment] if experiment else []):
     n = html.count(old)

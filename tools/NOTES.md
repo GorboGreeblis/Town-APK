@@ -983,3 +983,142 @@ VR-entry fix; each item is for discussion first.
     gate text left "Loading...", which happens before the shader warm-up; on
     this machine the warm-up took about 28 s. The test now waits for the game
     loop to start (as the harness does): 119 fps for both builds.
+
+67. **The multiview flashes (3.15.34).** The 3.15.33 experiment ran at 72 fps
+    in town and 58-65 in the Event on the author's Quest 3S, but showed
+    full-screen flashes on pickups, on menu hovers and now and then otherwise.
+    The author's video (`video_check.py` finds them) shows one-frame
+    washed-out pictures, not black or broken ones. Cause: three.js uploads a
+    changed texture the first time it is drawn, in the middle of the frame;
+    in Chrome a canvas upload goes through the GPU process with its own
+    framebuffer, and switching framebuffers in the middle of a multisampled
+    multiview frame (rendered straight into the headset's image, resolved on
+    the tile) makes the GPU save and reload the half-drawn frame, which came
+    back brighter. The classic path rendered into ordinary buffers and
+    copied at the end, so it never showed this. Fix: every texture marked
+    dirty is uploaded before the frame starts drawing (the hook sits on
+    three.js's `Texture.needsUpdate`, reached through `CanvasTexture` because
+    the bundle exports no `Texture`). The game now counts any texture
+    upload, mipmap build, pixel read, blit or framebuffer switch while a
+    multiview frame draws and logs the first twelve; `multiview_check.js`
+    fails on any (pickups, dialogue, shop, battle, the Speech, the Event):
+    211 uploads moved before the frame, none during. The pre-pass uploads a
+    few small textures the classic path would not (repainted while unseen):
+    a few MB over a session.
+
+68. **Devices and tool hardening (3.15.34).** The author tests on a Quest 3S;
+    the Quest 2 (and the original Quest) are not supported (manifest
+    `questpro|quest3|quest3s`, asserted by `check_apk.sh`). Headless Chromium
+    reports far higher GPU limits than a Quest (4096 vertex uniform vectors
+    against 256), which would hide a shader that cannot link on the headset;
+    the fake headset now takes a device profile (`GT_DEVICE`: user agent and
+    GPU limits) and `uniform_budget.js` counts every compiled program against
+    it, in multiview and the classic fallback: worst vertex shader 191 of 256
+    (multiview, batch parts 27 per batch) and 197 (classic). The game logs
+    its real limits and GPU name at boot (`gpu: ...`), which confirms or
+    corrects the profile. Also: `GT_HEADSET_FOV=1` (Quest-shaped eyes: the
+    Event draws 260-330 per frame facing the garden, as the headset logged),
+    `draw_calls.js --at` (the headset's logged positions), `video_check.py`
+    (flash frames and the OVR Metrics overlay from a recording), and
+    `perf_log.js` per-device verdicts.
+
+69. **The Gem's shader, and where vertex work stands (3.15.35).** The clean
+    standard tier on 3.15.34 failed one check: a shader program compiled
+    during play (B27), in some runs only. The game now logs any such program
+    with its key, and `multiview_check.js` diffs the key against the warmed
+    programs and names the material: a Phong program identical to a warmed
+    one except `flatShading`, compiled in 2 of 7 runs. It belongs to the Gem
+    the Speech assembles from the three Artifacts, whose material the game
+    creates the first time the Gem is built; the check waited a fixed 8 s in
+    the Speech and only sometimes reached it. Fix: the Artifact module builds
+    the Gem pieces and a glue drop during the effects warm-up, out of sight,
+    the scene is compiled and they are removed. The check now waits until
+    the Gem is in the scene. Also measured, with the new
+    `tools/vertex_census.js`: in the Event at headset field of view the drawn
+    creature meshes are all but three indexed already (1,703 duplicate
+    vertices in all), batches and scenery none; indexing creatures, the last
+    vertex lever left without a visible change, would save nothing. Draw
+    order is already by program, then material, then depth (three.js's
+    opaque sort), so grouping draws by shader would change nothing either.
+
+70. **What is left that changes nothing on screen (3.15.36).** With the
+    Event most likely GPU-bound on the headset (the script time measured
+    here, scaled, is 8-11 ms against the 13.9 ms budget), the per-pixel work
+    was checked for waste. Lights: a hemisphere light and two directional
+    lights all the time; both point lights are hidden, not left on at zero,
+    so no shader pays for them. Vertices: see 69. What was found: the
+    headset path renders into the game's own multisampled depth buffer
+    (`OCULUS_multiview` resolves on the tile), and nothing told the driver
+    that depth was finished, so a tiled GPU writes the whole resolved depth
+    buffer back to memory every frame (2 x 1832 x 1920 x 4 bytes, about
+    28 MB; 1.7 GB/s at 60 fps). P14 invalidates the depth-stencil
+    attachment after the frame's last draw (outside the frame: the hazard
+    watch now counts invalidations, which mid-frame would discard the
+    picture). Headless with `GT_LAYER_DEPTH=0` (the game's own depth buffer,
+    as on the headset) it runs every frame and every multiview pixel
+    comparison still matches. The CPU side: `tools/matrix_trace.js` shows
+    2,692 objects in the Event scene, about 1,400 of them (the dancing
+    creatures) changing every frame, 41% in subtrees that never change; the
+    scene root recomposes its identity matrix every frame and so forces
+    every world matrix to be recomputed. Turning that off (P15) leaves all
+    2.36 million checked world matrices bit-identical, but saves nothing:
+    alternated every 60 frames in one session (`matrix_trace.js --ab`), the
+    update took 2.107 ms with it and 2.094 ms without (mean). The walk over
+    the objects is the cost, not the multiplies it skips (as with the matrix
+    cache in 61). Not applied. Texture uploads were checked as well: once the
+    town has been seen, the Event uploads a handful of 64x64 labels in ten
+    seconds (0.002 MB a frame); nothing is re-uploaded unchanged.
+
+71. **The governor already meets the Event at its lowest level.** Proposed
+    and approved as a change (go straight to the Event's level instead of
+    stepping down over seconds), then found in the code: the XR update calls
+    `Fe(me.active)` the frame the planting Event starts, which sets the
+    lowest quality level at once (`Ae(quality.length-1)`: scale 1, full
+    foveation), locks the governor there for ten minutes (`finaleLockMs`)
+    and hides far scenery; the headset log showed level 4 throughout the
+    Event. The step-by-step climb (36 frames over budget, 2 s between steps)
+    applies only to ordinary play. Nothing to change.
+
+72. **The Event's adaptive render scale (P16, 3.15.37).** Everything that
+    leaves the picture identical had been done (70, 71), and the author's
+    requirement is to stay steadily above 60 fps. Of the options put to the
+    author (an adaptive scale in the Event, coarser distant creatures,
+    anisotropy 16 to 8, waiting for the OVR reading) the author chose the
+    first. The governor's only step below its lowest level was the emergency
+    0.82 scale at 1.6 times the frame budget (about 45 fps), which the
+    Event's 58 fps never reaches. Now, in the Event and at the lowest level,
+    a smoothed frame rate under 62 fps for 216 frames drops the scale to 0.9
+    for the rest of the Event (19% fewer pixels; the picture is a little
+    softer), and the Event's end restores the level's own scale, unless the
+    emergency drop fired meanwhile, which by the game's rule stays for the
+    session. `tools/test_governor.js` slows frames on purpose (a busy loop)
+    and checks: no trigger in town, the trigger in the Event with a layer
+    swap and multiview still live, the end of it. Estimate on the author's
+    Quest 3S, from the 3.15.33 run (58-65 fps at the lowest level): about
+    64-70 fps once engaged, if three quarters of the Event's GPU time scales
+    with pixels; the first three seconds of the Event stay as before.
+
+73. **The Quest 3 and a second step (P17, 3.15.38); the Event performance
+    work closed.** A Quest 3 renders noticeably more pixels per eye than a 3S,
+    and the author cannot test on one. Two refinements of P16, the author's
+    choice: (1) on a Quest 3 (user agent "Quest 3", not "Quest 3S") the Event
+    starts at the 0.9 scale at once; the governor's level change picks the
+    Event scale itself, so the drop and the scale come in one layer swap (two
+    swaps in a row could show the second, undrawn layer: the shim composites
+    a new layer behind the old one for two frames); (2) on any headset, still
+    under 60 fps for 216 frames at 0.9, the scale steps to 0.82 (the game's
+    emergency scale, which otherwise waits for about 45 fps). Both end with
+    the Event. Testing, as exhaustive as headless allows: `test_governor.js`
+    plays two Events per session. The first starts from level 0 (the
+    governor stepped up for real to a 1.2 layer, as in town on a headset)
+    with the budget raised so the emergency drop cannot fire, and checks the
+    town (no trigger), the drop to the lowest level, the Quest 3 start at
+    0.9 in one swap or the 3S's single swap to 1, 0.9 under 62 fps, 0.82
+    under 60, frames and multiview throughout, the return to 1 at the end.
+    The second starts at the lowest level (the Quest 3's other branch) with
+    the normal budget, where the emergency drop fires too and correctly
+    stays. Run for the Quest 3S and the Quest 3, multiview and classic: all
+    pass. The headless frames are slowed on purpose, so the steps are proven;
+    the frame rates themselves are estimates until a headset runs it. The
+    harness now reaches the governor in its test copies (it lives in another
+    scope than the debug hook).

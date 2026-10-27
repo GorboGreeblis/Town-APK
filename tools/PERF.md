@@ -1,7 +1,8 @@
 # Performance analysis of the APK build (T11)
 
-Analysis only; nothing here is applied. Numbers from the headless harness
-(software GL) are marked as such: draw calls, triangle counts, program counts
+Started as an analysis (sections 1-6); sections 6-10 record the changes that
+were applied, each listed in FIXES.md. The render path itself is described in
+RENDERING.md. Numbers from the headless harness (software GL) are marked as such: draw calls, triangle counts, program counts
 and JS time are meaningful there, GPU time is not. Headset numbers are still to
 be collected (T12).
 
@@ -130,7 +131,7 @@ the author's sense except the last two, which change how assets are built.
    up, but it raises GPU load by 25% and must be measured on the headset
    first (T12). Not recommended before the flash issue is understood.
 
-## 6. Performance pass of 3.15.26 (NOTES 56)
+## 6b. Performance pass of 3.15.26 (NOTES 56)
 
 "The Event" below is the planting event (GARDEN EVENT), not Sparkakus's Speech.
 
@@ -280,3 +281,34 @@ the Event 244 -> 122. On the headset it removes half the draw submission (three.
 and the browser's GPU process) and, with MSAA, the per-frame resolve blit. It
 does not reduce pixel shading. Ships as an experiment APK first (RELEASE.md 6);
 the headset run decides whether it goes into the release.
+
+## 10. The Event on the headset (3.15.33-3.15.34 headset run, NOTES 65-68)
+
+Quest 3S, multiview live with 4x MSAA: town 72 fps at native scale (GPU
+42-54% busy, CPU 41-52%, app GPU time 4.9-7.6 ms, from the author's OVR
+Metrics video); the Event 58-65 fps with the governor at level 4 (full
+foveation), 320-380 draws per frame. Headless with Quest-shaped eyes
+(`GT_HEADSET_FOV=1`) at the logged positions reproduces it: 260-330 draws
+and 440-580k triangles facing the garden, 66-147 facing away. In the heavy
+views about 90 draws are creature parts and batches (eleven creatures in
+the garden), the rest batches and one-off parts of the town and the Event's
+plants.
+
+The lever weighed next was texture identity: one-off parts mostly differ only in
+which texture they use. Texture arrays (equal-sized textures stacked, the
+part's slice in the spare per-part slot) would let them share draws,
+identically. Whole-scene estimate in the Event, multiview draws: creatures
+114 -> 86 and the town 126 -> 59, but only together with batching across
+groups (the culling trade-off of P11); in a heavy view perhaps 15-20% of
+the draws. **Closed by the author (2026-10-27), not built.** The risks that
+decided it, most serious first: batching across groups loses per-group
+culling (the reverted big-mesh attempt submitted 56k more triangles at the
+spawn); each array's mipmaps are built by the headset's driver, so distant
+textures could look slightly different, which the headless pixel test cannot
+prove either way; repainted canvases (labels, HUD, emotes, panels) would
+have to stay out, or each repaint becomes a copy that could land mid-frame
+(the flash bug again); parts drawn through the batch transform round depth
+differently (0.02% seam pixels in that attempt); texture memory doubles
+until the originals are freed; new batch shader variants and runtime slot
+swaps in the riskiest part of the renderer; and a payoff of 15-20% of the
+draws in heavy Event views only if the Event is limited by draw submission.

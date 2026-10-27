@@ -15,6 +15,9 @@
  *   frames                    XR animation frames delivered so far
  *   supportLocalFloor         set false to make `local-floor` reject
  *   fbMax                     max framebuffer width (default 320; software GL is fill-bound)
+ *   headsetFov                true: Quest 3-like eye field of view for culling and draw counts (96 x 100 deg)
+ *   layerDepth                false: texture-array layers come without a depth texture, so the game renders into
+ *                             its own depth buffer as on the headset (4x MSAA) and its end-of-frame depth discard runs
  */
 (function () {
   const S = (window.__fakeXR = { poses: false, sessions: [], frames: 0, pose: { y: 1.6, yaw: 0 }, inputs: [], supportLocalFloor: true, fbMax: 320 });
@@ -72,7 +75,8 @@
       const y = floor ? S.pose.y : 0;
       this.transform = new RigidTransform({ x: dx, y, z: 0 }, null, matrixFor(dx, y, 0, S.pose.yaw));
       const rs = session.renderState;
-      this.projectionMatrix = perspective(90, (session.layerAspect || (16 / 9)) / 2, rs.depthNear, rs.depthFar);
+      // S.headsetFov: a Quest 3-like eye (96 deg vertical x 100 deg horizontal) instead of the default 90 deg x 8/9.
+      this.projectionMatrix = S.headsetFov ? perspective(96, Math.tan(50 * Math.PI / 180) / Math.tan(48 * Math.PI / 180), rs.depthNear, rs.depthFar) : perspective(90, (session.layerAspect || (16 / 9)) / 2, rs.depthNear, rs.depthFar);
       this.recommendedViewportScale = null;
     }
   }
@@ -201,7 +205,7 @@
       if (layer._tex) gl.deleteTexture(layer._tex); if (layer._dtex) { gl.deleteTexture(layer._dtex); layer._dtex = null; }
       layer._tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D_ARRAY, layer._tex); gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, w, h, 2);
       gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      if (layer.init.depthFormat) { layer._dtex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D_ARRAY, layer._dtex); gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.DEPTH24_STENCIL8, w, h, 2); }
+      if (layer.init.depthFormat && S.layerDepth !== false) { layer._dtex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D_ARRAY, layer._dtex); gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.DEPTH24_STENCIL8, w, h, 2); }
       gl.bindTexture(gl.TEXTURE_2D_ARRAY, null); layer._w = w; layer._h = h; return layer._tex;
     }
     getViewSubImage(layer, view) {
@@ -225,6 +229,24 @@
   for (const C of [window.WebGLRenderingContext, window.WebGL2RenderingContext]) {
     if (C) C.prototype.makeXRCompatible = function () { return Promise.resolve(); };
   }
+  // Device profiles (GT_DEVICE in the harness): the GPU limits the game and three.js read, as a Quest reports them
+  // (assumed until a headset log confirms them: the game logs its real limits at boot), so code that sizes itself
+  // from them (the batcher's part count, multiview's reserve) runs as on the device. SwiftShader's own limits are
+  // far higher (4096 vertex uniform vectors), which would hide an overflow.
+  S.DEVICES = {
+    quest2:  { ua: 'Quest 2',  gpu: 'Adreno (TM) 650', limits: { MAX_VERTEX_UNIFORM_VECTORS: 256, MAX_FRAGMENT_UNIFORM_VECTORS: 256, MAX_VARYING_VECTORS: 31, MAX_TEXTURE_IMAGE_UNITS: 16, MAX_VERTEX_TEXTURE_IMAGE_UNITS: 16, MAX_COMBINED_TEXTURE_IMAGE_UNITS: 32, MAX_SAMPLES: 4 } },
+    quest3s: { ua: 'Quest 3S', gpu: 'Adreno (TM) 740', limits: { MAX_VERTEX_UNIFORM_VECTORS: 256, MAX_FRAGMENT_UNIFORM_VECTORS: 256, MAX_VARYING_VECTORS: 31, MAX_TEXTURE_IMAGE_UNITS: 16, MAX_VERTEX_TEXTURE_IMAGE_UNITS: 16, MAX_COMBINED_TEXTURE_IMAGE_UNITS: 32, MAX_SAMPLES: 4 } },
+    quest3:  { ua: 'Quest 3',  gpu: 'Adreno (TM) 740', limits: { MAX_VERTEX_UNIFORM_VECTORS: 256, MAX_FRAGMENT_UNIFORM_VECTORS: 256, MAX_VARYING_VECTORS: 31, MAX_TEXTURE_IMAGE_UNITS: 16, MAX_VERTEX_TEXTURE_IMAGE_UNITS: 16, MAX_COMBINED_TEXTURE_IMAGE_UNITS: 32, MAX_SAMPLES: 4 } },
+  };
+  S.applyDevice = (name) => {
+    const d = S.DEVICES[name]; if (!d) throw new Error('unknown device ' + name);
+    S.device = name; S.limits = d.limits;
+    for (const C of [window.WebGLRenderingContext, window.WebGL2RenderingContext]) {
+      if (!C || C.prototype.__gtLimits) continue;
+      const gp = C.prototype.getParameter; C.prototype.__gtLimits = true;
+      C.prototype.getParameter = function (p) { const v = gp.call(this, p); if (S.limits) for (const k in S.limits) if (p === this[k]) return Math.min(v, S.limits[k]); return v; };
+    }
+  };
   S.fire = () => xr.dispatchEvent(new Event('sessiongranted'));
   S.setInputs = (list) => {
     const s = S.sessions[S.sessions.length - 1];
