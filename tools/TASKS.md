@@ -25,7 +25,7 @@ Living list. Done items move to the bottom with the date. Bugs live in
   `RULES.md`, `build.sh`, `test_standalone.js`. **3.15.45** (branch `claude/gallant-fermi-pydail`): the game file
   minified (R2); the compressed version back as a Bitcoin ordinal, `tools/index.compressed.html` (never in the APK).
 - **Running:** the standard pass on 3.15.45 (T18).
-- **Open (author):** T3 (headset run of 3.15.45), T4, T17's decisions.
+- **Open (author):** T3 (headset run of 3.15.46), T4, T17's decisions.
 - **Then:** T16, Event performance on the Quest 3S (PERF.md 13).
 
 ## Earlier resume point (3.15.41: release; tests for the town's life)
