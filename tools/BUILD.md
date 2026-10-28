@@ -111,16 +111,23 @@ means the store listing can never be updated.
 
 ## Testing
 
-`tools/run_tests.sh` runs the whole suite (details in `tools/README.md`):
+`tools/run_tests.sh` runs the suite in tiers (`--quick`, `--smoke`, the standard pass, `--full`; add `--resume` to
+skip stages already passed after a machine restart). How to run and write tests: `tools/TESTING.md`; one row per
+tool: `tools/README.md`; what each thing is tested by: `tools/TEST_PLAN.md`.
 
-- the asset equals the original plus the entry edits and the gameplay fixes;
-- the loopback server serves the game byte-for-byte (JVM harness);
-- the VR entry, the layers path, a layer swap, visibility changes, a WebGL context loss and the `local-floor` fallback in headless Chromium with a fake WebXR device;
-- the compressed release build unpacks to the same content as the source;
-- the APK passes the Meta store packaging checks (VRC.Quest.Packaging.1-6);
-- the full tier adds the world, input, progression, visits, courier, return-home,
-  parity and z-fight tests plus the loading, handover, hitch, scene-cost and
-  sharpness reports (`tools/TEST_PLAN.md`).
+- **Every tier (`--quick` alone):** the asset equals the original plus the entry edits and the gameplay fixes;
+  the loopback server serves the game byte-for-byte (JVM harness); FIXES.md is current; dialogue spelling; the
+  tentacle bend is bit-identical; the APK passes the Meta store packaging checks (VRC.Quest.Packaging.1-6).
+- **The standard pass** adds, in headless Chromium with a fake WebXR headset: VR entry (early, late, no grant),
+  runtime play with the layers path, a layer swap, visibility and context loss; multiview (each eye matches the
+  classic path, no mid-frame upload or compile); the Quest 3S uniform budget; warm-up coverage; the quality
+  governor on a Quest 3S and a Quest 3; the game's content (gifts, talk, shyness, the bribe, outfits, battles, the
+  Ancient, the robin, vignettes, the Event, Backpacka); greeting; the wrist HUD and haptics; roaming; the
+  meetings; the jazz drums; audio; far detail and the batcher; world, input, progression, visits, the courier and
+  the return-home scenarios.
+- **The full pass** adds long soaks and every scenario, release parity, the z-fight and single-sided checks,
+  optimisation identity, the performance report and the loading, handover, hitch, scene-cost, Event and sharpness
+  reports. Run it on the final build.
 
 What cannot be tested here: the actual launch on a headset. Sideload and
 confirm that the app goes straight into VR:
