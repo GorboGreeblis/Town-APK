@@ -38,7 +38,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (53 blocks)
+## Gameplay, performance and other fixes (54 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -367,7 +367,7 @@ planting. Each glyph now has one colour (the one it used most): heart pink, note
 star and sparkle yellow, "?" teal, the rest white. Every glyph's texture is made during the loading
 warm-up, so none is made during play.
 
-- (10 edits) F-B30 (flashes, NOTES 82): the other textures the game made during play, each the first time it was
+- (1 edit) F-B30 (flashes, NOTES 82): the other textures the game made during play, each the first time it was
 needed, now made once during the loading warm-up and kept: the printed lid of the pizza Nextessa
 carries (made anew at every phone call, the moment she comes through the Portal), Montgummery's
 screen faces (nine: idle, talking twice, robot dance twice, shovel, rock, paper, scissors; each made
@@ -376,6 +376,17 @@ per chat, thrown away after it). A bubble's texture now comes from a pool, one p
 bubble height, made at load and redrawn for each line: the same canvas size and drawing, so the same
 pixels; redrawing a texture that exists is what the dialogue box does all the time. The entity
 clean-up keeps textures marked to keep. Checked by tools/texture_census.js.
+
+- **P21** (10 edits): (draw calls; nothing drawn differently, NOTES 84): the Ancient (15 parts, 11.5k triangles) lives
+in the church, which has no door and a closed interior; it was drawn whenever the church was in
+view, from anywhere in the town. While a frame renders with the camera at least 0.5 m outside the
+church (its collision outline) and the Ancient inside it, the Ancient's body is left out; it is put
+back right after the render, so loading-time shader compiles, picking and everything else still see
+it. Proof: from 17,045 views at least 0.5 m outside (a 1 m grid to 30 m, five eye heights 0.5-2.8 m,
+aimed at it), rendered with and without it with only the church drawn, 3 views from about 30 m
+showed one pixel (a seam between the interior walls), and none of those 3 with the whole town drawn.
+The margin covers the camera's near plane and a frame of head movement. `__gtAnc.set(false)` turns
+it off for opt_identity.js.
 
 ## Multiview (release path since 3.15.34)
 

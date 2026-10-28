@@ -29,6 +29,9 @@ const OPTS = [
   { name: 'P10 matrix cache', expr: 'window.__gtMx && window.__gtMx.set(v)', present: '!!window.__gtMx' },
   // P20 splits each stacked pizza box (one mesh, two materials) into its five card faces and its printed top, so the
   // batcher can take them; the switch puts the original boxes back. Views orbit every box and the pie (`spots`).
+  // P21 leaves the Ancient out of renders from at least 0.5 m outside the church; the town grid and the orbits include
+  // views towards the church (the exhaustive proof is ancient_check.js).
+  { name: 'P21 the Ancient left out from outside the church', expr: 'window.__gtAnc && window.__gtAnc.set(v)', present: '!!window.__gtAnc' },
   { name: 'P20 pizza boxes split', expr: 'window.__gtPZ && window.__gtPZ.set(v)', present: '!!window.__gtPZ && window.__gtPZ.count() > 0', moreTris: true },
 ];
 (async () => {

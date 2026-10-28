@@ -1328,3 +1328,15 @@ VR-entry fix; each item is for discussion first.
     texture and upload changes about 0 on average but no more one-frame spikes: net about +1 to +2 fps there, +3 to +5
     where the pizza is in view. The Ancient behind the church walls: from 17,045 views at least 0.5 m outside the
     church (1 m grid to 30 m, five eye heights, only the church drawn), 3 views from about 30 m show one pixel of it.
+
+84. **The Ancient left out from outside the church (P21).** The heaviest Event view drew the Ancient's 15 parts (11.5k
+    triangles) through the church's walls: the church has no door and its interior is closed, and frustum culling
+    cannot know that. P21 leaves its body out of a render when the camera is at least 0.5 m outside the church's
+    collision outline and the Ancient inside it, and puts it back right after the render, so the loading-time shader
+    compiles (which skip hidden objects, including the compile with Sparkakus's bulb on), picking and the tests still
+    see it. Proof (`ancient_check.js`): 17,045 views from that far outside (1 m grid to 30 m, eye heights 0.5-2.8 m,
+    aimed at it), rendered with and without the Ancient and only the church drawn; 3 views from about 30 m showed one
+    pixel (a seam between the interior walls), none of them with the whole town drawn. The full tier runs it on a
+    2 m grid. Also measured for the Event: the batcher refuses scenery parts over 4,000 vertices, so nine large garden
+    meshes that share one material draw on their own; raising the limit to 60,000 saves 13 draws in the heaviest
+    view for 16k more triangles (2.6%) (the views comparison follows).

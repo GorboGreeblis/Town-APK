@@ -95,7 +95,7 @@ const outDir = path.join(root, 'tools/.runs/multiview');
       const isGem = () => { let f = false; D.C.traverse((o) => { const m = o.material; if (o.isMesh && m && !Array.isArray(m) && m.flatShading && m.transparent && m.vertexColors && o.position.y > -30 && o.parent && o.parent.position.y > -30) f = true; }); return f; };
       const t0 = performance.now(); while (!(gem = isGem()) && performance.now() - t0 < 90000) await wait(250); await wait(2000); clearInterval(adv); } catch (e) {}
     await wait(500);
-    const s1 = X.mvStats; return { pickups: !!(a && b), preUploads: s1.preUploads - s0.preUploads, inFrame: s1.inFrame - s0.inFrame, kinds: s1.inFrameKinds, gem, programs: s1.programsDuringPlay - s0.programsDuringPlay, names: (s1.newPrograms || []).slice((s0.newPrograms || []).length), why: diffNew(np0) };
+    const s1 = X.mvStats; return { pickups: !!(a && b), preUploads: s1.preUploads - s0.preUploads, between: (s1.between || 0) - (s0.between || 0), inFrame: s1.inFrame - s0.inFrame, kinds: s1.inFrameKinds, gem, programs: s1.programsDuringPlay - s0.programsDuringPlay, names: (s1.newPrograms || []).slice((s0.newPrograms || []).length), why: diffNew(np0) };
     // For each program compiled during the sequence: the closest program warmed before it (same shader, fewest
     // differing key fields) and the fields that differ, named from three.js's parameter list where they line up.
     function diffNew(n0) {
@@ -109,8 +109,8 @@ const outDir = path.join(root, 'tools/.runs/multiview');
       });
     }
   });
-  note(`pickups, dialogue, shop: ${up.preUploads} texture uploads moved before the frame, ${up.inFrame} while a frame drew ${JSON.stringify(up.kinds)}, ${up.programs} programs compiled`);
-  expect('nothing saves and reloads a half-drawn frame (uploads before the frame, no switch, read or blit while it draws), across pickups, dialogue, shop, battle and the Speech', up.preUploads > 0 && up.inFrame === 0, JSON.stringify(up));
+  note(`pickups, dialogue, shop: ${up.preUploads} texture uploads moved before the frame, ${up.between} between frames (F-B31), ${up.inFrame} while a frame drew ${JSON.stringify(up.kinds)}, ${up.programs} programs compiled`);
+  expect('nothing saves and reloads a half-drawn frame (uploads before or, since F-B31, between frames; no switch, read or blit while it draws), across pickups, dialogue, shop, battle and the Speech', up.preUploads + up.between > 0 && up.inFrame === 0, JSON.stringify(up));
   expect('the Speech assembled the Gem (its shader is part of the play checked)', up.gem === true, JSON.stringify(up.gem));
   expect('no shader compiled during that play', up.programs === 0, `${up.programs} programs: ${(up.names || []).join(' | ')}; differs from the closest warmed program in: ${(up.why || []).join(' | ')}`);
   await run('spawn');
