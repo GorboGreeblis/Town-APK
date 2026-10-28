@@ -53,7 +53,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 
 | Item | How | Coverage |
 | --- | --- | --- |
-| Left stick walk with dead-zone, speed, collision with buildings (`F.solid`) and bodies (`uo`), park bounds | `test_input.js` | partial (bodies, bounds todo) |
+| Left stick walk with dead-zone, speed, collision with buildings (`F.solid`) and bodies (`uo`), park bounds | `test_input.js` (walking into a townsperson never overlaps; walking outward stays inside the park) | done |
 | Right stick snap turn 30°, no repeat while held | `test_input.js` | done |
 | Trigger/grip (`select`/`squeeze`): pick ray, pick range/cone, menu choice, UI buttons 4/5 | `test_input.js` (events only) | partial |
 | Controller mapping on real hardware (hand assignment, haptics) | sideload | headset |

@@ -6,8 +6,8 @@
 #   tools/run_tests.sh --full      FULL pass: every scenario, long soak times.
 #                                  Run only on the final build (30+ minutes).
 #   tools/run_tests.sh --quick     static checks only, no browser (seconds)
-#   ... --resume                   (with any tier) skip the stages that already passed on this same asset, APK and
-#                                  tools in an earlier run of the tier (tools/.runs/resume_<tier>.txt), e.g. after a
+#   ... --resume                   (with any tier) skip the stages that already passed on this same asset, APK,
+#                                  harness and test script in an earlier run of the tier (tools/.runs/resume_<tier>.txt), e.g. after a
 #                                  machine restart cut a pass short; failed and new stages run again
 #
 # Needs: python3, JDK 17+, node with playwright (browser tests), and
@@ -28,10 +28,12 @@ for a in "$@"; do case "$a" in --smoke) TIER=smoke;; --full) TIER=full;; --quick
 # The SDK for the server harness and the APK checker: ANDROID_HOME, else the one the Gradle build uses.
 if [ -z "${ANDROID_HOME:-}${ANDROID_SDK_ROOT:-}" ] && [ -f "$ROOT/tools/android/local.properties" ]; then
   ANDROID_HOME=$(sed -n 's/^sdk\.dir=//p' "$ROOT/tools/android/local.properties"); export ANDROID_HOME; fi
-# --resume: a stage counts as passed earlier only for the same asset, APK and test tools (their hashes make the key)
+# --resume: a stage counts as passed earlier only for the same files: the asset, the APK, the shared harness and fake
+# headset, and every file its own command names (its test script); editing one test re-runs only that stage
 STATE="$ROOT/tools/.runs/resume_$TIER.txt"
-KEY=$( { cat "$ASSET"; [ -f "$APK" ] && cat "$APK"; cat "$ROOT"/tools/*.js "$ROOT"/tools/lib/*.js "$ROOT"/tools/*.sh "$ROOT"/tools/*.py; } 2>/dev/null | sha256sum | cut -c1-16)
-[ -n "$RESUME" ] && { n=$(grep -c "^$KEY	" "$STATE" 2>/dev/null); echo "resuming: key $KEY, ${n:-0} stages passed earlier"; }
+BASE=$( { cat "$ASSET"; [ -f "$APK" ] && cat "$APK"; cat "$ROOT"/tools/lib/*.js "$ROOT/tools/fakexr.js"; } 2>/dev/null | sha256sum | cut -c1-16)
+key() { { echo "$BASE"; for f in "$@"; do [ -f "$f" ] && cat "$f"; done; } | sha256sum | cut -c1-16; }
+[ -n "$RESUME" ] && { n=$(wc -l < "$STATE" 2>/dev/null); echo "resuming: ${n:-0} stage results kept in $STATE"; }
 
 # Per-tier knobs: seconds of soak, NPC scenarios, world sampling window.
 case $TIER in
@@ -41,14 +43,14 @@ case $TIER in
 esac
 
 SUMMARY=""; rc_all=0
-done_before() { [ -n "$RESUME" ] && grep -qxF "$KEY	$1" "$STATE" 2>/dev/null; }
-run() { name=$1; shift
+done_before() { [ -n "$RESUME" ] && grep -qxF "$KEY	$1" "$STATE" 2>/dev/null; }   # needs KEY (set by run/report)
+run() { name=$1; shift; KEY=$(key "$@")
   if done_before "$name"; then SUMMARY="$SUMMARY\n  PASS  $name (earlier run)"; return; fi
   echo; echo "=== $name ==="; "$@"; rc=$?
   if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  PASS  $name"; printf '%s\t%s\n' "$KEY" "$name" >> "$STATE"; else SUMMARY="$SUMMARY\n  FAIL  $name (exit $rc)"; rc_all=1; fi; }
 skip() { SUMMARY="$SUMMARY\n  SKIP  $1 ($2)"; }
 # Report stages run a probe and keep its output in the log; they never fail the pass.
-report() { name=$1; shift
+report() { name=$1; shift; KEY=$(key "$@")
   if done_before "report: $name"; then SUMMARY="$SUMMARY\n  INFO  $name (earlier run, see its log)"; return; fi
   echo; echo "=== report: $name ==="; "$@"; rc=$?
   if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  INFO  $name (see log)"; printf '%s\t%s\n' "$KEY" "report: $name" >> "$STATE"; else SUMMARY="$SUMMARY\n  INFO  $name (probe exit $rc)"; fi; }
