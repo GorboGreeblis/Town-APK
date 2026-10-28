@@ -1340,3 +1340,15 @@ VR-entry fix; each item is for discussion first.
     2 m grid. Also measured for the Event: the batcher refuses scenery parts over 4,000 vertices, so nine large garden
     meshes that share one material draw on their own; raising the limit to 60,000 saves 13 draws in the heaviest
     view for 16k more triangles (2.6%) (the views comparison follows).
+
+85. **Gooward's translucent parts merged (P22, prototype for the author).** In the heaviest Event view Gooward drew 30
+    times, 26 of them translucent: the 20 bubbles in his goo (3.6-8.6 cm, opacity .55; seen from every side, up to
+    about 4,900 pixels at 2 m, so they cannot simply go) and his two wings' three crystals each (.78). The author had
+    marked all 26 `mergeTr`, but nothing merged them. P22 merges marked parts that share a parent and a material into
+    one mesh that orders its parts far to near before each draw, as three.js orders separate translucent objects (this
+    three.js draws double-sided translucent objects in one pass, so the order is the whole difference): 26 draws ->
+    3. Other creatures' separate draws are mostly large textured parts; their small details (Etcher's marks, Mama
+    Gorbo's pins, Anomalee's cards, about 10 draws) would still show at Event distances (0.2 m at 15 m is about 15
+    pixels on a Quest 3S), so hiding them by distance is not proposed. A test harness lesson: a check that waits
+    between renders must bind the canvas again before each one, since the XR frame loop binds its own framebuffer
+    meanwhile; the first runs of the bubble check and of `ancient_check.js` compared stale images.

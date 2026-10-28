@@ -38,7 +38,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (54 blocks)
+## Gameplay, performance and other fixes (55 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -377,7 +377,7 @@ bubble height, made at load and redrawn for each line: the same canvas size and 
 pixels; redrawing a texture that exists is what the dialogue box does all the time. The entity
 clean-up keeps textures marked to keep. Checked by tools/texture_census.js.
 
-- **P21** (10 edits): (draw calls; nothing drawn differently, NOTES 84): the Ancient (15 parts, 11.5k triangles) lives
+- **P21** (1 edit): (draw calls; nothing drawn differently, NOTES 84): the Ancient (15 parts, 11.5k triangles) lives
 in the church, which has no door and a closed interior; it was drawn whenever the church was in
 view, from anywhere in the town. While a frame renders with the camera at least 0.5 m outside the
 church (its collision outline) and the Ancient inside it, the Ancient's body is left out; it is put
@@ -387,6 +387,16 @@ aimed at it), rendered with and without it with only the church drawn, 3 views f
 showed one pixel (a seam between the interior walls), and none of those 3 with the whole town drawn.
 The margin covers the camera's near plane and a frame of head movement. `__gtAnc.set(false)` turns
 it off for opt_identity.js.
+
+- **P22** (11 edits): (draw calls; the author asked for this prototype, NOTES 85): the author marked Gooward's
+translucent parts for merging (`userData.mergeTr`: the 20 bubbles in his goo, the three crystals of
+each wing) but nothing ever merged them, so each was its own draw (26 of the Event's heaviest view).
+Parts with the mark that share a parent and a material become one mesh (their geometry placed by
+their own transforms, which never change; the parent's animation moves them as before). Translucent
+objects are drawn far to near, one by one; the merged mesh keeps that: before it is drawn it orders
+its parts far to near from the camera, as three.js orders separate objects, rewriting its index only
+when the order changes. What differs: the merged parts are ordered as one block against other
+translucent objects (a bubble seen through a wing crystal). `__gtMT.set(false)` restores the parts.
 
 ## Multiview (release path since 3.15.34)
 

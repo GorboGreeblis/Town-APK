@@ -26,7 +26,7 @@ const STEP = arg('--step', 2), R = arg('--radius', 30), M = 0.5;
     const xrWas = O.xr.enabled; O.xr.enabled = false; O.state.bindXRFramebuffer(null); O.setRenderTarget(null);
     const N = 128, W = O.domElement.width, H = O.domElement.height, cam = new T.PerspectiveCamera(60, 1, 0.05, 400);
     const A = new Uint8Array(N * N * 4), Bf = new Uint8Array(N * N * 4);
-    const shot = (buf) => { O.setViewport(0, 0, N, N); O.setScissor(0, 0, N, N); O.setScissorTest(true); O.render(C, cam); O.setScissorTest(false); O.setViewport(0, 0, W, H); gl.readPixels(0, 0, N, N, gl.RGBA, gl.UNSIGNED_BYTE, buf); };
+    const shot = (buf) => { O.state.bindXRFramebuffer(null); O.setRenderTarget(null); O.setViewport(0, 0, N, N); O.setScissor(0, 0, N, N); O.setScissorTest(true); O.render(C, cam); O.setScissorTest(false); O.setViewport(0, 0, W, H); gl.readPixels(0, 0, N, N, gl.RGBA, gl.UNSIGNED_BYTE, buf); };
     const aim = (x, h, z) => { cam.position.set(x, h, z); cam.lookAt(c); const d = cam.position.distanceTo(c); cam.fov = Math.min(120, 2 * Math.atan(rad / Math.max(d, rad + 0.01)) * 180 / Math.PI + 4); cam.updateProjectionMatrix(); cam.updateMatrixWorld(true); };
     const differs = () => { let n = 0; for (let i = 0; i < A.length; i += 4) if (A[i] !== Bf[i] || A[i + 1] !== Bf[i + 1] || A[i + 2] !== Bf[i + 2]) n++; return n; };
     const shows = (x, h, z) => { aim(x, h, z); body.visible = true; shot(A); body.visible = false; shot(Bf); body.visible = true; return differs(); };
@@ -35,7 +35,8 @@ const STEP = arg('--step', 2), R = arg('--radius', 30), M = 0.5;
     for (let x = Math.floor(c.x - R); x <= c.x + R; x += STEP) for (let z = Math.floor(c.z - R); z <= c.z + R; z += STEP) {
       const [lx, lz] = F.local(cb, x, z); if (!(lx < x0 - M || lx > x1 + M || lz < z0 - M || lz > z1 + M)) continue;
       for (const h of [0.5, 1.0, 1.6, 2.2, 2.8]) { out.views++; const n = shows(x, h, z); if (n) out.churchOnly.push([x, z, h, n]); }
-      if (out.views % 400 < 5) await new Promise((res) => setTimeout(res, 0));
+      // let the page breathe; the XR frame loop binds its own framebuffer meanwhile, so bind the canvas again after it
+      if (out.views % 400 < 5) { await new Promise((res) => setTimeout(res, 0)); O.state.bindXRFramebuffer(null); O.setRenderTarget(null); }
     }
     only(false);
     for (const [x, z, h] of out.churchOnly) { const n = shows(x, h, z); if (n) out.full.push([x, z, h, n]); }
