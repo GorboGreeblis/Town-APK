@@ -6,13 +6,25 @@
 //
 //   adb logcat -d -s GreeblisServer > run.txt      (on the computer the headset is plugged into)
 //   node tools/perf_log.js run.txt
+// A log saved by Windows PowerShell (UTF-16) is read as well. Each reading carries the render scale in force at the
+// time (from the layer lines), the layer swaps are listed with their times, and the limiter is named from the
+// readings themselves: whichever of draw calls and triangles the frame rate follows more closely.
 const fs = require('fs');
 const file = process.argv[2];
 if (!file) { console.error('usage: node tools/perf_log.js <logcat.txt>'); process.exit(2); }
-const text = fs.readFileSync(file, 'utf8');
-const re = /perf fps=([\d.]+) level=(\d+) calls=(\d+) tris=(\d+)( event)? at=(-?\d+),(-?\d+)(?: dev=(\S+))?/g;
+const buf = fs.readFileSync(file);
+// PowerShell's `>` writes UTF-16 little-endian with a byte-order mark; plain adb output is UTF-8
+const text = (buf[0] === 0xff && buf[1] === 0xfe) || (buf.length > 3 && buf[1] === 0 && buf[3] === 0) ? buf.toString('utf16le').replace(/^\ufeff/, '') : buf.toString('utf8');
+const re = /(?:m=(\d+)ms )?perf fps=([\d.]+) level=(\d+) calls=(\d+) tris=(\d+)( event)? at=(-?\d+),(-?\d+)(?: dev=(\S+))?/g;
 const rows = []; let m;
-while ((m = re.exec(text))) rows.push({ fps: +m[1], level: +m[2], calls: +m[3], tris: +m[4], event: !!m[5], x: +m[6], z: +m[7], dev: m[8] || 'unknown' });
+while ((m = re.exec(text))) rows.push({ ms: m[1] ? +m[1] : null, fps: +m[2], level: +m[3], calls: +m[4], tris: +m[5], event: !!m[6], x: +m[7], z: +m[8], dev: m[9] || 'unknown' });
+// the render scale over time, from the layer lines ("projection layer swapped to scale 0.82", "... live, scale 1")
+const swaps = []; const rs = /m=(\d+)ms projection layer (?:swapped to scale|live, scale) ([\d.]+)/g;
+while ((m = rs.exec(text))) swaps.push({ ms: +m[1], scale: +m[2] });
+swaps.sort((a, b) => a.ms - b.ms);
+// a swap logs twice (the new layer live, then the old one dropped a frame or two later): keep one
+for (let i = swaps.length - 1; i > 0; i--) if (swaps[i].scale === swaps[i - 1].scale && swaps[i].ms - swaps[i - 1].ms < 2000) swaps.splice(i, 1);
+for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w of swaps) if (w.ms <= r.ms) sc = w.scale; r.scale = sc; }
 if (!rows.length) { console.log('no perf lines found (needs a 3.15.27 or later build; the line reads "page: m=perf fps=...")'); process.exit(1); }
 const stats = (list) => { const f = list.map((r) => r.fps).sort((a, b) => a - b); return { n: f.length, min: f[0], p10: f[Math.floor(f.length * 0.1)], median: f[Math.floor(f.length / 2)], max: f[f.length - 1] }; };
 const town = rows.filter((r) => !r.event), ev = rows.filter((r) => r.event);
@@ -31,8 +43,19 @@ const levels = {}; for (const r of rows) levels[r.level] = (levels[r.level] || 0
 console.log(`  governor levels (0-1 supersampled, 2 native, 3-4 foveated): ${JSON.stringify(levels)}`);
 const low = rows.slice().sort((a, b) => a.fps - b.fps).slice(0, 5);
 console.log('  lowest readings:');
-for (const r of low) console.log(`    ${r.fps} fps at (${r.x}, ${r.z})${r.event ? ' during the Event' : ''}, level ${r.level}, ${r.calls} calls, ${r.tris} triangles`);
-const cause = (r) => r.tris > 300000 ? 'triangles' : r.calls > 200 ? 'draw calls' : r.level >= 4 ? 'GPU-bound (governor at its floor)' : 'CPU or GPU, governor not at its floor';
+for (const r of low) console.log(`    ${r.fps} fps at (${r.x}, ${r.z})${r.event ? ' during the Event' : ''}, level ${r.level}${r.scale ? ', scale ' + r.scale : ''}, ${r.calls} calls, ${r.tris} triangles`);
+// which load the frame rate follows: Pearson correlation over the readings (needs a spread of readings)
+const corr = (xs, ys) => { const n = xs.length; if (n < 4) return null; const mx = xs.reduce((a, b) => a + b) / n, my = ys.reduce((a, b) => a + b) / n; let sxy = 0, sxx = 0, syy = 0; for (let i = 0; i < n; i++) { sxy += (xs[i] - mx) * (ys[i] - my); sxx += (xs[i] - mx) ** 2; syy += (ys[i] - my) ** 2; } return sxx && syy ? sxy / Math.sqrt(sxx * syy) : null; };
+const rCalls = corr(rows.map((r) => r.calls), rows.map((r) => r.fps)), rTris = corr(rows.map((r) => r.tris), rows.map((r) => r.fps));
+const follows = rCalls !== null && rTris !== null ? (Math.abs(rCalls) >= Math.abs(rTris) ? 'draw calls' : 'triangles') : null;
+if (rCalls !== null) console.log(`  the frame rate follows ${follows} (correlation with draw calls ${rCalls.toFixed(2)}, with triangles ${rTris.toFixed(2)}; -1 is a perfect match)`);
+const cause = (r) => follows && (r.tris > 300000 || r.calls > 200) ? follows : r.tris > 300000 ? 'triangles' : r.calls > 200 ? 'draw calls' : r.level >= 4 ? 'GPU-bound (governor at its floor)' : 'CPU or GPU, governor not at its floor';
+if (swaps.length) {
+  console.log(`  render scale changes (projection layer swaps): ${swaps.map((w) => `${(w.ms / 1000).toFixed(0)} s -> ${w.scale}`).join(', ')}`);
+  const byScale = {}; for (const r of rows) if (r.scale !== null && r.scale !== undefined) (byScale[r.scale] = byScale[r.scale] || []).push(r);
+  for (const [sc, list] of Object.entries(byScale)) { const st = stats(list); console.log(`    at scale ${sc}: ${st.n} readings, ${st.min}-${st.max} fps (median ${st.median}), ${Math.round(list.reduce((a, r) => a + r.calls, 0) / list.length)} calls on average`); }
+}
+if (text.length && rows[0].ms !== null && rows[0].ms > 60000) console.log(`  NOTE: the first reading is ${(rows[0].ms / 1000).toFixed(0)} s into the session: the log lost the start (capture it live with adb logcat -s GreeblisServer > run.txt)`);
 // The governor's average reads a frame or two under the refresh rate when it is met (71.x at 72 Hz).
 const TARGET = 70.5, FLOOR = 60;
 const under = (lim) => rows.filter((r) => r.fps < lim);
