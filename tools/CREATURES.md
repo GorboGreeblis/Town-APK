@@ -10,8 +10,8 @@ the models (RELEASE.md 6): the designs are final; fixes must not change how anyo
 
 Heights are the value each builder reports, which places things relative to the character, not a label (there are
 no name labels over anyone): emotes at height + 0.4 m, vignette speech bubbles at height + 1.1 m, the controller's
-pick target at half the height; a pizza box or hat sits on the model's real top (its bounding box) instead; model scale and body radius come from the
-cast table (`ROWS` in `JGP`). Each townsperson's signature colour (`color` in the cast table) colours their dialogue
+pick target at half the height; a carried pizza box sits on the model's real top (its bounding box) instead.
+Model scale and body radius come from the cast table (`ROWS` in `JGP`). Each townsperson's signature colour (`color` in the cast table) colours their dialogue
 box when they speak and the emotes over their head (`?`, `!`).
 
 | Character | Id | Model | Generation | Height | Scale | Body radius | Signature colour | Built from |
