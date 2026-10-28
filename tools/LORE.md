@@ -87,6 +87,8 @@ it is **Zollod** who is shy (the book cures him), the **Gem trade is Gemtoe's**,
 
 ## The Ancient
 
+The church is an intended secret room (author): the player gets in by walking through its wall.
+
 The one character who is not on the town's cast list, and the one the others defer to.
 
 - **Where:** inside the church. The pizza courier, delivering there, adds "oh
