@@ -196,9 +196,10 @@ What the models have in common, as built:
   purple accents; a purple felt beret dabbed with paint.
 - **Surface**: `goo` with the ramp, glossy (shininess 75, a pale blue specular); bubbles .55 opacity.
 - **Face**: two plus-shaped eyes (dark crosses with white crosses in front), a smile with a tube tongue, three colour
-  splotches on the cheeks, two wavy teal lines on the forehead. Blinks by squashing the crosses for 0.16 s every 4.3 s.
-- **Extras**: two gold crests, two octagonal lens discs on the sides of the head, two flat-shaded crystal wings, the
-  ring's "AP" tag. The beret is bent onto a sphere so it hugs its lump.
+  splotches on the cheeks, two wavy teal forehead wrinkles. Blinks by squashing the crosses for 0.16 s every 4.3 s.
+- **A second set of eyes** (the author): the two octagonal lens discs on the sides of his upper head (a purple
+  housing, a pink rim, glowing lilac glass, eight beads round each). They do not blink.
+- **Extras**: two gold crests, two flat-shaded crystal wings, the ring's "AP" tag. The beret is bent onto a sphere so it hugs its lump.
 - **Motion**: squash and stretch `sin(2.1t)`, a bob, the ring floating and rolling, wings fluttering, the tongue
   wagging harder while he talks. No walk cycle.
 
@@ -251,8 +252,9 @@ What the models have in common, as built:
 - **Palette**: yellow (`#f9dc22`) shading to deeper yellow low down and orange in the creases; glossy teal joints,
   sockets and buttons with lime lights; a blue crown; a feather plume ramping purple to orange.
 - **Face**: two glossy dark eyes in yellow rings with lids, a smile traced along the snout.
-- **Extras**: short arms with drumsticks; three lit buttons on each side and a back panel of five sockets
-  *(their meaning is unclear)*; a five-point swept crown; the plume, a curved spine of feather cards fanning out.
+- **Synthetic parts of his own body** (the author): three lit buttons on each side and a back panel of five
+  sockets, in the same glossy teal as his joints.
+- **Extras**: short arms with drumsticks; a five-point swept crown; the plume, a curved spine of feather cards fanning out.
 - **Motion**: rolls and sways; when the drums play (`DRUMS`), each hit swings an arm and nods his body.
 
 ### Etcher
@@ -385,9 +387,9 @@ What the models have in common, as built:
 
 ## 7. Open questions for the author
 
-Things the models show that the code does not explain (see also LORE.md's open questions):
-- Gooward's two octagonal lens discs, and the two wavy teal lines on his forehead.
-- King Dino's lit buttons and the five sockets on his back panel.
+Things the models show that the code does not explain (see also LORE.md's open questions). Answered so far:
+Gooward's lens discs are a second set of eyes and the wavy lines are forehead wrinkles; King Dino's lit buttons
+and back sockets are synthetic parts of his own body (the author).
 - Mama Gorbo's lime tube draped around her front (an arm, a sash, a smile?).
 - Fortizmo's four small black dots beside his eyes.
 - Etcher's three back marks, and whether each character's technology detail is a deliberate theme.
