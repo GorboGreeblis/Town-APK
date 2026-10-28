@@ -173,8 +173,9 @@ What the models have in common, as built:
 - **The same friendly face.** The shared eye (white, coloured iris, round pupil, one highlight up and to the left,
   a heavy lid) appears on most of the cast; the smile is a thin dark arc. No one frowns. Several faces are screens
   instead (Anomalee, Hennrick, Montgummery) whose pictures change with what the character is doing.
-- **Everyone is a little bit of technology.** *(inference from the painted details)* Each design hides a computing
-  joke: Gooward's float ring tag "AP" and Sparkakus's coin "APP"; Mama Gorbo's orbiting pins "AP", "IP" and a wifi
+- **Everyone is a little bit of technology.** A deliberate theme (the author): this is a digital world and the
+  townsfolk are digital monsters (Montgummery: "We are all digital monsters."). Each design carries a computing
+  detail: Gooward's float ring tag "AP" and Sparkakus's coin "APP"; Mama Gorbo's orbiting pins "AP", "IP" and a wifi
   sign; Glyph's back plates (a terminal prompt `> ..`, "PR", a glowing "APK", a shield with a "G"); Anomalee's
   monitor head, keyboard jaw and "adb" labels; Montgummery's CRT head with "gfxinfo" on screen and scrolling code on
   his body; Hennrick's data screen; Etcher's three back marks (a stroked "B", three stacked parallelograms, two
@@ -389,6 +390,7 @@ What the models have in common, as built:
 
 Things the models show that the code does not explain (see also LORE.md's open questions). Answered so far:
 Gooward's lens discs are a second set of eyes and the wavy lines are forehead wrinkles; King Dino's lit buttons
-and back sockets are synthetic parts of his own body; Mama Gorbo's lime tube is a goo tube; Fortizmo's four small dots are beauty marks (the author).
-- Etcher's three back marks, and whether each character's technology detail is a deliberate theme.
+and back sockets are synthetic parts of his own body; Mama Gorbo's lime tube is a goo tube; Fortizmo's four small dots are beauty marks; each character's technology detail is a deliberate theme of a digital
+world of digital monsters (the author).
+- What each of Etcher's three back marks stands for (the technology theme itself is confirmed, section 4).
 - Mushroom reports a height of 2 m for his label though his hat reaches about 2.3 m.

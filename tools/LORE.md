@@ -22,6 +22,9 @@ it is **Zollod** who is shy (the book cures him), the **Gem trade is Gemtoe's**,
 
 ## The world
 
+- **A digital world** (author): Greeblis Town is a digital world and its townsfolk are digital monsters;
+  each one carries a piece of computing in their design (CREATURES.md section 4). Montgummery says it outright:
+  "We are all digital monsters."
 - **Greeblis Town / Greeblis Park.** A cartoon town around a park. Mama Gorbo:
   "What a beautiful day in Greeblis Park!" Hennrick, a visitor from the
   future: "In my era, the towers of Greeblis City reach the clouds. I never
