@@ -19,8 +19,10 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     const where = () => new Error().stack.split('\n').slice(3, 7).map((l) => l.trim().replace(/\(?https?:\/\/[^/]+\//, '(')).join(' < ');
     window.__tc = { step: 'start', canvases: [], textures: [] };
     const mark = (list, what) => list.push({ t: ((performance.now() - t0) / 1000).toFixed(1), step: window.__tc.step, what, where: where() });
-    const gc = HTMLCanvasElement.prototype.getContext;
-    HTMLCanvasElement.prototype.getContext = function (k) { if (k === '2d' && !this.__tcSeen) { this.__tcSeen = 1; mark(window.__tc.canvases, `canvas ${this.width}x${this.height}`); } return gc.apply(this, arguments); };
+    // a canvas created after loading (named by its size when it is first drawn into); redrawing one made at load is fine
+    const ce = document.createElement.bind(document), gc = HTMLCanvasElement.prototype.getContext;
+    document.createElement = function (tag) { const el = ce.apply(document, arguments); if (String(tag).toLowerCase() === 'canvas') { const rec = { t: ((performance.now() - t0) / 1000).toFixed(1), step: window.__tc.step, what: 'canvas', where: where() }; window.__tc.canvases.push(rec); el.__tcRec = rec; } return el; };
+    HTMLCanvasElement.prototype.getContext = function () { if (this.__tcRec && this.__tcRec.what === 'canvas') this.__tcRec.what = `canvas ${this.width}x${this.height}`; return gc.apply(this, arguments); };
     // a GL texture allocated after loading, named by its first upload (size and source); the fake headset's own eye
     // textures (a layer swap on the headset makes its own) are not the game's
     const ct = gl.createTexture.bind(gl), fresh = new Map(), ti = gl.texImage2D.bind(gl);
