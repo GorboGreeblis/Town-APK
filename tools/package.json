@@ -1,13 +1,9 @@
 {
   "name": "tools",
   "version": "1.0.0",
-  "description": "The repository root holds only the final build, `GreeblisTown-release.apk`, and this folder. Everything else lives here: the Android project (`android/`), the untouched original game (`uncompressed.html`), the build and release guides (`BUILD.md`, `RELEASE.md`), notes, task and bug lists, game documentation, and the test suite described below.",
-  "main": "boot_profile.js",
-  "directories": {
-    "lib": "lib"
-  },
+  "description": "Build and test tools for Greeblis Town (see tools/README.md): acorn for code analysis, terser for minify_game.js (RULES.md 19). Install with: npm install --prefix tools",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "sh run_tests.sh --quick"
   },
   "keywords": [],
   "author": "",

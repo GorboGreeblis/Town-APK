@@ -14,7 +14,7 @@ import re, sys, pathlib, collections
 from spellchecker import SpellChecker
 
 root = pathlib.Path(__file__).resolve().parent.parent
-args = [a for a in sys.argv[1:] if not a.startswith('--')]
+args = [a for i, a in enumerate(sys.argv[1:], 1) if not a.startswith('--') and sys.argv[i - 1] != '--who']   # the name after --who is not a file
 src = pathlib.Path(args[0]) if args else root / 'tools' / 'uncompressed.html'
 who = None
 if '--who' in sys.argv:

@@ -28,7 +28,7 @@ const UA = 'Mozilla/5.0 (X11; Linux x86_64; Quest 3) AppleWebKit/537.36 (KHTML, 
 function hooked(file) {
   let html = fs.readFileSync(file, 'utf8');
   const anchor = 'gcEB.ready=!0;';
-  if (!html.includes(anchor)) throw new Error('anchor not found in ' + file + ' (use the patched asset)');
+  if (!html.includes(anchor)) throw new Error('anchor not found in ' + file + ' (not the game file, or the anchor was renamed: see RESERVED in tools/minify_game.js)');
   // `t` (the tuning object) is shadowed inside the boot function, so capture it
   // at top level where gcEB is declared, before the world is built.
   const anchor2 = 'const gcEB={list:[]';
