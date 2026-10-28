@@ -80,10 +80,14 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     let prev = it.mesh.visible;
     const steps = []; for (let d = 40; d <= 84; d += 1) steps.push(d); for (let d = 84; d >= 40; d -= 1) steps.push(d);
     let dir = 'out';
+    // waits in game time (the game checks every 0.25 game seconds; a busy machine stretches them), and the walk starts
+    // only once the game has seen the player at its first point: the teleport there is a jump no player makes
+    const gwait = async (s) => { const g0 = D.Re.t, w0 = performance.now(); while (D.Re.t - g0 < s && performance.now() - w0 < 20000) await wait(40); };
+    At.position.set(cx - ux * steps[0], At.position.y, cz - uz * steps[0]); await gwait(0.6); prev = it.mesh.visible;
     for (const [k, d] of steps.entries()) {
       if (k === 45) dir = 'in';
       At.position.set(cx - ux * d, At.position.y, cz - uz * d);
-      await wait(320);   // the game checks every 0.25 s
+      await gwait(0.32);   // the game checks every 0.25 s
       const dd = dist(), m = it.mesh.visible, f = it.far.visible; out.ticks++;
       if (m && f) out.both++; if (!m && !f) out.none++;
       if (dd < 61.5 && !m) { out.wrongNear++; if (out.examples.length < 3) out.examples.push(`coarse at ${dd.toFixed(1)} m`); }

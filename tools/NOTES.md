@@ -1248,3 +1248,70 @@ VR-entry fix; each item is for discussion first.
       checked headless: no page errors, the marks logged, no swap in noswap.
       Capture the whole session live: `adb logcat -c`, then
       `adb logcat -s GreeblisServer > run.txt` while playing.
+
+80. **The noswap run: the flashes come with new textures.** In the
+    `noswap` build (no layer swaps at all) the author marked two flashes in
+    the Event and saw more during dance battles and talking to Nextessa.
+    Around the first mark the perf lines show no swap, no long frame and no
+    hazard at all while a frame drew; the only thing that happened was one
+    new texture, uploaded before the frame by the F-B26 fix (`pre` 1129 to
+    1130, `tex` 219 to 220). Around the second, five new textures (and 21
+    geometry uploads during frames). Battles open a new panel texture;
+    Nextessa's visit makes new canvases (her pizza box's lid). Dialogue text,
+    which redraws an existing canvas every few letters, does not flash. So the
+    swaps are not the cause, and uploading a texture before the frame draws is
+    not enough on the headset: the upload is still inside the XR frame, after
+    the headset's image is bound. The `deferupload` experiment keeps every
+    texture upload out of the XR frame: during multiview play a texture
+    marked for upload is held back (its old content drawn for that frame) and
+    uploaded in a separate task right after the frame is submitted; an object
+    whose texture has never been uploaded is skipped for that one frame (a new
+    label shows about 14 ms later). Headless: no page errors, textures
+    uploaded between frames, none inside a frame; every multiview pixel
+    comparison still matches. The two checks of `multiview_check.js` that
+    fail on it are the experiment's own (no pre-frame uploads any more; the
+    widened watch counts geometry uploads), to be updated if it is promoted.
+
+81. **The deferupload run, and the panels' three canvases.** The author's
+    deferupload run still showed flashes (one marked in the log's window,
+    1.7 s after the Event's layer swap to 0.82, the old layer destroyed
+    0.1 s after it), and a new glitch: in dance battles and the interact
+    menu, quick presses and hovers made the window flash between states.
+    The second was the experiment's own: every VR panel (battle, dialogue,
+    menu, wrist HUD) paints into the next of three canvases and swaps it in
+    at once; with the upload held back a frame, the swapped-in canvas still
+    held what it showed two redraws earlier. Fixed in the experiment: a
+    panel keeps its last uploaded canvas and swaps to the new one once that
+    is uploaded; a headless probe drives bursts of three redraws per frame
+    on the battle panel and the menu and checks the generation on screen
+    never goes back (0 of 173 frames; the newest shows at the end). The two
+    flash causes now each have one run behind them: new textures uploaded
+    inside a frame (noswap run) and layer swaps (this run). The `deferswap`
+    experiment has both changes (no upload inside a frame, no swap) and an
+    upload log that no longer runs out (the wrist HUD's routine uploads used
+    up its 300 lines early). Frame rate: this Event drew 408-445 calls at
+    52-58 fps, more than earlier runs, still following the draw calls.
+
+82. **Flashes and textures made during play; the Event's pizza (in progress).** The author placed the flashes
+    precisely: when Nextessa emoted after being spoken to, in dance battles, while planting, at the Summoning
+    Pillar. Each of those makes a texture on the spot. An emote is a 64x64 canvas per glyph and colour, made the
+    first time the pair shows, and most callers picked the colour at random (seven for a chat or a battle hit,
+    five for a new plant). The Event's start makes the pizza's printed lid; Nextessa's arrival makes the lid of
+    the pizza she carries (anew at every call); Montgummery's screen makes each face the first time he shows it;
+    every text chat between townsfolk makes two speech-bubble textures and throws them away; the shop's mirror
+    makes its gradient the first time it opens. Redrawing a texture that already exists (the dialogue box does it
+    all the time) was never seen to flash, so a texture made and allocated mid-play is the lead. The author:
+    "no emotes need to be random colors. It would be better to standardize them." F-B29 gives each glyph one
+    colour and makes every glyph's texture while loading; F-B30 makes the rest while loading and keeps them (the
+    bubbles come from a pool, one per speaker and height, redrawn per line). `texture_census.js` plays those
+    situations and fails on any canvas or GL texture made during play. The same textures cost hitches as well
+    (a canvas drawn and a texture of up to 1 MB uploaded in one frame), not the Event's steady frame rate, which
+    follows the draw calls.
+
+    P20: the Event's pizza (eight stacks of boxes round the garden and the pie of 8 slices) is built after the
+    batcher ran, so each part was a draw: 56 of the heaviest Event view's 378. The stacked boxes are split into
+    their card faces and printed top (same vertices, same triangles in P8's order) and both groups are batched as
+    the plants are; 378 -> 324 draws in that view, and `opt_identity.js` shows identical pixels over 92 Event
+    views (1,108 fewer draws). Raising the batcher's part limit from 27 to 33 (the uniform budget has room) was
+    measured and dropped: 382 -> 377 draws, and some views draw more triangles. Also: the perf log now records
+    the eye buffer's size once per layer, since the Quest 3S's browser reports "Quest 3" in its user agent.

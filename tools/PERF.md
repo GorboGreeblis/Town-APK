@@ -358,3 +358,25 @@ raw milliseconds. On one machine, back to back, 3.15.40 and 3.15.41 match within
 
 No shader compiled during play in either. The report now scales its limits by machine speed (TESTING.md section
 3), with a baseline written from 3.15.41, and 3.15.41 passes it.
+
+## 12. The Event's pizza and textures made during play (NOTES 82)
+
+The heaviest Event view the headset logged (at (-21, -5), 52-58 fps, 435-445 draws) reproduces headless at headset
+field of view facing 225 degrees: 378-388 draws, 629k triangles (`draw_calls.js --event --at "-21,-5" --yaws 8`).
+Of those, 56 were the Event's pizza: eight stacks of boxes round the garden and the pie (box, lid and eight slices of
+four parts), built after the batcher ran, each part its own draw. P20 splits each stacked box into its card faces and
+printed top and batches both groups: 378 -> 324 draws in that view (run-to-run, the batches drawn vary 75-108 with
+where the creatures stand), with identical pixels (`opt_identity.js`: 92 Event views, 1,108 fewer draws).
+
+| Tried | Result |
+| --- | --- |
+| P20: the pizza batched | 378 -> 324 draws in the heaviest view; identical pixels. Kept |
+| The batcher's part limit 27 -> 33 (the uniform budget leaves 65 rows) | 382 -> 377 draws; some views more triangles (bigger batches cull worse). Dropped |
+
+What is left in that view: about 100 batches, 90 creature parts (Gooward alone 30, 26 of them translucent), 36
+one-off parts of the garden's central group (each with its own texture, the closed texture-array question), and the
+church, Mama Gorbo, Glyph, Mushroom and Anomalee parts.
+
+Textures made during play (F-B29, F-B30) cost a hitch each (a canvas drawn and up to 1 MB uploaded in one frame) as
+well as being the flash lead; since 3.15.42 none is made (`texture_census.js`).
+

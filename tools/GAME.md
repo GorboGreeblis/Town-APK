@@ -94,6 +94,10 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   2.8 m apart, face each other and take turns, a goo arc with a "blorp" and a pink heart, eight beats 0.6-0.9 s
   apart; then back to roaming. A meeting is called off (and tried 40 s later) if either is busy, visiting, in a
   vignette, or the Event is on. `test_meet.js`.
+- **The church is a secret room** (the author): the player walks into it through its wall, where the wall is marked with Xs; there is no door. The
+  game's collision tests the player against each building's wall parts (where the church lets the player through)
+  while everyone else meets the whole outline. Inside, only the Ancient's vignettes play. Tools that need the
+  player's reachable area must test with the player's own position object (`occlusion_census.js` does).
 - **Visits and vignettes.** Townsfolk visit each other (`visitPlan`); pairs standing near each other play one of
   90 two-line vignettes (speech bubbles, or Gree-mail tokens flying between them), the Ancient's 12 only inside
   the church. A vignette ends at once if a speaker becomes busy or the player talks to one of them; Sparkakus is

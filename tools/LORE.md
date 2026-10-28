@@ -1,7 +1,7 @@
 # Greeblis Town, Lore Bible (second pass)
 
 Compiled strictly from the game's own text, data and pictures in the current game file, the root
-`index.html` (3.15.41; the same as `tools/uncompressed.html` plus the fixes in FIXES.md, none of which
+`index.html` (3.15.42; the same as `tools/uncompressed.html` plus the fixes in FIXES.md, none of which
 changes a line of story text). Lines are quoted as written. Anything not stated by the game is marked
 *(inference)*. Gaps are listed at the end so the author can fill them.
 
@@ -86,6 +86,8 @@ it is **Zollod** who is shy (the book cures him), the **Gem trade is Gemtoe's**,
   of human culture … ‘Flint Knapping for Beginners’".
 
 ## The Ancient
+
+The church is an intended secret room (author): the player gets in by walking through its wall where it is marked with Xs.
 
 The one character who is not on the town's cast list, and the one the others defer to.
 

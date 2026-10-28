@@ -6,7 +6,8 @@
 //
 // Switches checked: P8 multi-material merge (window.__gtMM), and any later ones registered in OPTS.
 // Views: a town grid at eye height (four headings), an orbit of every multi-material mesh (the garden
-// plots), and the same after the planting Event has laid out its thirteen plots.
+// plots), and the same after the planting Event has laid out its thirteen plots, with an orbit of every
+// pizza box and the pie (P20).
 //
 //   node tools/opt_identity.js [file] [--save] [--no-event]
 const path = require('path');
@@ -26,6 +27,9 @@ const OPTS = [
   { name: 'P12 indexed scenery', expr: 'window.__idIdx(v)', present: '!!window.__idIdx && window.__idIdx.count() > 0' },
   { name: 'P8 multi-material merge', expr: 'window.__gtMM && window.__gtMM.set(v)', present: '!!window.__gtMM' },
   { name: 'P10 matrix cache', expr: 'window.__gtMx && window.__gtMx.set(v)', present: '!!window.__gtMx' },
+  // P20 splits each stacked pizza box (one mesh, two materials) into its five card faces and its printed top, so the
+  // batcher can take them; the switch puts the original boxes back. Views orbit every box and the pie (`spots`).
+  { name: 'P20 pizza boxes split', expr: 'window.__gtPZ && window.__gtPZ.set(v)', present: '!!window.__gtPZ && window.__gtPZ.count() > 0', moreTris: true },
 ];
 (async () => {
   const { expect, note, failures } = reporter();
@@ -71,6 +75,9 @@ const OPTS = [
     for (let x = -half; x <= half; x += (2 * half) / 3) for (let z = -half; z <= south; z += (half + south) / 3) for (let h = 0; h < 4; h++) { const a = h * Math.PI / 2; const eye = new T.Vector3(x, 1.6, z); view(`town (${x.toFixed(0)}, ${z.toFixed(0)}) heading ${h * 90}`, eye, eye.clone().add(new T.Vector3(Math.sin(a) * 6, -0.8, Math.cos(a) * 6))); }
     const mm = []; C.traverse((o) => { if (o.isMesh && Array.isArray(o.material) && o.visible) mm.push(o); });
     for (const o of mm) { const c = o.getWorldPosition(new T.Vector3()); for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.4; view(`multi-material mesh at (${c.x.toFixed(1)}, ${c.z.toFixed(1)}) angle ${k * 90}`, new T.Vector3(c.x + Math.cos(a) * 2.2, c.y + 1.4, c.z + Math.sin(a) * 2.2), c); } }
+    // spots a fix publishes (P20: every pizza box and the pie, laid out in the Event), orbited closer
+    const spots = (() => { try { return (window.__gtPZ && window.__gtPZ.where()) || []; } catch (e) { return []; } })();
+    for (const [x, y, z] of spots) { const c = new T.Vector3(x, y, z); for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.4; view(`pizza at (${x.toFixed(1)}, ${z.toFixed(1)}) angle ${k * 90}`, new T.Vector3(x + Math.cos(a) * 1.3, y + 1.0, z + Math.sin(a) * 1.3), c); } }
     O.xr.enabled = xrWas; O.setRenderTarget(rtWas);
     return { label, views, stats, mm: mm.length };
   }, { label, opt, save });
