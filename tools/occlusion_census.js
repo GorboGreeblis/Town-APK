@@ -62,18 +62,18 @@ async function prepare(page, state) {
     if (D.st) add(D.st.group); if (slug) add(slug.group); add(D.At); add(D.B); if (D.B && D.B.parent) add(D.B.parent);
     if (D.ue && D.ue.courier && D.ue.courier.group) add(D.ue.courier.group);
     const shown = (o) => { for (let p = o; p; p = p.parent) if (p.visible === false) return false; return true; };
-    const list = [], seenKeys = {}, v = new T.Vector3(), box = new T.Box3(), sph = new T.Sphere();
+    const list = [], seenKeys = {}, v = new T.Vector3(), box = new T.Box3(), sz = new T.Vector3();
     C.traverse((o) => {
       if (!(o.isMesh || o.isPoints || o.isLine || o.isSprite) || skip.has(o) || o.frustumCulled === false) return;
       if (D.gcEB.root && o.parent === D.gcEB.root) return;   // the batch meshes themselves (their parts are judged)
       if (!shown(o) && !(o.layers.mask === (1 << 31))) return;
-      box.setFromObject(o); if (box.isEmpty()) return; box.getCenter(v); box.getBoundingSphere(sph);
+      box.setFromObject(o); if (box.isEmpty()) return; box.getCenter(v); box.getSize(sz);
       const geo = o.geometry, pos = geo && geo.attributes && geo.attributes.position;
       const tris = pos ? Math.floor((geo.index ? geo.index.count : pos.count) / 3) : 0;
       let k = `${o.type}|${v.x.toFixed(2)}|${v.y.toFixed(2)}|${v.z.toFixed(2)}|${tris}`;
       seenKeys[k] = (seenKeys[k] || 0) + 1; if (seenKeys[k] > 1) k += '#' + seenKeys[k];
       const where = []; for (let p = o; p && p !== C && where.length < 4; p = p.parent) where.push(p.name || p.type);
-      list.push({ o, key: k, c: [v.x, v.y, v.z], r: Math.max(0.05, sph.radius), tris, batched: o.layers.mask === (1 << 31), where: where.join(' < ') });
+      list.push({ o, key: k, c: [v.x, v.y, v.z], r: Math.max(0.05, sz.length() / 2), tris, batched: o.layers.mask === (1 << 31), where: where.join(' < ') });
     });
     // occlusion queries around every judged draw (only while a census render runs)
     const S = window.__occ = { list, reach, seen: new Set(), pending: [], on: false, only: null };
