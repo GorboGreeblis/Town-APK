@@ -125,6 +125,33 @@ EXPERIMENTS["noswap"] = [(a, b.replace('"flashlog experiment; ', '"noswap experi
     "quality:[1.2,1.1,1,1,1],foveation:[0,0,0,.5,1],sosScale:.82,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:30,evScale:.9,evFps:62,evFrames:216,ev2Scale:.82,",
     "quality:[1,1,1,1,1],foveation:[0,0,0,.5,1],sosScale:1,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:0,evScale:1,evFps:62,evFrames:216,ev2Scale:1,",
 )]
+# Uploads between frames (NOTES 80): in the noswap run both marked flashes came with new textures (one, then five)
+# and no swap, no long frame and, for the first, no mid-frame hazard at all: uploading a texture before the frame
+# draws (the F-B26 fix) is not enough on the headset, it must not happen inside the XR frame at all. The flash
+# diagnostics above, and: during multiview play a texture marked for upload is held back (three.js keeps drawing
+# its old content for that frame) and uploaded in a separate task right after the frame is submitted; for that one
+# frame, an object whose texture has never been uploaded is skipped instead of drawn with no texture (a new label
+# shows one frame, about 14 ms, later). Each batch uploaded between frames is logged.
+EXPERIMENTS["deferupload"] = [(a, b.replace('"flashlog experiment; ', '"deferupload experiment; ')) for a, b in EXPERIMENTS["flashlog"]] + [(
+    'var ok = !!(shim && shim.begin(f)); try { cb(tm, f); } finally { if (ok) shim.end(); } }',
+    'X.xrFrameOpen = true; var ok = !!(shim && shim.begin(f)); try { cb(tm, f); } finally { if (ok) shim.end(); X.xrFrameOpen = false; if (X.afterFrame) X.afterFrame(); } }',
+), (
+    'set: function (v) { d.set.call(this, v); if (v === true) dirty.add(this); } }); X.mvHook = true; }',
+    'set: function (v) { if (v === true && X.mvActive && X.deferUp) { X.deferUp(this); return; } d.set.call(this, v); if (v === true) dirty.add(this); } }); X.mvHook = true;'
+    ' var held = new Set(), fresh = new Set(), sched = false, logged = 0;'
+    ' X.deferUp = function (t) { held.add(t); try { if (!r.properties.get(t).__webglTexture) fresh.add(t); } catch (e) {} if (!X.xrFrameOpen) X.afterFrame(); };'
+    ' X.afterFrame = function () { if (!held.size || sched) return; sched = true; setTimeout(function () { sched = false; if (X.xrFrameOpen) { X.afterFrame(); return; }'
+    ' var n = 0, sz = []; held.forEach(function (t) { try { d.set.call(t, true); if (t.image && !t.isVideoTexture) { r.initTexture(t); n++; if (sz.length < 6) sz.push((t.image.width || 0) + "x" + (t.image.height || 0) + (fresh.has(t) ? " new" : "")); } } catch (e) {} });'
+    ' held.clear(); fresh.clear(); X.mvStats.between = (X.mvStats.between || 0) + n; if (n && logged++ < 300) __gtLog("uploaded " + n + " texture(s) between frames: " + sz.join(", ")); }, 0); };'
+    ' X.freshTex = fresh; }',
+), (
+    'if (pres && X.mvActive) {',
+    'if (pres && X.mvActive) { var hid = null; if (X.freshTex && X.freshTex.size && arguments[0] && arguments[0].traverse) { hid = []; var FT = X.freshTex, MK = ["map", "alphaMap", "emissiveMap", "bumpMap", "normalMap", "specularMap", "lightMap", "aoMap"];'
+    ' arguments[0].traverse(function (o) { if (!o.visible || !o.material) return; var ms = Array.isArray(o.material) ? o.material : [o.material]; for (var i = 0; i < ms.length; i++) for (var j = 0; j < MK.length; j++) if (ms[i][MK[j]] && FT.has(ms[i][MK[j]])) { o.visible = false; hid.push(o); return; } }); }',
+), (
+    '        X.mvInFrame = false;',
+    '        X.mvInFrame = false; if (hid) for (var hi = 0; hi < hid.length; hi++) hid[hi].visible = true;',
+)]
 experiment = None
 _argv = sys.argv[1:]
 if "--experiment" in _argv:

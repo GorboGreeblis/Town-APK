@@ -1248,3 +1248,26 @@ VR-entry fix; each item is for discussion first.
       checked headless: no page errors, the marks logged, no swap in noswap.
       Capture the whole session live: `adb logcat -c`, then
       `adb logcat -s GreeblisServer > run.txt` while playing.
+
+80. **The noswap run: the flashes come with new textures.** In the
+    `noswap` build (no layer swaps at all) the author marked two flashes in
+    the Event and saw more during dance battles and talking to Nextessa.
+    Around the first mark the perf lines show no swap, no long frame and no
+    hazard at all while a frame drew; the only thing that happened was one
+    new texture, uploaded before the frame by the F-B26 fix (`pre` 1129 to
+    1130, `tex` 219 to 220). Around the second, five new textures (and 21
+    geometry uploads during frames). Battles open a new panel texture;
+    Nextessa's visit makes new canvases (her pizza box's lid). Dialogue text,
+    which redraws an existing canvas every few letters, does not flash. So the
+    swaps are not the cause, and uploading a texture before the frame draws is
+    not enough on the headset: the upload is still inside the XR frame, after
+    the headset's image is bound. The `deferupload` experiment keeps every
+    texture upload out of the XR frame: during multiview play a texture
+    marked for upload is held back (its old content drawn for that frame) and
+    uploaded in a separate task right after the frame is submitted; an object
+    whose texture has never been uploaded is skipped for that one frame (a new
+    label shows about 14 ms later). Headless: no page errors, textures
+    uploaded between frames, none inside a frame; every multiview pixel
+    comparison still matches. The two checks of `multiview_check.js` that
+    fail on it are the experiment's own (no pre-frame uploads any more; the
+    widened watch counts geometry uploads), to be updated if it is promoted.
