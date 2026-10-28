@@ -6,9 +6,10 @@
 // tick that exactly one of the two shows, the right one outside the band, and that inside the band it never swaps.
 //
 // The batcher (gcEB): many small static parts are drawn as one mesh per material, each part's world matrix and colour
-// written into a uniform array every frame (a part that is hidden, or whose material, geometry or handedness changed,
+// (and, in the release, its shininess and specular colour: five vec4 a part instead of four) written into a uniform
+// array every frame (a part that is hidden, or whose material, geometry or handedness changed,
 // is dropped back to the normal draw). After every rendered frame of 20 s of play this checks for every part: a
-// batched part (state 1) has exactly its object's world matrix rows and colour in the array; a dropped one has zeros;
+// batched part (state 1) has exactly its object's world matrix rows, colour (and shininess, specular) in the array; a dropped one has zeros;
 // no number is NaN or infinite; and no part is drawn twice (batched and on the normal layer at once).
 //
 //   node tools/test_lod.js [file]
@@ -31,18 +32,23 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
       for (const E of EB.list) {
         const R = E.R && (E.R.value || E.R);
         for (const p of E.P) {
-          const M = 16 * p.slot, f = p.o.matrixWorld.elements;
-          for (let i = 0; i < 16; i++) if (!Number.isFinite(R[M + i])) { out.nonFinite++; break; }
+          const S = p.k ? p.k.length + 1 : 16, M = S * p.slot, f = p.o.matrixWorld.elements;   // 16 floats a part, 20 with shininess/specular
+          for (let i = 0; i < S; i++) if (!Number.isFinite(R[M + i])) { out.nonFinite++; break; }
           if (p.st === 1) {
             out.on++;
             const want = [f[0], f[4], f[8], f[12], f[1], f[5], f[9], f[13], f[2], f[6], f[10], f[14]];
             let bad = false; for (let i = 0; i < 12; i++) if (Math.abs(R[M + i] - want[i]) > 1e-6 * Math.max(1, Math.abs(want[i]))) bad = true;
             const c = p.o.material.color; if (c && (Math.abs(R[M + 12] - c.r) > 1e-6 || Math.abs(R[M + 13] - c.g) > 1e-6 || Math.abs(R[M + 14] - c.b) > 1e-6)) bad = true;
+            if (S === 20) {
+              const mt = p.o.material, sp = mt.specular, sh = mt.shininess === undefined ? 1 : Math.max(mt.shininess, 1e-4);
+              const w2 = [sh, sp ? sp.r : 0, sp ? sp.g : 0, sp ? sp.b : 0];
+              for (let i = 0; i < 4; i++) if (Math.abs(R[M + 15 + i] - w2[i]) > 1e-5 * Math.max(1, Math.abs(w2[i]))) bad = true;
+            }
             if (bad) { out.badRows++; if (out.examples.length < 3) out.examples.push((p.o.name || p.o.type) + ' rows differ'); }
             if (p.o.layers.mask !== (1 << 31)) { out.twice++; if (out.examples.length < 3) out.examples.push((p.o.name || p.o.type) + ' batched but on layer mask ' + p.o.layers.mask); }
           } else {
             out.off++;
-            if (p.st === 0) { for (let i = 0; i < 16; i++) if (R[M + i] !== 0) { out.badZero++; if (out.examples.length < 3) out.examples.push((p.o.name || p.o.type) + ' dropped but not zeroed'); break; } }
+            if (p.st === 0) { for (let i = 0; i < S; i++) if (R[M + i] !== 0) { out.badZero++; if (out.examples.length < 3) out.examples.push((p.o.name || p.o.type) + ' dropped but not zeroed'); break; } }
           }
         }
       }
@@ -56,7 +62,7 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
   });
   note(`batcher: ${bat.meshes} batch meshes, ${bat.parts} parts, ${bat.frames} frames checked; part-frames batched ${bat.on}, dropped ${bat.off}` + (bat.examples.length ? '; ' + bat.examples.join(' | ') : ''));
   expect('the batcher is on and frames were checked', bat.meshes > 0 && bat.frames >= 30, JSON.stringify({ meshes: bat.meshes, frames: bat.frames }));
-  expect('every batched part has exactly its object\'s world matrix and colour in the array, every frame', bat.badRows === 0, String(bat.badRows));
+  expect('every batched part has exactly its object\'s world matrix, colour, shininess and specular in the array, every frame', bat.badRows === 0, String(bat.badRows));
   expect('every dropped part is zeroed in the array (so the batch mesh does not draw it)', bat.badZero === 0, String(bat.badZero));
   expect('no NaN or infinite number in any batch array', bat.nonFinite === 0, String(bat.nonFinite));
   expect('no part is drawn twice (batched and on the normal layer)', bat.twice === 0, String(bat.twice));
@@ -82,7 +88,7 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
       if (m && f) out.both++; if (!m && !f) out.none++;
       if (dd < 61.5 && !m) { out.wrongNear++; if (out.examples.length < 3) out.examples.push(`coarse at ${dd.toFixed(1)} m`); }
       if (dd > 66.5 && m) { out.wrongFar++; if (out.examples.length < 3) out.examples.push(`full at ${dd.toFixed(1)} m`); }
-      if (m !== prev) { (m ? out.swapsIn : out.swapsOut).push(+dd.toFixed(1)); if (dd > 62.5 && dd < 65.5) out.flips++; }
+      if (m !== prev && k > 0) { (m ? out.swapsIn : out.swapsOut).push(+dd.toFixed(1)); if (dd > 62.5 && dd < 65.5) out.flips++; }
       prev = m;
     }
     return out;
@@ -91,7 +97,7 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
   expect('there are kiosks with a far model', lod.items > 0, String(lod.items));
   expect('exactly one of the two models shows at every step', lod.both === 0 && lod.none === 0, JSON.stringify({ both: lod.both, none: lod.none }));
   expect('the full model within 62 m, the coarse one beyond 66 m', lod.wrongNear === 0 && lod.wrongFar === 0, JSON.stringify({ wrongNear: lod.wrongNear, wrongFar: lod.wrongFar }));
-  expect('one swap each way, at the band\'s edges (out near 66 m, in near 62 m), none inside it', lod.swapsOut.length === 1 && lod.swapsIn.length === 1 && lod.flips === 0 && lod.swapsOut[0] >= 65 && lod.swapsIn[0] <= 63, JSON.stringify({ out: lod.swapsOut, in: lod.swapsIn, flips: lod.flips }));
+  expect('one swap each way, at the band\'s edges (out at 66-68.5 m, in at 59.5-62.5 m: the game checks four times a second, the walk steps 1 m), none inside it', lod.swapsOut.length === 1 && lod.swapsIn.length === 1 && lod.flips === 0 && lod.swapsOut[0] >= 65.5 && lod.swapsOut[0] <= 68.5 && lod.swapsIn[0] >= 59.5 && lod.swapsIn[0] <= 62.5, JSON.stringify({ out: lod.swapsOut, in: lod.swapsIn, flips: lod.flips }));
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   await g.close();
   console.log(failures.length ? `LOD TEST FAILED (${failures.length})` : 'LOD TEST PASSED');
