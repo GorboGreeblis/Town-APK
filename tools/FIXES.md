@@ -14,8 +14,8 @@ author's rules (tools/RULES.md). NOTES numbers point to tools/NOTES.md.
 
 ## Entry edits (9 blocks)
 
-The head script and boot changes that launch the game straight into VR (RELEASE.md 6: any change here
-ships first as an experiment APK).
+The head script and boot changes that launch the game straight into VR (RELEASE.md 6; since 2026-10-28 changes go
+straight into the main build, RULES.md 22).
 
 - **1** (1 edit): Head script: request the VR session immediately on the Quest Browser (the immersive activity
 accepts a page request without a press; it never sends sessiongranted for a fresh launch, see NOTES
@@ -438,6 +438,26 @@ tossed in a townsfolk text exchange (goo, a card, a tile, a coin) was painted th
 mid-play; F-B30 had missed it because only some exchanges toss items. Now it is painted while loading and handed to
 the loading warm-up's upload list (`__gtPreTex`, marked to keep) like Montgummery's faces. Same canvas, same drawing:
 nothing drawn differently. Found by the 3.15.45 standard pass (`texture_census.js`).
+
+- **F-B33** (3.15.47; the author: "when the Event is activated for the first time, it's possible that some quick flash
+happens at that moment"): a hitch at the moment the Event starts. Starting the Event clears the cached ground-fit
+footprint of every participant, every stationary creature and the player and computes them all again in that one
+frame; the expensive part, scanning each body part's vertices for its extreme points along a fixed set of directions, depends
+only on the geometry, which has not changed. The scan is now cached per vertex buffer (and done again only if the
+buffer's version changes) and done for every creature while loading; what depends on the pose at the start (the
+parts' heights and the resting low point) is still computed at the start, as before. Headless, the Event's activation
+took 434 ms, now 67 ms. Proof: at the Event start, all 702 cached parts of the 14 footprints equal a fresh scan bit for
+bit, so every creature stands exactly as before. `event_start_check.js` (standard tier) also checks the Event's first
+start for the known flash causes inside a frame (none were found: no texture, framebuffer or pixel work, no shader
+compile, no layer swap).
+
+- **P23** (3.15.47; T16, the Event's frame rate; the author: performance "still required to pass submission", "push
+changes right to the main build"; NOTES 90): the batcher takes scenery parts up to 60,000 vertices instead of 4,000,
+so the large garden and park meshes that share a material join batches. Headless, on the author's path from the ring
+back to the dance floor (6 points, 8 headings, headset field of view, multiview): 144 -> 134 draws a view on average,
+heaviest 402 -> 380, for 290k -> 318k triangles (+10%: a batch is drawn whole when any of its parts is in view). The
+Event has followed draw calls on the headset (NOTES 79); the author's run of this build says whether the trade pays.
+Batching draws the same triangles with the same materials (`opt_identity.js` proves batched against unbatched pixels).
 
 ## Multiview (release path since 3.15.34)
 

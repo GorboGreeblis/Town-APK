@@ -1428,3 +1428,30 @@ VR-entry fix; each item is for discussion first.
       from elsewhere, no page errors; a desktop browser gets the Quest note.
     - **Wired in**: `build.sh` minifies first and builds the compressed version after the APK; quick tier and the
       pre-commit hook check both; `test_compressed.js` joins every tier but quick.
+90. **The author's 3.15.46 run; the Event's first start (F-B33); the stepped-back Event view (3.15.47).** The author:
+    the full-screen flashes look fixed; "when the Event is activated for the first time, it's possible that some quick
+    flash happens at that moment"; performance is better but drops below 60 fps "when moving from the ring backwards
+    to the dance floor" (to have the garden, the dancers and the Event in view); performance is still required to
+    pass submission. **The log** (PowerShell, UTF-16) held only the last 30 s of the session and one game line: `adb
+    logcat -d` dumps a ring buffer a ten-minute session overruns. The headset runtime's own lines survived (`VrApi
+    FPS=`, once a second): the browser process ran 64-73 fps in its last 30 s, 12 s under 72, none under 60.
+    `perf_log.js` now reads those lines too, and HEADSET_DIAG.md says to capture live (`adb logcat -c`, then
+    `adb logcat -v threadtime -s GreeblisServer VrApi > run.txt` while playing). **The Event's first start**
+    (`event_start_check.js`, new, standard tier): no texture, framebuffer or pixel work and no shader compile inside a
+    frame, no layer swap; foveation goes to full in one step (the Event's lock, F-B31); and the start's frame was
+    the longest around it, 434 ms headless. Profiled: the Event's start clears and recomputes every participant's
+    ground-fit footprint, scanning every body part's vertices in that frame (`addFood`). F-B33 caches the scans per
+    vertex buffer and does them while loading: the activation 434 -> 67 ms headless, every footprint bit-identical
+    (702 parts against fresh scans at the start). **The stepped-back view**: the dance floor is the strip at x = -27
+    (z -3 to 22: Etcher, Glyph, Montgummery); the ring is the Event's participants round the garden centre (within
+    8 m). Along the path (6 points, 8 headings, headset field of view, multiview): 240-402 draws and 510-650k
+    triangles facing the garden; the heaviest (-25, 12) facing 270 degrees, 402 draws. Of the unbatched draws the
+    largest set is the garden/park group's big meshes that share one material but exceed the batcher's 4,000-vertex
+    cap (`draw_calls.js` labels them "lone signature" because it prints the indexed vertex count; the batcher reads
+    the original count, `gcN`). Cap 60,000: 144 -> 134 draws a view on average, heaviest 402 -> 380, for 290k -> 318k
+    triangles (+10%). The author: "no A/B experiments: push changes right to the main build" (RULES.md 22): applied
+    as P23 in 3.15.47; the author's run says whether fewer draws for more triangles pays. **CPU in that view** (headless, per frame of 24.8 ms): three.js render 20 ms inclusive
+    (uniform uploads 4 ms, mostly the software GPU's per-call cost: each batch draw uploads its own part rows, already
+    sized to its parts, because batches share a program), the scene's matrix walk 2.6-3.4 ms, the batcher's pass
+    2.2 ms, culling 1.8 ms. Tried and reverted: memoising the batcher's per-part visibility walk per frame (parents
+    shared by many parts) made the pass slower, 2.12 -> 2.45 ms (new properties on thousands of three.js objects).

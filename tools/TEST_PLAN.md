@@ -175,6 +175,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | The compressed version unpacks to the game file exactly | `build_compressed.js --check` (quick tier, pre-commit hook; every build unpacks again too) | done (3.15.45, NOTES 89) |
 | The compressed version works as a Bitcoin ordinal: alone, under the ordinal content policy; LOADING, unpacks, boots, enters VR, no outside requests, no errors, under 390,000 bytes; desktop note | `test_compressed.js` (every tier but quick) | done (3.15.45) |
 | The game file is fully minified; the minified game builds the same world as before | `minify_game.js --check` (quick tier, pre-commit hook); `minify_identity.js` (report, after a minification) | done (3.15.45, NOTES 89) |
+| The Event's first start: no texture, framebuffer or pixel work or shader compile inside a frame, no layer swap; the longest frame around it reported | `event_start_check.js` (standard tier; F-B33) | done (3.15.47, NOTES 90) |
 | Every experiment variant still applies to the game file | `experiment.py --check` (quick tier) | done |
 
 ## Latest results (newest first, headless harness)

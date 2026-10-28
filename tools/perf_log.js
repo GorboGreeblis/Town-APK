@@ -4,7 +4,8 @@
 // levels, and verdicts against the target (72 fps, the headset's refresh rate: the author's aim) and the
 // Store's floor (60 fps, VRC.Quest.Performance.1).
 //
-//   adb logcat -d -s GreeblisServer > run.txt      (on the computer the headset is plugged into)
+//   adb logcat -c; adb logcat -v threadtime -s GreeblisServer VrApi > run.txt   (live, while playing; Ctrl+C after)
+//   (`adb logcat -d` dumps a ring buffer that a long session overruns: only its last minutes survive)
 //   node tools/perf_log.js run.txt
 // A log saved by Windows PowerShell (UTF-16) is read as well. Each reading carries the render scale in force at the
 // time (from the layer lines), the layer swaps are listed with their times, and the limiter is named from the
@@ -25,7 +26,28 @@ swaps.sort((a, b) => a.ms - b.ms);
 // a swap logs twice (the new layer live, then the old one dropped a frame or two later): keep one
 for (let i = swaps.length - 1; i > 0; i--) if (swaps[i].scale === swaps[i - 1].scale && swaps[i].ms - swaps[i - 1].ms < 2000) swaps.splice(i, 1);
 for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w of swaps) if (w.ms <= r.ms) sc = w.scale; r.scale = sc; }
-if (!rows.length) { console.log('no perf lines found (needs a 3.15.27 or later build; the line reads "page: m=perf fps=...")'); process.exit(1); }
+// The headset runtime's own line, once a second per XR app ("VrApi : FPS=66/72,...,Stale=8,..."): it survives when the
+// game's lines do not, and it counts every second, not one in ten. The game runs in the browser's process: the one that
+// also logs Chromium lines.
+{
+  const vr = {}, chrome = new Set(); let v;
+  const rv = /^\d+-\d+ (\d+):(\d+):(\d+)\.\d+\s+(\d+)\s+\d+ \w VrApi\s*: FPS=(\d+)\/(\d+),.*?Stale=(\d+)/gm;
+  while ((v = rv.exec(text))) (vr[v[4]] = vr[v[4]] || []).push({ t: v[1] + ':' + v[2] + ':' + v[3], fps: +v[5], hz: +v[6], stale: +v[7] });
+  const rc = /^\d+-\d+ [\d:.]+\s+(\d+)\s+\d+ \w (?:chromium|cr_\w+)/gm; while ((v = rc.exec(text))) chrome.add(v[1]);
+  for (const [pid, list] of Object.entries(vr)) {
+    const f = list.map((x) => x.fps).sort((a, b) => a - b), st = list.reduce((a, x) => a + x.stale, 0);
+    const u60 = list.filter((x) => x.fps < 60), uhz = list.filter((x) => x.fps < x.hz - 1);
+    console.log(`headset runtime (VrApi), process ${pid}${chrome.has(pid) ? ' (the browser: the game)' : ''}: ${list.length} s from ${list[0].t} to ${list[list.length - 1].t}; ` +
+      `${f[0]}-${f[f.length - 1]} fps (median ${f[Math.floor(f.length / 2)]}), refresh ${[...new Set(list.map((x) => x.hz))].join('/')} Hz; ` +
+      `${uhz.length} s under the refresh rate, ${u60.length} s under 60${u60.length ? ' (' + u60.map((x) => x.t + ' ' + x.fps).slice(0, 8).join(', ') + ')' : ''}; ${st} stale frames`);
+  }
+}
+if (!rows.length) {
+  console.log('no perf lines found (needs a 3.15.27 or later build; the line reads "page: m=perf fps=...").');
+  console.log('If the game ran, the log lost them: `adb logcat -d` dumps a ring buffer that a long session overruns. Capture live instead');
+  console.log('(HEADSET_DIAG.md): adb logcat -c, then adb logcat -v threadtime -s GreeblisServer VrApi > run.txt while playing.');
+  process.exit(1);
+}
 const stats = (list) => { const f = list.map((r) => r.fps).sort((a, b) => a - b); return { n: f.length, min: f[0], p10: f[Math.floor(f.length * 0.1)], median: f[Math.floor(f.length / 2)], max: f[f.length - 1] }; };
 const town = rows.filter((r) => !r.event), ev = rows.filter((r) => r.event);
 console.log(`${rows.length} readings (one every 10 s): ${town.length} in the town, ${ev.length} in the planting Event`);
@@ -40,7 +62,7 @@ const comp = (text.match(/shader program\(s\) compiled during play/g) || []).len
 if (town.length) console.log(`  town:  ${JSON.stringify(stats(town))}`);
 if (ev.length) console.log(`  Event: ${JSON.stringify(stats(ev))}`);
 const levels = {}; for (const r of rows) levels[r.level] = (levels[r.level] || 0) + 1;
-console.log(`  governor levels (0-1 supersampled, 2 native, 3-4 foveated): ${JSON.stringify(levels)}`);
+console.log(`  governor levels (all native scale since 3.15.43; 3-4 foveated): ${JSON.stringify(levels)}`);
 const low = rows.slice().sort((a, b) => a.fps - b.fps).slice(0, 5);
 console.log('  lowest readings:');
 for (const r of low) console.log(`    ${r.fps} fps at (${r.x}, ${r.z})${r.event ? ' during the Event' : ''}, level ${r.level}${r.scale ? ', scale ' + r.scale : ''}, ${r.calls} calls, ${r.tris} triangles`);

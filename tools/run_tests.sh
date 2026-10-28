@@ -79,6 +79,7 @@ if [ "$TIER" != quick ]; then
   run "warm-up coverage: every lit material has its shaders for every light state the game can reach (P19 frame check)" node "$ROOT/tools/warm_coverage.js" "$ASSET"
   run "standalone: the game runs on its own (nothing from the web, no extras); every pre-painted texture in tex/ is what the game paints (RULES.md 2)" node "$ROOT/tools/test_standalone.js" "$ASSET"
   run "compressed version: works as a Bitcoin ordinal (alone, under the ordinal content policy; unpacks, boots, enters VR) (RULES.md 20)" node "$ROOT/tools/test_compressed.js"
+  run "the Event's first start: no texture, framebuffer or pixel work or shader compile inside a frame, no layer swap (F-B33)" node "$ROOT/tools/event_start_check.js" "$ASSET"
   run "texture census: no texture is made during play (emotes, faces, bubbles, pizza: the flash causes, F-B29/F-B30)" node "$ROOT/tools/texture_census.js" "$ASSET"
   run "quality governor: levels change foveation only, never the layer (F-B31); the Event locks the lowest level" env GT_DEVICE=quest3s node "$ROOT/tools/test_governor.js" "$ASSET"
   run "game content: gifts, talk order, shyness, bribe, outfits, battles, the Ancient, the robin, Event lines, Backpacka" node "$ROOT/tools/test_content.js" "$ASSET"

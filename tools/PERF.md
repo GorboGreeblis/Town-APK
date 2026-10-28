@@ -426,3 +426,10 @@ between flights (a hidden object costs nothing). Every other object is seen from
 **Open lever** (NOTES 84): the batcher refuses scenery parts over 4,000 vertices, so nine large garden meshes that
 share one material draw on their own; raising the cap to 60,000 saves 13 draws in the heaviest Event view for 16k
 more triangles (+2.6%). The comparison over many views is still to do.
+
+**3.15.47 (NOTES 90).** The author's 3.15.46 run: below 60 fps when moving from the ring back to the dance floor
+(x = -27). Headless along that path: 240-402 draws, 510-650k triangles facing the garden. P23 raises the batcher's
+scenery cap to 60,000 vertices: 144 -> 134 draws a view, heaviest 402 -> 380, +10% triangles. F-B33 removes the
+Event-start hitch (434 -> 67 ms headless). CPU per frame there, headless: three.js render 20 of 24.8 ms (its uniform
+uploads mostly the software GPU's cost), matrix walk 2.6-3.4 ms, the batcher's pass 2.2 ms, culling 1.8 ms; a
+memoised visibility walk in the batcher's pass was slower (2.12 -> 2.45 ms) and reverted.
