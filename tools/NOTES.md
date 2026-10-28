@@ -1271,3 +1271,23 @@ VR-entry fix; each item is for discussion first.
     comparison still matches. The two checks of `multiview_check.js` that
     fail on it are the experiment's own (no pre-frame uploads any more; the
     widened watch counts geometry uploads), to be updated if it is promoted.
+
+81. **The deferupload run, and the panels' three canvases.** The author's
+    deferupload run still showed flashes (one marked in the log's window,
+    1.7 s after the Event's layer swap to 0.82, the old layer destroyed
+    0.1 s after it), and a new glitch: in dance battles and the interact
+    menu, quick presses and hovers made the window flash between states.
+    The second was the experiment's own: every VR panel (battle, dialogue,
+    menu, wrist HUD) paints into the next of three canvases and swaps it in
+    at once; with the upload held back a frame, the swapped-in canvas still
+    held what it showed two redraws earlier. Fixed in the experiment: a
+    panel keeps its last uploaded canvas and swaps to the new one once that
+    is uploaded; a headless probe drives bursts of three redraws per frame
+    on the battle panel and the menu and checks the generation on screen
+    never goes back (0 of 173 frames; the newest shows at the end). The two
+    flash causes now each have one run behind them: new textures uploaded
+    inside a frame (noswap run) and layer swaps (this run). The `deferswap`
+    experiment has both changes (no upload inside a frame, no swap) and an
+    upload log that no longer runs out (the wrist HUD's routine uploads used
+    up its 300 lines early). Frame rate: this Event drew 408-445 calls at
+    52-58 fps, more than earlier runs, still following the draw calls.

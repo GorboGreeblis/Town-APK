@@ -131,7 +131,11 @@ EXPERIMENTS["noswap"] = [(a, b.replace('"flashlog experiment; ', '"noswap experi
 # diagnostics above, and: during multiview play a texture marked for upload is held back (three.js keeps drawing
 # its old content for that frame) and uploaded in a separate task right after the frame is submitted; for that one
 # frame, an object whose texture has never been uploaded is skipped instead of drawn with no texture (a new label
-# shows one frame, about 14 ms, later). Each batch uploaded between frames is logged.
+# shows one frame, about 14 ms, later). The VR panels (battle, dialogue, menu, wrist HUD) paint into the next of
+# three canvases and swap it in at once; a held canvas still holds what it showed two redraws earlier, so the panel
+# keeps its last uploaded canvas and swaps to the new one only once that is uploaded (the author saw the battle's
+# previous progress bar flicker on quick hovers in the first deferupload build). Each batch uploaded between frames
+# is logged.
 EXPERIMENTS["deferupload"] = [(a, b.replace('"flashlog experiment; ', '"deferupload experiment; ')) for a, b in EXPERIMENTS["flashlog"]] + [(
     'var ok = !!(shim && shim.begin(f)); try { cb(tm, f); } finally { if (ok) shim.end(); } }',
     'X.xrFrameOpen = true; var ok = !!(shim && shim.begin(f)); try { cb(tm, f); } finally { if (ok) shim.end(); X.xrFrameOpen = false; if (X.afterFrame) X.afterFrame(); } }',
@@ -141,9 +145,13 @@ EXPERIMENTS["deferupload"] = [(a, b.replace('"flashlog experiment; ', '"deferupl
     ' var held = new Set(), fresh = new Set(), sched = false, logged = 0;'
     ' X.deferUp = function (t) { held.add(t); try { if (!r.properties.get(t).__webglTexture) fresh.add(t); } catch (e) {} if (!X.xrFrameOpen) X.afterFrame(); };'
     ' X.afterFrame = function () { if (!held.size || sched) return; sched = true; setTimeout(function () { sched = false; if (X.xrFrameOpen) { X.afterFrame(); return; }'
-    ' var n = 0, sz = []; held.forEach(function (t) { try { d.set.call(t, true); if (t.image && !t.isVideoTexture) { r.initTexture(t); n++; if (sz.length < 6) sz.push((t.image.width || 0) + "x" + (t.image.height || 0) + (fresh.has(t) ? " new" : "")); } } catch (e) {} });'
+    ' var n = 0, sz = []; held.forEach(function (t) { try { d.set.call(t, true); if (t.image && !t.isVideoTexture) { r.initTexture(t); if (t.__swapTo) { t.__swapTo.map = t; t.__swapTo = null; } n++; if (sz.length < 6) sz.push((t.image.width || 0) + "x" + (t.image.height || 0) + (fresh.has(t) ? " new" : "")); } } catch (e) {} });'
     ' held.clear(); fresh.clear(); X.mvStats.between = (X.mvStats.between || 0) + n; if (n && logged++ < 300) __gtLog("uploaded " + n + " texture(s) between frames: " + sz.join(", ")); }, 0); };'
-    ' X.freshTex = fresh; }',
+    ' X.freshTex = fresh;'
+    ' X.deferMap = function (m, t) { if (!held.has(t)) return false; t.__swapTo = m; return true; }; X.heldTex = held; }',
+), (
+    'l.needsUpdate=!0,c.material.map=l,h.redraws++',
+    'l.needsUpdate=!0,window.__gtXR&&window.__gtXR.deferMap&&window.__gtXR.deferMap(c.material,l)||(c.material.map=l),h.redraws++',
 ), (
     'if (pres && X.mvActive) {',
     'if (pres && X.mvActive) { var hid = null; if (X.freshTex && X.freshTex.size && arguments[0] && arguments[0].traverse) { hid = []; var FT = X.freshTex, MK = ["map", "alphaMap", "emissiveMap", "bumpMap", "normalMap", "specularMap", "lightMap", "aoMap"];'
@@ -152,6 +160,10 @@ EXPERIMENTS["deferupload"] = [(a, b.replace('"flashlog experiment; ', '"deferupl
     '        X.mvInFrame = false;',
     '        X.mvInFrame = false; if (hid) for (var hi = 0; hi < hid.length; hi++) hid[hi].visible = true;',
 )]
+# Both (NOTES 81): no texture upload inside a frame (deferupload) and no layer swap (noswap). The deferupload run's one
+# mark came 1.7 s after the Event's swap to 0.82; the noswap run's marks came with new textures. If this build is
+# clean, both were causes. Its upload log line is not capped (the HUD's routine uploads used up the 300 lines).
+EXPERIMENTS["deferswap"] = [(a, b.replace('"deferupload experiment; ', '"deferswap experiment; ').replace('if (n && logged++ < 300) __gtLog(', 'if (n && (logged++ < 300 || sz.some(function (z) { return z.indexOf("new") >= 0; }))) __gtLog(')) for a, b in EXPERIMENTS["deferupload"]] + [p for p in EXPERIMENTS["noswap"] if p not in EXPERIMENTS["flashlog"] and "noswap experiment" not in p[1]]
 experiment = None
 _argv = sys.argv[1:]
 if "--experiment" in _argv:
