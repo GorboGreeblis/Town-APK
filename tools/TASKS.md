@@ -7,23 +7,38 @@ Living list. Done items move to the bottom with the date. Bugs live in
 
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
-| T3 | Headset run of the release (3.15.41): no flashes (F-B26), the Event in OVR Metrics, the Speech after a pizza call (P19's case), quit cleanly | open, author | `RELEASE.md` section 3, `RENDERING.md` section 6 |
-| T4 | Store upload: 3.15.41 to the Alpha channel, then the age group (13+) on its build page | open, author | `RELEASE.md` sections 4-5; the listing, IARC rating, privacy page and supported devices are done |
-| T8 | Remaining test-plan rows: the dialogue layout test (`test_textfit.js`, written, to run and add to the tier), a 10-minute play rerun on 3.15.41 (`test_soak.js`), the townsfolk's spreading (`ho`; first check it ever runs, since every townsperson has an idle pattern) | in progress | `tools/TEST_PLAN.md` |
-| T9 | Full pass on the final build, with `--resume` | done for 3.15.41 (NOTES 77); again before an upload or after a game change | `TESTING.md` |
-| T10 | Lore Bible: the open questions (the Ancient, Mama W, flint vs acorns, Field Office, sign names) | open, author | `tools/LORE.md` |
+| T16 | **Top priority** (RULES.md "Priorities"; the biggest blocker for the Store submission): the planting Event on the Quest 3S steadily above 60 fps. It is limited by draw calls (NOTES 79); next readings from T3; open lever: the batcher's 4,000-vertex scenery cap | open, after the other open tasks | `PERF.md` sections 12-13 |
+| T3 | Headset run of the latest build (3.15.46): no flashes in a dance battle, speaking to Nextessa, planting or at the Summoning Pillar (F-B29-F-B31), the Event's frame rate in the log (`perf_log.js`), the emote colours, Gooward (P22), the Speech after a pizza call (P19's case), quit cleanly. The 3.15.41 run is done (NOTES 79-81) | open, author | `RELEASE.md` sections 3 and 5, `RENDERING.md` section 6 |
+| T4 | Store upload: 3.15.46 to the Alpha channel, then the age group (13+) on its build page | open, author | `RELEASE.md` section 5; the listing, IARC rating, privacy page and supported devices are done |
+| T17 | Randomness decision list: run `random_census.js` (every `Math.random` call site, by running the game), list what is not already settled (Flint and Blossom spawns, wandering, NPC interactions and chats, the UFO's heading stay random; painted textures seeded, R1) and ask the author before changing any | open (census written, not yet run) | `RULES.md` 5 |
+| T18 | Standard pass on 3.15.45 | running | `TESTING.md`; the quick tier and `test_standalone.js` pass (RELEASE.md 5) |
+| T8 | Remaining test-plan rows: the dialogue layout test (`test_textfit.js`, written, to run and add to the tier), a 10-minute play rerun on the latest build (`test_soak.js`; last recorded in TEST_PLAN.md on 3.15.19), the townsfolk's spreading (`ho`; first check it ever runs, since every townsperson has an idle pattern) | in progress | `tools/TEST_PLAN.md` |
+| T9 | Full pass on the final build, with `--resume` | last done for 3.15.41 (NOTES 77); due for 3.15.45 after T18, before an upload | `TESTING.md` |
 | T15 | Keep the docs and tools current with each change | ongoing | `README.md`, `TESTING.md` |
 
-## Resume point (3.15.41: release; tests for the town's life)
+## Resume point (3.15.45: one game file, rebuildable, minified)
+
+- **3.15.42** (PR #20): no texture made during play (F-B29, F-B30; `texture_census.js`), the Event's pizza batched
+  (P20). **3.15.43** (PR #21): no layer swaps and no uploads inside a frame (F-B31), the Event scale removed
+  (P16-P18), the Ancient left out from outside the church (P21), Gooward's translucent parts merged (P22); the game
+  file `tools/uncompressed.html` is edited directly (NOTES 87). **3.15.44** (PR #22): painted textures seeded (R1),
+  `RULES.md`, `build.sh`, `test_standalone.js`. **3.15.45** (branch `claude/gallant-fermi-pydail`): the game file
+  minified (R2); the compressed version back as a Bitcoin ordinal, `tools/index.compressed.html` (never in the APK).
+- **Running:** the standard pass on 3.15.45 (T18).
+- **Open (author):** T3 (headset run of 3.15.46), T4, T17's decisions.
+- **Then:** T16, Event performance on the Quest 3S (PERF.md 13).
+
+## Earlier resume point (3.15.41: release; tests for the town's life)
 
 - **Release 3.15.41** (root APK, versionCode 41, merged with PR #18): P19 holds the Portal's light off while the
   bulb is lit (F-B28, found by `warm_coverage.js`). Standard and full tiers pass (TEST_PLAN.md); the performance
   report is calibrated to machine speed (NOTES 77, TESTING.md 3).
-- **PR #19** (draft): five tests join the standard tier: roaming, the Mama Gorbo and Gooward meetings, the jazz
+- **PR #19** (merged): five tests join the standard tier: roaming, the Mama Gorbo and Gooward meetings, the jazz
   drums' timing, audio leaks, far detail and the batcher (NOTES 78). `run_tests.sh --resume` survives machine
   restarts. `TESTING.md` is the how-to for running and writing tests.
 - **Event performance: closed** (the author, "let's close out 3"): P16-P18; estimates in PERF.md 11 until the
-  author's next headset run.
+  author's next headset run. *(Since: the 3.15.41 run showed the Event limited by draw calls (NOTES 79), P16-P18 were
+  removed in 3.15.43, and performance is now the top priority, T16.)*
 - **Open (author):** T3, T4, T10.
 
 ## Done
@@ -38,9 +53,14 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D6 | Mushroom fix confirmed: 17/17 return-home scenarios pass at real-time simulation | 2026-10-26 |
 | D7 | Visit system verified: host/visitor visits complete and interrupted (out, meet, back) all end with Mushroom on his desk at height | 2026-10-26 |
 | D8 | Multiview as the release path, flash fix (F-B26), Quest 2 and the original Quest dropped (3.15.33-3.15.34) | 2026-10-27 |
-| D9 | Event performance: P14, P16-P18 (3.15.36-3.15.40); B27 (3.15.35, 3.15.39); closed by the author | 2026-10-27 |
+| D9 | Event performance: P14, P16-P18 (3.15.36-3.15.40; P16-P18 removed in 3.15.43); B27 (3.15.35, 3.15.39); closed by the author, reopened as T16 | 2026-10-27 |
 | D10 | Content, governor, HUD, greeting and warm-up coverage tests; P19 (3.15.41); standard and full tiers pass | 2026-10-28 |
 | D11 | Former T2 (safe release build), T5-T7, T11-T14 (performance and stability passes, the graphical pass, the soak): done across 3.15.11-3.15.41, recorded in TEST_PLAN.md and PERF.md | 2026-10-28 |
+| D12 | The flashes after the 3.15.41 headset run: textures made during play (F-B29, F-B30, `texture_census.js`) and the Event's pizza batched (P20) (3.15.42) | 2026-10-28 |
+| D13 | No layer swaps and no uploads inside a frame (F-B31), the Event scale removed (P16-P18), P21, P22, the occlusion census (nothing to remove); one game file edited directly (3.15.43) | 2026-10-28 |
+| D14 | The game rebuildable from the game file: painted textures seeded (R1), `test_standalone.js`, `build.sh`; `RULES.md` (3.15.44) | 2026-10-28 |
+| D16 | Lore Bible open questions answered by the author (2026-10-28): Mama W, the Field Office, the poster and book names, the eras (Hennrick far past, Nextessa far future), the Consortium (Maltoe and Mushroom), the Ancient (not the Originator), Backpacka (unknown), the mayor (Montgummery, near future); two left open on purpose | `tools/LORE.md` |
+| D15 | The game file minified (R2, `minify_identity.js`); the compressed version as a Bitcoin ordinal (`build_compressed.js`, `test_compressed.js`) (3.15.45) | 2026-10-28 |
 
 ## Earlier resume point (3.15.34: multiview is the release path)
 

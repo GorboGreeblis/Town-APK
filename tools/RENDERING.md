@@ -1,4 +1,4 @@
-# How a frame is drawn (3.15.41)
+# How a frame is drawn (3.15.45)
 
 A map of the render path in the shipped build: what runs, in what order, which file owns it, and the rules
 that keep it fast and flash-free, each with the test that enforces it. Details and history are in NOTES.md
@@ -10,10 +10,10 @@ that keep it fast and flash-free, each with the test that enforces it. Details a
 | --- | --- | --- |
 | Loopback server | `android/.../GameServer` | Serves the one-file game at `http://localhost:17777/` to the Quest Browser's immersive activity; idle after the first transfer. |
 | Entry script | the head script at the top of the game file (FIXES.md, entry edits) | Requests the session early (`sessiongranted`), shows the loader in compositor layers, hands the session to the game when loading ends. Any change here ships first as an experiment APK (RELEASE.md 6). |
-| Layers shim | in the head script of the game file [42, 47] | The game's three.js only knows `baseLayer`, which the `layers` feature forbids. The game gets a facade session whose `baseLayer` is a projection layer; every frame callback is wrapped in `begin(frame)` / `end()`. Layer swaps (render scale changes) insert the new layer behind the old one, so no undrawn frame shows. |
+| Layers shim | in the head script of the game file [42, 47] | The game's three.js only knows `baseLayer`, which the `layers` feature forbids. The game gets a facade session whose `baseLayer` is a projection layer; every frame callback is wrapped in `begin(frame)` / `end()`. The layer is never swapped since 3.15.43 (F-B31; the swap code that kept the old layer in front until the new one was drawn is unused, `maxLayerRebuilds: 0`). |
 | Multiview | in the head script, and the multiview edits to the bundled three.js in the game file [65, 67] | Both eyes in one pass into a texture-array projection layer. The release path since 3.15.34. |
 | Batcher `gcEB` | the game, plus P8-P10, P12 | Merges opaque Phong/Lambert/Basic meshes into batches; per-part transform, colour, shininess and specular live in a uniform array read by a patched vertex shader. |
-| Quality governor `Ge` | the game, plus P1 [47], P16 [72] | Frame-time average against the 72 Hz budget; five levels, render scale [1.2, 1.1, 1, 1, 1] and fixed foveation [0, 0, 0, .5, 1]. The planting Event locks the lowest level from its first frame [71]; in it, under 62 fps for 3 s drops the scale to 0.9, and under 60 fps at 0.9 to 0.82, until the Event ends (P16, P17); a Quest 3 starts the Event at 0.9. Emergency: 0.82 at 1.6x the budget, for the session, unless it fired during the Event, when it ends with the Event (P18). |
+| Quality governor `Ge` | the game, plus P1 [47], F-B31 [83] | Frame-time average against the 72 Hz budget; five levels, all at the native render scale (`quality: [1, 1, 1, 1, 1]`), fixed foveation [0, 0, 0, .5, 1]. The planting Event locks the lowest level from its first frame [71]. Emergency (1.6x the budget): the lowest level's foveation, still at native scale (`sosScale: 1`). Since 3.15.43 (F-B31) only foveation changes, on the same layer; the Event's own scale steps and P18 (P16-P18) were removed. |
 
 ## 2. Boot to first frame
 
@@ -42,13 +42,16 @@ that keep it fast and flash-free, each with the test that enforces it. Details a
 2. Game logic: NPCs, creatures, pickups, the governor. About 2-4 ms headless, roughly three times that on
    the headset (PERF.md 7).
 3. `renderer.render` is wrapped by `mvWrap`:
-   - **Pre-upload.** Every texture marked `needsUpdate` since the last frame is uploaded now, before any
-     draw (`initTexture`). This is the flash fix [67].
+   - **No upload inside the frame.** A texture marked `needsUpdate` during multiview play is held back: three.js
+     draws its old content for this frame, and it is uploaded in a task right after the frame is submitted (an
+     object whose texture was never uploaded is skipped for that one frame). The VR panels paint into the next of
+     three canvases and swap once it is uploaded. Since 3.15.43 (F-B31, [80], [81]); 3.15.34's fix uploaded such
+     textures before the frame's first draw [67]. Since F-B29/F-B30 no texture is made during play at all.
    - **Draw.** three.js draws each object once with the left camera. Multiview programs pick each eye's
      matrices by `gl_ViewID_OVR`. The left eye reads the uniforms three.js always uploads; the right eye
      reads its own model-view, normal, view and projection matrices, computed on the CPU exactly as
      three.js would for that eye. Lights for the right eye are moved in the shader.
-   - **Watch.** While the frame draws (`X.mvInFrame`), the following are counted as hazards:
+   - **Watch.** While the frame draws (the `mvInFrame` flag), the following are counted as hazards:
      - any texture upload, mipmap build or copy;
      - a pixel read or blit;
      - a framebuffer bind other than the shim's own.
@@ -77,13 +80,17 @@ per eye and kept working by the tests below.
 | Multiview and classic draw the same pixels per eye. | Multiview must not change the look. | `multiview_check.js` pixel compare (spawn, town centre, garden, Event). |
 | A performance change that claims no visible change is pixel-identical. | The author's rule: as little visual change as possible. | `opt_identity.js` (on/off switches in the same frame, full tier), `sides_check.js` (P6), `test_bend_exact.js` (P13); `geom_compare.js` by hand when model builders change. |
 | Creature geometry stays non-indexed. | The ground-fit scan samples every 6th vertex; indexing would move the creatures (P12 excludes them). | The `gcIdx` creature exclusion in P12; `geom_compare.js` by hand. |
+| No texture is made during play. | A texture made mid-play is what the flashes came with (F-B29/F-B30, [82]). | `texture_census.js` (standard tier). |
+| The projection layer is never swapped and the render scale stays native; the governor changes foveation only. | The author's rule (RULES.md 10, F-B31). | `test_governor.js` (standard tier). |
 | The shipped copies are the game file. | One source: `tools/uncompressed.html`, edited directly. | `sync_game.py --check` (quick tier, pre-commit hook), `check_apk.sh`. |
+| The game file is fully minified; the compressed version unpacks to it exactly. | The author's rules (RULES.md 19, 20). | `minify_game.js --check`, `build_compressed.js --check` (quick tier, pre-commit hook, `build.sh`); `test_compressed.js`. |
 
 ## 5. Where to change what
 
-Everything is changed in one place, the game file `tools/uncompressed.html` (since 3.15.43, NOTES 87); then
-`python3 tools/sync_game.py` copies it to `index.html` and the APK, and an entry in FIXES.md records the change, its
-ID (B, P, L, D), why, and how it was proven.
+Everything is changed in one place, the game file `tools/uncompressed.html` (since 3.15.43, NOTES 87; minified since
+3.15.45: edit it in place in the same style); then `tools/build.sh --bump` minifies it again, copies it to
+`index.html` and the APK, re-paints `tex/`, raises the version, builds the APK and the compressed version and runs
+the checks, and an entry in FIXES.md records the change, its ID (B, P, L, D, R), why, and how it was proven.
 
 - **A game fix or a performance change**: edit the game file. If it claims no visible change, give it a switch and
   add it to `opt_identity.js`.
@@ -101,8 +108,8 @@ describe the render path:
 
 - `multiview planned (...)` or `multiview not used (...)`, then `gpu: ...`: the decision, the GPU's real
   limits and the device.
-- `projection layer live, scale S, msaa M` and `projection layer swapped to scale ...`: the layer and the
-  governor's scale changes.
+- `projection layer live, scale S, msaa M, multiview true|false`: the layer (scale 1 since 3.15.43). A
+  `projection layer swapped to scale ...` line should never appear since then (F-B31: no swaps).
 - `perf fps=... dev=...`: the frame rate by scene, with the governor level and where the player stood.
 - `multiview: ...`: any hazard or compile during play. There should be none.
 

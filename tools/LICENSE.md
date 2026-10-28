@@ -2,16 +2,23 @@
 
 ## The game file
 
-The game file (`index.html` at the repository root, the same file as
-`tools/android/app/src/main/assets/index.html` inside the APK, built from
-`tools/uncompressed.html`) is dedicated to the public domain under
+The game file (`tools/uncompressed.html`, with its byte copies `index.html` at
+the repository root and `tools/android/app/src/main/assets/index.html` inside
+the APK, written by `sync_game.py`) is dedicated to the public domain under
 **CC0 1.0 Universal**, to the extent possible under law: its game code, art,
 text and sound. The full legal code is below.
 
 **Not covered by that dedication:** the copy of **three.js** bundled inside the
 same file. three.js is © 2010-2021 three.js authors and is used under the MIT
 License, reproduced below. Its notice must stay with every copy of the file; a
-comment at the top of the game file carries it.
+comment at the top of the game file carries it (kept by the minification, FIXES R2).
+
+**The compressed version** (`tools/index.compressed.html`, the Bitcoin ordinal
+built by `build_compressed.js`, RULES.md 20; never in the APK) also contains the
+whole game file, three.js included. Both notices are inside its compressed
+payload and appear once it unpacks to the game file; the readable loader page
+around the payload carries none, and needs none (the author, 2026-10-28: "The License notice is not
+needed in the compressed ordinal version"; RULES.md 20).
 
 ## The Android wrapper
 

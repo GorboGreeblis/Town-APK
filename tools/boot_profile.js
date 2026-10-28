@@ -15,7 +15,7 @@ const fakexr = fs.readFileSync(path.join(__dirname, 'fakexr.js'), 'utf8');
 (async () => {
   let html = fs.readFileSync(file, 'utf8');
   const anchor = 'gcEB.ready=!0;';
-  if (!html.includes(anchor)) throw new Error('anchor not found (use the patched asset)');
+  if (!html.includes(anchor)) throw new Error('anchor not found (not the game file?)');
   html = html.replace(anchor, anchor + 'window.__readyAt=performance.now();');
   const texDir = path.join(root, 'tools/android/app/src/main/assets/tex');
   const server = http.createServer((req, res) => {

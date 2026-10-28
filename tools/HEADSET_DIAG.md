@@ -59,7 +59,7 @@ only the launcher creates, and the log from step 1 is the key.
 |---|---|---|---|
 | 3.15.2/3.15.3 | `cr_OriginVerifier: Verification failed for http://127.0.0.1:17777 as not https or localhost` | numeric loopback is not a trusted origin | 3.15.4 addresses the game as `http://localhost:17777/` |
 | 3.15.6 diag | `GreeblisServer: page: m=requestSession called ... activation=false` then `presentRequested`, `enterVR`, `requestSession OK`, frames | a page-initiated request is accepted without activation; the wait for `sessiongranted` was the bug | 3.15.7: request at page start + sliced boot + in-VR loading screen |
-| 3.15.6 | `TWA verification was successful!`, page loads, ready sound, then `setListeningForSessionGranted(true), navSession.isNull? true` / `no navigation - no activation. Status -1`; OS gives up after 15 s without frames | the browser grants a session only with a navigation descriptor it never creates for a fresh immersive launch (NOTES 33) | variant `directrequest` under test |
+| 3.15.6 | `TWA verification was successful!`, page loads, ready sound, then `setListeningForSessionGranted(true), navSession.isNull? true` / `no navigation - no activation. Status -1`; OS gives up after 15 s without frames | the browser grants a session only with a navigation descriptor it never creates for a fresh immersive launch (NOTES 33) | variant `directrequest` was tested (since dropped from `experiment.py`); fixed in 3.15.7 by the page-start request (row above) |
 | 3.15.4 | `digital_asset_links_handler.cc: Digital Asset Links endpoint responded with code 404` then `TWA verification was unsuccessful! Exiting the activity.` | the browser fetched `/.well-known/assetlinks.json` from the game's origin and the server had nothing there | 3.15.5 serves the asset-links statement (package name + the APK's own signing-certificate fingerprint) |
 
 Lines to grep for in the next capture: `cr_WebXRCustomTabActivity`, `cr_OriginVerifier`, `digital_asset_links`, `cr_WebAppLaunchHandler`. A good launch should show no `TWA verification was unsuccessful` and the game's own `sessiongranted` path should take over.
@@ -87,6 +87,8 @@ after the page's last `page:` line, which names the cause.
 
 ## Layers experiment (B13)
 
+History: the `layers` experiment became the release in 3.15.13 (VERSIONS.md) and is no longer in `experiment.py`;
+the release now shows these lines itself. As written for the experiment:
 `tools/.runs/GreeblisTown-exp-layers.apk` (same package/version as the release;
 `adb install -r`, and reinstall the release afterwards). Expected `page:` lines:
 `session parked, features=...,layers`, then at the handover `projection layer
@@ -97,6 +99,10 @@ should stay put in the world), a clean switch into the town, and the picture
 quality in the town compared with 3.15.12.
 
 ## What to read in a 3.15.19 log
+
+History: the render-scale steps below ended in 3.15.43 (F-B31). From then on the log shows
+`projection layer live, scale 1, msaa 4, multiview true` at the handover and no `swapped to scale` lines at
+all; the governor changes foveation only. The rest of this section still applies.
 
 - `boot slices ms: ...`: the total from `start` to `textures` is the loading time.
   3.15.14 measured 8.2 s; the march change (NOTES 49) and the build-time probe
@@ -119,7 +125,7 @@ page: m=perf fps=41.2 level=4 calls=131 tris=266812 event at=2,-3
 ```
 
 `fps` is 1000 over the governor's frame-time average, `level` the governor's
-quality level (0-1 supersampled, 2 native, 3-4 native with fixed foveation),
+quality level (since 3.15.43 every level is at native scale: 0-2 without, 3-4 with fixed foveation; until then 0-1 were supersampled),
 `calls` and `tris` the last frame's draw calls and triangles (both eyes),
 `event` while the planting Event runs, `at` the player's x,z. Read it with
 `adb logcat -s GreeblisServer | grep perf`. A run through the town, a kiosk, a
@@ -138,11 +144,11 @@ with where the player stood, the governor levels seen, and a verdict against
 the 72 fps target (the author's aim) and the Store's 60 fps floor, with the likely cause for each low reading (triangles,
 draw calls, or GPU-bound with the governor at its floor).
 
-## Multiview experiment lines
+## Multiview lines (an experiment until 3.15.34, the release path since)
 
 ```
 page: m=... multiview planned (webgl2 true, layers true, OVR_multiview2 true, antialias true, OCULUS_multiview true)
-page: m=... projection layer live, scale 1.2, msaa 4, multiview true
+page: m=... projection layer live, scale 1, msaa 4, multiview true
 page: m=... multiview live: 1680x1760 per eye, msaa 4
 ```
 

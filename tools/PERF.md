@@ -1,11 +1,21 @@
-# Performance analysis of the APK build (T11)
+# Performance analysis of the APK build
 
-Started as an analysis (sections 1-6); sections 6-11 record the changes that
-were applied, each listed in FIXES.md (section 11 is the latest: 3.15.35-3.15.41). The render path itself is described in
+Started as an analysis (sections 1-6); sections 6-13 record the changes that
+were applied, each listed in FIXES.md (section 13 is the latest: 3.15.43-3.15.45). The render path itself is described in
 RENDERING.md. Numbers from the headless harness (software GL) are marked as such: draw calls, triangle counts, program counts
-and JS time are meaningful there, GPU time is not. The one headset measurement so
-far is the author's 3.15.33-3.15.34 run on a Quest 3S (section 10); the changes
-since (section 11) are estimates until the next run.
+and JS time are meaningful there, GPU time is not. Headset measurements: the author's 3.15.33-3.15.34 run on a
+Quest 3S (section 10) and the 3.15.41, noswap and deferupload runs (section 13, NOTES 79-81), which showed the Event
+is limited by draw calls, not pixels. The changes since are estimates until the next measurement, the author's
+3.15.45 headset run.
+
+**Performance is now the top priority** (RULES.md "Priorities", the author: "once all other tasks are completed,
+performance should be our focus"; the biggest blocker for the Store submission): the planting Event on a Quest 3S,
+steadily above 60 fps (TASKS.md T16).
+
+Code names in the tables below (`Ge`, `gcEB`, `Qe`, `Ae`, `bend`) are those of the build measured. Since 3.15.45 the game
+file is minified (FIXES R2): top-level names such as `Ge`, `gcEB`, `Qe` (the batcher's per-part placement) and `bend`
+survive, but three.js's internals were renamed (its projectObject, `Ae` below, is now `Pt`, and three.js has its own
+`Qe`), so a profile of the current build names some functions differently.
 
 ## 1. What the APK adds on top of the game
 
@@ -28,6 +38,8 @@ The game already carries its own performance design, written for the Quest:
   five levels that only raise fixed foveation (0 → 1) while keeping the
   framebuffer scale at 1.0; an emergency 0.82 scale after 3 s over 1.6x
   budget; lowest level locked and far scenery hidden during the finale.
+  *(Since 3.15.43, F-B31: native scale at every level and in the emergency
+  step; the governor changes foveation only, on the same layer.)*
 - **Draw batching** (`gcEB`): opaque Phong/Lambert/Basic meshes are merged
   into batches of up to 32 parts with per-part transform and colour in a
   uniform array, driven by a patched vertex shader. Result below: ~36 draw
@@ -86,7 +98,7 @@ launch is faster), while `no-store` currently prevents the script code cache
 
 ## 5. Demanding moments (pickups, the Event)
 
-See `BUGS.md` B12 and `NOTES.md` item 32 for the flash investigation. The
+See `BUGS.md` F-B12 and `NOTES.md` item 32 for the flash investigation. The
 hitch probe (`tools/hitch_probe.js`) reports what each action creates on the
 GPU (programs, textures, geometries) and the frame-time spike around it
 (software GL; spikes are relative):
@@ -323,9 +335,9 @@ to stay steadily above 60 fps, aiming higher, and the author chose each change b
 | --- | --- | --- | --- |
 | B27 | 3.15.35, 3.15.39 | The Gem the Speech assembles is built and compiled during the warm-up, with and without the bulb's light, so its shader no longer compiles mid-Speech (a 50-1,000 ms stall). | No |
 | P14 | 3.15.36 | The game's own multisampled depth buffer is discarded after the frame's last draw, so a tiled GPU stops writing about 28 MB of resolved depth back to memory every frame. | No |
-| P16 | 3.15.37 | In the Event at the lowest quality level, under 62 fps for three seconds, the render scale drops to 0.9 until the Event ends. | Slightly softer, Event only |
-| P17 | 3.15.38 | A Quest 3 starts the Event at 0.9 in one layer swap; under 60 fps at 0.9 the scale steps to 0.82; both end with the Event. | Slightly softer, Event only |
-| P18 | 3.15.40 | The game's emergency drop (0.82 at about 45 fps), if it fires during the Event, ends with the Event, so the scale returns above 85% after it (VRC.Quest.Performance.4). | No |
+| P16 (removed 3.15.43) | 3.15.37 | In the Event at the lowest quality level, under 62 fps for three seconds, the render scale drops to 0.9 until the Event ends. | Slightly softer, Event only |
+| P17 (removed 3.15.43) | 3.15.38 | A Quest 3 starts the Event at 0.9 in one layer swap; under 60 fps at 0.9 the scale steps to 0.82; both end with the Event. | Slightly softer, Event only |
+| P18 (removed 3.15.43) | 3.15.40 | The game's emergency drop (0.82 at about 45 fps), if it fires during the Event, ends with the Event, so the scale returns above 85% after it (VRC.Quest.Performance.4). | No |
 | P19 | 3.15.41 | The Portal's blue light is held off while Sparkakus's bulb is lit, so no frame has two point lights (which would compile a third set of shaders for the whole town). | No (the lights are 16.3 m apart) |
 
 Measured and not applied: skipping the scene root's per-frame matrix recompose (P15) leaves every world matrix
@@ -334,7 +346,12 @@ the cost); indexing the creature meshes saves nothing (all but three drawn creat
 grouping draws by shader changes nothing (three.js already sorts opaque draws by program, material, then depth).
 Texture arrays were closed by the author (section 10).
 
-**Estimates for the Event, until a headset run measures it** (from the 3.15.33 run on the Quest 3S, 58-65 fps at
+*P16-P18 were removed in 3.15.43 with every other render-scale change (the author: "close out that option"; F-B31,
+section 13).*
+
+**Estimates for the Event (superseded, NOTES 79):** the 3.15.41 run measured 55-61 fps at 0.9 and 58-65 at 0.82 on
+the Quest 3S, so 17% fewer pixels bought 2-3 fps: the Event is limited by draw calls, and the pixel assumption below
+was wrong. As estimated then (from the 3.15.33 run on the Quest 3S, 58-65 fps at
 the lowest level, assuming three quarters of the Event's GPU time scales with pixels): Quest 3S, the first three
 seconds about 58-65 fps, then 67-72 at 0.9; Quest 3, about 56-62 at 0.9, then 64-71 at 0.82. Reading a headset run:
 RENDERING.md section 6, `perf_log.js` on the logcat.
@@ -375,10 +392,37 @@ where the creatures stand), with identical pixels (`opt_identity.js`: 92 Event v
 | Batching across neighbouring buildings (cells of 8, 12, 16 m) | 337 -> 332 at best: the scenery is already merged in a few big groups; half of all batches (68 of 136) are the creatures'. Dropped |
 | One set of batches for all the creatures (each is now batched only with itself) | Heaviest Event view 334 -> 307 draws; but over 5 points x 8 headings: town 147 -> 145 draws for 264k -> 311k triangles (+18%), the Event 152 -> 146 for 294k -> 321k (+9%), since a batch spanning the town is drawn whenever one of its creatures is. Measured, not applied |
 
-What is left in that view: about 100 batches, 90 creature parts (Gooward alone 30, 26 of them translucent), 36
+What is left in that view (before P21 and P22, section 13): about 100 batches, 90 creature parts (Gooward alone 30, 26 of them translucent), 36
 one-off parts of the garden's central group (each with its own texture, the closed texture-array question), and the
 church, Mama Gorbo, Glyph, Mushroom and Anomalee parts.
 
 Textures made during play (F-B29, F-B30) cost a hitch each (a canvas drawn and up to 1 MB uploaded in one frame) as
 well as being the flash lead; since 3.15.42 none is made (`texture_census.js`).
 
+## 13. The headset's verdict, and 3.15.43-3.15.45 (NOTES 79-89)
+
+**What the headset runs said** (Quest 3S, whose browser reports "Quest 3"). 3.15.41 (NOTES 79): the Event 55-61 fps
+at scale 0.9, 58-65 after the step to 0.82. The frame rate follows the draw calls (correlation -0.80; triangles
+-0.57): about 315-340 draws give 55-61 fps, 200-220 give 62-67. The deferupload run (NOTES 81): 408-445 draws at 52-58
+fps in the heaviest Event view. So the levers are fewer draws and less work per frame, not fewer pixels.
+
+| Change | Build | What it does | Visible? |
+| --- | --- | --- | --- |
+| F-B31 | 3.15.43 | No layer swap: native render scale at every quality level and in the emergency step; the governor changes foveation only, on the same layer (and no longer renders above native, 1.2 and 1.1, in town). The Event's own scale (P16-P18) removed. No texture upload inside an XR frame (uploads in a task after each frame). | No flashes from swaps or uploads; native sharpness in the Event |
+| P21 | 3.15.43 | The Ancient (15 parts, 11.5k triangles) is left out of renders while the camera is at least 0.5 m outside the church. Proof: 17,045 views from outside, 3 from about 30 m showed one pixel with only the church drawn, none with the town (`ancient_check.js`). | No |
+| P22 | 3.15.43 | Gooward's 26 translucent parts marked `mergeTr` (20 goo bubbles, two wings' crystals) merged per parent and material, ordered far to near before each draw: 26 draws to 3 (his 30 to 7). | No (the author: "he looks unchanged visually") |
+| R2 | 3.15.45 | The game file minified. The same world object for object, bit for bit (`minify_identity.js`): no effect on draws or frame time; under 1% faster to load. | No |
+
+Estimated effect against the author's last Event reading (52-58 fps at about 440 draws, scale 0.82; NOTES 83): P20
++3 to +5 fps (about 0.024 ms a draw), back to scale 1 -2 to -3, the upload changes about 0 on average but no more
+one-frame spikes: net about +1 to +2 fps in the heaviest view, +3 to +5 where the pizza is in view. P21 and P22,
+not in that estimate, save further draws in that view (the Ancient, 15 parts no longer drawn from outside, their draw count not measured on its own; Gooward, 23 fewer draws). The author's 3.15.45 headset run measures it (`perf_log.js`, RENDERING.md 6).
+
+**Measured, nothing to remove.** The occlusion census (`occlusion_census.js`, both states, NOTES 86): of 653 judged
+objects the only ones never seen from where the player can stand were the UFO's 40 parts, which the game keeps hidden
+between flights (a hidden object costs nothing). Every other object is seen from somewhere. Small creature details
+(Etcher's marks, Mama Gorbo's pins, Anomalee's cards, about 10 draws) would still show at Event distances (NOTES 85).
+
+**Open lever** (NOTES 84): the batcher refuses scenery parts over 4,000 vertices, so nine large garden meshes that
+share one material draw on their own; raising the cap to 60,000 saves 13 draws in the heaviest Event view for 16k
+more triangles (+2.6%). The comparison over many views is still to do.

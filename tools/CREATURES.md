@@ -4,7 +4,15 @@ A breakdown of every character model in the game: how each is constructed, the s
 and the visual language they share. Read from the current game file (`tools/uncompressed.html`; the fixes in
 FIXES.md do not change any model's look). Numbers are the code's own (metres, radians, seconds; `sin(2.1t)` means
 a sine of 2.1 radians per second). Anything the code does not state is marked *(inference)*. The author's rule for
-the models (RELEASE.md 6): the designs are final; fixes must not change how anyone looks.
+the models (RELEASE.md 6, RULES.md 7): the designs are final; fixes must not change how anyone looks.
+
+**Code names.** The identifiers below are from the unminified game file, 3.15.44 (`git show 21596f1:tools/uncompressed.html`).
+Since 3.15.45 the game file is minified (FIXES R2): names at the top level of the game's script survive (`x`, `T`, `R`,
+`so`, `io`, `tkS`, `W`, `At`, `PK_MODELS`, `PK_MONT`, `anomaleePeg`, `fortizmoPick`, `gcBeatHz`) as do property names
+(`JGP.slug`, `JGP.robin`, `userData.keep`, `.surf`), but names local to a function were renamed (`KIT`, `BORN`, `ROWS`,
+`born`, `blobBody`, `latheGeo`, `smoothProfile`, `profileR`, `ridgedTube`, `cardGeo`, `onEllipsoid`, `faceTo`, `gradMat`,
+`texturize`, `robin`, `buildModel`, `DRUMS`, `$R`/`$x`/`$T`, Gemtoe's `teal`). Look those up in 3.15.44; the models are
+the same object for object (`minify_identity.js`).
 
 ## 1. The cast at a glance
 
@@ -164,7 +172,7 @@ What the models have in common, as built:
   wider than they are deep, with few, large features that read from across the park in a headset. Edges are rounded
   everywhere; only Anomalee and Montgummery are boxy, and they are machines.
 - **One signature colour, then accents.** Each character has one dominant hue (their cast colour, which also colours
-  their dialogue box and emotes) and a few small, saturated accents in the opposite part of the wheel: Gooward's blue with
+  their dialogue box; emotes have one colour per glyph since F-B29) and a few small, saturated accents in the opposite part of the wheel: Gooward's blue with
   magenta and lime, Zollod's teal-green with pink tips, King Dino's yellow with teal and a purple-to-orange plume,
   Mama Gorbo's peach with cyan, pink and purple drips.
 - **Matte bodies, glossy details.** Skins are clay-like (shininess 14-55, textured relief); eyes, noses, gems,
@@ -386,8 +394,10 @@ What the models have in common, as built:
   and batches with the rest. A new material created after loading must be warmed (`warm_coverage.js` fails on a lit
   material without its shaders; B27 was the Gem's).
 - **Faces**: use `KIT.eye` and `KIT.mouth` for the house face; pass the lids to `born` so they blink.
-- **A new screen face or painted texture**: draw it once and cache it (Montgummery caches each screen mode); a canvas
-  repainted during play must go through `needsUpdate` so it uploads before the frame (RENDERING.md 4).
+- **A new screen face or painted texture**: make it while loading and keep it (Montgummery's faces are all made at
+  load since F-B30): no texture may be made during play (RULES.md 9; `texture_census.js` fails on one). A canvas
+  repainted during play goes through `needsUpdate`; since F-B31 the upload happens in a task after the frame, never
+  inside it.
 
 ## 7. The author's answers
 

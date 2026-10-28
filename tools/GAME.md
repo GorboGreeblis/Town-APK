@@ -2,7 +2,9 @@
 
 Everything below was read from the game code (`tools/uncompressed.html`,
 v3.15). Where the code did not make something explicit it is left out rather
-than guessed.
+than guessed. Since 3.15.45 the file is minified (FIXES R2): top-level names
+(`t`, `G`, `It`, `JGP`, `gcEB` and the like) are as quoted, but names local to a
+function were renamed, so routines are described by what they do.
 
 ## What it is
 
@@ -13,34 +15,37 @@ Nextessa and "the Ancient"). The player walks the town, talks to residents,
 collects items, takes part in dance battles and a garden event, and finds
 three Artifacts for the Ancient, which triggers a timed finale.
 
-The file is about 1 MB, has no external dependencies and makes no network
-requests: three.js, all textures (drawn on canvases at start-up), all audio
-(synthesised with the Web Audio API) and all dialogue are inline.
+The file is about 1 MB and has no external dependencies: three.js, all
+textures (drawn on canvases at start-up), all audio (synthesised with the Web
+Audio API) and all dialogue are inline. It loads nothing from the web. It makes
+two optional local requests, both falling back silently: `tex/manifest.json`
+(the APK's pre-painted textures, used instead of painting when present) and
+`/log` (the APK server's log) (NOTES 88).
 
 ## File layout
 
-The HTML is 93 lines; a few of them are very long script blocks.
+The HTML is 8 lines since the minification (3.15.45; it was 93 before); most of them are very long script blocks.
 
-| Line(s) | Content |
+| Line | Content |
 | --- | --- |
-| 1 | `<head>`: viewport, styles (ink `#0d0d1a` palette), the 2D gate (`#gate`, `#gateTitle`, `#gateText`, `#gateVer`) and hidden dialogue/panel containers. |
-| 2 | Console de-duplication shim, then three.js (bundled, with `WebXRManager`). |
-| 3 | Patches three.js Phong/Lambert/Basic materials to default to `DoubleSide`. |
-| 4 | Canvas patches: 2D contexts default to `imageSmoothingEnabled=false`; `CanvasTexture` registry for pixel-art textures. |
-| 5 | `fillText`/`strokeText` wrapper that shrinks text to fit the canvas ("room"). |
-| 6 onwards | The game proper: `window.__jgpBlocked` (user-agent gate), the tuning object `t` (see below), audio engine `G`, world builders, characters, XR input, UI, boot. |
-| 7-28 | Hand-drawn glyph/sign paths. |
-| 29-90 | World construction: textures, props, buildings (`STORE`, `HOUSE`, `HOTEL`, `SCHOOL`, `COURTHOUSE`, `FIRE_STATION`, `GAS_STATION`, `GOOBURGER`, `WATER_TOWER`, `FIELD_OFFICE`, `NURSERY`, `BILLBOARD`), pebbles, grass, the park. |
-| 90-93 | Characters, quests/dialogue, boot sequence, error handlers. |
+| 1 | `<head>`: the license notice (CC0 and three.js's MIT notice), viewport, styles (ink `#0d0d1a` palette), the head script (requests the VR session at page start and draws the loading screen, `window.__gtXR`; FIXES.md entry edits), the 2D gate (`#gate`, `#gateTitle`, `#gateText`, `#gateVer`) and hidden dialogue/panel containers. |
+| 2 | Console de-duplication shim. |
+| 3 | three.js (bundled, with its WebXR manager). |
+| 4 | Patches three.js Phong/Lambert/Basic materials to default to `DoubleSide`. |
+| 5 | Canvas patches: 2D contexts default to `imageSmoothingEnabled=false`; `CanvasTexture` registry for pixel-art textures. |
+| 6 | `fillText`/`strokeText` wrapper that shrinks text to fit the canvas ("room"). |
+| 7 | The game proper, in this order: `window.__jgpBlocked` (user-agent gate), the tuning object `t` (see below), audio engine `G`, hand-drawn glyph/sign paths, world construction (textures, props, the buildings, pebbles, grass, the park), characters, XR input, UI, quests/dialogue, boot sequence, error handlers. |
+| 8 | `</body></html>` |
 
-## Tuning values worth knowing (object `t` at the top of line 6)
+## Tuning values worth knowing (object `t` at the top of line 7)
 
 - World: `clearingR 36.5`, `parkHalf 37.6`, fog 70-300, far plane 310.
 - Player: speed 4.5, body radius 0.6, spawn `[-36.3, -20]`.
 - Interaction radii: talk 3.4, greet 3.2.
 - XR: eye height 2.6, near 0.15, stick dead-zone 0.15, snap turn 30 degrees
-  (`Math.PI/6`), pick range 16, UI distance 11.5, foveation and framebuffer
-  scale per quality level, target 72 Hz with an adaptive quality controller
+  (`Math.PI/6`), pick range 16, UI distance 11.5, foveation per quality level
+  (the framebuffer scale is native, 1, at every level and in the emergency
+  step: `quality`, `sosScale`; F-B31), target 72 Hz with an adaptive quality controller
   (`targetHz`, `emaAlpha`, `overFrames`, `underFrames`).
 - Pickups: 32 blossoms (regrow 12 s), 40 flint (regrow 12 s; called acorns in the code, flint in the game's own text and the Store).
 - Finale: 180 s, NPC chatter every 3-7 s, `finaleLockMs` 600 s.
@@ -49,21 +54,27 @@ The HTML is 93 lines; a few of them are very long script blocks.
 
 ## Boot and VR entry
 
-1. All scripts run synchronously while the page parses; the world is built
-   in one pass (several seconds on a Quest), then `gcEB.ready = true`.
-2. The 2D gate shows "GREEBLIS TOWN / Loading..." then "Press A to
-   Continue." A pointer/key/touch event, a controller button (polled through
+1. In the Quest Browser the head script requests the VR session at page
+   start, parks it and draws its own loading screen into it. The boot is
+   sliced: the world build yields between steps (`__gtY("textures")`,
+   `"shaders"` and so on) so the loading screen keeps drawing; then
+   `gcEB.ready = true`, and at the very end the game takes over the parked
+   session (FIXES.md, entry edits 1-8).
+2. Without a parked session (the browser path), the 2D gate shows
+   "GREEBLIS TOWN / Loading..." then "Press A to Continue." A
+   pointer/key/touch event, a controller button (polled through
    `navigator.getGamepads()` once the page has user activation) or the
-   browser's `sessiongranted` event calls `je()`, which requests an
+   browser's `sessiongranted` event calls the game's enter-VR routine (the
+   async function that shows "Entering VR..."), which requests an
    `immersive-vr` session with optional `local-floor`/`bounded-floor`, hands
    it to three.js, builds the in-VR UI, creates the audio context and hides
    the gate.
-3. Leaving VR (`Xe()`) restores the 2D camera and shows the gate again.
+3. Leaving VR (the session's end handler) restores the 2D camera and shows the gate again.
 4. On non-Quest user agents the gate shows "This game is designed for Meta
    Quest" and nothing else runs.
 
-The APK build adds a head script and three one-line hooks so the immersive
-launch's grant is never dropped (FIXES.md, entry edits).
+The head script and the boot changes that launch straight into VR are part of
+the game file itself since 3.15.43 (FIXES.md, entry edits: 9 blocks).
 
 ## Controls (WebXR)
 
@@ -73,7 +84,7 @@ launch's grant is never dropped (FIXES.md, entry edits).
   range are in `t.xr`.
 - Grip (`squeeze`): secondary action; both also wake the audio engine.
 - Controller button 4 (on either hand) and button 5 (right) are bound to
-  UI actions (`J` and `ve` in the code).
+  UI actions (gamepad button indices 4 and 5 in the per-frame input loop).
 
 ## Town life (what runs on its own)
 

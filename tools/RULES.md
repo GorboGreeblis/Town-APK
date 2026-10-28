@@ -10,17 +10,19 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
    after. Please edit the actual file"; "this also means adding all changes to the actual uncompressed file") [87].
    The game is `tools/uncompressed.html`. Every change is made in it. Never edit `index.html` or the APK's asset:
    they are copies, written by `python3 tools/sync_game.py` and checked by `sync_game.py --check` (quick tier,
-   pre-commit hook).
+   pre-commit hook). The file is minified (rule 19): edit it in place, keep new code in the same style, and run
+   `tools/build.sh --bump`, which minifies again. Names the tests and tools read in the game's scope are never
+   renamed (`RESERVED` in `minify_game.js`); a tool that needs another one adds it there first.
 2. **The game must always be rebuildable from the game file alone** (2026-10-28: "I want to ensure that the game
    itself can be rebuilt from the index.html file"; "as a rule this should always be possible"). It runs fully with
    nothing beside it (no files, no server, nothing from the web), and everything shipped with it is derived from it:
    the copies (`sync_game.py`) and the pre-painted textures in the APK's `assets/tex/`
    (`node tools/prerender_textures.js`, after any change to a texture painter). `tools/build.sh` rebuilds all of it
-   from the game file in one command. `test_standalone.js` (every tier but quick, and the last step of `build.sh`)
+   from the game file in one command. `test_standalone.js` (every tier but quick, and one of `build.sh`'s closing checks)
    proves both: it runs the game file alone and checks every pre-painted texture is exactly what the game
    paints [88].
-3. **No original, no compressed build kept** (2026-10-28: "we don't need to save the original anywhere in the
-   repo"; "we will no longer have a 'compressed' version either") [87]. Git history has them.
+3. **No original kept** (2026-10-28: "we don't need to save the original anywhere in the repo") [87]. Git history
+   has it. (The compressed build, dropped the same day, came back as rule 20.)
 4. **Every change is recorded** in `tools/FIXES.md` (the changelog: what, why, who decided, how it was proven), with
    longer investigations in NOTES.md and bugs in BUGS.md.
 5. **Randomness: cut it where it is not part of play** (2026-10-28: "we should cut as much randomness as possible").
@@ -47,9 +49,12 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 ## Builds and the repository
 
 11. **The repository root holds only** `GreeblisTown-release.apk`, `index.html` and `tools/` (2026-10-27).
-12. **The root APK is always the latest build** (2026-10-27): every change to the game is followed by a rebuild and a
-    version bump (`versionCode` only goes up) before it is committed (`tools/build.sh --bump`); the pre-commit hook
-    checks it.
+12. **The APK and `index.html` at the root are always the latest build** (2026-10-27; restated 2026-10-28: "The .apk
+    and index.html file in root must always be the latest build"). Every change to the game is followed by a rebuild
+    and a version bump (`versionCode` only goes up) before it is committed (`tools/build.sh --bump`). Enforced:
+    `sync_game.py --check` (quick tier, pre-commit hook) fails if `index.html` differs from the game file; the
+    pre-commit hook and `check_apk.sh` fail if the root APK does not hold the current game; `test_standalone.js`
+    fails if its pre-painted textures are stale.
 13. **Never commit the signing keystore.**
 14. **Commit often**; living documentation lives in `tools/`.
 15. **Changes to the entry script, the layers shim or the multiview path ship first as an experiment APK**
@@ -63,6 +68,37 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 17. **Names**: "the Event" is the planting event; "the Speech" is Sparkakus's library finale.
 18. **Devices**: the author tests on a Quest 3S (its browser reports itself as "Quest 3"). Quest 2, Quest Pro and
     the original Quest are not supported (manifest `quest3|quest3s`).
+
+## The two versions of the game
+
+19. **The uncompressed version is minified but not compressed; the compressed version is both** (2026-10-28: "please
+    apply Minification to the current game file, as much as possible", full minification with names renamed; "The
+    uncompressed version of the game should be minified but not compressed. And the compressed version of the game
+    should be both minified and compressed. This is a rule.") [89]. The game file, `index.html` and the APK hold the
+    minified game; `node tools/minify_game.js --check` (quick tier, pre-commit hook, `build.sh`) fails if minifying
+    it again would change it. `minify_identity.js` proved the minified game builds the same world as before, object
+    for object, bit for bit.
+20. **The compressed version lives in `tools/` beside the uncompressed one, works as a Bitcoin ordinal, and is always
+    updated with the others; the APK never uses it** (2026-10-28: "create a Bitcoin ordinal compressed version of the
+    game and store it in the tools folder. This build must always always be updated with the others", "The Compressed
+    version should always be the latest version of the game", "must be fully
+    functional as a Bitcoin ordinal, as the previous compressed version was", "The .apk should never use the
+    compressed version of the game file. The tools folder should contain both a compressed version and an
+    uncompressed version of the game file", "Look to the previous compressed game file for methods of compression")
+    [89]. `tools/index.compressed.html`, built by `build_compressed.js` (in `build.sh`) with the previous compressed
+    version's method. Checked: it unpacks to the game file exactly (`build_compressed.js --check`: quick tier,
+    pre-commit hook) and works as an inscription would (`test_compressed.js`: alone, under the ordinal content
+    policy, unpacks, boots, enters VR; under 390,000 bytes). Its readable loader page carries no license notice (2026-10-28: "The License notice is not
+    needed in the compressed ordinal version"); the notices are inside its payload.
+
+21. **The license notice in the game file stands alone** (2026-10-28: "the in-code License notice should not
+    reference the repo or other files"): the CC0 dedication (with the license's public address) and three.js's MIT
+    notice, with no pointer to this repository or any file in it. `tools/LICENSE.md` covers the repository.
+
+## Priorities
+
+- **Performance is the biggest blocker for the Store submission** (2026-10-28: "once all other tasks are completed,
+  performance should be our focus"): after the open tasks, work goes to the frame rate (the Event on a Quest 3S).
 
 ## Decisions that close an option
 
