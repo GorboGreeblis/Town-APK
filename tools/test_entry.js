@@ -16,8 +16,9 @@
  *
  * Usage: node tools/test_entry.js [file.html] [scenario|all]
  *   default file: tools/android/app/src/main/assets/index.html
- * Exit code 1 if any expectation fails. Run against tools/uncompressed.html to
- * see the original drop the early grant.
+ * Exit code 1 if any expectation fails. The default file is a copy of the game
+ * file tools/uncompressed.html (since 3.15.43); the author's original, which
+ * dropped the early grant, is in git history only.
  */
 const { chromium } = require('playwright');
 const http = require('http');

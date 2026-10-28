@@ -4,8 +4,8 @@
 #   tools/run_tests.sh --smoke     spot check of every element, a few minutes
 #   tools/run_tests.sh             standard pass (default), about an hour on a 4-core machine
 #   tools/run_tests.sh --full      FULL pass: every scenario, long soak times.
-#                                  Run only on the final build (30+ minutes).
-#   tools/run_tests.sh --quick     static checks only, no browser (seconds)
+#                                  Run only on the final build (2-2.5 hours).
+#   tools/run_tests.sh --quick     static checks only, no browser (about a minute)
 #   ... --only=REGEX               (with any tier) run only the stages whose name matches (case-insensitive), with
 #                                  that tier's settings, e.g. to re-run one failed stage as the tier runs it
 #   ... --resume                   (with any tier) skip the stages that already passed on this same asset, APK,

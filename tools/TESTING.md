@@ -16,7 +16,7 @@ tools/run_tests.sh --full       every scenario, long soaks, graphics, perf    2-
 ```
 
 The summary at the end gives each stage's time and the whole pass's. To re-run one failed stage exactly as the tier
-ran it: `tools/run_tests.sh --only='quality governor, Quest 3:'` (any part of its name; case does not matter).
+ran it: `tools/run_tests.sh --only='quality governor'` (any part of its name; case does not matter).
 
 Times are on a 4-core cloud container. Every browser stage runs one headless Chromium with SwiftShader (the GPU
 is software), so the stages run one after another. Do not run a second browser test while a pass runs: the
@@ -24,7 +24,7 @@ timing checks (the governor, the perf report, the jazz drums, hitches) measure t
 the contention, not on the game.
 
 What a pass needs: `python3`, a JDK 17+, `node` with `playwright` (the container has Chromium installed, see
-`require('playwright')`), and the Android SDK for the server harness and the APK checker. `ANDROID_HOME` is used
+`require('playwright')`), the tools' own packages (`npm install --prefix tools`: terser for `minify_game.js`, acorn), and the Android SDK for the server harness and the APK checker. `ANDROID_HOME` is used
 when set; otherwise the runner takes `sdk.dir` from `tools/android/local.properties`, the SDK the Gradle build
 uses.
 
@@ -32,7 +32,7 @@ Environment switches for the browser tests:
 
 | Variable | Effect |
 | --- | --- |
-| `GT_ASSET=path` | The game file the browser tests load (an experiment build); the verify and APK stages always check the release. |
+| `GT_ASSET=path` | The game file the browser tests load (an experiment build); the copy, minify, compressed and APK checks always check the game file and the root APK. |
 | `GT_MULTIVIEW=0` | The classic two-pass path instead of multiview (the headset's path since 3.15.34, the default). |
 | `GT_DEVICE=quest3s` / `quest3` / `quest2` | That headset's user agent and GPU limits (`fakexr.js` `DEVICES`); the default user agent is a Quest 3. |
 | `GT_HEADSET_FOV=1` | Quest 3-shaped eyes, for draw counts and culling as on the headset. |
@@ -96,6 +96,15 @@ renderer), `C` (the scene), `B` (the camera). Names declared in another scope ar
 (`TAGGED`: `Ge` the governor, `VIGS` the vignettes, `UI` the second `F`). A name that fails to resolve becomes a
 lazy getter, so a hook that does not exist reads as `undefined` rather than breaking the boot.
 
+**Only these names are stable.** Since 3.15.45 the game file is minified (RULES.md 19): every local name is the
+minifier's choice and can change whenever the file is minified again. The names kept are `RESERVED` in
+`minify_game.js`: `HOOK_NAMES` and the `TAGGED` names above, plus `Ge`, `VIGS`, `F`, `W`, `t`, `bend` and `park`;
+property names and globals (`window.__gt*`, `gcEB`, `mvInFrame`...) are never renamed. Reach everything else
+through them, never by a local name read from the file (names quoted elsewhere in the docs may be from the
+unminified 3.15.44 file, git 21596f1). A test that needs another top-level name adds it to `HOOK_NAMES` (which
+`RESERVED` includes) before the next minification, and the harness's anchors (`gcEB.ready=!0;`, the `TAGGED`
+declarations) must keep matching.
+
 **Drive the game through its own entry points**, the way a player would reach them: the menu's actions
 (`xe.actionsFor(e).find(...).run()`), `Dbt.start(dancer)` for a battle, `oe.open()` and its "Yes" for the Event,
 moving `At.position` for walking. Do not set state the game derives: `me.active` is a read-only getter (start
@@ -113,9 +122,9 @@ was in a state where it rightly refused or cut it short:
 - Mama Gorbo's heart count stays at 8 between meetings; wait for a meeting's own first goo arc;
 - the courier delivers on its own when it reaches the player; accept that as a delivery.
 
-**Read the release, not the original.** The fixes change some layouts: the release's batcher stores five vec4 a
-part (shininess and specular added) where `uncompressed.html` stores four. Check the asset
-(`android/app/src/main/assets/index.html`) before relying on a detail read from the original.
+**Read the game file, not an old copy.** Since 3.15.43 `uncompressed.html` is the release (the asset and the root
+`index.html` are byte-identical copies); the author's original is in git history only, and differs in places
+(its batcher stored four vec4 a part, the release five). Do not rely on a detail read from the original.
 
 **Make the failure say why.** Each `expect` names the rule in plain words and prints the data that broke it
 (the first few offenders, not all of them). Use `note` for measurements worth keeping in the log. A test that

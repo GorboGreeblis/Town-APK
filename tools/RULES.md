@@ -18,7 +18,7 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
    nothing beside it (no files, no server, nothing from the web), and everything shipped with it is derived from it:
    the copies (`sync_game.py`) and the pre-painted textures in the APK's `assets/tex/`
    (`node tools/prerender_textures.js`, after any change to a texture painter). `tools/build.sh` rebuilds all of it
-   from the game file in one command. `test_standalone.js` (every tier but quick, and the last step of `build.sh`)
+   from the game file in one command. `test_standalone.js` (every tier but quick, and one of `build.sh`'s closing checks)
    proves both: it runs the game file alone and checks every pre-painted texture is exactly what the game
    paints [88].
 3. **No original kept** (2026-10-28: "we don't need to save the original anywhere in the repo") [87]. Git history

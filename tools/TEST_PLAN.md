@@ -12,15 +12,17 @@ Legend for the Coverage column: **done** (automated and passing), **partial**,
 
 ## Test passes
 
-Three tiers run the same scripts with different scope (`tools/run_tests.sh`):
+Four tiers run the same scripts with different scope (`tools/run_tests.sh`):
 
 - **Smoke** (`--smoke`): a few minutes; touches every element once (short
   soak, first NPC scenarios, short sampling). For every build.
 - **Standard** (default): the everyday pass.
 - **Full** (`--full`): every scenario, long soak and sampling windows, plus
-  the release parity check. Meant for the final build only.
-- **Quick** (`--quick`): the static checks only (asset verify, server harness,
-  spell-check, the bend test, the APK check, FIXES.md up to date). Seconds.
+  the graphical and performance pass (10a). Meant for the final build only.
+- **Quick** (`--quick`): the static checks only (the copies are the game file,
+  the game file is minified, the compressed version unpacks to it, every
+  experiment applies, server harness, docs consistency, spell-check, the bend
+  test, the APK check). About a minute; every other tier runs them first.
 
 Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 `GT_MULTIVIEW=0` runs the classic fallback.
@@ -74,7 +76,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Stuck detection and rescue (`De`: re-plan via waypoints, off-screen teleport after 4 stalls) | `test_npc_home.js` forced-stuck and far-player scenarios | done |
 | Away watchdog (`sendHome` after 4 s idle / 20 s moving away from home ground) | `test_world.js` | partial |
 | Roamers (Gooward, Hennrick by the Portal, Mama Gorbo, the three dancers) pick free spots, never inside hulls or zones | `test_roam.js` (standard tier; `--long` 10 min): 3 game minutes sampled four times a second, everyone: no foreign building, inside the park; roamers: no solid zone, not in the Garden, never inside each other, all moving | done (3.15.41) |
-| Wander/trek for the townsfolk (`ho`), personal space, spreading | `test_roam.js` covers where they stand (buildings, park); kind "creature" is only Zollod, who stays in his kiosk while shy | partial (spreading todo) |
+| Wander/trek for the townsfolk (the wander routine; `ho` in the unminified 3.15.44 file, git 21596f1), personal space, spreading | `test_roam.js` covers where they stand (buildings, park); kind "creature" is only Zollod, who stays in his kiosk while shy | partial (spreading todo) |
 | Mama+Gorbo meeting schedule (`meetAt`), visits (`visitPlan`), vignettes (`VIGS`) fire and release NPCs (`busy` cleared) | `test_meet.js` (standard tier: two meetings 20-40 s apart, 2.8 m apart facing each other, four goo arcs and four hearts 0.6-0.9 s apart, called off by the Event); `test_visits.js`; `test_content.js` (vignettes) | done (3.15.41) |
 | Greeting/freeze near the player (`greetR` 3.2 m, `proximityFreezeS` 12 s, `greetClear` 6 m): a walking townsperson stops and faces the player, goes on after 12 s, is stopped again after the player was 6 m away; Sparkakus's "!" from 6 m | `test_greet.js` (standard tier) | done |
 
@@ -116,9 +118,9 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | --- | --- | --- |
 | Frame loop alive, no errors, flat JS heap over 20 s in 2D | `test_play.js 2d` | done |
 | Same over 10+ minutes, including events (garden, finale) | `test_play.js` long run | todo |
-| Quality governor (`Ge`): the Event's lowest-level lock, its adaptive 0.9 scale (P16), the Quest 3 start at 0.9 and the step to 0.82 (P17): no trigger in town, one layer swap at each step, restore at the end, the emergency drop kept | `test_governor.js` (standard tier, run for the Quest 3S and the Quest 3; frames slowed by a busy loop; two Events per session, from level 0 and from the lowest level) | 3.15.38: passes for the 3S and the Quest 3, multiview and classic |
+| Quality governor (`Ge`), since 3.15.43 (F-B31): every level and the emergency step keep the native render scale and only foveation changes, on the same layer; in town slow frames lower the level with no layer swap; the planting Event drops to the lowest level (full foveation) and locks it however slow the frames, with frames and multiview going, and releases the lock when it ends; the emergency step fires and swaps nothing (P16-P18, the Event's own scale, removed) | `test_governor.js` (standard tier, `GT_DEVICE=quest3s`; frames slowed by a busy loop) | done (3.15.43; 3.15.38's P16/P17 version history) |
 | 72 Hz on Quest 3/3S (VRC.Quest.Performance; the original Quest and Quest 2 are not supported since 3.15.34, the Quest Pro since 3.15.35), loading indicator rule | headset; `perf_log.js` per-device verdicts against 72 and 60 | headset (3.15.33 on a Quest 3S: town 72, the Event 58-65) |
-| Console error de-dup shim, `vo` error reporting counts | `test_play.js` | done |
+| Console error de-dup shim, the game's error reporting counts (`vo` in the unminified 3.15.44 file, git 21596f1) | `test_play.js` | done |
 
 ## 9b. Game content (LORE.md)
 
@@ -145,14 +147,17 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Scene cost: draw calls, triangles, materials, transparent meshes | `tools/perf_probe.js` (report stage) | recorded in `PERF.md` |
 | Performance per situation with the cause named: script frame time (p50/p99/max), top functions, shader compiles, uploads, draw calls, triangles, transparent objects, lights, creatures in range; the Event in three phases | `tools/perf_report.js` (pass/fail stage, baseline in `tools/perf_baseline.json`) | 3.15.27: see PERF.md section 7 |
 | Headset frame rate by scene from the game's own log line | `tools/perf_log.js` on an `adb logcat -s GreeblisServer` capture | needs the author's 3.15.27 run |
-| Render sharpness: render scale per quality level, foveation, pixel ratio, MSAA, texture mipmaps/anisotropy | `tools/sharpness_probe.js` (report stage) | 3.15.16: adaptive scale 1.2 / 1.1 / 1.0 (author: the sharp build looks better; 1.2 alone was stepped down within 4 s on the headset), 4x MSAA through the projection layer, textures mipmapped with anisotropy 8; layer swaps flash-free (the play test checks the swap) |
+| Render sharpness: render scale per quality level, foveation, pixel ratio, MSAA, texture mipmaps/anisotropy | `tools/sharpness_probe.js` (report stage) | 3.15.16: adaptive scale 1.2 / 1.1 / 1.0 (author: the sharp build looks better; 1.2 alone was stepped down within 4 s on the headset), 4x MSAA through the projection layer, textures mipmapped with anisotropy 8; layer swaps flash-free (the play test checks the swap). Superseded in 3.15.43 (F-B31): native scale 1 at every level, no swaps during play |
 | Flicker / z-fighting on environmental objects | `tools/test_zfight.js` (fails the pass): every planar triangle bucketed by world plane; coplanar overlaps between different surfaces are rendered twice from 3 m with a 1 mm camera shift, the two surfaces alone on a private layer, and pixels that flip mean a depth fight | 3.15.13: 19 coplanar overlaps, 5 handled by offset/order, 8 same-look (invisible), 6 different-look, none flicker (max 0.31% edge pixels) |
 | Single-sided pass (P6) changes nothing visible | `tools/sides_check.js` (fails the pass on any area difference): 184 views, flips on and off in one frame, difference mask | 3.15.26: 138 of 184 views differ on one-pixel silhouette outlines only, none in an area |
 | Z-fighting on curved surfaces (a flat part tangent to or in the plane of a round one, which the planar test cannot see and the headless renderer does not show) | `tools/test_coincident.js` (fails the pass on new depth fights): the drawn triangles (batcher's parked sources) in a 5 cm hash; nearly parallel pairs of different looks sampled for points within 0.5 mm; the growth of that region at a fifth of the tolerance separates coplanar/tangent contacts (fail) from crossings (listed); accepted fights in `tools/zfight_baseline.json`; contacts the headset cannot show (undersides at ground level, closed solids resting back to back, contacts buried inside a third box) are listed as hidden | 3.15.24: the ten candidates of 3.15.23 resolved: B21 (parapet bands), B22 (Mushroom's hat band), B23 (Robin's tail) fixed, the other seven shown to be hidden contacts; baseline empty, both tests pass with 0 new depth fights |
+| No texture made during play (canvases or GL textures after loading: emotes, faces, bubbles, the courier's box, the pizza; F-B29/F-B30), and every text exchange fits the loading pool's bubbles | `tools/texture_census.js` (standard tier, fails the pass) | done (3.15.42) |
+| The Ancient is invisible from at least 0.5 m outside the church, so P21 may leave it out; with P21 on it is drawn inside and left out outside | `tools/ancient_check.js` (full tier, fails the pass): 2 m grid to 30 m, five eye heights, with and without it, church alone then the whole town; `opt_identity.js` switches P21 (`__gtAnc`) | done (3.15.43, NOTES 84) |
+| Gooward's merged translucent parts (P22) look as before (ordered far to near like separate objects) | headset; the author: "he looks unchanged visually"; no automated check (the parts are ordered as one block, so pixels can differ by design) | headset (3.15.43, NOTES 85) |
 | Multiview draws the same pixels per eye as the classic path, half the draw calls | `tools/multiview_check.js` (standard tier, fails the pass): spawn, town centre, garden, the Event | 3.15.34: identical apart from rounding on a few right-eye pixels; calls exactly halved |
 | No texture upload, copy, pixel read, blit or foreign framebuffer bind while a multiview frame draws (the flash rule, F-B26), and no shader compiled during play | `tools/multiview_check.js` hazard sequence: pickups, dialogue, shop, battle, the Speech, the Event; names any program compiled | 3.15.34: 211 uploads moved before the frame, none during; one intermittent compile (B27, open) |
 | Every compiled program fits a Quest's uniform and sampler limits | `tools/uniform_budget.js` (standard tier; `GT_DEVICE`, default quest3s), multiview and classic | 3.15.34: worst vertex shader 191 of 256 (multiview), 197 (classic) |
-| Performance changes that claim no visible change | `tools/opt_identity.js` (full tier, switches on and off in one frame), `tools/test_bend_exact.js` (standard tier, P13) | 3.15.32: identical |
+| Performance changes that claim no visible change | `tools/opt_identity.js` (full tier, switches on and off in one frame), `tools/test_bend_exact.js` (every tier, quick included, P13) | 3.15.32: identical |
 | Headset recording: flash frames, OVR Metrics overlay | `tools/video_check.py` (report, run by hand on the author's video) | 3.15.33 video: the flashes found; 3.15.34 awaits a recording |
 
 ## 10b. Store submission (VRC)
@@ -161,16 +166,23 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | --- | --- | --- |
 | Every active Meta Horizon Store VRC (80 checks, 2026-10-27 list) mapped to evidence, a headset step, a dashboard item, or N/A | `tools/VRC.md`; packaging checks in `tools/check_apk.sh`; focus-aware checks in `tools/test_input.js` (controllers hidden while blurred) and `tools/test_play.js` (rendering continues, game blurred) | 3.15.25: all packaging, security and functional checks pass by evidence; 4 headset confirmations listed in RELEASE.md step 7 (frame rate, time to the loading panel, Universal Menu, recentre) plus play modes and controllers down/up; one action for the author (privacy page section 8, deletion requests) |
 
-## 10. Release parity
+## 10c. The game file, its copies and the compressed version
 
 | Item | How | Coverage |
 | --- | --- | --- |
+| `index.html` at the root and the APK's asset are byte-identical to the game file `uncompressed.html` | `sync_game.py --check` (quick tier, pre-commit hook, `build.sh`); `check_apk.sh` for the APK | done |
+| The game runs on its own (nothing from another host, nothing from its own server but the optional extras): boots, enters VR, walks, talks, starts the Event, paints every texture; every pre-painted texture in the APK's `tex/` is what it paints, pixel for pixel (RULES.md 2, R1) | `test_standalone.js` (every tier but quick, `build.sh`) | done (3.15.44) |
 | The compressed version unpacks to the game file exactly | `build_compressed.js --check` (quick tier, pre-commit hook; every build unpacks again too) | done (3.15.45, NOTES 89) |
 | The compressed version works as a Bitcoin ordinal: alone, under the ordinal content policy; LOADING, unpacks, boots, enters VR, no outside requests, no errors, under 390,000 bytes; desktop note | `test_compressed.js` (every tier but quick) | done (3.15.45) |
 | The game file is fully minified; the minified game builds the same world as before | `minify_game.js --check` (quick tier, pre-commit hook); `minify_identity.js` (report, after a minification) | done (3.15.45, NOTES 89) |
 | Every experiment variant still applies to the game file | `experiment.py --check` (quick tier) | done |
 
 ## Latest results (newest first, headless harness)
+
+**3.15.45** (`tools/.runs/build_v45.log`): `build.sh`'s checks pass (SYNC CHECK, EXPERIMENT CHECK, APK CHECK, STANDALONE TEST, COMPRESSED TEST all PASSED; BUILD DONE 3.15.45 (45)). Quick tier: every stage passes.
+Standard pass: running.
+
+**3.15.42-3.15.44**: no tier results recorded here; each build's changes were covered by the targeted tests listed in its VERSIONS.md row.
 
 **Standard tier on 3.15.41 with the five new tests** (`tools/.runs/std_v41b.log`, then `std_v41c.log` for the stages after a container restart cut the first run at the world stage, run with `--only`): every stage passes (308 + 61 PASS lines, 0 + 0 FAIL), including roaming, the meetings, the jazz drums, audio, and far detail with the batcher.
 

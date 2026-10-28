@@ -86,7 +86,8 @@ and look at **Distribution → Builds**:
    ```sh
    adb logcat -s GreeblisServer GreeblisLauncher TwaLauncher TWALauncherActivity
    ```
-   You should see `Serving 1063827 bytes on http://127.0.0.1:17777/` and
+   You should see `Serving <n> bytes on http://127.0.0.1:17777/` (n is the size of
+   `tools/android/app/src/main/assets/index.html`) and
    `Setting Oculus Browser launch mode to immersive`.
 
 If it opens a flat browser panel instead of VR, tell me: the fallback is
@@ -143,7 +144,7 @@ does not come back cleanly in `tools/BUGS.md`.
 3. Put the signing files in place (section 1).
 4. Build and check, from the game file alone:
    ```sh
-   tools/build.sh --bump                     # copies, tex/, version +1 if what ships changed, APK at the root, checks
+   tools/build.sh --bump                     # minify, copies, tex/, version +1 if what ships changed, APK at the root, compressed version, checks
    ```
    (`tools/BUILD.md` lists the steps it runs.) Every store upload needs a higher `versionCode`; `--bump` raises it
    and `versionName` together. Add the version's row to `tools/VERSIONS.md`.
@@ -156,7 +157,8 @@ does not come back cleanly in `tools/BUGS.md`.
 F-B30, 3.15.42), the Event's pizza batched (P20); native render scale and no layer swaps (F-B31), the Event scale
 removed, the Ancient left out from outside the church (P21), Gooward's translucent parts merged (P22, 3.15.43);
 painted textures seeded so the build is rebuildable from the game file (R1, 3.15.44); the game file minified, the same world bit for bit (R2, 3.15.45). The quick tier and
-`test_standalone.js` pass on it; a full standard pass waits for a quiet machine. Its headset pass: no flashes in a
+`build.sh`'s checks (`test_standalone.js`, `test_compressed.js` among them) pass on it; the standard pass is
+recorded in `tools/TEST_PLAN.md` (Latest results). Its headset pass: no flashes in a
 dance battle, speaking to Nextessa, planting or at the Summoning Pillar; the Event's frame rate in the log
 (`perf_log.js`); the emote colours and Gooward look right. The Alpha
 channel is only you and invited testers, so uploading there first and running that same build
@@ -232,7 +234,9 @@ selected in the Developer Dashboard (done by the author, 2026-10-27).
 
 ## 5d. Multiview (release path since 3.15.34; was the experiment below)
 
-`tools/.runs/GreeblisTown-exp-multiview.apk` (same package and version as the
+History: the `multiview` experiment was retired in 3.15.34, when multiview became the release path; there is no
+`multiview` variant in `tools/experiment.py` any more. The same checks now apply to the release APK itself.
+As written for the experiment: `tools/.runs/GreeblisTown-exp-multiview.apk` (same package and version as the
 release; `adb install -r`, reinstall the release afterwards). With logcat open
 (`adb logcat -s GreeblisServer`):
 1. At boot the log says `multiview planned (... OCULUS_multiview true ...)`, and
@@ -268,8 +272,9 @@ bundled in the APK is kept at the root as `index.html` next to the APK.
 `tools/sync_game.py` copies it from the game file `tools/uncompressed.html` (where every change is made), `--check`
 (every test tier) and `tools/check_apk.sh` check it, and the pre-commit hook in `tools/git-hooks/`
 (`git config core.hooksPath tools/git-hooks`, once per clone) refuses a commit
-in which the two differ, or in which the root APK does not contain the current
-asset, so a release commit carries the latest build and the exact game file
+in which the two differ, in which the root APK does not contain the current
+asset, in which the game file is not fully minified, or in which
+`tools/index.compressed.html` does not unpack to the game file, so a release commit carries the latest build and the exact game file
 inside it. Rule for the root APK (the author, 2026-10-27): `GreeblisTown-release.apk`
 at the root is always the latest build; every change to the asset is followed by
 a rebuild and a version bump before it is committed.

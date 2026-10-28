@@ -17,9 +17,12 @@ tools/
   uncompressed.html        THE GAME FILE: the whole game, minified, every change made in it directly
   index.compressed.html    the compressed version (a Bitcoin ordinal; never in the APK), built from it
   build.sh                 rebuilds everything from the game file (minify, copies, tex/, version, APK, compressed)
+  minify_game.js           minifies the game file in place (RULES.md 19); --check
+  build_compressed.js      builds index.compressed.html from the game file; --check
   sync_game.py             copies it to index.html (root) and the APK's asset; --check compares
   experiment.py            diagnostic variants of a copy, for headset A/B tests
   test_*.js, *.sh          test suite (see tools/README.md)
+  RULES.md                 the author's rules: read before any change
   BUILD.md                 this file: how the APK works, building, signing, testing
   RELEASE.md               what the author does: signing key, headset test, store upload
   NOTES.md                 investigation notes, numbered
@@ -71,8 +74,8 @@ What the entry script does on a Quest browser (NOTES 34, 41, 42):
    the browser forbids `baseLayer` on a session with the `layers` feature, so
    the game renders through an `XRProjectionLayer` behind an object that shows
    three.js its usual base layer (an MSAA framebuffer resolved into the layer's
-   eye texture each frame); layer swaps for the render-scale governor keep the
-   old layer in front until the new one is drawn;
+   eye texture each frame); the layer is never swapped: the quality governor
+   changes foveation only, at native render scale (F-B31, since 3.15.43);
 5. never ends the session on an entry failure: the error goes to the loading
    screen with two retries, and page errors go to logcat via `/log`;
 6. uses the pre-rendered textures in `assets/tex/` (`tools/prerender_textures.js`,
@@ -109,8 +112,9 @@ The steps by hand:
 node tools/minify_game.js               # minify the game file in place (to a fixed point)
 python3 tools/sync_game.py              # copy the game file to index.html (root) and the APK's asset
 node tools/prerender_textures.js        # re-paint assets/tex/ (after a change to a texture painter)
-cd tools/android
-./gradlew assembleRelease               # -> app/build/outputs/apk/release/app-release.apk (copy it to the root)
+# raise versionCode and versionName in tools/android/app/build.gradle if what ships changed (RULES.md 12)
+(cd tools/android && ./gradlew assembleRelease)   # -> app/build/outputs/apk/release/app-release.apk (copy it to the root)
+node tools/build_compressed.js          # rebuild tools/index.compressed.html (RULES.md 20; the pre-commit hook refuses a stale one)
 ```
 
 ### Signing
@@ -136,18 +140,22 @@ means the store listing can never be updated.
 skip stages already passed after a machine restart). How to run and write tests: `tools/TESTING.md`; one row per
 tool: `tools/README.md`; what each thing is tested by: `tools/TEST_PLAN.md`.
 
-- **Every tier (`--quick` alone):** the asset equals the original plus the entry edits and the gameplay fixes;
-  the loopback server serves the game byte-for-byte (JVM harness); FIXES.md is current; dialogue spelling; the
-  tentacle bend is bit-identical; the APK passes the Meta store packaging checks (VRC.Quest.Packaging.1-6).
+- **Every tier (`--quick` alone):** the shipped copies are the game file (`sync_game.py --check`); the game file is
+  fully minified (`minify_game.js --check`); the compressed version unpacks to it exactly (`build_compressed.js
+  --check`); every experiment still applies (`experiment.py --check`); the loopback server serves the game
+  byte-for-byte (JVM harness); the docs are consistent (`check_docs.py`); dialogue spelling; the tentacle bend is
+  bit-identical; the APK passes the Meta store packaging checks (VRC.Quest.Packaging.1-6).
 - **The standard pass** adds, in headless Chromium with a fake WebXR headset: VR entry (early, late, no grant),
   runtime play with the layers path, a layer swap, visibility and context loss; multiview (each eye matches the
-  classic path, no mid-frame upload or compile); the Quest 3S uniform budget; warm-up coverage; the quality
-  governor on a Quest 3S and a Quest 3; the game's content (gifts, talk, shyness, the bribe, outfits, battles, the
+  classic path, no mid-frame upload or compile); the Quest 3S uniform budget; warm-up coverage; the game runs
+  alone and its `tex/` is what it paints (`test_standalone.js`); the compressed version works as an ordinal
+  (`test_compressed.js`); no texture made during play (`texture_census.js`); the quality governor on a Quest 3S
+  (foveation only, never a layer swap; the Event locks the lowest level); the game's content (gifts, talk, shyness, the bribe, outfits, battles, the
   Ancient, the robin, vignettes, the Event, Backpacka); greeting; the wrist HUD and haptics; roaming; the
   meetings; the jazz drums; audio; far detail and the batcher; world, input, progression, visits, the courier and
   the return-home scenarios.
-- **The full pass** adds long soaks and every scenario, release parity, the z-fight and single-sided checks,
-  optimisation identity, the performance report and the loading, handover, hitch, scene-cost, Event and sharpness
+- **The full pass** adds long soaks and every scenario, the z-fight and single-sided checks, optimisation
+  identity, the Ancient check (P21), the performance report and the loading, handover, hitch, scene-cost, Event and sharpness
   reports. Run it on the final build.
 
 What cannot be tested here: the actual launch on a headset. Sideload and
