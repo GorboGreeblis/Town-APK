@@ -1455,3 +1455,23 @@ VR-entry fix; each item is for discussion first.
     sized to its parts, because batches share a program), the scene's matrix walk 2.6-3.4 ms, the batcher's pass
     2.2 ms, culling 1.8 ms. Tried and reverted: memoising the batcher's per-part visibility walk per frame (parents
     shared by many parts) made the pass slower, 2.12 -> 2.45 ms (new properties on thousands of three.js objects).
+91. **The author's 3.15.47 run: flashes and the CPU-bound Event (3.15.48).** The author: "multiple screen flashes, maybe
+    emote / vignette related", "before the Event and outside of Dance battles", "or random"; the frame rate under 60
+    "while Backpacka was present"; B was pressed after the flashes but did nothing (the mark was only ever in the
+    `flashlog` diagnostic build, retired with rule 22). **The live log** (`run.txt`, captured as HEADSET_DIAG.md now
+    says) read with `perf_log.js`: town median 71.8, the Event median 63.3 and 56.4 at worst, all four readings under
+    60 at (-24, -2), the south end of the dance floor, 330-370 draws; and the runtime's lines there: app GPU time
+    9.3 ms of a 13.9 ms frame, GPU busy 62%, the GPU clock not raised, so the Event is CPU-bound (draw submission and
+    script); two shader compiles during play, one the instant the Event started (key cut off in the log; the
+    compile line now names the differing fields, D2). **The flashes**: `texture_census.js` (classic path) showed
+    textures first uploaded when first drawn, inside the frame: the library's book covers, a sign, labels, the panels'
+    spare canvases, and three 1365x1544 image bitmaps at about 6 minutes: Gooward's gallery mural, painted by a worker
+    after the boot and swapped in strip by strip. That fits "random, before the Event, outside battles". F-B34
+    pre-paints the mural into `tex/`; F-B35 uploads every texture while loading. **Performance**: with the GPU idle
+    enough, triangles cost little: P24 batches the creatures together (296 -> 274 draws at the author's spot, +0.6%
+    triangles). **Tools** (the author: "hardening and improving our tools to better capture flashes and performance
+    drops"): the harness watches every test for GPU work inside XR frames (texture uploads and copies, mipmaps, pixel
+    reads, renderbuffer storage, shader compiles), on both render paths, and `run_tests.sh` fails the pass on any;
+    the census also plays the Speech and the Event to its end (Backpacka's show); `perf_log.js` lists the flash marks
+    with what the log shows in the 3 s before each, the long frames, and a CPU- or GPU-bound verdict per scene from the
+    runtime's lines; `capture_log.ps1` / `capture_log.sh` capture a whole session live as UTF-8.

@@ -132,7 +132,11 @@ quality level (since 3.15.43 every level is at native scale: 0-2 without, 3-4 wi
 dialogue and the Event gives the frame-rate picture the OVR Metrics Tool would,
 with the scene named.
 
-Capture it live, from before the launch to the end of the run, and let the reader summarise it:
+Capture it live, from before the launch to the end of the run (`tools\capture_log.ps1` on Windows,
+`tools/capture_log.sh` elsewhere, do exactly this and save UTF-8), and let the reader summarise it. **When you see a
+flash, press B on the right controller** (a short buzz confirms): the log gets "MARK flash seen" with the frame number,
+and `perf_log.js` lists every mark with what the log shows in the 3 s before it (long frames over 28 ms, uploads,
+shader compiles, GPU work inside a frame). By hand:
 
 ```
 adb logcat -c

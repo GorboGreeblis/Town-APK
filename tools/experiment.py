@@ -34,11 +34,11 @@ EXPERIMENTS = {
     # path (each eye drawn separately) for A/B comparisons.
     "nomultiview": [('a=!(!f||l&&!c&&!s),n="webgl2 "+i', 'a=!1,n="experiment nomultiview; webgl2 "+i')],
     # Flash diagnostics (3.15.41 on the author's Quest 3S: three bright, washed-out flashes, two partway through
-    # the Event; NOTES 79). Plays exactly like the release; only the log changes: B on the right controller (the one
-    # button the game leaves free) writes "MARK flash seen" (with a short buzz), so each flash can be lined up with what happened then; the hazard watch
-    # also counts texture storage, framebuffer attachments, renderbuffer storage, buffer uploads, flushes and syncs
-    # while a frame draws, logs up to 300 with the frame number (not only the first 12), and every perf line carries
-    # the totals; frames over 28 ms are logged; the old layer's destruction after a swap is logged.
+    # the Event; NOTES 79). Plays exactly like the release; only the log changes: the hazard watch also counts texture
+    # storage, framebuffer attachments, renderbuffer storage, buffer uploads, flushes and syncs while a frame draws,
+    # logs up to 300 with the frame number (not only the first 12), and every perf line carries the totals; the old
+    # layer's destruction after a swap is logged. (The B-button flash mark, the frame counter and the long-frame lines
+    # are in the release since 3.15.48, NOTES 91.)
     "flashlog": [(
         '"invalidateFramebuffer"].forEach((function(r){',
         '"invalidateFramebuffer","texStorage2D","texStorage3D","compressedTexImage2D","compressedTexSubImage2D","framebufferTexture2D","framebufferTextureLayer","framebufferRenderbuffer","renderbufferStorage","renderbufferStorageMultisample","bufferData","flush","finish","fenceSync","clientWaitSync","deleteTexture","deleteFramebuffer","deleteRenderbuffer"].forEach((function(r){',
@@ -46,17 +46,8 @@ EXPERIMENTS = {
         'st.inFrame<=12&&__gtLog("multiview: "+r+" while a frame draws ("+st.inFrame+")")',
         'st.inFrame<=300&&__gtLog("multiview: "+r+" while a frame draws ("+st.inFrame+", frame "+(e.mvFrame||0)+")")',
     ), (
-        'e.mvInFrame=!0;try{return a.apply(r,arguments)}',
-        'e.mvFrame=(e.mvFrame||0)+1,e.mvInFrame=!0;try{return a.apply(r,arguments)}',
-    ), (
         '.replace(/\\s+/g,"_")))}catch(w){}F.ctrls',
         '.replace(/\\s+/g,"_")+(function(){try{var S=window.__gtXR&&window.__gtXR.mvStats;return" hz="+(S?S.inFrame:0)+(S&&S.inFrame?":"+JSON.stringify(S.inFrameKinds).replace(/[{}"]/g,""):"")+" pre="+(S?S.preUploads:0)+" tex="+O.info.memory.textures+" geo="+O.info.memory.geometries}catch(e){return""}})()))}catch(w){}F.ctrls',
-    ), (
-        'const t=performance.now(),U=w?t-w:16.7;w=t;',
-        'const t=performance.now(),U=w?t-w:16.7;w&&U>28&&t-(window.__gtLongAt||0)>500&&(window.__gtLongAt=t,window.__gtLog&&window.__gtLog("long frame "+Math.round(U)+" ms"+(me&&me.active?" event":"")));w=t;',
-    ), (
-        'j&&ye(j,5)&&Et();',
-        'j&&ye(j,5)&&Et(),J&&ye(J,5)&&(window.__gtLog&&window.__gtLog("MARK flash seen"+(me&&me.active?" event":"")+" frame "+((window.__gtXR&&window.__gtXR.mvFrame)||0)),function(){try{var h=J.src.gamepad.hapticActuators;h&&h[0]&&h[0].pulse(.5,60)}catch(e){}}());',
     ), (
         'var n=M.old;M.old=null,setTimeout((function(){try{n.destroy()}catch(e){}}),100)',
         'var n=M.old;M.old=null,setTimeout((function(){try{n.destroy(),__gtLog("old projection layer destroyed")}catch(e){}}),100)',

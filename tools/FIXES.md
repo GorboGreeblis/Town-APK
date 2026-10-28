@@ -459,6 +459,33 @@ heaviest 402 -> 380, for 290k -> 318k triangles (+10%: a batch is drawn whole wh
 Event has followed draw calls on the headset (NOTES 79); the author's run of this build says whether the trade pays.
 Batching draws the same triangles with the same materials (`opt_identity.js` proves batched against unbatched pixels).
 
+- **F-B34** (3.15.48; flashes: the author saw them "before the Event and outside of Dance battles", "possibly related to
+NPC vignettes or emotes, or random"; NOTES 91): Gooward's gallery mural (4096x1544, in three strips) is painted by a
+background worker after the boot, which takes minutes; each strip then replaced its placeholder texture and was
+uploaded (about 8 MB) the first time it was drawn, inside an XR frame, at a moment that varied from session to
+session. Now the APK carries the mural's strips pre-painted in `tex/` (the mural painter seeds itself, so they are
+exactly what the worker paints; keyed by the painter's source) and swaps them in while loading; without `tex/` (the
+game file alone, the compressed version) the worker still paints them and each strip is uploaded the moment it
+arrives, between frames. `prerender_textures.js` and `test_standalone.js` wait for the worker's strips.
+
+- **F-B35** (3.15.48; flashes, RULES.md 9; NOTES 91): a texture's GPU storage was made the first time it was drawn, inside
+that frame: the library's book covers, signs and labels first seen in play, the UI panels' second and third
+canvases, and the Speech's glue-bottle label (painted the first time the Speech ran). Now the loading warm-up uploads
+every texture in the scene (hidden objects included) and every texture the texture maker painted, the panels upload
+their canvases when they are built (at the VR entry, outside any frame), and the glue label is made and uploaded by
+the Gem's pre-warm. The same textures and pixels; only the upload moves to loading.
+
+- **P24** (3.15.48; T16, the Event's frame rate; the author's 3.15.47 log: the Event is CPU-bound, the GPU at 9.3 of
+13.9 ms; NOTES 91): the creatures are batched together instead of each with itself (one batching pass over all of
+them). At the author's low spots (-24, -2) and (-25, 12), 8 headings each: heaviest views 296 -> 274 draws for +0.6%
+triangles (the Event gathers the creatures together). Batching draws the same triangles with the same materials.
+
+- **D2** (3.15.48; the author: "does the press B when flashes occur no longer work?"; NOTES 91): diagnostics in the
+release log (they were only in the `flashlog` diagnostic build): B on the right controller writes "MARK flash seen"
+with a short buzz; frames over 28 ms are logged (at most two a second); a shader compiled during play names the key
+fields that differ from the closest program of its kind (the key was cut after 40 characters); XR frames are numbered
+for the marks.
+
 ## Multiview (release path since 3.15.34)
 
 Edits for the multiview experiment, in order. Three groups:

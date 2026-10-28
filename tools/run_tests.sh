@@ -61,6 +61,7 @@ report() { name=$1; shift; wanted "report: $name" || return 0; KEY=$(key "$@")
   if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  INFO  $name (see log)"; printf '%s\t%s\n' "$KEY" "report: $name" >> "$STATE"; else SUMMARY="$SUMMARY\n  INFO  $name (probe exit $rc)"; fi; }
 
 echo "Greeblis Town test pass: $TIER${ONLY:+ (only stages matching /$ONLY/)}"; T_ALL=$(date +%s)
+HAZ="$ROOT/tools/.runs/frame_hazards.log"; mkdir -p "$ROOT/tools/.runs"; [ -n "$RESUME" ] || : > "$HAZ"   # every test's frame-hazard watch (lib/harness.js) appends here
 run "the shipped copies (index.html, the APK asset) are the game file tools/uncompressed.html (sync_game.py --check)" python3 -I "$ROOT/tools/sync_game.py" --check
 run "the game file is minified, not compressed (minify_game.js --check, RULES.md 19)" node "$ROOT/tools/minify_game.js" --check
 run "the compressed version unpacks to the game file exactly (build_compressed.js --check, RULES.md 20)" node "$ROOT/tools/build_compressed.js" --check
@@ -130,6 +131,9 @@ else
 fi
 
 echo; echo "=== SUMMARY ($TIER, $(( ($(date +%s) - T_ALL) / 60 )) min) ==="; printf "$SUMMARY\n"
+# GPU work inside XR frames seen by any test (the flash causes; lib/harness.js): a failure of the pass
+if [ -s "$HAZ" ]; then echo "  FAIL  frame hazards (GPU work inside XR frames, the flash causes) seen by $(wc -l < "$HAZ") test run(s):"; sed 's/^/        /' "$HAZ" | cut -c1-400; rc_all=1
+elif [ "$TIER" != quick ]; then echo "  PASS  no GPU work inside XR frames in any test (frame-hazard watch)"; fi
 [ $rc_all -eq 0 ] && echo "ALL TESTS PASSED" || echo "SOME TESTS FAILED"
 exit $rc_all
 }
