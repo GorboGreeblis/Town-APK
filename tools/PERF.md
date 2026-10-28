@@ -372,6 +372,8 @@ where the creatures stand), with identical pixels (`opt_identity.js`: 92 Event v
 | --- | --- |
 | P20: the pizza batched | 378 -> 324 draws in the heaviest view; identical pixels. Kept |
 | The batcher's part limit 27 -> 33 (the uniform budget leaves 65 rows) | 382 -> 377 draws; some views more triangles (bigger batches cull worse). Dropped |
+| Batching across neighbouring buildings (cells of 8, 12, 16 m) | 337 -> 332 at best: the scenery is already merged in a few big groups; half of all batches (68 of 136) are the creatures'. Dropped |
+| One set of batches for all the creatures (each is now batched only with itself) | Heaviest Event view 334 -> 307 draws; but over 5 points x 8 headings: town 147 -> 145 draws for 264k -> 311k triangles (+18%), the Event 152 -> 146 for 294k -> 321k (+9%), since a batch spanning the town is drawn whenever one of its creatures is. Measured, not applied |
 
 What is left in that view: about 100 batches, 90 creature parts (Gooward alone 30, 26 of them translucent), 36
 one-off parts of the garden's central group (each with its own texture, the closed texture-array question), and the
