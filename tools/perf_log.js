@@ -31,16 +31,48 @@ for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w
 // also logs Chromium lines.
 {
   const vr = {}, chrome = new Set(); let v;
-  const rv = /^\d+-\d+ (\d+):(\d+):(\d+)\.\d+\s+(\d+)\s+\d+ \w VrApi\s*: FPS=(\d+)\/(\d+),.*?Stale=(\d+)/gm;
-  while ((v = rv.exec(text))) (vr[v[4]] = vr[v[4]] || []).push({ t: v[1] + ':' + v[2] + ':' + v[3], fps: +v[5], hz: +v[6], stale: +v[7] });
+  const rv = /^\d+-\d+ (\d+):(\d+):(\d+)\.\d+\s+(\d+)\s+\d+ \w VrApi\s*: FPS=(\d+)\/(\d+),.*?Stale=(\d+)(?:.*?App=([\d.]+)ms)?(?:.*?GPU%=([\d.]+))?(?:,CPU%=([\d.]+))?/gm;
+  while ((v = rv.exec(text))) (vr[v[4]] = vr[v[4]] || []).push({ t: v[1] + ':' + v[2] + ':' + v[3], fps: +v[5], hz: +v[6], stale: +v[7], app: v[8] ? +v[8] : null, gpu: v[9] ? +v[9] : null, cpu: v[10] ? +v[10] : null });
   const rc = /^\d+-\d+ [\d:.]+\s+(\d+)\s+\d+ \w (?:chromium|cr_\w+)/gm; while ((v = rc.exec(text))) chrome.add(v[1]);
+  // the scene of each second, from the game's own perf lines (their logcat time and the "event" flag)
+  const scene = []; const rp = /^\d+-\d+ (\d+):(\d+):(\d+)\.\d+.*?perf fps=[\d.]+[^\n]*?( event)? at=/gm; let sp;
+  while ((sp = rp.exec(text))) scene.push({ s: 3600 * sp[1] + 60 * sp[2] + +sp[3], ev: !!sp[4] });
+  const sceneAt = (t) => { const [h, m2, s2] = t.split(':').map(Number), x = 3600 * h + 60 * m2 + s2; let r = null; for (const q of scene) if (q.s <= x + 10 && q.s >= x - 1) { r = q.ev ? 'the Event' : 'town'; if (q.s >= x) break; } return r; };
+  // the game's process: the browser's (it logs Chromium lines); in a capture filtered to the game's and the runtime's
+  // tags there are none, so the process with the most runtime lines
+  if (!chrome.size && Object.keys(vr).length) chrome.add(Object.entries(vr).sort((p, q) => q[1].length - p[1].length)[0][0]);
   for (const [pid, list] of Object.entries(vr)) {
     const f = list.map((x) => x.fps).sort((a, b) => a - b), st = list.reduce((a, x) => a + x.stale, 0);
     const u60 = list.filter((x) => x.fps < 60), uhz = list.filter((x) => x.fps < x.hz - 1);
-    console.log(`headset runtime (VrApi), process ${pid}${chrome.has(pid) ? ' (the browser: the game)' : ''}: ${list.length} s from ${list[0].t} to ${list[list.length - 1].t}; ` +
+    console.log(`headset runtime (VrApi), process ${pid}${chrome.has(pid) ? ' (the game)' : ''}: ${list.length} s from ${list[0].t} to ${list[list.length - 1].t}; ` +
       `${f[0]}-${f[f.length - 1]} fps (median ${f[Math.floor(f.length / 2)]}), refresh ${[...new Set(list.map((x) => x.hz))].join('/')} Hz; ` +
       `${uhz.length} s under the refresh rate, ${u60.length} s under 60${u60.length ? ' (' + u60.map((x) => x.t + ' ' + x.fps).slice(0, 8).join(', ') + ')' : ''}; ${st} stale frames`);
+    // CPU or GPU: in the seconds under the refresh rate, the app's GPU time against the frame budget
+    if (chrome.has(pid) && list.some((x) => x.app !== null)) {
+      const med = (a) => { const b = a.filter((x) => x !== null).sort((p, q) => p - q); return b.length ? b[Math.floor(b.length / 2)] : null; };
+      for (const sc of ['town', 'the Event', null]) {
+        const slow = list.filter((x) => x.fps < x.hz - 1 && x.fps > 20 && sceneAt(x.t) === sc); if (!slow.length) continue;
+        const app = med(slow.map((x) => x.app)), gpu = med(slow.map((x) => x.gpu)), cpu = med(slow.map((x) => x.cpu)), budget = 1000 / med(slow.map((x) => x.hz));
+        const verdict = app === null ? '' : app < 0.8 * budget ? `CPU-bound: the GPU has room (app GPU time ${app} ms of a ${budget.toFixed(1)} ms frame)` : `GPU-bound (app GPU time ${app} ms of a ${budget.toFixed(1)} ms frame)`;
+        console.log(`  ${sc || 'unlabelled'}: ${slow.length} s under the refresh rate, median ${med(slow.map((x) => x.fps))} fps, GPU busy ${gpu}, CPU ${cpu}; ${verdict}`);
+      }
+    }
   }
+}
+// Flash marks (B on the right controller, 3.15.48): each with what the log shows in the 3 s before it
+{
+  const ev = []; let e2; const re2 = /m=(\d+)ms (MARK flash seen[^\n]*|long frame \d+ ms[^\n]*|uploaded \d+ texture[^\n]*|multiview: \d+ shader program[^\n]*|multiview: \w+ while a frame draws[^\n]*)/g;
+  while ((e2 = re2.exec(text))) ev.push({ ms: +e2[1], what: e2[2].trim() });
+  const marks = ev.filter((x) => x.what.startsWith('MARK'));
+  if (marks.length) {
+    console.log(`flash marks (B pressed): ${marks.length}`);
+    for (const mk of marks) {
+      const near = ev.filter((x) => !x.what.startsWith('MARK') && x.ms <= mk.ms && x.ms >= mk.ms - 3000);
+      console.log(`  ${(mk.ms / 1000).toFixed(1)} s ${mk.what}: ${near.length ? near.map((x) => `${((x.ms - mk.ms) / 1000).toFixed(1)} s ${x.what.slice(0, 120)}`).join('; ') : 'nothing logged in the 3 s before'}`);
+    }
+  }
+  const longs = ev.filter((x) => x.what.startsWith('long frame'));
+  if (longs.length) console.log(`long frames (over 28 ms, at most two a second): ${longs.length}; longest ${Math.max(...longs.map((x) => +x.what.match(/\d+/)[0]))} ms`);
 }
 if (!rows.length) {
   console.log('no perf lines found (needs a 3.15.27 or later build; the line reads "page: m=perf fps=...").');

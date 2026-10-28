@@ -39,6 +39,8 @@ const texDir = path.join(root, 'tools/android/app/src/main/assets/tex');
     const tex = window.__gtXR && window.__gtXR.tex; out.used = tex ? (tex.used || 0) : null; out.captured = tex && tex.capture ? tex.capture.length : 0;
     return out;
   });
+  // the gallery mural's strips come from a worker minutes after the boot headless: wait for them before comparing
+  await page.waitForFunction(() => (window.__gtXR.tex.capture || []).filter((e) => /^mural:/.test(e.k)).length >= 3, null, { timeout: 30 * 60000, polling: 2000 }).catch(() => {});
   // the pre-painted textures, compared in the page against what it painted
   const manifest = JSON.parse(fs.readFileSync(path.join(texDir, 'manifest.json'), 'utf8'));
   const cmp = await page.evaluate(async (list) => {

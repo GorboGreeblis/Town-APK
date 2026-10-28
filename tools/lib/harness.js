@@ -97,6 +97,35 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
   page.on('pageerror', (e) => errors.push('pageerror: ' + String(e).split('\n')[0] + (e && e.stack ? ' @ ' + String(e.stack).split('\n').slice(1, 3).join(' | ').trim() : '')));
   page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text().split('\n')[0]); });
   if (vr) await page.addInitScript(fs.readFileSync(path.join(root, 'tools/fakexr.js'), 'utf8'));
+  // Frame-hazard watch (every test, both render paths): GPU work that must never happen while an XR frame draws (the
+  // flash causes: texture uploads and copies, mipmap builds, pixel reads, blits, framebuffer attachments, renderbuffer
+  // storage; NOTES 67, 80) and shader compiles (hitches). Recorded with the frame and a short stack; close() reports.
+  if (vr) await page.addInitScript(() => {
+    const H = window.__gtFrameHaz = { n: 0, kinds: {}, first: [] };
+    const K = ['texImage2D', 'texSubImage2D', 'texImage3D', 'texSubImage3D', 'texStorage2D', 'texStorage3D', 'compressedTexImage2D', 'copyTexImage2D', 'copyTexSubImage2D', 'generateMipmap', 'readPixels', 'framebufferTexture2D', 'framebufferTextureLayer', 'renderbufferStorage', 'renderbufferStorageMultisample', 'compileShader'];
+    for (const C of [window.WebGL2RenderingContext, window.WebGLRenderingContext]) {
+      if (!C) continue;
+      for (const k of K) {
+        const f = C.prototype[k]; if (typeof f !== 'function' || f.__gtHaz) continue;
+        const w = function () {
+          const X = window.__fakeXR;
+          if (X && X.inFrame && !/^(framebufferTexture2D|framebufferTextureLayer|blitFramebuffer)$/.test(k)) {   // the layer's own per-frame attach and the classic path's end-of-frame resolve are normal
+            const st = (new Error()).stack.split('\n').slice(2, 9).map((l) => l.trim()).join(' < ');
+            // multiview (the headset's path): every texture operation inside the frame is a hazard (F-B31 defers them all to
+            // after the frame); the classic path uploads changed textures at the frame's start, before drawing, so there
+            // only work done while three.js draws counts (a texture uploaded on first sight, mid-frame on either path)
+            const mv = !!(window.__gtXR && window.__gtXR.mvActive), drawing = /\/:3:\d+/.test(st);
+            if (!/XRWebGLBindingFake|fakexr|Fake/.test(st) && (mv || drawing)) {
+              H.n++; H.kinds[k] = (H.kinds[k] || 0) + 1;
+              if (H.first.length < 8) { const a = arguments, src = a[a.length - 1]; H.first.push({ k, frame: X.frames, size: src && src.width ? src.width + 'x' + src.height : '', stack: st.slice(0, 240) }); }
+            }
+          }
+          return f.apply(this, arguments);
+        };
+        w.__gtHaz = true; C.prototype[k] = w;
+      }
+    }
+  });
   // GT_MULTIVIEW=1: the multiview experiment runs headless without MSAA (SwiftShader has OVR_multiview2 but
   // not the multisampled OCULUS_multiview the headset uses).
   if (vr && process.env.GT_MULTIVIEW) await page.addInitScript(() => { window.__fakeXR.multiview = true; });
@@ -129,7 +158,19 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
     presentS,
     page, browser, errors, bootS, url, requests,
     hooks: await page.evaluate(() => Object.keys(window.__dbg)),
-    close: async () => { await browser.close(); srv.close(); },
+    frameHazards: () => page.evaluate(() => window.__gtFrameHaz || null).catch(() => null),
+    close: async () => {
+      // report GPU work inside XR frames (flash causes) for every test that booted the game; collected by run_tests.sh
+      try {
+        const h = await page.evaluate(() => window.__gtFrameHaz || null);
+        if (h && h.n) {
+          const line = `${path.basename(process.argv[1] || '?')}: ${h.n} GPU operations inside XR frames ${JSON.stringify(h.kinds)}; first: ${h.first.map((x) => `${x.k} ${x.size} frame ${x.frame} @ ${x.stack}`).join(' | ')}`;
+          console.log('  WARNING  frame hazard (flash cause): ' + line);
+          fs.mkdirSync(path.join(root, 'tools/.runs'), { recursive: true }); fs.appendFileSync(path.join(root, 'tools/.runs/frame_hazards.log'), new Date().toISOString() + ' ' + line + '\n');
+        }
+      } catch (e) {}
+      await browser.close(); srv.close();
+    },
   };
 }
 

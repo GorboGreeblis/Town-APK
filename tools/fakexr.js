@@ -146,7 +146,7 @@
     }
     requestAnimationFrame(cb) {
       const id = ++this._id;
-      const h = window.requestAnimationFrame((t) => { this._raf.delete(id); if (this.ended) return; S.frames++; cb(t, new Frame(this)); });
+      const h = window.requestAnimationFrame((t) => { this._raf.delete(id); if (this.ended) return; S.frames++; S.inFrame = true; try { cb(t, new Frame(this)); } finally { S.inFrame = false; } });   // inFrame: the harness's frame-hazard watch
       this._raf.set(id, h); return id;
     }
     cancelAnimationFrame(id) { const h = this._raf.get(id); if (h != null) window.cancelAnimationFrame(h); this._raf.delete(id); }

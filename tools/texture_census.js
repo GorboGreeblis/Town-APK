@@ -45,9 +45,12 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     step('phone call and Nextessa');
     try { D.ue.call(); await gwait(() => !!D.ue.courier, 45, 90); const n = D.ue.courier; out.courier = !!n; if (n) { near(n); await wait(500); const a = D.xe.actionsFor(n) || []; for (const x of a.slice(0, 2)) { x.run(); await gwait(() => !D.qt.isOpen, 20, 30); } await gwait(() => !D.ue.courier, 60, 120); } } catch (e) { out.courierErr = String(e); }
     step('text exchanges'); out.vigs = 0;
-    try { const m = V.lineUp(); const town = V.all.filter((pk) => pk[0] !== 'SL' && pk[1] !== 'SL'); for (const pk of town.filter((_, i) => i % 15 === 0).slice(0, 4)) { const A = m[pk[0]], B = m[pk[1]]; if (!A || !B) continue; D.xe.lastTarget = null; await gwait(() => !A.busy && !B.busy && !D.qt.isOpen, 30, 60); if (V.play(A, B, true)) { out.vigs++; await gwait(() => !V.playing(), 12, 120); } } } catch (e) { out.vigErr = String(e); }
+    try { const m = V.lineUp(); const town = V.all.filter((pk) => pk[0] !== 'SL' && pk[1] !== 'SL'); for (const pk of town.filter((_, i) => i % 7 === 0).slice(0, 8)) { const A = m[pk[0]], B = m[pk[1]]; if (!A || !B) continue; D.xe.lastTarget = null; await gwait(() => !A.busy && !B.busy && !D.qt.isOpen, 30, 60); if (V.play(A, B, true)) { out.vigs++; await gwait(() => !V.playing(), 12, 120); } } } catch (e) { out.vigErr = String(e); }
+    // the Speech: Sparkakus with the three Artifacts (the Gem assembled with the glue bottle)
+    step('the Speech');
+    try { const Kt = D.Kt; Kt.artifacts = 3; Kt.rewards.artifacts = false; if (D.st && D.st.group) { D.At.position.x = D.st.group.position.x + 1.4; D.At.position.z = D.st.group.position.z; } await wait(500); D.LIB.talk(); await gwait(() => Kt.rewards.artifacts, 120, 400); out.speech = !!Kt.rewards.artifacts; await wait(3000); } catch (e) { out.speechErr = String(e); }
     step('the Event');
-    try { const Kt = D.Kt; Kt.rewards.stone = Kt.rewards.seeds = Kt.rewards.snacks = true; D.oe.open(); await wait(300); const yes = (D._t.state && D._t.state.items || []).find((i) => i.label === 'Yes'); if (yes) yes.onClick(); await gwait(() => D.me.active, 10, 30); out.event = !!D.me.active; await gwait(() => false, 70, 240); } catch (e) { out.eventErr = String(e); }
+    try { const Kt = D.Kt; Kt.rewards.stone = Kt.rewards.seeds = Kt.rewards.snacks = true; D.oe.open(); await wait(300); const yes = (D._t.state && D._t.state.items || []).find((i) => i.label === 'Yes'); if (yes) yes.onClick(); await gwait(() => D.me.active, 10, 30); out.event = !!D.me.active; await gwait(() => !D.me.active, 240, 900); out.eventEnded = !D.me.active; } catch (e) { out.eventErr = String(e); }
     clearInterval(adv); step('done (the census\'s own measuring)');
     // every text exchange's lines laid out as the bubble lays them out: their heights must be in the loading pool
     const meas = document.createElement('canvas').getContext('2d'); meas.font = 'bold 34px sans-serif';
@@ -58,13 +61,13 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     out.canvases = TC.canvases; out.textures = TC.textures;
     return out;
   });
-  note(`played: ${r.steps.join(', ')}; Nextessa came: ${r.courier}; text exchanges: ${r.vigs}; the Event ran: ${r.event}`);
-  for (const k of ['courierErr', 'vigErr', 'eventErr']) if (r[k]) note(`${k}: ${r[k]}`);
+  note(`played: ${r.steps.join(', ')}; Nextessa came: ${r.courier}; text exchanges: ${r.vigs}; the Speech: ${r.speech}; the Event ran: ${r.event} (to its end: ${r.eventEnded})`);
+  for (const k of ['courierErr', 'vigErr', 'speechErr', 'eventErr']) if (r[k]) note(`${k}: ${r[k]}`);
   const play = (l) => l.filter((x) => !/^done/.test(x.step)); r.canvases = play(r.canvases); r.textures = play(r.textures);
   const show = (l) => l.slice(0, 12).map((x) => `${x.t}s [${x.step}] ${x.what}  ${x.where}`).join('\n      ');
   expect('no canvas is created during play (every emote, face, bubble and print is made while loading)', r.canvases.length === 0, '\n      ' + show(r.canvases));
   expect('no GL texture is allocated during play', r.textures.length === 0, '\n      ' + show(r.textures));
-  expect('the situations ran: Nextessa came, two or more text exchanges played, the Event started', r.courier && r.vigs >= 2 && r.event, JSON.stringify({ courier: r.courier, vigs: r.vigs, event: r.event }));
+  expect('the situations ran: Nextessa came, two or more text exchanges played, the Speech, the Event to its end (Backpacka\'s show)', r.courier && r.vigs >= 2 && r.speech && r.event && r.eventEnded, JSON.stringify({ courier: r.courier, vigs: r.vigs, speech: r.speech, event: r.event, ended: r.eventEnded }));
   const pooled = r.pool ? new Set(r.pool.map((k) => +k.split('|')[1])) : null;
   const missing = pooled ? r.heights.filter((h) => !pooled.has(h)) : r.heights;
   note(`speech bubble heights the exchanges need: ${r.heights.join(', ')}; pooled at load: ${pooled ? [...pooled].sort((a, b) => a - b).join(', ') : 'none (a build before F-B30)'}`);
