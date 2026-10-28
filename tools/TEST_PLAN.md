@@ -64,7 +64,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | --- | --- | --- |
 | Building hulls/parts keep player and NPCs out; workers may enter their own kiosk and stand on their home part | `test_npc_home.js` (NPC side); player side | partial |
 | Zones (`E`: still/portal/scenery/pool/phone/stump) and roam grids (`JGP.roamFree`, `JGP.route` A*) produce walkable routes between any two open cells | `test_world.js` | done |
-| Far-detail LOD swaps at 62/66 m without popping errors; instanced batching (`gcEB`) keeps matrices valid | headless: move the camera and count visible meshes; check no NaN matrices | todo |
+| Far-detail LOD swaps at 62/66 m without popping errors; instanced batching (`gcEB`) keeps matrices valid | `test_lod.js` (standard tier): walking out to 84 m and back, exactly one of the two models shows, swaps at 66 m out and 61-62 m in, none inside the band; after every rendered frame of 20 s each batched part has exactly its world matrix, colour, shininess and specular in the array, a dropped part is zeroed, no NaN, no part drawn twice | done (3.15.41) |
 
 ## 5. NPC behaviour
 
@@ -73,9 +73,9 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Posted NPCs return to their post via waypoints; Mushroom hops onto the desk (`lo.post`) | `test_npc_home.js` (15 placements) | done (results in NOTES.md) |
 | Stuck detection and rescue (`De`: re-plan via waypoints, off-screen teleport after 4 stalls) | `test_npc_home.js` forced-stuck and far-player scenarios | done |
 | Away watchdog (`sendHome` after 4 s idle / 20 s moving away from home ground) | `test_world.js` | partial |
-| Roamers (gorbo, gratelet, p_mamagorbo) pick free spots, never inside hulls or zones | headless: run 2-3 min, sample positions each frame | todo |
-| Wander/trek for creatures (`ho`), personal space, spreading | same | todo |
-| Mama+Gorbo meeting schedule (`meetAt`), visits (`visitPlan`), vignettes (`VIGS`) fire and release NPCs (`busy` cleared) | `test_visits.js` (visits incl. interruptions); meeting/vignettes todo | partial |
+| Roamers (Gooward, Hennrick by the Portal, Mama Gorbo, the three dancers) pick free spots, never inside hulls or zones | `test_roam.js` (standard tier; `--long` 10 min): 3 game minutes sampled four times a second, everyone: no foreign building, inside the park; roamers: no solid zone, not in the Garden, never inside each other, all moving | done (3.15.41) |
+| Wander/trek for the townsfolk (`ho`), personal space, spreading | `test_roam.js` covers where they stand (buildings, park); kind "creature" is only Zollod, who stays in his kiosk while shy | partial (spreading todo) |
+| Mama+Gorbo meeting schedule (`meetAt`), visits (`visitPlan`), vignettes (`VIGS`) fire and release NPCs (`busy` cleared) | `test_meet.js` (standard tier: two meetings 20-40 s apart, 2.8 m apart facing each other, four goo arcs and four hearts 0.6-0.9 s apart, called off by the Event); `test_visits.js`; `test_content.js` (vignettes) | done (3.15.41) |
 | Greeting/freeze near the player (`greetR` 3.2 m, `proximityFreezeS` 12 s, `greetClear` 6 m): a walking townsperson stops and faces the player, goes on after 12 s, is stopped again after the player was 6 m away; Sparkakus's "!" from 6 m | `test_greet.js` (standard tier) | done |
 
 ## 6. Dialogue and UI
@@ -100,14 +100,14 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Long session stability: heap, programs, entity count over N minutes with all systems exercised (GPU counters are stubbed in the harness) | `test_soak.js` | Soak 10 min on 3.15.8: PASS, heap 119 -> 118 MB, programs 114 -> 114, 13 entities, no errors |
 | Pizza courier inside the church: detour around the Ancient to a player on the far side, deliver, walk back out (B11) | `test_courier.js` | yes |
 | Library finale: three Artifacts → Sparkakus awards the Gem | `test_progression.js` | done |
-| Backpacka sequence (`BP`) and jazz (`JAZZ`) timings | `test_content.js`: Backpacka comes during the Event (`--long`: and leaves); jazz timings todo | partial |
+| Backpacka sequence (`BP`) and jazz (`JAZZ`) timings | `test_content.js` (Backpacka); `test_jazz.js` (standard tier: on the audio clock at the kit, the game clock within 45 m, every hit on the 104 bpm grid, never early, at most a frame late, the 3 s look-ahead, off far away and under the horn) | done (3.15.41) |
 
 ## 8. Audio
 
 | Item | How | Coverage |
 | --- | --- | --- |
-| Audio context created on VR entry, `latencyHint balanced` on Quest, wake on select/squeeze and visibility | headless with fake AudioContext counting nodes | todo |
-| No node leaks over a long run (`G.note` oscillators stopped) | same | todo |
+| Audio context created on VR entry, `latencyHint balanced` on Quest, wake on select/squeeze and visibility | `test_audio.js` (standard tier): one context, running throughout, a suspended context runs again on focus | done (3.15.41) |
+| No node leaks over a long run (`G.note` oscillators stopped) | `test_audio.js`: three rounds of talk, a gift, a battle, the Portal, the bulb, the jazz and pickups; every source a round starts has ended once it settles, the counts per round do not grow | done (3.15.41) |
 | Spatial hearing radii (`hearR`) | headset | headset |
 
 ## 9. Performance and stability

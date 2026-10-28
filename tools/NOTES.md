@@ -1197,3 +1197,19 @@ VR-entry fix; each item is for discussion first.
     were set on (about 2.0 ms, estimated from the 3.15.27 baseline), never
     below their own values. Checked: 3.15.41 passes against it. The old baseline is kept in
     `tools/.runs/perf_baseline_v27.json`.
+
+78. **Five more of the test plan's open rows (3.15.41).** Roaming, the Mama
+    Gorbo and Gooward meetings, the jazz drums' timing, audio leaks, and far
+    detail with the batcher now have tests in the standard tier. They found
+    no game fault; what they taught about the game: kind "creature" is only
+    Zollod (the others are townsfolk with posts, and the roamers are Gooward,
+    Hennrick, Mama Gorbo and the three dancers); solid zones are the
+    clearance roamers keep when they pick a spot, while some posts sit beside
+    scenery by design (Fortizmo's); the release's batcher writes five vec4 a
+    part (its shininess and specular, from our fix list) where the original
+    wrote four; the drums switch clocks 1.5 s after the player stops hearing
+    them, and a switch starts the bars again; Sparkakus's periodic walk to
+    his shelves makes him busy, which ends a vignette (the content test now
+    waits for free speakers and holds him, as the game does for a visit);
+    and `me.active` (the Event) is a read-only getter, so a test starts the
+    real Event to see what it stops.

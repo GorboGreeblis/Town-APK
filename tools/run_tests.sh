@@ -2,7 +2,7 @@
 # Greeblis Town test passes. Three tiers share the same scripts:
 #
 #   tools/run_tests.sh --smoke     spot check of every element, a few minutes
-#   tools/run_tests.sh             standard pass (default), ~10-15 minutes
+#   tools/run_tests.sh             standard pass (default), about an hour on a 4-core machine
 #   tools/run_tests.sh --full      FULL pass: every scenario, long soak times.
 #                                  Run only on the final build (30+ minutes).
 #   tools/run_tests.sh --quick     static checks only, no browser (seconds)
@@ -57,6 +57,11 @@ if [ "$TIER" != quick ]; then
   run "game content: gifts, talk order, shyness, bribe, outfits, battles, the Ancient, the robin, Event lines, Backpacka" node "$ROOT/tools/test_content.js" "$ASSET"
   run "greeting: walking townsfolk stop and face the player within 3.2 m for 12 s; Sparkakus greets from 6 m" node "$ROOT/tools/test_greet.js" "$ASSET"
   run "wrist HUD and haptics: what is held is shown and redrawn; Blossoms and new friends pulse the controllers" node "$ROOT/tools/test_hud.js" "$ASSET"
+  run "roamers and townsfolk: never in a foreign building, a solid zone or the Garden, never outside the park, roamers keep moving" node "$ROOT/tools/test_roam.js" "$ASSET" $([ "$TIER" = full ] && echo --long)
+  run "Mama Gorbo and Gooward's meetings: schedule, spots, goo arcs and hearts, called off by the Event" node "$ROOT/tools/test_meet.js" "$ASSET"
+  run "jazz drums: on the beat on both clocks, on time for the drummer, look-ahead, silent far away and under the horn" node "$ROOT/tools/test_jazz.js" "$ASSET"
+  run "audio: one context, nothing left playing after rounds of every sound, resumes on focus" node "$ROOT/tools/test_audio.js" "$ASSET"
+  run "far detail and the batcher: one model at a time, swaps at 62/66 m; exact matrices in every batch, every frame" node "$ROOT/tools/test_lod.js" "$ASSET"
   run "world: routes, hulls, pickups, watchdog (${WORLD_S}s)" node "$ROOT/tools/test_world.js" "$ASSET" "$WORLD_S"
   run "input and locomotion (fake controllers)" node "$ROOT/tools/test_input.js" "$ASSET"
   if [ "$TIER" = full ]; then run "progression incl. gardening event (--long)" node "$ROOT/tools/test_progression.js" "$ASSET" --long;
