@@ -313,7 +313,7 @@ What the models have in common, as built:
   with three-fingered hands; he rolls on two unicycle wheels with springs.
 - **Palette and surface**: orange brush-stroke fur (`#e8742a`), a cream belly patch with seams and black studs, brass
   valves, chrome and black tyres. Every vertex jittered for a hand-made look.
-- **Face**: two glossy black eyes and four smaller black dots *(whether freckles or extra eyes is unclear)*.
+- **Face**: two glossy black eyes and four smaller matte black beauty marks beside them (the author).
 - **Motion**: the wheels roll with the distance travelled; when he plays, his muzzle morphs into a 3.7 m trumpet,
   the valves pump at the Event's 88 beats a minute and his arms reach for the horn.
 
@@ -389,7 +389,6 @@ What the models have in common, as built:
 
 Things the models show that the code does not explain (see also LORE.md's open questions). Answered so far:
 Gooward's lens discs are a second set of eyes and the wavy lines are forehead wrinkles; King Dino's lit buttons
-and back sockets are synthetic parts of his own body; Mama Gorbo's lime tube is a goo tube (the author).
-- Fortizmo's four small black dots beside his eyes.
+and back sockets are synthetic parts of his own body; Mama Gorbo's lime tube is a goo tube; Fortizmo's four small dots are beauty marks (the author).
 - Etcher's three back marks, and whether each character's technology detail is a deliberate theme.
 - Mushroom reports a height of 2 m for his label though his hat reaches about 2.3 m.
