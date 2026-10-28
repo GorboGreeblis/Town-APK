@@ -12,7 +12,11 @@ tools/run_tests.sh --smoke      a spot check of every element                 ab
 tools/run_tests.sh              the standard pass (default)                   about an hour
 tools/run_tests.sh --full       every scenario, long soaks, graphics, perf    2-2.5 hours; the final build only
 ... --resume                    skip the stages that already passed (section 2)
+... --only=REGEX                run only the stages whose name matches, with the tier's settings
 ```
+
+The summary at the end gives each stage's time and the whole pass's. To re-run one failed stage exactly as the tier
+ran it: `tools/run_tests.sh --only='quality governor, Quest 3:'` (any part of its name; case does not matter).
 
 Times are on a 4-core cloud container. Every browser stage runs one headless Chromium with SwiftShader (the GPU
 is software), so the stages run one after another. Do not run a second browser test while a pass runs: the
