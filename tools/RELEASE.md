@@ -129,8 +129,9 @@ does not come back cleanly in `tools/BUGS.md`.
      and GPU-bound mean a content change for the author to approve (the Event's
      point light and night lighting, or lighter flora shading); CPU-bound means
      more logic trimming (`tools/PERF.md` section 6).
-   Then upload the updated privacy page (`tools/store/privacy.html`, section 8 on
-   deletion requests) to neocities before submitting (VRC.Quest.Privacy.4).
+   The updated privacy page (`tools/store/privacy.html`, section 8 on deletion
+   requests) is live at https://greeblistown.neocities.org/ since 2026-10-27
+   (VRC.Quest.Privacy.4: done).
 
 ## 4. Rebuilding yourself (only if something changes)
 
@@ -185,7 +186,7 @@ same spelling as the listing name in the developer dashboard.
      (`adb shell screencap` or the headset's capture button)
 4. Complete the required questionnaires: age rating (IARC), content and
    comfort rating, Data Use Checkup (this app collects nothing), supported
-   devices (Quest 3 and Quest 3S only, section 5c), pricing, and a privacy
+   devices (Quest 3 and Quest 3S only, section 5c; done), pricing, and a privacy
    policy URL (required even for apps that collect no data).
    **Age group self-certification** is a separate, mandatory step (Developer
    Dashboard): an app cannot be published without it. Declaring a mixed
@@ -193,7 +194,13 @@ same spelling as the listing name in the developer dashboard.
    API, and users under 10 must be kept out; a browser-packaged game has no
    access to that API, so declare **teens and adults (13+)** unless you want to
    take on the youth requirements. The privacy policy's children's section stays
-   true either way (nothing is collected from anyone). Comfort rating: Moderate
+   true either way (nothing is collected from anyone).
+   Where: there is no separate form. After a build is uploaded (Alpha is fine),
+   My Apps -> the app -> the App Product Detail Page section -> the link to the
+   build -> the "Age Group Self-Certification" notice -> choose Teens and Adults
+   (13+) -> Confirm age group (Meta: developers.meta.com/horizon/resources/age-groups,
+   2026-04-02). Still open: no build has been uploaded yet (2026-10-27). The
+   age-rating questionnaire (IARC) is done. Comfort rating: Moderate
    (stick locomotion and snap turn).
    Meta's list of the checks most often failed at review: Asset.2 (cover art
    branding), Asset.5 (screenshots captured on Quest, unedited), Functional.2
@@ -217,8 +224,8 @@ Quest 3 and Quest 3S (manifest `com.oculus.supportedDevices` =
 `quest3|quest3s`; `tools/check_apk.sh` asserts it). The original Quest and
 the Quest 2 are not supported (the author, 3.15.34), nor the Quest Pro (the
 author, 3.15.35: its XR2+ GPU is close to a Quest 2's, under half a 3S's,
-and the Event already runs 58-65 fps on a 3S). Select the same two headsets
-in the Developer Dashboard.
+and the Event already runs 58-65 fps on a 3S). The same two headsets are
+selected in the Developer Dashboard (done by the author, 2026-10-27).
 
 ## 5d. Multiview (release path since 3.15.34; was the experiment below)
 

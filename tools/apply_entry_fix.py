@@ -897,6 +897,16 @@ GAME_FIXES = [
     ('Ge.ev&&(Ge.ev=0,Ge.evN=0,Ge.sos||gbLayer(e.quality[Ge.level],e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale off: "+(Ge.sos?"the emergency scale "+e.sosScale+" stays":"back to "+e.quality[Ge.level])))}',
      '(Ge.ev||Ge.sos&&Ge.sosEv)&&(Ge.sos&&Ge.sosEv&&(Ge.sos=0,Ge.hard=0),Ge.sosEv=0,Ge.ev=0,Ge.evN=0,Ge.sos||gbLayer(e.quality[Ge.level],e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale off: "+(Ge.sos?"the emergency scale "+e.sosScale+" stays (it fired before the Event)":"back to "+e.quality[Ge.level])))}'),
     ('Ge.rebuilds=0,Ge.sos=0,Ge.hard=0,Ge.ev=0,Ge.evN=0,', 'Ge.rebuilds=0,Ge.sos=0,Ge.sosEv=0,Ge.hard=0,Ge.ev=0,Ge.evN=0,'),
+    # P19 (found by tools/warm_coverage.js; the author chose this fix): the number of point lights is part of every
+    # lit shader's key, and the warm-up compiles the town with no point light, with the Portal's and with the
+    # bulb's, but not with both. Both could be on together: the Portal glows from the pizza call until the courier
+    # has gone back through (a minute or more) and Sparkakus's bulb lights the Speech, 16 m away; dozens of shaders
+    # would then compile mid-Speech, a stall of seconds on a Quest. While the bulb is lit the Portal's light is held
+    # off (its glowing doorway still shows; only its faint blue light on the surroundings goes for those seconds),
+    # from both sides so no frame has both: the Portal's own update and the bulb's.
+    ('A=new THREE.PointLight(3844351,0,11);A.visible=!1,Oe=A,', 'A=new THREE.PointLight(3844351,0,11);A.visible=!1,Oe=A,e.light=A,'),
+    ('A.intensity=1.5*a*(.85+.15*Math.sin(5*t)),A.visible=A.intensity>0', 'A.intensity=1.5*a*(.85+.15*Math.sin(5*t)),A.visible=A.intensity>0&&!("undefined"!=typeof Bulb&&Bulb.level>0)'),
+    ('a.intensity=3.5*s,a.visible=s>0', 'a.intensity=3.5*s,a.visible=s>0,s>0&&"undefined"!=typeof ot&&ot.light&&(ot.light.visible=!1)'),
 ]
 # Multiview (NOTES 65, 67): the experiment became the release in 3.15.34 (the author, after the headset
 # run: "We're going to use the Multiview version as the main build").

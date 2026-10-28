@@ -76,7 +76,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Roamers (gorbo, gratelet, p_mamagorbo) pick free spots, never inside hulls or zones | headless: run 2-3 min, sample positions each frame | todo |
 | Wander/trek for creatures (`ho`), personal space, spreading | same | todo |
 | Mama+Gorbo meeting schedule (`meetAt`), visits (`visitPlan`), vignettes (`VIGS`) fire and release NPCs (`busy` cleared) | `test_visits.js` (visits incl. interruptions); meeting/vignettes todo | partial |
-| Greeting/freeze near the player (`greetR`, `proximityFreezeS`), gaze | headless: move player next to each NPC | todo |
+| Greeting/freeze near the player (`greetR` 3.2 m, `proximityFreezeS` 12 s, `greetClear` 6 m): a walking townsperson stops and faces the player, goes on after 12 s, is stopped again after the player was 6 m away; Sparkakus's "!" from 6 m | `test_greet.js` (standard tier) | done |
 
 ## 6. Dialogue and UI
 
@@ -85,7 +85,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Every talk line, gift line, campfire line renders without overflow and has no spelling errors | `spellcheck_dialogue.py`; text-fit shim exists in code | partial (spelling done; layout todo) |
 | Talk flow: `Talk to`, cycling lines, `|` page breaks, typewriter speed | `test_progression.js` (every line shown) | partial |
 | Panels (`_t`): shop, campfire/garden event, battle; buttons CLOSE/DONE/LEAVE | `test_progression.js` | partial |
-| HUD counts (blossoms, acorns, artifacts) update | headless | todo |
+| HUD counts (blossoms, acorns, artifacts) update; the wrist HUD on the left grip shows the Event checkboxes and every held item, redraws only on change; haptic pulses on a gained Blossom (0.3, 35 ms) and a new friend (0.5, 70 ms) | `test_hud.js` (standard tier; fake controllers record pulses) | done |
 
 ## 7. Economy and progression (`Kt`)
 
@@ -132,6 +132,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Battle panels per dancer: title, stamina bar label, the three moves, "KING DINO on drums." | `test_content.js` | done |
 | The robin flies off when picked; the Ancient's talk line | `test_content.js` | done |
 | During the Event: each townsperson's gardening line, Fortizmo silent, no gifts, the Ancient's "Hello", Sparkakus's line, Backpacka comes | `test_content.js` | done |
+| Warm-up coverage: every lit material on show or built on first use (the Gem, Backpacka) has its shaders for each point-light state the game can reach (none, the Portal's, the bulb's); the Portal's light never on with the bulb's (P19, checked frame by frame) | `warm_coverage.js` (standard tier) | done (3.15.41) |
 | Vignettes (the 90 PAIRS and the Ancient's 12) play as speech bubbles or Gree-mail tokens, counted and ended; the Ancient's only inside the church | `test_content.js` (a sample; all 102 with `--long`) | done |
 
 ## 10a. Graphical and performance pass (full tier)
@@ -167,6 +168,10 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Compressed release build carries the same content as the APK source | `test_parity.js` | done |
 
 ## Latest results (3.15.10/3.15.11 asset, headless harness)
+
+**Full tier on 3.15.41** (`tools/.runs/full_v41.log`, `full_v41_rest.log`, `content_v41.log`; the container restarted twice during it, so the stages after the single-sided check and the content test were run again on their own with the same commands): every pass/fail stage passes. The content test's one failure in the tier (the Sparkakus-Hennrick vignette cut short because Sparkakus had set off to browse his shelves, a busy speaker ends a vignette) was the test's: it now waits for both speakers to be free and holds Sparkakus in place as the game does for a visit, and passes in full (all 102 vignettes known, 15 played). The performance report first failed its time limits in every situation by about the same factor: its baseline had been written on 3.15.27, before multiview, on a faster machine, in raw milliseconds. Run back to back on one machine, 3.15.40 and 3.15.41 match within its noise (script p50 6.0-7.9 and 5.8-8.0 ms), with no shader compiled during play in either, so the build changed nothing (NOTES 77). The report is now calibrated to machine speed, with a baseline written from 3.15.41, and 3.15.41 passes it (`tools/.runs/perf_check_v41.log`). The report probes (loading, handover, hitches, scene cost, the Event's frame cost, sharpness) ran and are in the log.
+
+**Standard tier on 3.15.41** (`tools/.runs/std_v41.log`, multiview): all stages pass (338 PASS lines, no FAIL), including the new greeting and wrist HUD tests, warm-up coverage with the P19 frame check, the quality governor for the Quest 3S and the Quest 3, and the game content test with its courier and vignette fixes.
 
 **Standard tier on 3.15.34** (`tools/.runs/std_v34c.log`, multiview): 218 PASS lines; one FAIL, B27 (one shader program compiled during the pickups/dialogue/shop sequence of `multiview_check.js`; a standalone run had none). Every other multiview check passes: per-eye pixel match, draw calls halved, no frame hazard (207 uploads moved before the frame), uniform budget in both modes.
 
