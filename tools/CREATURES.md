@@ -181,7 +181,7 @@ What the models have in common, as built:
   sign; Glyph's back plates (a terminal prompt `> ..`, "PR", a glowing "APK", a shield with a "G"); Anomalee's
   monitor head, keyboard jaw and "adb" labels; Montgummery's CRT head with "gfxinfo" on screen and scrolling code on
   his body; Hennrick's data screen; Etcher's three back marks (a stroked "B", three stacked parallelograms, two
-  diamonds, which resemble cryptocurrency logos).
+  diamonds): symbols of the ledgers he can etch on (the author), fitting his line "My skin is a ledger."
 - **Always moving, never in sync.** Every character breathes, sways or bobs with slow sines (mostly 0.7-2.1 rad/s,
   a few centimetres or a few hundredths of a radian), each part at a different rate and phase, so nothing looks
   frozen and no two move alike. Talking adds a nod, a bounce or a moving mouth (`tkS`); walking adds a stride or a
@@ -265,7 +265,7 @@ What the models have in common, as built:
   overlapping scales placed with `hit()` and tilted like shingles, leaving a bare belly window; no arms; six long
   ribbed tentacles fanned on the ground at the sides and back.
 - **Palette**: teal (`#2a8a9e`) to blue (`#2a5aa8`) with four scale shades; purple crest knobs and tentacles; a green
-  faceted chest gem; three yellow marks on his back.
+  faceted chest gem; three yellow marks on his back, symbols of the ledgers he can etch on (the author).
 - **Face**: shared eyes with gold irises on the sides of the head, a long lizard smile.
 - **Motion**: idle sways; a four-bar dance in which the tentacles pulse, ripple in order, fan and rise; battle moves
   rock (a slam), paper (the tentacles flatten and lift) and scissors (two tentacles snip). His tentacles bend on the
@@ -388,11 +388,19 @@ What the models have in common, as built:
 - **A new screen face or painted texture**: draw it once and cache it (Montgummery caches each screen mode); a canvas
   repainted during play must go through `needsUpdate` so it uploads before the frame (RENDERING.md 4).
 
-## 7. Open questions for the author
+## 7. The author's answers
 
-Things the models show that the code does not explain (see also LORE.md's open questions). Answered so far:
-Gooward's lens discs are a second set of eyes and the wavy lines are forehead wrinkles; King Dino's lit buttons
-and back sockets are synthetic parts of his own body; Mama Gorbo's lime tube is a goo tube; Fortizmo's four small dots are beauty marks; each character's technology detail is a deliberate theme of a digital
-world of digital monsters (the author). Checked: Mushroom's reported height (2 m) is below his hat (about 2.3 m),
-but what it places clears the hat (emotes at 2.4 m, speech bubbles at 3.1 m).
-- What each of Etcher's three back marks stands for (the technology theme itself is confirmed, section 4).
+What the models show that the code does not explain, as the author answered it (also in LORE.md's cast table):
+
+- **Gooward**: the two octagonal lens discs on his head are a second set of eyes; the wavy lines are forehead
+  wrinkles.
+- **King Dino**: the lit buttons on his sides and the sockets on his back are synthetic parts of his own body.
+- **Mama Gorbo**: the lime tube draped around her front is a goo tube.
+- **Fortizmo**: the four small dots beside his eyes are beauty marks.
+- **Etcher**: the three marks on his back (a stroked "B", three stacked parallelograms, two diamonds) are symbols of
+  the ledgers he can etch on.
+- **The technology on every character** is a deliberate theme: this is a digital world and they are digital
+  monsters.
+
+Checked in the code instead: Mushroom's reported height (2 m) is below his hat (about 2.3 m), but everything it
+places clears the hat (emotes at 2.4 m, speech bubbles at 3.1 m). No questions are open.
