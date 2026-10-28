@@ -85,8 +85,10 @@ What the entry script does on a Quest browser (NOTES 34, 41, 42):
 The "Press A" screen still works unchanged when the game is opened in a 2D
 browser window on a non-Quest browser.
 
-Rule (RELEASE.md): any change to the entry script ships first as an
-experiment APK for a headset run, never straight into the main build.
+Rule (RULES.md 22, 2026-10-28): no A/B experiment builds; every change, the entry script's included, goes
+straight into the main build and the author tests it after the PR is merged. (Until then entry-script changes
+shipped first as experiment APKs; 3.15.11 skipped that and crashed at launch, F-B15: test such changes headless
+with `test_entry.js` before they go in.)
 
 ## Building
 

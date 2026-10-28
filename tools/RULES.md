@@ -57,7 +57,7 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     fails if its pre-painted textures are stale.
 13. **Never commit the signing keystore.**
 14. **Commit often**; living documentation lives in `tools/`.
-15. **Changes to the entry script, the layers shim or the multiview path ship first as an experiment APK**
+15. **(Superseded by rule 22, 2026-10-28.) Changes to the entry script, the layers shim or the multiview path shipped first as an experiment APK**
     (`tools/build_experiment.sh NAME`) for a headset test, then into the main build (RELEASE.md 6; 3.15.11 skipped
     this and crashed at launch, F-B15).
 16. **Note all rules in the documentation** (2026-10-28: "Please be sure to always note all rules in the
@@ -94,6 +94,11 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 21. **The license notice in the game file stands alone** (2026-10-28: "the in-code License notice should not
     reference the repo or other files"): the CC0 dedication (with the license's public address) and three.js's MIT
     notice, with no pointer to this repository or any file in it. `tools/LICENSE.md` covers the repository.
+
+22. **No A/B experiment builds: changes go straight into the main build; the author tests after the PR is merged**
+    (2026-10-28: "no A/B experiments: push changes right to the main build", "I'll test after we merge the next PR", "no more experiment-first rule"). Rule 15 is retired.
+    Each change still comes with its proof (identical pixels or the measured trade-off) and its record in FIXES.md.
+    `experiment.py` stays for diagnostics and measurement only.
 
 ## Priorities
 

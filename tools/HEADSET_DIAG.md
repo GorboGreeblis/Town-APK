@@ -132,12 +132,17 @@ quality level (since 3.15.43 every level is at native scale: 0-2 without, 3-4 wi
 dialogue and the Event gives the frame-rate picture the OVR Metrics Tool would,
 with the scene named.
 
-Save the whole log and let the reader summarise it:
+Capture it live, from before the launch to the end of the run, and let the reader summarise it:
 
 ```
-adb logcat -d -s GreeblisServer > run.txt
+adb logcat -c
+adb logcat -v threadtime -s GreeblisServer VrApi > run.txt     # leave running while you play; Ctrl+C after
 node tools/perf_log.js run.txt
 ```
+
+Do not rely on `adb logcat -d` after a long session: it dumps the headset's ring buffer, which a session of ten minutes
+overruns (the author's 3.15.46 log kept only its last 30 seconds, and none of the game's `perf` lines). `VrApi` adds the
+headset runtime's own line, once a second (`FPS=66/72,...,Stale=8`), which `perf_log.js` also reads.
 
 It prints the frame rate by scene (town, the Event), the five lowest readings
 with where the player stood, the governor levels seen, and a verdict against
