@@ -1,10 +1,11 @@
 # Performance analysis of the APK build (T11)
 
-Started as an analysis (sections 1-6); sections 6-10 record the changes that
-were applied, each listed in FIXES.md. The render path itself is described in
+Started as an analysis (sections 1-6); sections 6-11 record the changes that
+were applied, each listed in FIXES.md (section 11 is the latest: 3.15.35-3.15.41). The render path itself is described in
 RENDERING.md. Numbers from the headless harness (software GL) are marked as such: draw calls, triangle counts, program counts
-and JS time are meaningful there, GPU time is not. Headset numbers are still to
-be collected (T12).
+and JS time are meaningful there, GPU time is not. The one headset measurement so
+far is the author's 3.15.33-3.15.34 run on a Quest 3S (section 10); the changes
+since (section 11) are estimates until the next run.
 
 ## 1. What the APK adds on top of the game
 
@@ -312,3 +313,48 @@ differently (0.02% seam pixels in that attempt); texture memory doubles
 until the originals are freed; new batch shader variants and runtime slot
 swaps in the riskiest part of the renderer; and a payoff of 15-20% of the
 draws in heavy Event views only if the Event is limited by draw submission.
+
+## 11. After the headset run: 3.15.35-3.15.41 (NOTES 69-77)
+
+Everything that leaves the picture identical had been done by 3.15.36; the author's requirement for the Event is
+to stay steadily above 60 fps, aiming higher, and the author chose each change below.
+
+| Change | Build | What it does | Visible? |
+| --- | --- | --- | --- |
+| B27 | 3.15.35, 3.15.39 | The Gem the Speech assembles is built and compiled during the warm-up, with and without the bulb's light, so its shader no longer compiles mid-Speech (a 50-1,000 ms stall). | No |
+| P14 | 3.15.36 | The game's own multisampled depth buffer is discarded after the frame's last draw, so a tiled GPU stops writing about 28 MB of resolved depth back to memory every frame. | No |
+| P16 | 3.15.37 | In the Event at the lowest quality level, under 62 fps for three seconds, the render scale drops to 0.9 until the Event ends. | Slightly softer, Event only |
+| P17 | 3.15.38 | A Quest 3 starts the Event at 0.9 in one layer swap; under 60 fps at 0.9 the scale steps to 0.82; both end with the Event. | Slightly softer, Event only |
+| P18 | 3.15.40 | The game's emergency drop (0.82 at about 45 fps), if it fires during the Event, ends with the Event, so the scale returns above 85% after it (VRC.Quest.Performance.4). | No |
+| P19 | 3.15.41 | The Portal's blue light is held off while Sparkakus's bulb is lit, so no frame has two point lights (which would compile a third set of shaders for the whole town). | No (the lights are 16.3 m apart) |
+
+Measured and not applied: skipping the scene root's per-frame matrix recompose (P15) leaves every world matrix
+bit-identical but saves nothing (2.107 against 2.094 ms, alternated in one session; the walk over the objects is
+the cost); indexing the creature meshes saves nothing (all but three drawn creature meshes are indexed already);
+grouping draws by shader changes nothing (three.js already sorts opaque draws by program, material, then depth).
+Texture arrays were closed by the author (section 10).
+
+**Estimates for the Event, until a headset run measures it** (from the 3.15.33 run on the Quest 3S, 58-65 fps at
+the lowest level, assuming three quarters of the Event's GPU time scales with pixels): Quest 3S, the first three
+seconds about 58-65 fps, then 67-72 at 0.9; Quest 3, about 56-62 at 0.9, then 64-71 at 0.82. Reading a headset run:
+RENDERING.md section 6, `perf_log.js` on the logcat.
+
+**The performance report on a different machine** (NOTES 77). The 3.15.41 full tier first failed `perf_report.js`
+in every situation by the same factor: its baseline came from 3.15.27, before multiview, on a faster machine, in
+raw milliseconds. On one machine, back to back, 3.15.40 and 3.15.41 match within its noise:
+
+| Situation | 3.15.40 script p50 / p99 ms | 3.15.41 script p50 / p99 ms |
+| --- | --- | --- |
+| town, standing | 6.0 / 15.4 | 5.8 / 21.8 |
+| town, walking | 6.4 / 17.7 | 5.8 / 11.8 |
+| town, among creatures | 6.1 / 10.5 | 7.1 / 14.9 |
+| dialogue open | 6.5 / 14.6 | 6.2 / 14.8 |
+| shop panel | 7.5 / 13.8 | 6.8 / 13.4 |
+| battle panel | 7.5 / 15.3 | 6.1 / 11.6 |
+| the Speech | 6.9 / 15.2 | 6.6 / 16.7 |
+| the Event, 0-30 s | 6.7 / 15.3 | 6.8 / 14.9 |
+| the Event, 30-60 s | 6.4 / 13.3 | 6.6 / 13.4 |
+| the Event, 60-90 s | 7.9 / 17.2 | 8.0 / 16.2 |
+
+No shader compiled during play in either. The report now scales its limits by machine speed (TESTING.md section
+3), with a baseline written from 3.15.41, and 3.15.41 passes it.

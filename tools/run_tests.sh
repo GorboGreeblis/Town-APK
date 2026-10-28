@@ -2,10 +2,15 @@
 # Greeblis Town test passes. Three tiers share the same scripts:
 #
 #   tools/run_tests.sh --smoke     spot check of every element, a few minutes
-#   tools/run_tests.sh             standard pass (default), ~10-15 minutes
+#   tools/run_tests.sh             standard pass (default), about an hour on a 4-core machine
 #   tools/run_tests.sh --full      FULL pass: every scenario, long soak times.
 #                                  Run only on the final build (30+ minutes).
 #   tools/run_tests.sh --quick     static checks only, no browser (seconds)
+#   ... --only=REGEX               (with any tier) run only the stages whose name matches (case-insensitive), with
+#                                  that tier's settings, e.g. to re-run one failed stage as the tier runs it
+#   ... --resume                   (with any tier) skip the stages that already passed on this same asset, APK,
+#                                  harness and test script in an earlier run of the tier (tools/.runs/resume_<tier>.txt), e.g. after a
+#                                  machine restart cut a pass short; failed and new stages run again
 #
 # Needs: python3, JDK 17+, node with playwright (browser tests), and
 # ANDROID_HOME for the server harness and the APK checker.
@@ -20,8 +25,18 @@ ASSET="${GT_ASSET:-$ROOT/tools/android/app/src/main/assets/index.html}"
 # Multiview is the headset's path since 3.15.34: the fake headset runs it (without MSAA) unless GT_MULTIVIEW=0.
 GT_MULTIVIEW=${GT_MULTIVIEW-1}; [ "$GT_MULTIVIEW" = 0 ] && GT_MULTIVIEW=""; export GT_MULTIVIEW
 APK="$ROOT/GreeblisTown-release.apk"; [ -f "$APK" ] || APK="$ROOT/tools/android/app/build/outputs/apk/release/app-release.apk"
-TIER=standard
-case "$1" in --smoke) TIER=smoke;; --full) TIER=full;; --quick) TIER=quick;; esac
+TIER=standard; RESUME=""
+ONLY=""
+for a in "$@"; do case "$a" in --smoke) TIER=smoke;; --full) TIER=full;; --quick) TIER=quick;; --resume) RESUME=1;; --only=*) ONLY=${a#--only=};; esac; done
+# The SDK for the server harness and the APK checker: ANDROID_HOME, else the one the Gradle build uses.
+if [ -z "${ANDROID_HOME:-}${ANDROID_SDK_ROOT:-}" ] && [ -f "$ROOT/tools/android/local.properties" ]; then
+  ANDROID_HOME=$(sed -n 's/^sdk\.dir=//p' "$ROOT/tools/android/local.properties"); export ANDROID_HOME; fi
+# --resume: a stage counts as passed earlier only for the same files: the asset, the APK, the shared harness and fake
+# headset, and every file its own command names (its test script); editing one test re-runs only that stage
+STATE="$ROOT/tools/.runs/resume_$TIER.txt"
+BASE=$( { cat "$ASSET"; [ -f "$APK" ] && cat "$APK"; cat "$ROOT"/tools/lib/*.js "$ROOT/tools/fakexr.js"; } 2>/dev/null | sha256sum | cut -c1-16)
+key() { { echo "$BASE"; for f in "$@"; do [ -f "$f" ] && cat "$f"; done; } | sha256sum | cut -c1-16; }
+[ -n "$RESUME" ] && { n=$(wc -l < "$STATE" 2>/dev/null); echo "resuming: ${n:-0} stage results kept in $STATE"; }
 
 # Per-tier knobs: seconds of soak, NPC scenarios, world sampling window.
 case $TIER in
@@ -31,17 +46,25 @@ case $TIER in
 esac
 
 SUMMARY=""; rc_all=0
-run() { name=$1; shift; echo; echo "=== $name ==="; "$@"; rc=$?
-  if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  PASS  $name"; else SUMMARY="$SUMMARY\n  FAIL  $name (exit $rc)"; rc_all=1; fi; }
-skip() { SUMMARY="$SUMMARY\n  SKIP  $1 ($2)"; }
+done_before() { [ -n "$RESUME" ] && grep -qxF "$KEY	$1" "$STATE" 2>/dev/null; }   # needs KEY (set by run/report)
+# --only: a stage whose name does not match is left out (not listed)
+wanted() { [ -z "$ONLY" ] || printf '%s' "$1" | grep -qiE -- "$ONLY"; }
+run() { name=$1; shift; wanted "$name" || return 0; KEY=$(key "$@")
+  if done_before "$name"; then SUMMARY="$SUMMARY\n  PASS  $name (earlier run)"; return; fi
+  echo; echo "=== $name ==="; t0=$(date +%s); "$@"; rc=$?; dt="$(( $(date +%s) - t0 )) s"
+  if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  PASS  $name ($dt)"; printf '%s\t%s\n' "$KEY" "$name" >> "$STATE"; else SUMMARY="$SUMMARY\n  FAIL  $name (exit $rc, $dt)"; rc_all=1; fi; }
+skip() { wanted "$1" || return 0; SUMMARY="$SUMMARY\n  SKIP  $1 ($2)"; }
 # Report stages run a probe and keep its output in the log; they never fail the pass.
-report() { name=$1; shift; echo; echo "=== report: $name ==="; "$@"; rc=$?
-  if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  INFO  $name (see log)"; else SUMMARY="$SUMMARY\n  INFO  $name (probe exit $rc)"; fi; }
+report() { name=$1; shift; wanted "report: $name" || return 0; KEY=$(key "$@")
+  if done_before "report: $name"; then SUMMARY="$SUMMARY\n  INFO  $name (earlier run, see its log)"; return; fi
+  echo; echo "=== report: $name ==="; "$@"; rc=$?
+  if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  INFO  $name (see log)"; printf '%s\t%s\n' "$KEY" "report: $name" >> "$STATE"; else SUMMARY="$SUMMARY\n  INFO  $name (probe exit $rc)"; fi; }
 
-echo "Greeblis Town test pass: $TIER"
+echo "Greeblis Town test pass: $TIER${ONLY:+ (only stages matching /$ONLY/)}"; T_ALL=$(date +%s)
 run "asset == original + the entry edits + the gameplay fixes (apply_entry_fix.py --verify)" python3 -I "$ROOT/tools/apply_entry_fix.py" --verify
 run "loopback server harness" "$ROOT/tools/test_server.sh"
 run "FIXES.md matches the fix list (gen_fixes_doc.py --check)" python3 -I "$ROOT/tools/gen_fixes_doc.py" --check
+run "docs consistency (check_docs.py)" python3 -I "$ROOT/tools/check_docs.py"
 run "dialogue spell-check" sh -c "python3 '$ROOT/tools/spellcheck_dialogue.py' '$ROOT/tools/uncompressed.html' >/dev/null"
 run "tentacle bend is bit-identical to the original (P13)" node "$ROOT/tools/test_bend_exact.js" "$ASSET"
 if [ -f "$APK" ]; then run "APK store-rules check" "$ROOT/tools/check_apk.sh" "$APK"; else skip "APK store-rules check" "no APK built"; fi
@@ -57,6 +80,11 @@ if [ "$TIER" != quick ]; then
   run "game content: gifts, talk order, shyness, bribe, outfits, battles, the Ancient, the robin, Event lines, Backpacka" node "$ROOT/tools/test_content.js" "$ASSET"
   run "greeting: walking townsfolk stop and face the player within 3.2 m for 12 s; Sparkakus greets from 6 m" node "$ROOT/tools/test_greet.js" "$ASSET"
   run "wrist HUD and haptics: what is held is shown and redrawn; Blossoms and new friends pulse the controllers" node "$ROOT/tools/test_hud.js" "$ASSET"
+  run "roamers and townsfolk: never in a foreign building, a solid zone or the Garden, never outside the park, roamers keep moving" node "$ROOT/tools/test_roam.js" "$ASSET" $([ "$TIER" = full ] && echo --long)
+  run "Mama Gorbo and Gooward's meetings: schedule, spots, goo arcs and hearts, called off by the Event" node "$ROOT/tools/test_meet.js" "$ASSET"
+  run "jazz drums: on the beat on both clocks, on time for the drummer, look-ahead, silent far away and under the horn" node "$ROOT/tools/test_jazz.js" "$ASSET"
+  run "audio: one context, nothing left playing after rounds of every sound, resumes on focus" node "$ROOT/tools/test_audio.js" "$ASSET"
+  run "far detail and the batcher: one model at a time, swaps at 62/66 m; exact matrices in every batch, every frame" node "$ROOT/tools/test_lod.js" "$ASSET"
   run "world: routes, hulls, pickups, watchdog (${WORLD_S}s)" node "$ROOT/tools/test_world.js" "$ASSET" "$WORLD_S"
   run "input and locomotion (fake controllers)" node "$ROOT/tools/test_input.js" "$ASSET"
   if [ "$TIER" = full ]; then run "progression incl. gardening event (--long)" node "$ROOT/tools/test_progression.js" "$ASSET" --long;
@@ -96,7 +124,7 @@ else
   skip "browser tests" "--quick"
 fi
 
-echo; echo "=== SUMMARY ($TIER) ==="; printf "$SUMMARY\n"
+echo; echo "=== SUMMARY ($TIER, $(( ($(date +%s) - T_ALL) / 60 )) min) ==="; printf "$SUMMARY\n"
 [ $rc_all -eq 0 ] && echo "ALL TESTS PASSED" || echo "SOME TESTS FAILED"
 exit $rc_all
 }

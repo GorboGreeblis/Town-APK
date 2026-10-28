@@ -7,20 +7,24 @@ Living list. Done items move to the bottom with the date. Bugs live in
 
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
-| T2 | Safe release build. 3.15.11 (root APK, PR #6; 3.15.7 is on main) = 3.15.7 + B4r, B2, effects pre-warm, cacheable page, pre-rendered textures, compositor-layer loading screen (B13): request at page start, sliced boot, own in-VR loading screen (NOTES 34). Needs the headset to confirm: no OS loading screen beyond a second or two, loading screen visible, then the game | awaiting headset confirmation | PR #6 |
-| T3 | Headset test of the release build (direct-to-VR launch, play through, quit cleanly) | open, developer | `RELEASE.md` section 3 |
-| T4 | Store upload: Alpha channel first, listing assets, questionnaires, privacy policy URL | open, developer | `RELEASE.md` section 5 |
-| T5 | Input test extended: body collision, park bounds, controller pick + menu choice + dialogue (plus dead-zone, walking, snap turn, select/squeeze, hull) | done | `tools/test_input.js` |
-| T6 | Progression test: gem trade, pizza timing (30 s portal delay) and shop pause all pass on 3.15.6; shop `shyFree` gate still untested | mostly done | `tools/test_progression.js` |
-| T7 | World test: blossom/acorn regrow check | done (regrow at 12 s confirmed once the harness ran at real speed, see BUGS F4) | `tools/test_world.js` |
-| T8 | Remaining test-plan items: roamers never inside hulls over minutes, NPC schedules (meet, visits, vignettes), greeting freeze, audio node leaks, quality governor, context loss, long soak | open | `tools/TEST_PLAN.md` |
-| T9 | Full pass on the final build (`tools/run_tests.sh --full`) and record the results | open | only on the final build |
-| T11 | Performance analysis of the APK build: wrapper overhead, renderer/XR settings as bundled (framebuffer scale, foveation, target Hz, adaptive quality), draw calls and per-frame CPU cost measured in the harness; report possible improvements before changing anything | in progress | this list, `NOTES.md` |
-| T12 | Full performance testing pass: boot profile (`tools/boot_profile.js`: parse, texture painting, batching, shader compile, time to first XR frame), runtime probe (`tools/perf_probe.js`: draw calls, triangles, programs, per-frame update CPU, heap over time), long-session memory growth, and on-headset numbers (frame time, quality-governor level, dropped frames via the browser's WebXR stats / `adb shell dumpsys`); record results in `TEST_PLAN.md` and compare before/after any improvement | open | `tools/boot_profile.js`, `tools/perf_probe.js`, `TEST_PLAN.md` |
-| T13 | Full graphical bug finding pass: per-frame brightness and frame-diff probe in the harness (one-frame white flashes, B12), z-fighting / sorting of transparent objects, label and sprite pop-in, fog and sky seams, batched-shader part errors (wrong transform or colour for a frame), finale scenery hide/show, night/day material transitions; screenshots of each scene from the test camera positions, compared before/after any change; then an on-headset checklist walk (shop kiosk at distance during pickups, garden ground during the Event with Backpacka and music) | open, priority for B12 | `tools/flash_probe.js` (to write), `TEST_PLAN.md` |
-| T14 | Full stability pass (`tools/test_soak.js`; 10-minute soak on 3.15.8 passes; longer runs and on-headset items still open): long sessions (30-60 min headless with all systems running: visits, Event, battles, pizza, pickups in a loop) watching heap growth, texture/geometry/program counts, timer and audio-node counts, console errors; repeated Event and battle cycles; VR session end/restart cycles; on the headset: sleep/wake, guardian break, controller disconnect, long idle | open | `tools/perf_probe.js`, new soak script, `TEST_PLAN.md` |
-| T15 | Continue building out tools and documentation: keep `README.md`, `BUILD.md`, `GAME.md`, `TEST_PLAN.md`, `PERF.md` and `NOTES.md` current with each change; extend the harness (fake XR layers support so the compositor-layer loading screen can be exercised headless, controller poses), add probes as new questions come up, and document every new tool in `README.md` | open, ongoing | `tools/` |
-| T10 | Lore Bible: fill the open questions (the Ancient, Mama W, flint vs acorns, Field Office, sign names) | open, author | `tools/LORE.md` |
+| T3 | Headset run of the release (3.15.41): no flashes (F-B26), the Event in OVR Metrics, the Speech after a pizza call (P19's case), quit cleanly | open, author | `RELEASE.md` section 3, `RENDERING.md` section 6 |
+| T4 | Store upload: 3.15.41 to the Alpha channel, then the age group (13+) on its build page | open, author | `RELEASE.md` sections 4-5; the listing, IARC rating, privacy page and supported devices are done |
+| T8 | Remaining test-plan rows: the dialogue layout test (`test_textfit.js`, written, to run and add to the tier), a 10-minute play rerun on 3.15.41 (`test_soak.js`), the townsfolk's spreading (`ho`; first check it ever runs, since every townsperson has an idle pattern) | in progress | `tools/TEST_PLAN.md` |
+| T9 | Full pass on the final build, with `--resume` | done for 3.15.41 (NOTES 77); again before an upload or after a game change | `TESTING.md` |
+| T10 | Lore Bible: the open questions (the Ancient, Mama W, flint vs acorns, Field Office, sign names) | open, author | `tools/LORE.md` |
+| T15 | Keep the docs and tools current with each change | ongoing | `README.md`, `TESTING.md` |
+
+## Resume point (3.15.41: release; tests for the town's life)
+
+- **Release 3.15.41** (root APK, versionCode 41, merged with PR #18): P19 holds the Portal's light off while the
+  bulb is lit (F-B28, found by `warm_coverage.js`). Standard and full tiers pass (TEST_PLAN.md); the performance
+  report is calibrated to machine speed (NOTES 77, TESTING.md 3).
+- **PR #19** (draft): five tests join the standard tier: roaming, the Mama Gorbo and Gooward meetings, the jazz
+  drums' timing, audio leaks, far detail and the batcher (NOTES 78). `run_tests.sh --resume` survives machine
+  restarts. `TESTING.md` is the how-to for running and writing tests.
+- **Event performance: closed** (the author, "let's close out 3"): P16-P18; estimates in PERF.md 11 until the
+  author's next headset run.
+- **Open (author):** T3, T4, T10.
 
 ## Done
 
@@ -33,8 +37,12 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D5 | Mushroom root cause found and fixed (navigator wall test); Hennrick line fixed | 2026-10-26 |
 | D6 | Mushroom fix confirmed: 17/17 return-home scenarios pass at real-time simulation | 2026-10-26 |
 | D7 | Visit system verified: host/visitor visits complete and interrupted (out, meet, back) all end with Mushroom on his desk at height | 2026-10-26 |
+| D8 | Multiview as the release path, flash fix (F-B26), Quest 2 and the original Quest dropped (3.15.33-3.15.34) | 2026-10-27 |
+| D9 | Event performance: P14, P16-P18 (3.15.36-3.15.40); B27 (3.15.35, 3.15.39); closed by the author | 2026-10-27 |
+| D10 | Content, governor, HUD, greeting and warm-up coverage tests; P19 (3.15.41); standard and full tiers pass | 2026-10-28 |
+| D11 | Former T2 (safe release build), T5-T7, T11-T14 (performance and stability passes, the graphical pass, the soak): done across 3.15.11-3.15.41, recorded in TEST_PLAN.md and PERF.md | 2026-10-28 |
 
-## Resume point (3.15.34: multiview is the release path)
+## Earlier resume point (3.15.34: multiview is the release path)
 
 - **3.15.33-3.15.34** (draft PR #16, branch `claude/gallant-fermi-pydail`): multiview draws both eyes
   in one pass (draw calls halved, per eye pixel-identical); the Quest 3S ran the town at 72 fps and

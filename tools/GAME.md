@@ -75,6 +75,40 @@ launch's grant is never dropped (see `apply_entry_fix.py`).
 - Controller button 4 (on either hand) and button 5 (right) are bound to
   UI actions (`J` and `ve` in the code).
 
+## Town life (what runs on its own)
+
+Read from the code and checked by the tests named; numbers are game seconds and metres.
+
+- **Who is who in the code.** Every townsperson is an entity in `It.all` with a post (`def.at`) and an idle
+  pattern. Kind `npc` for the townsfolk, `companion` for Gooward (`gorbo`), `creature` only for Zollod
+  (`cutebex`). Hennrick's id is `gratelet`, Mushroom's `drifter`, Fortizmo's `frog`, Anomalee's `blinker`.
+- **Roamers.** Gooward (around the Gallery), Hennrick (around the Portal), Mama Gorbo (the park) and the three
+  dancers Etcher, Glyph and Montgummery (on the dance floor) pick a new spot every few seconds with
+  `JGP.roamFree`: outside every building, the Garden (15 m from the middle) and the solid zones (scenery, pools,
+  the phone, the stump), inside the park, apart from each other. The others keep to their posts, some of which sit
+  beside scenery by design (Fortizmo's). `test_roam.js`.
+- **Greeting.** A walking townsperson the player comes within 3.2 m of stops and turns to face them; after 12 s
+  they go on even if the player stays, and stop again only after the player has been more than 6 m away.
+  Sparkakus greets with a "!" from 6 m. `test_greet.js`.
+- **Mama Gorbo and Gooward meet** 20-40 s into the game and 20-40 s after each meeting: they walk to two spots
+  2.8 m apart, face each other and take turns, a goo arc with a "blorp" and a pink heart, eight beats 0.6-0.9 s
+  apart; then back to roaming. A meeting is called off (and tried 40 s later) if either is busy, visiting, in a
+  vignette, or the Event is on. `test_meet.js`.
+- **Visits and vignettes.** Townsfolk visit each other (`visitPlan`); pairs standing near each other play one of
+  90 two-line vignettes (speech bubbles, or Gree-mail tokens flying between them), the Ancient's 12 only inside
+  the church. A vignette ends at once if a speaker becomes busy or the player talks to one of them; Sparkakus is
+  busy whenever he walks to his shelves. `test_visits.js`, `test_content.js`.
+- **The jazz drums.** King Dino's kit plays a swung pattern at 104 beats a minute (a bar of 2.31 s): 8 bars of
+  brushes, then time, funk, trades and shout choruses of 8 bars each. Heard (on the dance floor, at the kit, or in
+  a battle) it is scheduled on the audio clock 3 s ahead; within 45 m it runs on the game clock only, to move the
+  drummer's sticks; 1.5 s after the player stops hearing it, it switches clocks and starts the bars again. It is
+  silent while the horn plays. `test_jazz.js`.
+- **Far detail.** The kiosk with fine parts has a coarse model: the full one within 62 m of the camera, the coarse
+  one beyond 66 m, whichever it had in between. `test_lod.js`.
+- **Sound.** One audio context, made on VR entry; every note is an oscillator and a gain that disconnect
+  themselves when the note ends. A suspended context (headset off, app in the background) resumes when the
+  page is shown, visible or focused again, and on pointer or key input. `test_audio.js`.
+
 ## Content hooks seen in the code
 
 - Dialogue trees keyed `p_etcher`, `p_gemtoe`, `p_glyph`, `p_mamagorbo`, with

@@ -155,9 +155,14 @@ does not come back cleanly in `tools/BUGS.md`.
 
 ## 5. Upload to the Meta Quest Store
 
-**Upload candidate: 3.15.19 (versionCode 20)**, the root `GreeblisTown-release.apk`,
-confirmed by the author's full headset run on 2026-10-27 with no new issues, full
-test tier and 10-minute soak green.
+**Upload candidate: 3.15.41 (versionCode 41)**, the root `GreeblisTown-release.apk`
+(always the latest build). Standard and full test tiers pass on it (TEST_PLAN.md).
+On the headset: the author's last full run was 3.15.19 (no new issues), and the
+multiview path was measured on 3.15.33-3.15.34 (town 72 fps on a Quest 3S); the
+changes since (the flash fix, B27, P14, P16-P19) still want one headset pass (TASKS.md
+T3: no flashes, the Event in OVR Metrics, the Speech after a pizza call). The Alpha
+channel is only you and invited testers, so uploading there first and running that
+same build from the store is a fair way to do that pass.
 
 The app label inside the APK is "GREEBLIS TOWN" (headset library and menus); type the
 same spelling as the listing name in the developer dashboard.

@@ -1,7 +1,7 @@
 # Greeblis Town, Lore Bible (second pass)
 
 Compiled strictly from the game's own text, data and pictures in the current game file, the root
-`index.html` (3.15.37; the same as `tools/uncompressed.html` plus the fixes in FIXES.md, none of which
+`index.html` (3.15.41; the same as `tools/uncompressed.html` plus the fixes in FIXES.md, none of which
 changes a line of story text). Lines are quoted as written. Anything not stated by the game is marked
 *(inference)*. Gaps are listed at the end so the author can fill them.
 
@@ -22,6 +22,9 @@ it is **Zollod** who is shy (the book cures him), the **Gem trade is Gemtoe's**,
 
 ## The world
 
+- **A digital world** (author): Greeblis Town is a digital world and its townsfolk are digital monsters;
+  each one carries a piece of computing in their design (CREATURES.md section 4). Montgummery says it outright:
+  "We are all digital monsters."
 - **Greeblis Town / Greeblis Park.** A cartoon town around a park. Mama Gorbo:
   "What a beautiful day in Greeblis Park!" Hennrick, a visitor from the
   future: "In my era, the towers of Greeblis City reach the clouds. I never
@@ -254,16 +257,16 @@ editions.") and the Ancient texts.
 
 | Name | Code id | Role / home | Nature and notes |
 | --- | --- | --- | --- |
-| Mama Gorbo | `p_mamagorbo` | Runs "the local fast food joint" (Gooburger); gardener | Round, bouncy, made of "noble goo" that "can heal many inflictions". Married to Gooward ("met over a spilled goo shake. Love at first splat!"). The Ancient calls her "Mother of goo". |
-| Gooward | `gorbo` | Mama's "hubby"; "runs the Art Gallery now"; "quite the artist" | Speaks only in "Gomp"; crystal wings; goo bubbles; painted King Dino's billboard and the gallery painting (signed). Given a Blossom ("GOOMP") he flings goo at the player. |
+| Mama Gorbo | `p_mamagorbo` | Runs "the local fast food joint" (Gooburger); gardener | Round, bouncy, made of "noble goo" that "can heal many inflictions". Married to Gooward ("met over a spilled goo shake. Love at first splat!"). The Ancient calls her "Mother of goo". The lime tube draped around her front is a goo tube (author). |
+| Gooward | `gorbo` | Mama's "hubby"; "runs the Art Gallery now"; "quite the artist" | Speaks only in "Gomp"; crystal wings; goo bubbles; painted King Dino's billboard and the gallery painting (signed). Given a Blossom ("GOOMP") he flings goo at the player. Has a second set of eyes (the two octagonal discs on his head) and forehead wrinkles (author). |
 | Gemtoe | `p_gemtoe` | Keeper of the First Bank of Greeblis; at Gemtoe's Gazebo | Invented "Avarice"; tails curl around crystals; trades the Summoning Stone for the Gem; envies Sparkakus ("Spark collects books and calls it a job. Why am I so different?"). |
-| Etcher | `p_etcher` | Data preservation; dance floor | Tentacles etch data into everything; scales hold "a backup of a backup"; "My skin is a ledger." |
+| Etcher | `p_etcher` | Data preservation; dance floor | Tentacles etch data into everything; scales hold "a backup of a backup"; "My skin is a ledger." The three yellow marks on his back (a stroked "B", three stacked parallelograms, two diamonds) are symbols of the ledgers he can etch on (author). |
 | Glyph | `p_glyph` | "Master of symbols"; dance floor | Plates "fit together like a sentence"; ends lines with "don't you think?" |
 | Montgummery (Mont) | `w_mont` | Dance floor; hides the Human from the Sheriff | Robot with a screen face; eats VHS tapes ("Knowledge in the reels. Dinner in the cassette."); "We are all digital monsters." Speaks in third person. Ate the Library's tapes. |
 | Hennrick | `gratelet` | Researcher from the far future, stuck by the Portal | "Casing" and "joints… built for fieldwork"; collects samples in jars; "unwilling guest of the Sheriff"; observes Somlet ("Subject remains asleep. Observation day 41."). |
 | Mushroom (the Sheriff) | `drifter` | Sheriff's kiosk desk | Cap with gills; investigates UFOs; enforces the Consortium; takes bribes ("A bribe? ...Make it a double."). |
-| Fortizmo | `frog` | Juice Bar | She (Etcher: "her dancefloor"). Brass valves ("My valves turn a breath into a brass note"); "sugar"/"honey"; Blossoms only; practising a song for Backpacka. |
-| King Dino | `m_kingdino` | Drums at the Juice Bar | "King of Jazz, baby!"; drums "since the Cretaceous"; works off his bar tab; stamps his own coins; wears a crown ("The crown is extra"). |
+| Fortizmo | `frog` | Juice Bar | She (Etcher: "her dancefloor"). Brass valves ("My valves turn a breath into a brass note"); "sugar"/"honey"; Blossoms only; practising a song for Backpacka. The four small dots beside his eyes are beauty marks (author). |
+| King Dino | `m_kingdino` | Drums at the Juice Bar | "King of Jazz, baby!"; drums "since the Cretaceous"; works off his bar tab; stamps his own coins; wears a crown ("The crown is extra"). The lit buttons on his sides and the sockets on his back are synthetic parts of his own body (author). |
 | Somlet | `m_somlet` | Asleep on a pile of mail at the Post Office | She says "Zzz"; "a letter peeks out from under her cap"; "a tiny paw curls beneath her cap"; "a patron of the Library". |
 | Anomalee | `blinker` | Gazes up at the Window | Speaks in CAPITALS about CODE and the ORIGINATOR; "chewing cables" into the Computer Core; "My SIGNAL flickers. My FRAME remembers how to STAND." (a sad melody plays under "ORIGINATOR…"). |
 | Zollod | `cutebex` | Garden Supplies | Gardener; seedlings, mint, carrots; "A little goo is good for the soil."; shy until the book cures him. |
