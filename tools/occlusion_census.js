@@ -8,8 +8,8 @@
 // or the camera (hands, HUD, menus), objects drawn without frustum culling (the sky, stars, sun), and objects that
 // move (whose key, made of type, centre and triangles, differs between the workers' boots).
 //
-// Reachable area: a 0.5 m grid flood-filled from the spawn through every spot the game's player collision (F.resolve,
-// the park clamp) leaves standing; the run fails unless it reaches the church interior next to the Ancient.
+// Reachable area: a 0.5 m grid flood-filled from the spawn through every spot the game's player collision (F.resolve
+// with the player's own position object, which meets the buildings' walls and doorways; the park clamp) leaves standing; the run fails unless it reaches the church interior next to the Ancient.
 //
 // Pass A (bulk): wide views (100 degrees, 8 directions x 2 pitches, eye height 1.6 m) from reachable points
 // every 8 m outdoors and every 2 m inside buildings, the batcher off (every part drawn on its own) and a GPU occlusion
@@ -49,11 +49,15 @@ async function prepare(page, state) {
     } else await wait(3000);
     // reachable area (0.5 m grid)
     const R = t.player.bodyR, lim = t.parkHalf - 0.15 - R, south = t.parkSouth - 0.15 - R, G = 0.5;
-    const free = (x, z) => { if (x < -lim || x > lim || z < -lim || z > south) return false; const p = new T.Vector3(x, 0, z); F.resolve(p, R); return Math.hypot(p.x - x, p.z - z) < 0.02; };
+    // the player is tested against each building's walls (its parts, with the doorways) only when the position passed
+    // in is the player's own position object; any other position meets the whole outline. So test with that object.
+    const AP = D.At.position, ax = AP.x, ay = AP.y, az = AP.z;
+    const free = (x, z) => { if (x < -lim || x > lim || z < -lim || z > south) return false; AP.set(x, 0, z); F.resolve(AP, R); return Math.hypot(AP.x - x, AP.z - z) < 0.02; };
     const cells = new Map(), key = (i, j) => i + ',' + j;
     const si = Math.round(t.player.spawn[0] / G), sj = Math.round(t.player.spawn[1] / G), q = [[si, sj]]; cells.set(key(si, sj), 1);
     while (q.length) { const [i, j] = q.shift(); for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = i + di, b = j + dj, k = key(a, b); if (cells.has(k) || !free(a * G, b * G) || !free((i + di / 2) * G, (j + dj / 2) * G)) continue; cells.set(k, 1); q.push([a, b]); } }
     const reach = [...cells.keys()].map((k) => k.split(',').map((v) => +v * G));
+    AP.set(ax, ay, az);
     const slug = D.JGP && D.JGP.slug && D.JGP.slug.ent, sp = slug && slug.group.getWorldPosition(new T.Vector3());
     const church = sp ? reach.some(([x, z]) => Math.hypot(x - sp.x, z - sp.z) < 4) : null;
     // judged objects: drawable, shown now, not a character, not on the player or camera, frustum-culled
