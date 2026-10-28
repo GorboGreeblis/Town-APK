@@ -117,53 +117,6 @@ EXPERIMENTS = {
     "nogovernor": [("quality:[1,1,1,1,1],foveation:[0,.25,.5,.75,1],sosScale:.82,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:30,",
                     "quality:[1,1,1,1,1],foveation:[0,0,0,0,0],sosScale:1,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:0,")],
 }
-# No swaps (NOTES 79): the flash diagnostics above, and the projection layer is never rebuilt: every quality level, the
-# Event's steps (0.9, 0.82) and the emergency step keep the native scale 1, so only foveation changes (on the same
-# layer). The author saw a flash the moment the Summoning Pillar started the Event, which is also when the Event's
-# scale swap happens; if the flashes are gone in this build, the swaps are the cause.
-EXPERIMENTS["noswap"] = [(a, b.replace('"flashlog experiment; ', '"noswap experiment; ')) for a, b in EXPERIMENTS["flashlog"]] + [(
-    "quality:[1.2,1.1,1,1,1],foveation:[0,0,0,.5,1],sosScale:.82,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:30,evScale:.9,evFps:62,evFrames:216,ev2Scale:.82,",
-    "quality:[1,1,1,1,1],foveation:[0,0,0,.5,1],sosScale:1,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:0,evScale:1,evFps:62,evFrames:216,ev2Scale:1,",
-)]
-# Uploads between frames (NOTES 80): in the noswap run both marked flashes came with new textures (one, then five)
-# and no swap, no long frame and, for the first, no mid-frame hazard at all: uploading a texture before the frame
-# draws (the F-B26 fix) is not enough on the headset, it must not happen inside the XR frame at all. The flash
-# diagnostics above, and: during multiview play a texture marked for upload is held back (three.js keeps drawing
-# its old content for that frame) and uploaded in a separate task right after the frame is submitted; for that one
-# frame, an object whose texture has never been uploaded is skipped instead of drawn with no texture (a new label
-# shows one frame, about 14 ms, later). The VR panels (battle, dialogue, menu, wrist HUD) paint into the next of
-# three canvases and swap it in at once; a held canvas still holds what it showed two redraws earlier, so the panel
-# keeps its last uploaded canvas and swaps to the new one only once that is uploaded (the author saw the battle's
-# previous progress bar flicker on quick hovers in the first deferupload build). Each batch uploaded between frames
-# is logged.
-EXPERIMENTS["deferupload"] = [(a, b.replace('"flashlog experiment; ', '"deferupload experiment; ')) for a, b in EXPERIMENTS["flashlog"]] + [(
-    'var ok = !!(shim && shim.begin(f)); try { cb(tm, f); } finally { if (ok) shim.end(); } }',
-    'X.xrFrameOpen = true; var ok = !!(shim && shim.begin(f)); try { cb(tm, f); } finally { if (ok) shim.end(); X.xrFrameOpen = false; if (X.afterFrame) X.afterFrame(); } }',
-), (
-    'set: function (v) { d.set.call(this, v); if (v === true) dirty.add(this); } }); X.mvHook = true; }',
-    'set: function (v) { if (v === true && X.mvActive && X.deferUp) { X.deferUp(this); return; } d.set.call(this, v); if (v === true) dirty.add(this); } }); X.mvHook = true;'
-    ' var held = new Set(), fresh = new Set(), sched = false, logged = 0;'
-    ' X.deferUp = function (t) { held.add(t); try { if (!r.properties.get(t).__webglTexture) fresh.add(t); } catch (e) {} if (!X.xrFrameOpen) X.afterFrame(); };'
-    ' X.afterFrame = function () { if (!held.size || sched) return; sched = true; setTimeout(function () { sched = false; if (X.xrFrameOpen) { X.afterFrame(); return; }'
-    ' var n = 0, sz = []; held.forEach(function (t) { try { d.set.call(t, true); if (t.image && !t.isVideoTexture) { r.initTexture(t); if (t.__swapTo) { t.__swapTo.map = t; t.__swapTo = null; } n++; if (sz.length < 6) sz.push((t.image.width || 0) + "x" + (t.image.height || 0) + (fresh.has(t) ? " new" : "")); } } catch (e) {} });'
-    ' held.clear(); fresh.clear(); X.mvStats.between = (X.mvStats.between || 0) + n; if (n && logged++ < 300) __gtLog("uploaded " + n + " texture(s) between frames: " + sz.join(", ")); }, 0); };'
-    ' X.freshTex = fresh;'
-    ' X.deferMap = function (m, t) { if (!held.has(t)) return false; t.__swapTo = m; return true; }; X.heldTex = held; }',
-), (
-    'l.needsUpdate=!0,c.material.map=l,h.redraws++',
-    'l.needsUpdate=!0,window.__gtXR&&window.__gtXR.deferMap&&window.__gtXR.deferMap(c.material,l)||(c.material.map=l),h.redraws++',
-), (
-    'if (pres && X.mvActive) {',
-    'if (pres && X.mvActive) { var hid = null; if (X.freshTex && X.freshTex.size && arguments[0] && arguments[0].traverse) { hid = []; var FT = X.freshTex, MK = ["map", "alphaMap", "emissiveMap", "bumpMap", "normalMap", "specularMap", "lightMap", "aoMap"];'
-    ' arguments[0].traverse(function (o) { if (!o.visible || !o.material) return; var ms = Array.isArray(o.material) ? o.material : [o.material]; for (var i = 0; i < ms.length; i++) for (var j = 0; j < MK.length; j++) if (ms[i][MK[j]] && FT.has(ms[i][MK[j]])) { o.visible = false; hid.push(o); return; } }); }',
-), (
-    '        X.mvInFrame = false;',
-    '        X.mvInFrame = false; if (hid) for (var hi = 0; hi < hid.length; hi++) hid[hi].visible = true;',
-)]
-# Both (NOTES 81): no texture upload inside a frame (deferupload) and no layer swap (noswap). The deferupload run's one
-# mark came 1.7 s after the Event's swap to 0.82; the noswap run's marks came with new textures. If this build is
-# clean, both were causes. Its upload log line is not capped (the HUD's routine uploads used up the 300 lines).
-EXPERIMENTS["deferswap"] = [(a, b.replace('"deferupload experiment; ', '"deferswap experiment; ').replace('if (n && logged++ < 300) __gtLog(', 'if (n && (logged++ < 300 || sz.some(function (z) { return z.indexOf("new") >= 0; }))) __gtLog(')) for a, b in EXPERIMENTS["deferupload"]] + [p for p in EXPERIMENTS["noswap"] if p not in EXPERIMENTS["flashlog"] and "noswap experiment" not in p[1]]
 experiment = None
 _argv = sys.argv[1:]
 if "--experiment" in _argv:
@@ -936,50 +889,25 @@ GAME_FIXES = [
      'return{build(){L.push(((t2,dt)=>(Bulb.update(dt||.016),asm&&asm.step(Math.min(dt||.016,.1)))))},assemble:assemble,model:model,warm(){const g=new THREE.Group;[0,1,2].forEach((k=>g.add(model(k))));R(T.sphere(.045,8,6),drop(),g,null,null,[1,1.5,1]);return g}}})()'),
     ('Nt.splat(999,999,.5,"#ffffff")}catch(e){}})(),Ze(),',
      'Nt.splat(999,999,.5,"#ffffff")}catch(e){}})(),(function(){try{const wg=ARTS.warm();wg.position.y=-60,C.add(wg),wg.updateMatrixWorld(!0),O.compile(C,B),Bulb.warm(),C.remove(wg)}catch(e){vo(e,"gem-prewarm")}})(),Ze(),'),
-    # P16 (the author: "We just need to be steadily above 60 fps"; chose this over every other option): the
-    # planting Event already drops the quality governor to its lowest level on its first frame (scale 1, full
-    # foveation, locked; NOTES 71), and the headset still measured 58-65 fps there. The governor's only lower
-    # step was an emergency 0.82 scale after three seconds at 1.6 times the frame budget (about 45 fps), which
-    # 58 fps never reaches. Now, during the Event only, at the lowest level, when the smoothed frame rate stays
-    # under 62 fps for 216 frames (three seconds), the render scale drops to 0.9 (19% fewer pixels; a slightly
-    # softer picture) for the rest of the Event, and returns to the level's own scale when the Event ends (unless
-    # the emergency drop fired meanwhile, which by the game's own rule stays for the session). A
-    # headset with headroom never triggers it. Logged as "event scale 0.9 (...)"; the emergency drop still
-    # applies on top.
-    ('maxLayerRebuilds:30,targetHz:72,', 'maxLayerRebuilds:30,evScale:.9,evFps:62,evFrames:216,targetHz:72,'),
-    ('t>0&&t<200&&(Ge.ema=(1-e.emaAlpha)*Ge.ema+e.emaAlpha*Math.min(t,2*Ge.budget),Ge.sos||Ge.level!==',
-     't>0&&t<200&&(Ge.ema=(1-e.emaAlpha)*Ge.ema+e.emaAlpha*Math.min(t,2*Ge.budget),Be&&!Ge.sos&&!Ge.ev&&Ge.level===e.quality.length-1&&(Ge.ema>1e3/e.evFps?++Ge.evN>e.evFrames&&(Ge.ev=1,gbLayer(e.evScale,e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale "+e.evScale+" (under "+e.evFps+" fps for "+e.evFrames+" frames)")):Ge.evN=0),Ge.sos||Ge.level!=='),
-    ('Ae(e.quality.length-1),Ge.lockUntil=r+e.finaleLockMs,', 'Ae(e.quality.length-1),Ge.evN=0,Ge.lockUntil=r+e.finaleLockMs,'),
-    ('else Ve.forEach((t=>{t.visible=!0})),Ve=[],Ge.lockUntil=0,B.far=t.far,B.updateProjectionMatrix()}',
-     'else Ve.forEach((t=>{t.visible=!0})),Ve=[],Ge.lockUntil=0,B.far=t.far,B.updateProjectionMatrix(),Ge.ev&&(Ge.ev=0,Ge.evN=0,Ge.sos||gbLayer(e.quality[Ge.level],e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale off: "+(Ge.sos?"the emergency scale "+e.sosScale+" stays":"back to "+e.quality[Ge.level])))}'),
-    ('Ge.rebuilds=0,Ge.sos=0,Ge.hard=0,', 'Ge.rebuilds=0,Ge.sos=0,Ge.hard=0,Ge.ev=0,Ge.evN=0,'),
-    ('const Ge={level:2,', 'const Ge={ev:0,evN:0,level:2,'),
-    # P17 (the author: "Apply 1 and 2"; closes the Event performance work): two refinements of P16.
-    # 1. On a Quest 3 (user agent "Quest 3", not "Quest 3S"), which renders noticeably more pixels per eye
-    #    than a 3S, the Event starts at the 0.9 scale at once instead of after three slow seconds; at 0.9 it
-    #    still draws about as many pixels as a 3S at full scale. The level drop and the scale come in one
-    #    layer swap (the governor's level change picks the Event scale directly), never two in a row.
-    # 2. A second step on any headset: still under 60 fps for 216 frames at 0.9, the scale goes to 0.82 (the
-    #    game's own emergency scale, which otherwise waits for 1.6 times the frame budget, about 45 fps).
-    # Both end with the Event, like P16. Logged as "event scale 0.9 (Quest 3, from the start)" and
-    # "event scale 0.82 (under 60 fps for 216 frames)".
-    ('evScale:.9,evFps:62,evFrames:216,', 'evScale:.9,evFps:62,evFrames:216,ev2Scale:.82,ev2Fps:60,'),
-    ('function Ae(t){(t=u(t,0,e.quality.length-1))!==Ge.level&&(Ge.level=t,gbLayer(Ge.sos?e.sosScale:e.quality[t],e.foveation[t]),',
-     'function Ae(t){(t=u(t,0,e.quality.length-1))!==Ge.level&&(Ge.level=t,gbLayer(Ge.sos?e.sosScale:Ge.ev?Ge.ev>1?e.ev2Scale:e.evScale:e.quality[t],e.foveation[t]),'),
-    ('Ae(e.quality.length-1),Ge.evN=0,Ge.lockUntil=r+e.finaleLockMs,',
-     '/Quest 3(?!S)/.test(navigator.userAgent||"")&&!Ge.sos&&!Ge.ev&&(Ge.ev=1,window.__gtLog&&window.__gtLog("event scale "+e.evScale+" (Quest 3, from the start)")),Ae(e.quality.length-1),Ge.ev&&!Ge.sos&&gbLayer(Ge.ev>1?e.ev2Scale:e.evScale,e.foveation[e.quality.length-1]),Ge.evN=0,Ge.lockUntil=r+e.finaleLockMs,'),
-    ('Be&&!Ge.sos&&!Ge.ev&&Ge.level===e.quality.length-1&&(Ge.ema>1e3/e.evFps?++Ge.evN>e.evFrames&&(Ge.ev=1,gbLayer(e.evScale,e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale "+e.evScale+" (under "+e.evFps+" fps for "+e.evFrames+" frames)")):Ge.evN=0),',
-     'Be&&!Ge.sos&&Ge.ev<2&&Ge.level===e.quality.length-1&&(Ge.ema>1e3/(Ge.ev?e.ev2Fps:e.evFps)?++Ge.evN>e.evFrames&&(Ge.ev++,Ge.evN=0,gbLayer(Ge.ev>1?e.ev2Scale:e.evScale,e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale "+(Ge.ev>1?e.ev2Scale:e.evScale)+" (under "+(Ge.ev>1?e.ev2Fps:e.evFps)+" fps for "+e.evFrames+" frames)")):Ge.evN=0),'),
-    # P18 (VRC.Quest.Performance.4, recommended: render scale at least 85%, except "individual, non-consecutive
-    # sequences such as boss battles" that "return above 85% after"; the author: "let's do it"): the game's
-    # emergency drop (0.82 after three seconds at 1.6 times the frame budget) stayed for the rest of the
-    # session. When it fires during the planting Event it now ends with the Event, like P16 and P17, and the
-    # scale returns to the level's own. Fired in ordinary play, it keeps the game's rule and stays.
-    ('++Ge.hard>e.sosFrames&&(Ge.sos=1,gbLayer(e.sosScale,e.foveation[Ge.level]))',
-     '++Ge.hard>e.sosFrames&&(Ge.sos=1,Ge.sosEv=Be?1:0,gbLayer(e.sosScale,e.foveation[Ge.level]))'),
-    ('Ge.ev&&(Ge.ev=0,Ge.evN=0,Ge.sos||gbLayer(e.quality[Ge.level],e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale off: "+(Ge.sos?"the emergency scale "+e.sosScale+" stays":"back to "+e.quality[Ge.level])))}',
-     '(Ge.ev||Ge.sos&&Ge.sosEv)&&(Ge.sos&&Ge.sosEv&&(Ge.sos=0,Ge.hard=0),Ge.sosEv=0,Ge.ev=0,Ge.evN=0,Ge.sos||gbLayer(e.quality[Ge.level],e.foveation[Ge.level]),window.__gtLog&&window.__gtLog("event scale off: "+(Ge.sos?"the emergency scale "+e.sosScale+" stays (it fired before the Event)":"back to "+e.quality[Ge.level])))}'),
-    ('Ge.rebuilds=0,Ge.sos=0,Ge.hard=0,Ge.ev=0,Ge.evN=0,', 'Ge.rebuilds=0,Ge.sos=0,Ge.sosEv=0,Ge.hard=0,Ge.ev=0,Ge.evN=0,'),
+    # F-B31 (the author: "Lets push both experiments into the main build"; 3.15.43, NOTES 83): the flash experiments
+    # become the release. 1. No layer swap: every quality level and the emergency step keep the native render scale
+    # (1), so the governor only changes foveation, on the same layer; the Event's own scale steps (P16, P17: 2-3 fps,
+    # and the 3S took the Quest 3's branch because its browser calls itself "Quest 3") and P18 (which ended an
+    # emergency drop with the Event) go with them (the author: "Lets get rid of it and close out that option"). In town
+    # the governor no longer renders above native scale (1.2, 1.1) when it has headroom.
+    ('quality:[1.2,1.1,1,1,1],foveation:[0,0,0,.5,1],sosScale:.82,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:30,',
+     'quality:[1,1,1,1,1],foveation:[0,0,0,.5,1],sosScale:1,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:0,'),
+    # 2. No texture upload inside an XR frame (NOTES 80): during multiview play a texture marked for upload is held
+    # back (three.js keeps drawing its old content for that frame) and uploaded in a task right after the frame is
+    # submitted; for that one frame an object whose texture was never uploaded is skipped instead of drawn without
+    # it. The VR panels (battle, dialogue, menu, wrist HUD) paint into the next of three canvases; a panel keeps its
+    # last uploaded canvas and swaps to the new one once that is uploaded (the deferupload build's flicker on quick
+    # presses, NOTES 81). Since F-B29/F-B30 no texture is made during play, so the log line for one made for the first
+    # time should never appear.
+    (
+    'l.needsUpdate=!0,c.material.map=l,h.redraws++',
+    'l.needsUpdate=!0,window.__gtXR&&window.__gtXR.deferMap&&window.__gtXR.deferMap(c.material,l)||(c.material.map=l),h.redraws++',
+    ),
     # P19 (found by tools/warm_coverage.js; the author chose this fix): the number of point lights is part of every
     # lit shader's key, and the warm-up compiles the town with no point light, with the Portal's and with the
     # bulb's, but not with both. Both could be on together: the Portal glows from the pizza call until the courier
@@ -1045,6 +973,33 @@ GAME_FIXES = [
 # Multiview (NOTES 65, 67): the experiment became the release in 3.15.34 (the author, after the headset
 # run: "We're going to use the Multiview version as the main build").
 GAME_FIXES += MULTIVIEW
+# F-B31 part 2 (see the F-B31 block above): uploads between frames, in the multiview shim that MULTIVIEW inserts.
+GAME_FIXES += [
+    (
+    'var ok = !!(shim && shim.begin(f)); try { cb(tm, f); } finally { if (ok) shim.end(); } }',
+    'X.xrFrameOpen = true; var ok = !!(shim && shim.begin(f)); try { cb(tm, f); } finally { if (ok) shim.end(); X.xrFrameOpen = false; if (X.afterFrame) X.afterFrame(); } }',
+    ),
+    (
+    'set: function (v) { d.set.call(this, v); if (v === true) dirty.add(this); } }); X.mvHook = true; }',
+    'set: function (v) { if (v === true && X.mvActive && X.deferUp) { X.deferUp(this); return; } d.set.call(this, v); if (v === true) dirty.add(this); } }); X.mvHook = true;'
+    ' var held = new Set(), fresh = new Set(), sched = false, logged = 0;'
+    ' X.deferUp = function (t) { held.add(t); try { if (!r.properties.get(t).__webglTexture) fresh.add(t); } catch (e) {} if (!X.xrFrameOpen) X.afterFrame(); };'
+    ' X.afterFrame = function () { if (!held.size || sched) return; sched = true; setTimeout(function () { sched = false; if (X.xrFrameOpen) { X.afterFrame(); return; }'
+    ' var n = 0, sz = []; held.forEach(function (t) { try { d.set.call(t, true); if (t.image && !t.isVideoTexture) { r.initTexture(t); if (t.__swapTo) { t.__swapTo.map = t; t.__swapTo = null; } n++; if (sz.length < 6) sz.push((t.image.width || 0) + "x" + (t.image.height || 0) + (fresh.has(t) ? " new" : "")); } } catch (e) {} });'
+    ' held.clear(); fresh.clear(); X.mvStats.between = (X.mvStats.between || 0) + n; if (sz.some(function (z) { return z.indexOf("new") >= 0; }) && logged++ < 300) __gtLog("uploaded " + n + " texture(s) between frames, one made for the first time: " + sz.join(", ")); }, 0); };'
+    ' X.freshTex = fresh;'
+    ' X.deferMap = function (m, t) { if (!held.has(t)) return false; t.__swapTo = m; return true; }; X.heldTex = held; }',
+    ),
+    (
+    'if (pres && X.mvActive) {',
+    'if (pres && X.mvActive) { var hid = null; if (X.freshTex && X.freshTex.size && arguments[0] && arguments[0].traverse) { hid = []; var FT = X.freshTex, MK = ["map", "alphaMap", "emissiveMap", "bumpMap", "normalMap", "specularMap", "lightMap", "aoMap"];'
+    ' arguments[0].traverse(function (o) { if (!o.visible || !o.material) return; var ms = Array.isArray(o.material) ? o.material : [o.material]; for (var i = 0; i < ms.length; i++) for (var j = 0; j < MK.length; j++) if (ms[i][MK[j]] && FT.has(ms[i][MK[j]])) { o.visible = false; hid.push(o); return; } }); }',
+    ),
+    (
+    '        X.mvInFrame = false;',
+    '        X.mvInFrame = false; if (hid) for (var hi = 0; hi < hid.length; hi++) hid[hi].visible = true;',
+    ),
+]
 
 for old, new in EDITS + ([] if entry_only else GAME_FIXES) + (EXPERIMENTS[experiment] if experiment else []):
     n = html.count(old)

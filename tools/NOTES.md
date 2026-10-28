@@ -1315,3 +1315,16 @@ VR-entry fix; each item is for discussion first.
     views (1,108 fewer draws). Raising the batcher's part limit from 27 to 33 (the uniform budget has room) was
     measured and dropped: 382 -> 377 draws, and some views draw more triangles. Also: the perf log now records
     the eye buffer's size once per layer, since the Quest 3S's browser reports "Quest 3" in its user agent.
+
+83. **The flash experiments become the release; the Event scale goes (3.15.43, in progress).** The author: "Lets get
+    rid of it and close out that option" (the Event's own render scale, P16/P17, and with it P18) and "Lets push both
+    experiments into the main build" (deferupload and deferswap). F-B31: no layer swap at all (every quality level and
+    the emergency step at the native scale; the governor changes foveation only, on the same layer) and no texture
+    upload inside an XR frame (uploads in a task after each frame; an object whose texture was never uploaded skipped
+    for that frame; panels keep their uploaded canvas until the next is uploaded). The deferupload/deferswap/noswap
+    experiments are retired; flashlog stays for diagnosis. Estimated effect in the heaviest Event view against the
+    author's last run (52-58 fps at about 440 draws, scale 0.82): P20 +3 to +5 fps (about 0.024 ms a draw from the
+    headset runs: about 350 draws at 61 fps, 440 at 54), back to scale 1 -2 to -3 fps (the 0.82 step bought 2-3), the
+    texture and upload changes about 0 on average but no more one-frame spikes: net about +1 to +2 fps there, +3 to +5
+    where the pizza is in view. The Ancient behind the church walls: from 17,045 views at least 0.5 m outside the
+    church (1 m grid to 30 m, five eye heights, only the church drawn), 3 views from about 30 m show one pixel of it.

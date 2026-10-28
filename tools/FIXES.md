@@ -38,7 +38,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (54 blocks)
+## Gameplay, performance and other fixes (53 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -321,33 +321,21 @@ with the bulb's light on (`Bulb.warm()`, as the warm-up already does for everyth
 after the check caught the second variant). Nothing is drawn differently; the Speech then reuses the
 compiled programs.
 
-- **P16** (6 edits): (the author: "We just need to be steadily above 60 fps"; chose this over every other option):
-the planting Event already drops the quality governor to its lowest level on its first frame (scale
-1, full foveation, locked; NOTES 71), and the headset still measured 58-65 fps there. The governor's
-only lower step was an emergency 0.82 scale after three seconds at 1.6 times the frame budget (about
-45 fps), which 58 fps never reaches. Now, during the Event only, at the lowest level, when the
-smoothed frame rate stays under 62 fps for 216 frames (three seconds), the render scale drops to 0.9
-(19% fewer pixels; a slightly softer picture) for the rest of the Event, and returns to the level's
-own scale when the Event ends (unless the emergency drop fired meanwhile, which by the game's own
-rule stays for the session). A headset with headroom never triggers it. Logged as "event scale 0.9
-(...)"; the emergency drop still applies on top.
+- (1 edit) F-B31 (the author: "Lets push both experiments into the main build"; 3.15.43, NOTES 83): the flash
+experiments become the release. 1. No layer swap: every quality level and the emergency step keep
+the native render scale (1), so the governor only changes foveation, on the same layer; the Event's
+own scale steps (P16, P17: 2-3 fps, and the 3S took the Quest 3's branch because its browser calls
+itself "Quest 3") and P18 (which ended an emergency drop with the Event) go with them (the author:
+"Lets get rid of it and close out that option"). In town the governor no longer renders above native
+scale (1.2, 1.1) when it has headroom.
 
-- **P17** (4 edits): (the author: "Apply 1 and 2"; closes the Event performance work): two refinements of P16. 1. On
-a Quest 3 (user agent "Quest 3", not "Quest 3S"), which renders noticeably more pixels per eye than
-a 3S, the Event starts at the 0.9 scale at once instead of after three slow seconds; at 0.9 it still
-draws about as many pixels as a 3S at full scale. The level drop and the scale come in one layer
-swap (the governor's level change picks the Event scale directly), never two in a row. 2. A second
-step on any headset: still under 60 fps for 216 frames at 0.9, the scale goes to 0.82 (the game's
-own emergency scale, which otherwise waits for 1.6 times the frame budget, about 45 fps). Both end
-with the Event, like P16. Logged as "event scale 0.9 (Quest 3, from the start)" and "event scale
-0.82 (under 60 fps for 216 frames)".
-
-- **P18** (3 edits): (VRC.Quest.Performance.4, recommended: render scale at least 85%, except "individual, non-
-consecutive sequences such as boss battles" that "return above 85% after"; the author: "let's do
-it"): the game's emergency drop (0.82 after three seconds at 1.6 times the frame budget) stayed for
-the rest of the session. When it fires during the planting Event it now ends with the Event, like
-P16 and P17, and the scale returns to the level's own. Fired in ordinary play, it keeps the game's
-rule and stays.
+- **2** (1 edit): . No texture upload inside an XR frame (NOTES 80): during multiview play a texture marked for
+upload is held back (three.js keeps drawing its old content for that frame) and uploaded in a task
+right after the frame is submitted; for that one frame an object whose texture was never uploaded is
+skipped instead of drawn without it. The VR panels (battle, dialogue, menu, wrist HUD) paint into
+the next of three canvases; a panel keeps its last uploaded canvas and swaps to the new one once
+that is uploaded (the deferupload build's flicker on quick presses, NOTES 81). Since F-B29/F-B30 no
+texture is made during play, so the log line for one made for the first time should never appear.
 
 - **P19** (3 edits): (found by tools/warm_coverage.js; the author chose this fix): the number of point lights is part
 of every lit shader's key, and the warm-up compiles the town with no point light, with the Portal's
