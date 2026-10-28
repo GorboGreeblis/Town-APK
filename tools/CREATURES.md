@@ -113,7 +113,7 @@ for a surface kind afterwards (Anomalee's plastic).
 - **Superellipsoids**: a sphere pushed toward a rounded cube (Somlet's cushion, exponent 3.2; Montgummery's body, 6
   above and 2.4 below).
 - **Tubes**: `ridgedTube(points, r0, r1, n, ridges, depth)` (a tapering tube with ring ridges: Etcher's tentacles,
-  Glyph's horns, Mama Gorbo's lime tube) and plain tapered tubes (tails, trunks, cables, mouth lines).
+  Glyph's horns, Mama Gorbo's lime goo tube) and plain tapered tubes (tails, trunks, cables, mouth lines).
 - **Cards** (`cardGeo(cards, "vane" | "fur")`): thin curved strips laid on the surface along its normal, with
   shading baked into their vertex colours: Sparkakus's bib and back vanes, Gemtoe's 660 body feathers, 132 wing
   vanes, cheek tufts and crest, King Dino's plume.
@@ -291,7 +291,7 @@ What the models have in common, as built:
 ### Mama Gorbo
 - **Body**: a melting jelly mound (a dome on a slumping base spreading into a flat skirt, a lump on the top left,
   six drip shapes down the dome), clamped flat at the ground; no limbs.
-- **Palette**: peach (`#ff9f5c`), richer on the drips; cyan, pink and purple ooze; a lime tube draped round her
+- **Palette**: peach (`#ff9f5c`), richer on the drips; cyan, pink and purple ooze; a lime goo tube draped round her
   front; red pins.
 - **Face**: two octagonal porthole eyes, one large and one small, with purple glowing lenses; no mouth.
 - **Extras**: three ooze drips that a bulge travels down, drops that grow, fall and leave peach splats on the ground,
@@ -389,8 +389,7 @@ What the models have in common, as built:
 
 Things the models show that the code does not explain (see also LORE.md's open questions). Answered so far:
 Gooward's lens discs are a second set of eyes and the wavy lines are forehead wrinkles; King Dino's lit buttons
-and back sockets are synthetic parts of his own body (the author).
-- Mama Gorbo's lime tube draped around her front (an arm, a sash, a smile?).
+and back sockets are synthetic parts of his own body; Mama Gorbo's lime tube is a goo tube (the author).
 - Fortizmo's four small black dots beside his eyes.
 - Etcher's three back marks, and whether each character's technology detail is a deliberate theme.
 - Mushroom reports a height of 2 m for his label though his hat reaches about 2.3 m.

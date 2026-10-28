@@ -254,7 +254,7 @@ editions.") and the Ancient texts.
 
 | Name | Code id | Role / home | Nature and notes |
 | --- | --- | --- | --- |
-| Mama Gorbo | `p_mamagorbo` | Runs "the local fast food joint" (Gooburger); gardener | Round, bouncy, made of "noble goo" that "can heal many inflictions". Married to Gooward ("met over a spilled goo shake. Love at first splat!"). The Ancient calls her "Mother of goo". |
+| Mama Gorbo | `p_mamagorbo` | Runs "the local fast food joint" (Gooburger); gardener | Round, bouncy, made of "noble goo" that "can heal many inflictions". Married to Gooward ("met over a spilled goo shake. Love at first splat!"). The Ancient calls her "Mother of goo". The lime tube draped around her front is a goo tube (author). |
 | Gooward | `gorbo` | Mama's "hubby"; "runs the Art Gallery now"; "quite the artist" | Speaks only in "Gomp"; crystal wings; goo bubbles; painted King Dino's billboard and the gallery painting (signed). Given a Blossom ("GOOMP") he flings goo at the player. Has a second set of eyes (the two octagonal discs on his head) and forehead wrinkles (author). |
 | Gemtoe | `p_gemtoe` | Keeper of the First Bank of Greeblis; at Gemtoe's Gazebo | Invented "Avarice"; tails curl around crystals; trades the Summoning Stone for the Gem; envies Sparkakus ("Spark collects books and calls it a job. Why am I so different?"). |
 | Etcher | `p_etcher` | Data preservation; dance floor | Tentacles etch data into everything; scales hold "a backup of a backup"; "My skin is a ledger." |
