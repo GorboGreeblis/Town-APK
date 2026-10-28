@@ -47,9 +47,12 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 ## Builds and the repository
 
 11. **The repository root holds only** `GreeblisTown-release.apk`, `index.html` and `tools/` (2026-10-27).
-12. **The root APK is always the latest build** (2026-10-27): every change to the game is followed by a rebuild and a
-    version bump (`versionCode` only goes up) before it is committed (`tools/build.sh --bump`); the pre-commit hook
-    checks it.
+12. **The APK and `index.html` at the root are always the latest build** (2026-10-27; restated 2026-10-28: "The .apk
+    and index.html file in root must always be the latest build"). Every change to the game is followed by a rebuild
+    and a version bump (`versionCode` only goes up) before it is committed (`tools/build.sh --bump`). Enforced:
+    `sync_game.py --check` (quick tier, pre-commit hook) fails if `index.html` differs from the game file; the
+    pre-commit hook and `check_apk.sh` fail if the root APK does not hold the current game; `test_standalone.js`
+    fails if its pre-painted textures are stale.
 13. **Never commit the signing keystore.**
 14. **Commit often**; living documentation lives in `tools/`.
 15. **Changes to the entry script, the layers shim or the multiview path ship first as an experiment APK**
