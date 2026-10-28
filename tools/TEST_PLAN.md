@@ -167,7 +167,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | --- | --- | --- |
 | Compressed release build carries the same content as the APK source | `test_parity.js` | done |
 
-## Latest results (3.15.10/3.15.11 asset, headless harness)
+## Latest results (newest first, headless harness)
 
 **Full tier on 3.15.41** (`tools/.runs/full_v41.log`, `full_v41_rest.log`, `content_v41.log`; the container restarted twice during it, so the stages after the single-sided check and the content test were run again on their own with the same commands): every pass/fail stage passes. The content test's one failure in the tier (the Sparkakus-Hennrick vignette cut short because Sparkakus had set off to browse his shelves, a busy speaker ends a vignette) was the test's: it now waits for both speakers to be free and holds Sparkakus in place as the game does for a visit, and passes in full (all 102 vignettes known, 15 played). The performance report first failed its time limits in every situation by about the same factor: its baseline had been written on 3.15.27, before multiview, on a faster machine, in raw milliseconds. Run back to back on one machine, 3.15.40 and 3.15.41 match within its noise (script p50 6.0-7.9 and 5.8-8.0 ms), with no shader compiled during play in either, so the build changed nothing (NOTES 77). The report is now calibrated to machine speed, with a baseline written from 3.15.41, and 3.15.41 passes it (`tools/.runs/perf_check_v41.log`). The report probes (loading, handover, hitches, scene cost, the Event's frame cost, sharpness) ran and are in the log.
 
