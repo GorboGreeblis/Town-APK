@@ -76,6 +76,7 @@ The repository root holds only the final build, `GreeblisTown-release.apk` (alwa
 | `alloc_probe.js` | Report: bytes allocated per second by function (sampling heap profiler) and the garbage collector's share of main-thread time, standing, walking and in the Event. |
 | `slice_profile.js` | Report: CPU profile of the boot attributed to the boot slices (hot functions per slice, clock-aligned), the tool that found the blob-body march (NOTES 49). |
 | `geom_compare.js` | Boots two assets and compares every character's mesh vertices; proves a change to the model builders does not change the models. |
+| `creature_census.js` | **Creature census (report).** Per character as built in the running game: visible meshes, how many the batcher took and how many draw on their own, triangles, vertices, distinct materials and textures, transparent meshes, parts kept out of the static merge; the measurement companion to CREATURES.md. Writes `.runs/creature_census.json`. |
 | `flash_probe.js` | Report: screenshots consecutive frames around a pickup and reports per-frame brightness jumps (the white-flash investigation, B12; no headless reproduction, kept for the record). |
 | `boot_profile.js`, `perf_probe.js` | Reports: CPU profile of the sliced boot (loading time), and scene cost (draw calls, triangles, materials). |
 | `lib/xr_layers_shim.js` | The WebXR Layers mode of the entry script (embedded by `apply_entry_fix.py`): compositor layers for the loading screen, a projection layer behind a session facade for the game (NOTES 42). |
