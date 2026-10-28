@@ -1,9 +1,8 @@
 # Greeblis Town, Lore Bible (second pass)
 
-Compiled strictly from the game's own text, data and pictures in the current game file, the root
-`index.html` (3.15.42; the same as `tools/uncompressed.html` plus the fixes in FIXES.md, none of which
-changes a line of story text). Lines are quoted as written. Anything not stated by the game is marked
-*(inference)*. Gaps are listed at the end so the author can fill them.
+Compiled strictly from the game's own text, data and pictures in the game file, `tools/uncompressed.html`
+(3.15.45; the root `index.html` is a byte copy of it, and none of the fixes in FIXES.md changes a line of
+story text). Lines are quoted as written. Anything not stated by the game is marked *(inference)*. Gaps are listed at the end so the author can fill them.
 
 > **Naming rule (author):** the names the game shows are the canon. The code's
 > identifiers are leftovers from earlier games and prove nothing: `acorns` is
@@ -13,6 +12,10 @@ changes a line of story text). Lines are quoted as written. Anything not stated 
 > document needs an identifier for a test or a probe, it says so and gives the
 > in-game name next to it. Where this Bible quotes a code name (for example a
 > motif of the gallery painting), it is a hint at what the author meant, not canon.
+>
+> **Code names and the minified file:** string names (ids such as `drifter`, the painting's motif names, `MAMA_W`)
+> are in the game file as quoted. The table names `TIES`, `SIG` and `PAIRS` are from the unminified 3.15.44 file
+> (`git show 21596f1:tools/uncompressed.html`); since 3.15.45 (FIXES R2) the minifier renamed them.
 
 **Changes in this pass:** the Ancient (who speaks, and where it lives), the gallery painting, Backpacka,
 the Library's books, the WANTED posters, the billboard, the parcels, every character's gift and

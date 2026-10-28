@@ -5,8 +5,12 @@ itself, `tools/uncompressed.html`, which is edited directly; add an entry here b
 what it does, why, who decided it, and how it was proven), newest at the end of its section. The entries up to
 3.15.43 were generated from the comments of the build script that applied them as text edits to the original
 (`apply_entry_fix.py`, now retired; the tool names below are as they were then).
-IDs: numbers are the entry edits, B a bug fix (tools/BUGS.md), P a performance change (tools/PERF.md),
-L the license notice, D diagnostics, R a change made to meet one of the author's rules (tools/RULES.md). NOTES numbers point to tools/NOTES.md.
+Code names: since 3.15.45 the game file is minified (R2). Names at the top level of the game's script (`b`, `vo`, `F`,
+`gcEB`, `holdsAll` and the like), property names and strings are as quoted; names local to a function were renamed,
+so the entries before R2 quote the unminified file (`git show 21596f1:tools/uncompressed.html`).
+IDs: numbers are the entry edits, B or F-B a bug fix (tools/BUGS.md; F-B is the ID BUGS.md gives it once fixed),
+P a performance change (tools/PERF.md), L the license notice, D diagnostics, R a change made to meet one of the
+author's rules (tools/RULES.md). NOTES numbers point to tools/NOTES.md.
 
 ## Entry edits (9 blocks)
 
@@ -40,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (55 blocks)
+## Gameplay, performance and other fixes (56 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -323,15 +327,13 @@ with the bulb's light on (`Bulb.warm()`, as the warm-up already does for everyth
 after the check caught the second variant). Nothing is drawn differently; the Speech then reuses the
 compiled programs.
 
-- (1 edit) F-B31 (the author: "Lets push both experiments into the main build"; 3.15.43, NOTES 83): the flash
+- (2 edits) F-B31 (the author: "Lets push both experiments into the main build"; 3.15.43, NOTES 83): the flash
 experiments become the release. 1. No layer swap: every quality level and the emergency step keep
 the native render scale (1), so the governor only changes foveation, on the same layer; the Event's
 own scale steps (P16, P17: 2-3 fps, and the 3S took the Quest 3's branch because its browser calls
 itself "Quest 3") and P18 (which ended an emergency drop with the Event) go with them (the author:
 "Lets get rid of it and close out that option"). In town the governor no longer renders above native
-scale (1.2, 1.1) when it has headroom.
-
-- **2** (1 edit): . No texture upload inside an XR frame (NOTES 80): during multiview play a texture marked for
+scale (1.2, 1.1) when it has headroom. 2. No texture upload inside an XR frame (NOTES 80): during multiview play a texture marked for
 upload is held back (three.js keeps drawing its old content for that frame) and uploaded in a task
 right after the frame is submitted; for that one frame an object whose texture was never uploaded is
 skipped instead of drawn without it. The VR panels (battle, dialogue, menu, wrist HUD) paint into
@@ -459,7 +461,7 @@ controller (the one button the game leaves free) writes "MARK flash seen" (with 
 each flash can be lined up with what happened then; the hazard watch also counts texture storage,
 framebuffer attachments, renderbuffer storage, buffer uploads, flushes and syncs while a frame
 draws, logs up to 300 with the frame number (not only the first 12), and every perf line carries the
-totals; frames over 28 ms are logged; the old layer's destruction after a swap is logged.
+totals; frames over 28 ms are logged; the old layer's destruction after a swap is logged (the release swaps no layers since F-B31).
 
 - **nobatch**: Draw every mesh individually: no gcEB batches, no custom vertex shader.
 
