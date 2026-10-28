@@ -1352,3 +1352,12 @@ VR-entry fix; each item is for discussion first.
     pixels on a Quest 3S), so hiding them by distance is not proposed. A test harness lesson: a check that waits
     between renders must bind the canvas again before each one, since the XR frame loop binds its own framebuffer
     meanwhile; the first runs of the bubble check and of `ancient_check.js` compared stale images.
+
+86. **The occlusion census's first full run: nothing to remove.** Both states, 741 minutes. Of 653 judged objects, 40
+    were never seen from any reachable point at any eye height, in the town or the Event, and all 40 were the UFO
+    (the saucer, its 18 lights, the gold portholes, the green pilot and his antennae): the game keeps it hidden and
+    flies it over the park every 10 minutes from the 10th (about 15 s each; held off during the Event and at least
+    60 s after it), and the census ran neither long enough nor at the right moment to see it. A hidden object costs
+    nothing to draw, so it was a false positive. The census let batched parts through its "shown now" filter whatever
+    the groups above them; it now judges only what is shown. With the UFO out, every remaining object in both states
+    is seen from somewhere the player can stand, so the census leaves nothing to remove.
