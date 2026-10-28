@@ -87,7 +87,7 @@ it is **Zollod** who is shy (the book cures him), the **Gem trade is Gemtoe's**,
 
 ## The Ancient
 
-The church is an intended secret room (author): the player gets in by walking through its wall.
+The church is an intended secret room (author): the player gets in by walking through its wall where it is marked with Xs.
 
 The one character who is not on the town's cast list, and the one the others defer to.
 
