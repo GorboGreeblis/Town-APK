@@ -32,7 +32,7 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
       m.started = await until(() => A.meeting && B.meeting, 80); m.startAfter = +(gs() - g0).toFixed(1); m.startT = +gs().toFixed(1);
       if (!m.started) { out.meetings.push(m); break; }
       const a0 = arcs.length, h0 = hearts.length;
-      m.arrived = await until(() => A.hearts > 0 || arcs.length > a0, 70);
+      m.arrived = await until(() => arcs.length > a0, 70);   // their first goo arc (the heart count stays from the last meeting)
       const pa = A.group.position, pb = B.group.position;
       m.apart = +Math.hypot(pa.x - pb.x, pa.z - pb.z).toFixed(2);
       const face = (h, o) => { const want = Math.atan2(o.group.position.x - h.group.position.x, o.group.position.z - h.group.position.z); let d = (h.group.rotation.y - want) % (2 * Math.PI); if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; return +Math.abs(d).toFixed(2); };
@@ -46,7 +46,11 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     const st = await until(() => A.meeting && B.meeting, 40);
     out.offByEvent = { started: st };
     if (st) {
-      D.me.active = true; await until(() => !A.meeting && !B.meeting, 5); out.offByEvent.called = !A.meeting && !B.meeting; D.me.active = false;
+      // the real Event (me.active is the game's own state): the three rewards, then "Yes" at the Summoning Pillar
+      const K = D.Kt; K.rewards.stone = K.rewards.seeds = K.rewards.snacks = true; D.oe.open(); await wait(300);
+      const yes = ((D._t.state && D._t.state.items) || []).find((i) => i.label === 'Yes'); if (yes) yes.onClick();
+      out.offByEvent.event = await until(() => D.me.active, 10);
+      await until(() => !A.meeting && !B.meeting, 5); out.offByEvent.called = !A.meeting && !B.meeting;
     }
     D.Nt.gooArc = ga; D.Ut.above = ab;
     return out;
@@ -54,7 +58,7 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
   note('pair: ' + JSON.stringify(r.names));
   r.meetings.forEach((m, i) => note(`meeting ${i + 1}: ${JSON.stringify(m)}`));
   const [m1, m2] = r.meetings;
-  expect('the two are Mama Gorbo and Gorbo', r.names && r.names.every(Boolean), JSON.stringify(r.names));
+  expect('the two are Mama Gorbo and Gorbo (GOOWARD)', r.names && r.names.every(Boolean), JSON.stringify(r.names));
   expect('the first meeting starts 20-40 s into the game (game clock, plus a walk of up to 30 s)', m1 && m1.started && m1.startT <= 75, JSON.stringify(m1));
   expect('the second starts 20-40 s after the first ends (plus the walk)', m2 && m2.started && m2.startAfter >= 19 && m2.startAfter <= 45, JSON.stringify(m2 && m2.startAfter));
   const ok = (m) => m && m.arrived && m.ended && m.arcs.length === 4 && m.hearts.length === 4;
@@ -62,7 +66,7 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
   const beats = (m) => { const t = [...m.arcs, ...m.hearts].sort((a, b) => a - b); return t.slice(1).map((x, i) => +(x - t[i]).toFixed(2)); };
   expect('the beats come 0.6-0.9 s apart (goo arc 0.9 s, heart 0.6 s)', [m1, m2].every((m) => ok(m) && beats(m).every((d) => d >= 0.55 && d <= 1.3)), JSON.stringify([m1, m2].map((m) => m && m.arcs && beats(m))));
   expect('they stand beside each other (centres 2-4 m apart) and face each other', [m1, m2].every((m) => m && m.apart >= 1.5 && m.apart <= 4.5 && m.faceA < 0.5 && m.faceB < 0.5), JSON.stringify([m1, m2].map((m) => m && [m.apart, m.faceA, m.faceB])));
-  expect('the planting Event calls a meeting off', r.offByEvent && r.offByEvent.started && r.offByEvent.called, JSON.stringify(r.offByEvent));
+  expect('the planting Event calls a meeting off', r.offByEvent && r.offByEvent.started && r.offByEvent.event && r.offByEvent.called, JSON.stringify(r.offByEvent));
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   await g.close();
   console.log(failures.length ? `MEET TEST FAILED (${failures.length})` : 'MEET TEST PASSED');
