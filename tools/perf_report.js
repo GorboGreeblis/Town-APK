@@ -132,7 +132,8 @@ const excerpt = (line, col) => { const l = assetLines[line]; if (!l) return ''; 
   await scenario('the Event, late (60-90 s)', async () => {}, 30000);
 
   // --- verdicts
-  const calib1 = await calibrate(), calib = +((calib0 + calib1) / 2).toFixed(2);
+  // the faster of the two: a load spike only ever slows the workload, so the lower time is the machine's own speed
+  const calib1 = await calibrate(), calib = Math.min(calib0, calib1);
   // the absolute limits (p99 12 / 16 ms, max 120 ms) were set on a machine that ran the workload in about 2.0 ms
   // (estimated: the 3.15.27 baseline's situations ran 2.6 times faster there than 3.15.41's on a 5.35 ms machine)
   const ABS_CALIB = 2.0;

@@ -1191,9 +1191,9 @@ VR-entry fix; each item is for discussion first.
     its speed varied from run to run (the new workload, 4.1 to 5.7 ms). The
     report now times a fixed in-page workload (matrix maths and small
     objects, like the game's script) before and after the situations; the
-    baseline keeps that time (written from the 3.15.41 run, 5.35 ms) and
+    baseline keeps that time (the faster of the two, since a load spike only slows it; written from the 3.15.41 run, 5.0 ms) and
     every run scales the baseline's times by the ratio, and the absolute
     limits (p99 12 / 16 ms, max 120 ms) by the ratio to the machine they
     were set on (about 2.0 ms, estimated from the 3.15.27 baseline), never
-    below their own values. The old baseline is kept in
+    below their own values. Checked: 3.15.41 passes against it. The old baseline is kept in
     `tools/.runs/perf_baseline_v27.json`.

@@ -1,8 +1,8 @@
 {
  "date": "2026-10-28T00:04:51.325Z",
  "file": "tools/android/app/src/main/assets/index.html",
- "calib": 5.35,
- "note": "3.15.41 (multiview), written from tools/.runs/perf_ab_v41.log; calib is the in-page workload time on that machine",
+ "calib": 5.0,
+ "note": "3.15.41 (multiview), written from tools/.runs/perf_ab_v41.log; calib is the faster of the run's two in-page workload times on that machine (5.0 and 5.7 ms)",
  "scenarios": {
   "town, standing": {
    "p50": 5.8,
