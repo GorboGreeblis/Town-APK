@@ -394,9 +394,10 @@ each wing) but nothing ever merged them, so each was its own draw (26 of the Eve
 Parts with the mark that share a parent and a material become one mesh (their geometry placed by
 their own transforms, which never change; the parent's animation moves them as before). Translucent
 objects are drawn far to near, one by one; the merged mesh keeps that: before it is drawn it orders
-its parts far to near from the camera, as three.js orders separate objects, rewriting its index only
-when the order changes. What differs: the merged parts are ordered as one block against other
-translucent objects (a bubble seen through a wing crystal). `__gtMT.set(false)` restores the parts.
+its parts far to near from the camera by their origins, as three.js orders separate objects,
+rewriting its index only when the order changes. What differs: the merged parts are ordered as one
+block against other translucent objects (a bubble seen through a wing crystal). `__gtMT.set(false)`
+restores the parts.
 
 ## Multiview (release path since 3.15.34)
 
