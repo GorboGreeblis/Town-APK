@@ -24,7 +24,8 @@
 // depend on the machine, so the baseline keeps the time of a fixed in-page workload (matrix maths and small
 // objects, like the game's own script) measured on the machine that wrote it; each run measures it again (before
 // and after the situations) and scales the baseline's times, and the absolute frame-time limits on a slower machine,
-// by the ratio (clamped to 0.5-4), so a busy or slower machine does not fail a good build.
+// by the ratio (clamped to 0.5-4), so a busy or slower machine does not fail a good build. The absolute limits
+// scale against the machine they were set on (ABS_CALIB), never below their own values.
 //
 //   node tools/perf_report.js [file] [--update-baseline] [--json out.json] [--only <regex>] [--no-profile] [--draw]
 // --only runs the situations whose names match; --no-profile skips the CDP profiler (pure timing run).
@@ -132,8 +133,11 @@ const excerpt = (line, col) => { const l = assetLines[line]; if (!l) return ''; 
 
   // --- verdicts
   const calib1 = await calibrate(), calib = +((calib0 + calib1) / 2).toFixed(2);
-  const k = baseline && baseline.calib ? Math.min(4, Math.max(0.5, calib / baseline.calib)) : 1, kAbs = Math.max(1, k);
-  console.log(`  machine speed: workload ${calib0} / ${calib1} ms` + (baseline && baseline.calib ? ` (baseline machine ${baseline.calib} ms: times scaled by ${k.toFixed(2)})` : ' (the baseline has no calibration: times compared as they are)'));
+  // the absolute limits (p99 12 / 16 ms, max 120 ms) were set on a machine that ran the workload in about 2.0 ms
+  // (estimated: the 3.15.27 baseline's situations ran 2.6 times faster there than 3.15.41's on a 5.35 ms machine)
+  const ABS_CALIB = 2.0;
+  const k = baseline && baseline.calib ? Math.min(4, Math.max(0.5, calib / baseline.calib)) : 1, kAbs = Math.min(4, Math.max(1, calib / ABS_CALIB));
+  console.log(`  machine speed: workload ${calib0} / ${calib1} ms` + (baseline && baseline.calib ? ` (baseline machine ${baseline.calib} ms: baseline times scaled by ${k.toFixed(2)})` : ' (the baseline has no calibration: its times compared as they are)') + `; absolute limits scaled by ${kAbs.toFixed(2)}`);
   const lines = [];
   console.log(realDraw ? '  draws rasterised (software GL: GL stalls are this machine)' : '  draw calls stubbed (script and upload costs only; renderer counters kept)');
   const fmt = (r) => `${r.name.padEnd(28)} frames ${String(r.frames).padStart(4)}  script p50 ${String(r.p50).padStart(5)} p99 ${String(r.p99).padStart(5)} max ${String(r.max).padStart(6)} ms  GL p50 ${String(r.glP50).padStart(5)} p99 ${String(r.glP99).padStart(7)} ms  calls ${String(r.calls).padStart(3)}  tris ${String(r.tris).padStart(6)}  transp ${String(r.transparent).padStart(3)}  lights ${r.lights}  creatures<25m ${r.creaturesNear}  +prog ${r.newPrograms} +tex ${r.newTextures} +geo ${r.newGeometries}  heap ${r.heapMB} MB${r.level !== 'n/a' ? '  level ' + r.level : ''}`;

@@ -1179,3 +1179,21 @@ VR-entry fix; each item is for discussion first.
     passes. Also new: `test_greet.js` for the townsfolk's greeting (stop
     and face the player within 3.2 m, go on after 12 s, greet again only
     after the player has been 6 m away; Sparkakus's "!" from 6 m).
+
+77. **The performance report's baseline, and machine speed (3.15.41).** The
+    full tier on 3.15.41 failed `perf_report.js` in every situation by about
+    the same factor: script p50 4-8 ms against a baseline of 2.1-2.8 ms. The
+    baseline had been written on 3.15.27 (before multiview) on a faster
+    machine, and kept raw milliseconds. On one machine, run back to back,
+    3.15.40 and 3.15.41 matched within its noise (p50 6.0-7.9 and 5.8-8.0
+    ms; no shader compiled during play in either), so the build changed
+    nothing; the container also restarted three times during the tier and
+    its speed varied from run to run (the new workload, 4.1 to 5.7 ms). The
+    report now times a fixed in-page workload (matrix maths and small
+    objects, like the game's script) before and after the situations; the
+    baseline keeps that time (written from the 3.15.41 run, 5.35 ms) and
+    every run scales the baseline's times by the ratio, and the absolute
+    limits (p99 12 / 16 ms, max 120 ms) by the ratio to the machine they
+    were set on (about 2.0 ms, estimated from the 3.15.27 baseline), never
+    below their own values. The old baseline is kept in
+    `tools/.runs/perf_baseline_v27.json`.
