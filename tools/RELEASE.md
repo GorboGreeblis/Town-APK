@@ -155,14 +155,17 @@ does not come back cleanly in `tools/BUGS.md`.
 
 ## 5. Upload to the Meta Quest Store
 
-**Upload candidate: 3.15.41 (versionCode 41)**, the root `GreeblisTown-release.apk`
-(always the latest build). Standard and full test tiers pass on it (TEST_PLAN.md).
-On the headset: the author's last full run was 3.15.19 (no new issues), and the
-multiview path was measured on 3.15.33-3.15.34 (town 72 fps on a Quest 3S); the
-changes since (the flash fix, B27, P14, P16-P19) still want one headset pass (TASKS.md
-T3: no flashes, the Event in OVR Metrics, the Speech after a pizza call). The Alpha
-channel is only you and invited testers, so uploading there first and running that
-same build from the store is a fair way to do that pass.
+**Upload candidate: 3.15.42 (versionCode 42)**, the root `GreeblisTown-release.apk`
+(always the latest build). New since 3.15.41: no texture is made during play (F-B29: one colour
+per emote glyph, the author's call; F-B30: the courier's pizza, Montgummery's faces, the speech
+bubbles and the shop mirror made while loading), the lead on the flashes the author placed at
+Nextessa's emote, dance battles, planting and the Summoning Pillar; and the Event's pizza batched
+(P20, 14% fewer draws in the heaviest Event view, identical pixels). The quick tier and the browser
+tests that cover these pass on it; a full standard pass waits for a quiet machine (NOTES 82). Its
+headset pass: no flashes in a dance battle, speaking to Nextessa, planting or at the Summoning
+Pillar; the Event's frame rate in the log (`perf_log.js`); the emote colours look right. The Alpha
+channel is only you and invited testers, so uploading there first and running that same build
+from the store is a fair way to do that pass.
 
 The app label inside the APK is "GREEBLIS TOWN" (headset library and menus); type the
 same spelling as the listing name in the developer dashboard.

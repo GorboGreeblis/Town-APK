@@ -1,7 +1,7 @@
 # Greeblis Town, Lore Bible (second pass)
 
 Compiled strictly from the game's own text, data and pictures in the current game file, the root
-`index.html` (3.15.41; the same as `tools/uncompressed.html` plus the fixes in FIXES.md, none of which
+`index.html` (3.15.42; the same as `tools/uncompressed.html` plus the fixes in FIXES.md, none of which
 changes a line of story text). Lines are quoted as written. Anything not stated by the game is marked
 *(inference)*. Gaps are listed at the end so the author can fill them.
 
