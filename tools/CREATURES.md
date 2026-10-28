@@ -8,7 +8,9 @@ the models (RELEASE.md 6): the designs are final; fixes must not change how anyo
 
 ## 1. The cast at a glance
 
-Heights are the value each builder reports (used for labels and emotes); model scale and body radius come from the
+Heights are the value each builder reports, which places things relative to the character, not a label (there are
+no name labels over anyone): emotes at height + 0.4 m, vignette speech bubbles at height + 1.1 m, the controller's
+pick target at half the height; a pizza box or hat sits on the model's real top (its bounding box) instead; model scale and body radius come from the
 cast table (`ROWS` in `JGP`). Each townsperson's signature colour (`color` in the cast table) colours their dialogue
 box when they speak and the emotes over their head (`?`, `!`).
 
@@ -144,7 +146,7 @@ for a surface kind afterwards (Anomalee's plastic).
 1. registers the eyelids with a blinker;
 2. finds which parts move: `KIT.animated` runs the character's `step` at six sample times (idle, talking, walking)
    and marks every object whose position, rotation, scale or visibility changes;
-3. returns `height` (labels and emotes), `crownY` and `head` (where hats and emotes sit), and `anim(t, dt, entity)`,
+3. returns `height` (where emotes, speech bubbles and the pick target go), `crownY` and `head` (where hats and emotes sit), and `anim(t, dt, entity)`,
    called every frame with the talk strength (`tkS`) and whether the character is walking.
 
 Right after the build the game merges each model's static parts (`io`, called with every part `born` did not
@@ -391,6 +393,6 @@ What the models have in common, as built:
 Things the models show that the code does not explain (see also LORE.md's open questions). Answered so far:
 Gooward's lens discs are a second set of eyes and the wavy lines are forehead wrinkles; King Dino's lit buttons
 and back sockets are synthetic parts of his own body; Mama Gorbo's lime tube is a goo tube; Fortizmo's four small dots are beauty marks; each character's technology detail is a deliberate theme of a digital
-world of digital monsters (the author).
+world of digital monsters (the author). Checked: Mushroom's reported height (2 m) is below his hat (about 2.3 m),
+but what it places clears the hat (emotes at 2.4 m, speech bubbles at 3.1 m).
 - What each of Etcher's three back marks stands for (the technology theme itself is confirmed, section 4).
-- Mushroom reports a height of 2 m for his label though his hat reaches about 2.3 m.
