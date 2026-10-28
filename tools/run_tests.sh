@@ -6,6 +6,9 @@
 #   tools/run_tests.sh --full      FULL pass: every scenario, long soak times.
 #                                  Run only on the final build (30+ minutes).
 #   tools/run_tests.sh --quick     static checks only, no browser (seconds)
+#   ... --resume                   (with any tier) skip the stages that already passed on this same asset, APK and
+#                                  tools in an earlier run of the tier (tools/.runs/resume_<tier>.txt), e.g. after a
+#                                  machine restart cut a pass short; failed and new stages run again
 #
 # Needs: python3, JDK 17+, node with playwright (browser tests), and
 # ANDROID_HOME for the server harness and the APK checker.
@@ -20,8 +23,15 @@ ASSET="${GT_ASSET:-$ROOT/tools/android/app/src/main/assets/index.html}"
 # Multiview is the headset's path since 3.15.34: the fake headset runs it (without MSAA) unless GT_MULTIVIEW=0.
 GT_MULTIVIEW=${GT_MULTIVIEW-1}; [ "$GT_MULTIVIEW" = 0 ] && GT_MULTIVIEW=""; export GT_MULTIVIEW
 APK="$ROOT/GreeblisTown-release.apk"; [ -f "$APK" ] || APK="$ROOT/tools/android/app/build/outputs/apk/release/app-release.apk"
-TIER=standard
-case "$1" in --smoke) TIER=smoke;; --full) TIER=full;; --quick) TIER=quick;; esac
+TIER=standard; RESUME=""
+for a in "$@"; do case "$a" in --smoke) TIER=smoke;; --full) TIER=full;; --quick) TIER=quick;; --resume) RESUME=1;; esac; done
+# The SDK for the server harness and the APK checker: ANDROID_HOME, else the one the Gradle build uses.
+if [ -z "${ANDROID_HOME:-}${ANDROID_SDK_ROOT:-}" ] && [ -f "$ROOT/tools/android/local.properties" ]; then
+  ANDROID_HOME=$(sed -n 's/^sdk\.dir=//p' "$ROOT/tools/android/local.properties"); export ANDROID_HOME; fi
+# --resume: a stage counts as passed earlier only for the same asset, APK and test tools (their hashes make the key)
+STATE="$ROOT/tools/.runs/resume_$TIER.txt"
+KEY=$( { cat "$ASSET"; [ -f "$APK" ] && cat "$APK"; cat "$ROOT"/tools/*.js "$ROOT"/tools/lib/*.js "$ROOT"/tools/*.sh "$ROOT"/tools/*.py; } 2>/dev/null | sha256sum | cut -c1-16)
+[ -n "$RESUME" ] && { n=$(grep -c "^$KEY	" "$STATE" 2>/dev/null); echo "resuming: key $KEY, ${n:-0} stages passed earlier"; }
 
 # Per-tier knobs: seconds of soak, NPC scenarios, world sampling window.
 case $TIER in
@@ -31,12 +41,17 @@ case $TIER in
 esac
 
 SUMMARY=""; rc_all=0
-run() { name=$1; shift; echo; echo "=== $name ==="; "$@"; rc=$?
-  if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  PASS  $name"; else SUMMARY="$SUMMARY\n  FAIL  $name (exit $rc)"; rc_all=1; fi; }
+done_before() { [ -n "$RESUME" ] && grep -qxF "$KEY	$1" "$STATE" 2>/dev/null; }
+run() { name=$1; shift
+  if done_before "$name"; then SUMMARY="$SUMMARY\n  PASS  $name (earlier run)"; return; fi
+  echo; echo "=== $name ==="; "$@"; rc=$?
+  if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  PASS  $name"; printf '%s\t%s\n' "$KEY" "$name" >> "$STATE"; else SUMMARY="$SUMMARY\n  FAIL  $name (exit $rc)"; rc_all=1; fi; }
 skip() { SUMMARY="$SUMMARY\n  SKIP  $1 ($2)"; }
 # Report stages run a probe and keep its output in the log; they never fail the pass.
-report() { name=$1; shift; echo; echo "=== report: $name ==="; "$@"; rc=$?
-  if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  INFO  $name (see log)"; else SUMMARY="$SUMMARY\n  INFO  $name (probe exit $rc)"; fi; }
+report() { name=$1; shift
+  if done_before "report: $name"; then SUMMARY="$SUMMARY\n  INFO  $name (earlier run, see its log)"; return; fi
+  echo; echo "=== report: $name ==="; "$@"; rc=$?
+  if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  INFO  $name (see log)"; printf '%s\t%s\n' "$KEY" "report: $name" >> "$STATE"; else SUMMARY="$SUMMARY\n  INFO  $name (probe exit $rc)"; fi; }
 
 echo "Greeblis Town test pass: $TIER"
 run "asset == original + the entry edits + the gameplay fixes (apply_entry_fix.py --verify)" python3 -I "$ROOT/tools/apply_entry_fix.py" --verify
