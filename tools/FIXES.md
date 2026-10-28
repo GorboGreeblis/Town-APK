@@ -428,6 +428,17 @@ seeded grain (FIXES R1 seeds from the painter's source text, which minification 
 has a new fixed roll of the same grain; `tex/` was rebuilt. Local names in the game file are now the minifier's: the
 code names quoted in the entries above are those of the unminified file (git history before 3.15.45).
 
+- **R3** (3.15.46; the author: "the in-code License notice should not reference the repo or other files", RULES.md
+21): the license comment at the top of the game file no longer ends its CC0 dedication with a pointer to the
+repository's license file; it keeps the dedication with the license's public address and three.js's full MIT notice.
+A comment only: nothing the page does changes.
+
+- **F-B32** (3.15.46; flashes, the rule that no texture is made during play, RULES.md 9): the soft glow behind an item
+tossed in a townsfolk text exchange (goo, a card, a tile, a coin) was painted the first time a vignette tossed one,
+mid-play; F-B30 had missed it because only some exchanges toss items. Now it is painted while loading and handed to
+the loading warm-up's upload list (`__gtPreTex`, marked to keep) like Montgummery's faces. Same canvas, same drawing:
+nothing drawn differently. Found by the 3.15.45 standard pass (`texture_census.js`).
+
 ## Multiview (release path since 3.15.34)
 
 Edits for the multiview experiment, in order. Three groups:

@@ -152,7 +152,7 @@ does not come back cleanly in `tools/BUGS.md`.
 
 ## 5. Upload to the Meta Quest Store
 
-**Upload candidate: 3.15.45 (versionCode 45)**, the root `GreeblisTown-release.apk`
+**Upload candidate: 3.15.46 (versionCode 46)**, the root `GreeblisTown-release.apk`
 (always the latest build). New since 3.15.41 (VERSIONS.md has each build): no texture is made during play (F-B29,
 F-B30, 3.15.42), the Event's pizza batched (P20); native render scale and no layer swaps (F-B31), the Event scale
 removed, the Ancient left out from outside the church (P21), Gooward's translucent parts merged (P22, 3.15.43);

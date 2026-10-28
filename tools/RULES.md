@@ -80,7 +80,8 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     for object, bit for bit.
 20. **The compressed version lives in `tools/` beside the uncompressed one, works as a Bitcoin ordinal, and is always
     updated with the others; the APK never uses it** (2026-10-28: "create a Bitcoin ordinal compressed version of the
-    game and store it in the tools folder. This build must always always be updated with the others", "must be fully
+    game and store it in the tools folder. This build must always always be updated with the others", "The Compressed
+    version should always be the latest version of the game", "must be fully
     functional as a Bitcoin ordinal, as the previous compressed version was", "The .apk should never use the
     compressed version of the game file. The tools folder should contain both a compressed version and an
     uncompressed version of the game file", "Look to the previous compressed game file for methods of compression")
@@ -89,6 +90,10 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     pre-commit hook) and works as an inscription would (`test_compressed.js`: alone, under the ordinal content
     policy, unpacks, boots, enters VR; under 390,000 bytes). Its readable loader page carries no license notice (2026-10-28: "The License notice is not
     needed in the compressed ordinal version"); the notices are inside its payload.
+
+21. **The license notice in the game file stands alone** (2026-10-28: "the in-code License notice should not
+    reference the repo or other files"): the CC0 dedication (with the license's public address) and three.js's MIT
+    notice, with no pointer to this repository or any file in it. `tools/LICENSE.md` covers the repository.
 
 ## Priorities
 
