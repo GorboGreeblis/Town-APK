@@ -1395,3 +1395,36 @@ VR-entry fix; each item is for discussion first.
     the same way). An incident along the way: an edit the author had rejected (keeping only non-random painters in
     `tex/`) had already reached `experiment.py` and `prerender_textures.js`; it was found (72 textures instead of
     132), reported to the author and reverted before anything was committed.
+89. **The game file minified; the compressed version is back, as a Bitcoin ordinal (3.15.45, FIXES R2).** The
+    author asked for the game file minified "as much as possible" (full, names renamed too, chosen over a lighter
+    pass after the numbers: at most 6% smaller, about 23 KB inside the APK, under 1% faster to load), then for a
+    "Bitcoin ordinal compressed version of the game" in `tools/`, "always always updated with the others", "fully
+    functional as a Bitcoin ordinal, as the previous compressed version was", never used by the APK, made by the
+    previous compressed version's method; and set the rule: the uncompressed version minified but not compressed,
+    the compressed one both (RULES.md 19, 20). What was done:
+    - **Minification** (`minify_game.js`): terser, two compress passes, local names mangled, repeated to a fixed
+      point (three runs; `--check` fails when another run would change the file). Reserved names: the harness's
+      `HOOK_NAMES` and tagged declarations plus `bend`, `park`, `W`, so every test reaches the game as before.
+      `reduce_funcs` off so `bend` (used once) is not inlined into its caller (447 bytes). Class names kept.
+      1,117,373 to 1,054,617 characters. The text anchors of `experiment.py` were rewritten for the minified code
+      (new `--check`, quick tier) and `test_bend_exact.js` now finds `bend` by brace matching.
+    - **Identity** (`minify_identity.js`): both versions booted with Math.random a fixed sequence, Date.now frozen
+      and the painters' seeds taken from size and call count only, and the whole scene recorded at the world-ready
+      point. A first run differed (2,318 vs 2,319 objects): the old version found its pre-painted `tex/` (keyed by
+      painter source) and the minified one did not; booted without `tex/` (standalone mode) both build the same
+      2,319 objects bit for bit, and the original against itself is identical too (the check is sound).
+    - **The compressed version** (`build_compressed.js`, `tools/index.compressed.html`): the previous one (removed in
+      3.15.43, in git history) was a context-mixing compressor: a page saying LOADING, the coded game as text in a
+      `<script type="b">` (7-bit groups; 0, 13 and "<" escaped into characters from 128 up), and a loader that
+      decodes it with sixteen hashed order-n contexts, a match model, three mixers and two adaptive probability maps
+      driving a binary arithmetic decoder, counting LOADING nn%, then `document.write`s the game; outside a Quest
+      browser it shows "designed for Meta Quest". Only the decoder was in the repository. Its page is kept as
+      `tools/lib/compressed_loader.html` (four placeholders), and the encoder is the decoder's own text with the
+      arithmetic coder turned around (the bit read from the game, settled bytes written, the low bound flushed), so
+      they cannot disagree; every build is unpacked again and compared byte for byte. 1,054,835 bytes to 230,845
+      coded, a 269,925-byte page (the previous one was 256,872 for a 1,000,979-byte game); an inscription must stay
+      under about 390,000. `test_compressed.js` serves it alone with the content policy ordinals.com serves
+      inscriptions with: it counts LOADING, unpacks (67 s headless), boots, enters VR, draws frames, fetches nothing
+      from elsewhere, no page errors; a desktop browser gets the Quest note.
+    - **Wired in**: `build.sh` minifies first and builds the compressed version after the APK; quick tier and the
+      pre-commit hook check both; `test_compressed.js` joins every tier but quick.

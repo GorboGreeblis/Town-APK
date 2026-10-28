@@ -17,7 +17,7 @@ const asset = rec || (process.argv[2] ? path.resolve(process.argv[2]) : path.joi
 const goldenFile = path.join(__dirname, 'test_bend_golden.json');
 const golden = rec ? [] : JSON.parse(fs.readFileSync(goldenFile, 'utf8')).cases;
 const fp = (o) => crypto.createHash('sha256').update(Buffer.from(o.geometry.attributes.position.array.buffer)).update(Buffer.from(o.geometry.attributes.normal.array.buffer)).update(String(o.geometry.attributes.position.needsUpdate) + String(o.frustumCulled)).digest('hex');
-const grab = (f) => { const s = fs.readFileSync(f, 'utf8'); const a = s.indexOf('const bend=(tm,phi,amp,wph,lift)=>{'); const b = s.indexOf('},ORDER=', a); if (a < 0 || b < 0) throw new Error('bend not found in ' + f); return s.slice(a + 'const bend='.length, b + 1); };
+const grab = (f) => { const s = fs.readFileSync(f, 'utf8'); const a = s.indexOf('const bend=('); if (a < 0) throw new Error('bend not found in ' + f); const b0 = s.indexOf('=>{', a) + 2; let d = 0, b = b0; for (; b < s.length; b++) { if (s[b] === '{') d++; else if (s[b] === '}' && --d === 0) break; } return s.slice(a + 11, b + 1); };   // its parameter names are the minifier's (NOTES 89); the body has no braces in strings
 const B = eval('(' + grab(asset) + ')');
 const attr = (arr) => ({ array: arr, count: arr.length / 3, itemSize: 3, needsUpdate: false, setXYZ(i, x, y, z) { this.array[3 * i] = x; this.array[3 * i + 1] = y; this.array[3 * i + 2] = z; return this; } });
 let seed = 7; const rnd = () => ((seed = (Math.imul(seed, 1103515245) + 12345) >>> 0) / 4294967296);

@@ -1,5 +1,6 @@
 #!/bin/sh
 # Rebuilds everything that ships from the game file alone (RULES.md 2), then checks it:
+#   0. the game file is minified (RULES.md 19): minify_game.js, a no-op when it already is;
 #   1. the copies: index.html at the root and the APK's asset (sync_game.py);
 #   2. the pre-painted textures in the APK's assets/tex/ (prerender_textures.js; painting is seeded, FIXES R1, so an
 #      unchanged game file paints the same files again);
@@ -7,8 +8,10 @@
 #      (RULES.md 12): --bump raises versionCode by one and versionName's last number to match; without it the build
 #      stops and says so;
 #   4. the release APK (Gradle), copied to the root as GreeblisTown-release.apk;
-#   5. the checks: sync_game.py --check, check_apk.sh (store rules, the root APK holds the current game) and
-#      test_standalone.js (the game runs alone; tex/ is what it paints). --no-test skips the last one.
+#   5. the compressed version, tools/index.compressed.html (build_compressed.js; never in the APK, RULES.md 20);
+#   6. the checks: sync_game.py --check, experiment.py --check, check_apk.sh (store rules, the root APK holds the
+#      current game), test_standalone.js (the game runs alone; tex/ is what it paints) and test_compressed.js (the
+#      compressed version works as an ordinal). --no-test skips the last two.
 #
 #   tools/build.sh [--bump] [--no-test]
 #
@@ -19,6 +22,9 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd); BUMP=""; TEST=1
 for a in "$@"; do case $a in --bump) BUMP=1;; --no-test) TEST="";; *) echo "usage: $0 [--bump] [--no-test]"; exit 2;; esac; done
 ASSETS="$ROOT/tools/android/app/src/main/assets"; GRADLE="$ROOT/tools/android/app/build.gradle"; APK="$ROOT/GreeblisTown-release.apk"
 [ -n "${ANDROID_HOME:-}${ANDROID_SDK_ROOT:-}" ] || export ANDROID_HOME=$(sed -n "s/^sdk.dir=//p" "$ROOT/tools/android/local.properties" 2>/dev/null | head -1)
+
+echo "== 0. minified game file"
+node "$ROOT/tools/minify_game.js" | tail -1
 
 echo "== 1. copies of the game file"
 python3 -I "$ROOT/tools/sync_game.py"
@@ -52,9 +58,14 @@ mkdir -p "$ROOT/tools/.runs"; rm -f "$OUT"
 cp "$OUT" "$APK"
 echo "built $APK"
 
-echo "== 5. checks"
+echo "== 5. compressed version"
+node "$ROOT/tools/build_compressed.js"
+
+echo "== 6. checks"
 check() { log="$ROOT/tools/.runs/build_check.log"; "$@" > "$log" 2>&1 || { tail -30 "$log"; echo "BUILD CHECK FAILED: $*"; exit 1; }; tail -1 "$log"; }
 check python3 -I "$ROOT/tools/sync_game.py" --check
+check python3 -I "$ROOT/tools/experiment.py" --check
 check "$ROOT/tools/check_apk.sh" "$APK"
 [ -z "$TEST" ] || check node "$ROOT/tools/test_standalone.js"
+[ -z "$TEST" ] || check node "$ROOT/tools/test_compressed.js"
 echo "BUILD DONE: $name ($code)"

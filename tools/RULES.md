@@ -10,7 +10,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
    after. Please edit the actual file"; "this also means adding all changes to the actual uncompressed file") [87].
    The game is `tools/uncompressed.html`. Every change is made in it. Never edit `index.html` or the APK's asset:
    they are copies, written by `python3 tools/sync_game.py` and checked by `sync_game.py --check` (quick tier,
-   pre-commit hook).
+   pre-commit hook). The file is minified (rule 19): edit it in place, keep new code in the same style, and run
+   `tools/build.sh --bump`, which minifies again. Names the tests and tools read in the game's scope are never
+   renamed (`RESERVED` in `minify_game.js`); a tool that needs another one adds it there first.
 2. **The game must always be rebuildable from the game file alone** (2026-10-28: "I want to ensure that the game
    itself can be rebuilt from the index.html file"; "as a rule this should always be possible"). It runs fully with
    nothing beside it (no files, no server, nothing from the web), and everything shipped with it is derived from it:
@@ -19,8 +21,8 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
    from the game file in one command. `test_standalone.js` (every tier but quick, and the last step of `build.sh`)
    proves both: it runs the game file alone and checks every pre-painted texture is exactly what the game
    paints [88].
-3. **No original, no compressed build kept** (2026-10-28: "we don't need to save the original anywhere in the
-   repo"; "we will no longer have a 'compressed' version either") [87]. Git history has them.
+3. **No original kept** (2026-10-28: "we don't need to save the original anywhere in the repo") [87]. Git history
+   has it. (The compressed build, dropped the same day, came back as rule 20.)
 4. **Every change is recorded** in `tools/FIXES.md` (the changelog: what, why, who decided, how it was proven), with
    longer investigations in NOTES.md and bugs in BUGS.md.
 5. **Randomness: cut it where it is not part of play** (2026-10-28: "we should cut as much randomness as possible").
@@ -66,6 +68,31 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 17. **Names**: "the Event" is the planting event; "the Speech" is Sparkakus's library finale.
 18. **Devices**: the author tests on a Quest 3S (its browser reports itself as "Quest 3"). Quest 2, Quest Pro and
     the original Quest are not supported (manifest `quest3|quest3s`).
+
+## The two versions of the game
+
+19. **The uncompressed version is minified but not compressed; the compressed version is both** (2026-10-28: "please
+    apply Minification to the current game file, as much as possible", full minification with names renamed; "The
+    uncompressed version of the game should be minified but not compressed. And the compressed version of the game
+    should be both minified and compressed. This is a rule.") [89]. The game file, `index.html` and the APK hold the
+    minified game; `node tools/minify_game.js --check` (quick tier, pre-commit hook, `build.sh`) fails if minifying
+    it again would change it. `minify_identity.js` proved the minified game builds the same world as before, object
+    for object, bit for bit.
+20. **The compressed version lives in `tools/` beside the uncompressed one, works as a Bitcoin ordinal, and is always
+    updated with the others; the APK never uses it** (2026-10-28: "create a Bitcoin ordinal compressed version of the
+    game and store it in the tools folder. This build must always always be updated with the others", "must be fully
+    functional as a Bitcoin ordinal, as the previous compressed version was", "The .apk should never use the
+    compressed version of the game file. The tools folder should contain both a compressed version and an
+    uncompressed version of the game file", "Look to the previous compressed game file for methods of compression")
+    [89]. `tools/index.compressed.html`, built by `build_compressed.js` (in `build.sh`) with the previous compressed
+    version's method. Checked: it unpacks to the game file exactly (`build_compressed.js --check`: quick tier,
+    pre-commit hook) and works as an inscription would (`test_compressed.js`: alone, under the ordinal content
+    policy, unpacks, boots, enters VR; under 390,000 bytes).
+
+## Priorities
+
+- **Performance is the biggest blocker for the Store submission** (2026-10-28: "once all other tasks are completed,
+  performance should be our focus"): after the open tasks, work goes to the frame rate (the Event on a Quest 3S).
 
 ## Decisions that close an option
 

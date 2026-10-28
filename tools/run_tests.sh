@@ -62,6 +62,9 @@ report() { name=$1; shift; wanted "report: $name" || return 0; KEY=$(key "$@")
 
 echo "Greeblis Town test pass: $TIER${ONLY:+ (only stages matching /$ONLY/)}"; T_ALL=$(date +%s)
 run "the shipped copies (index.html, the APK asset) are the game file tools/uncompressed.html (sync_game.py --check)" python3 -I "$ROOT/tools/sync_game.py" --check
+run "the game file is minified, not compressed (minify_game.js --check, RULES.md 19)" node "$ROOT/tools/minify_game.js" --check
+run "the compressed version unpacks to the game file exactly (build_compressed.js --check, RULES.md 20)" node "$ROOT/tools/build_compressed.js" --check
+run "every experiment applies to the game file (experiment.py --check)" python3 -I "$ROOT/tools/experiment.py" --check
 run "loopback server harness" "$ROOT/tools/test_server.sh"
 run "docs consistency (check_docs.py)" python3 -I "$ROOT/tools/check_docs.py"
 run "dialogue spell-check" sh -c "python3 '$ROOT/tools/spellcheck_dialogue.py' '$ROOT/tools/uncompressed.html' >/dev/null"
@@ -75,6 +78,7 @@ if [ "$TIER" != quick ]; then
   run "uniform budget: every shader fits a Quest 3S's GPU limits (multiview and classic)" node "$ROOT/tools/uniform_budget.js" "$ASSET"
   run "warm-up coverage: every lit material has its shaders for every light state the game can reach (P19 frame check)" node "$ROOT/tools/warm_coverage.js" "$ASSET"
   run "standalone: the game runs on its own (nothing from the web, no extras); every pre-painted texture in tex/ is what the game paints (RULES.md 2)" node "$ROOT/tools/test_standalone.js" "$ASSET"
+  run "compressed version: works as a Bitcoin ordinal (alone, under the ordinal content policy; unpacks, boots, enters VR) (RULES.md 20)" node "$ROOT/tools/test_compressed.js"
   run "texture census: no texture is made during play (emotes, faces, bubbles, pizza: the flash causes, F-B29/F-B30)" node "$ROOT/tools/texture_census.js" "$ASSET"
   run "quality governor: levels change foveation only, never the layer (F-B31); the Event locks the lowest level" env GT_DEVICE=quest3s node "$ROOT/tools/test_governor.js" "$ASSET"
   run "game content: gifts, talk order, shyness, bribe, outfits, battles, the Ancient, the robin, Event lines, Backpacka" node "$ROOT/tools/test_content.js" "$ASSET"

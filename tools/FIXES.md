@@ -413,6 +413,19 @@ Randomness everywhere else (spawns, wandering, chats, the UFO) is untouched. Wha
 different (fixed) roll than any one earlier launch's; its look, density and colours are unchanged. Proven by
 `test_standalone.js`: all 132 textures in the rebuilt `tex/` match the game's own painting pixel for pixel.
 
+- **R2** (3.15.45; the author: "please apply Minification to the current game file, as much as possible", full
+minification, and "The uncompressed version of the game should be minified but not compressed", RULES.md 19; NOTES
+89): the whole game file minified with terser (`tools/minify_game.js`): every script compressed in two safe passes
+and its local names shortened, comments and the whitespace between the HTML's tags removed, repeated until a run
+changes nothing. 1,117,373 to 1,054,617 characters (5.6%). Kept: the license notice (the author's CC0 dedication and
+three.js's MIT notice), class names, the names the test harness and tools read in the game's scope, and functions
+used once stay functions (`bend` is tested on its own). Proven by `minify_identity.js`: booted with randomness and the
+clock fixed, the minified game builds the same world as 3.15.44, all 2,319 objects (transforms, geometry, materials,
+textures) bit for bit; `test_bend_exact.js` still matches the original's 400 outputs. What differs: the painters'
+seeded grain (FIXES R1 seeds from the painter's source text, which minification changes), so every textured surface
+has a new fixed roll of the same grain; `tex/` was rebuilt. Local names in the game file are now the minifier's: the
+code names quoted in the entries above are those of the unminified file (git history before 3.15.45).
+
 ## Multiview (release path since 3.15.34)
 
 Edits for the multiview experiment, in order. Three groups:

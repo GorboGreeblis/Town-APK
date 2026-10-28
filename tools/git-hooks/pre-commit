@@ -1,15 +1,24 @@
 #!/bin/sh
-# Refuses a commit in which the game file, its two shipped copies and the root APK disagree.
+# Refuses a commit in which the game file, its two shipped copies, the compressed version and the root APK disagree,
+# or in which the game file is not minified (RULES.md 12, 19, 20).
 # Install once per clone:  git config core.hooksPath tools/git-hooks
 # The author's rules: the game has one source, tools/uncompressed.html, edited directly; it ships as index.html at
 # the repository root and as the APK's asset (tools/sync_game.py copies it; --check compares), and the APK at the
 # root is always the latest build.
 ROOT="$(git rev-parse --show-toplevel)"
 ASSET="$ROOT/tools/android/app/src/main/assets/index.html"
-if git diff --cached --name-only | grep -qE '^(index\.html|GreeblisTown-release\.apk|tools/android/app/src/main/assets/index\.html|tools/uncompressed\.html|tools/android/app/build\.gradle)$'; then
+if git diff --cached --name-only | grep -qE '^(index\.html|GreeblisTown-release\.apk|tools/android/app/src/main/assets/index\.html|tools/uncompressed\.html|tools/index\.compressed\.html|tools/android/app/build\.gradle)$'; then
   if ! python3 -I "$ROOT/tools/sync_game.py" --check >/dev/null 2>&1; then
     echo "pre-commit: index.html or the APK's asset differs from the game file tools/uncompressed.html." >&2
     echo "            Run: python3 tools/sync_game.py && git add index.html tools/android/app/src/main/assets/index.html" >&2
+    exit 1
+  fi
+  if ! node "$ROOT/tools/minify_game.js" --check >/dev/null 2>&1; then
+    echo "pre-commit: the game file tools/uncompressed.html is not fully minified (RULES.md 19). Run: tools/build.sh --bump" >&2
+    exit 1
+  fi
+  if ! node "$ROOT/tools/build_compressed.js" --check >/dev/null 2>&1; then
+    echo "pre-commit: tools/index.compressed.html does not unpack to the current game file (RULES.md 20). Run: tools/build.sh --bump" >&2
     exit 1
   fi
   if ! unzip -p "$ROOT/GreeblisTown-release.apk" assets/index.html 2>/dev/null | cmp -s - "$ASSET"; then

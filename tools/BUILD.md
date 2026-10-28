@@ -7,13 +7,16 @@ APK and is served to the Quest Browser's immersive WebXR activity from a
 loopback server inside the app.
 
 ```
-GreeblisTown-release.apk   the final signed build (the only file at the root besides tools/)
+GreeblisTown-release.apk   the final signed build
+index.html                 the game file's copy (the root holds only these two and tools/)
 tools/
   android/                 Android Studio / Gradle project that produces the APK
     app/src/main/assets/index.html             the game as bundled (a copy of uncompressed.html)
     app/src/main/java/.../GameServer.java      loopback HTTP server for the game
     app/src/main/java/.../LauncherActivity.java launches the Quest Browser immersive
-  uncompressed.html        THE GAME FILE: the whole game, every change made in it directly
+  uncompressed.html        THE GAME FILE: the whole game, minified, every change made in it directly
+  index.compressed.html    the compressed version (a Bitcoin ordinal; never in the APK), built from it
+  build.sh                 rebuilds everything from the game file (minify, copies, tex/, version, APK, compressed)
   sync_game.py             copies it to index.html (root) and the APK's asset; --check compares
   experiment.py            diagnostic variants of a copy, for headset A/B tests
   test_*.js, *.sh          test suite (see tools/README.md)
@@ -47,8 +50,10 @@ tools/
 Every change is made directly in the game file, `tools/uncompressed.html` (since 3.15.43, NOTES 87; before that a
 build script applied a list of text edits to the author's original, which is no longer kept). `tools/FIXES.md` is the
 changelog: each change with its reason and how it was proven (add an entry for every new one); `tools/BUGS.md`,
-section Fixed, lists what they fix. After editing the game file, `python3 tools/sync_game.py` copies it to `index.html`
-at the root and into the APK; the quick tier and the pre-commit hook refuse copies that differ.
+section Fixed, lists what they fix. The game file is minified (RULES.md 19, since 3.15.45): edit it in place in the
+same style; `tools/build.sh --bump` minifies it again, copies it to `index.html` at the root and into the APK, and
+rebuilds the compressed version; the quick tier and the pre-commit hook refuse copies that differ, a game file that is
+not fully minified, and a compressed version that does not unpack to it.
 
 What the entry script does on a Quest browser (NOTES 34, 41, 42):
 
@@ -91,14 +96,17 @@ git config core.hooksPath tools/git-hooks   # once per clone: refuses a commit w
 tools/build.sh --bump                   # after editing tools/uncompressed.html: everything, from the game file alone
 ```
 
-`tools/build.sh` copies the game file to `index.html` (root) and the APK's asset, re-paints the pre-painted
-textures in `assets/tex/`, raises the version by one if what ships changed (`--bump`; without it the build stops
-and says so), builds the release APK, copies it to the root as `GreeblisTown-release.apk`, and checks the result
-(`sync_game.py --check`, `check_apk.sh`, `test_standalone.js`). Painting is seeded (FIXES R1), so an unchanged game
+`tools/build.sh` minifies the game file (a no-op when it already is), copies it to `index.html` (root) and the APK's
+asset, re-paints the pre-painted textures in `assets/tex/`, raises the version by one if what ships changed
+(`--bump`; without it the build stops and says so), builds the release APK, copies it to the root as
+`GreeblisTown-release.apk`, builds the compressed version `tools/index.compressed.html` (never in the APK), and
+checks the result (`sync_game.py --check`, `experiment.py --check`, `check_apk.sh`, `test_standalone.js`,
+`test_compressed.js`; `--no-test` skips the last two). Painting is seeded (FIXES R1), so an unchanged game
 file rebuilds the same `tex/` and the same APK, byte for byte. Add the new version's row to `tools/VERSIONS.md`.
 The steps by hand:
 
 ```sh
+node tools/minify_game.js               # minify the game file in place (to a fixed point)
 python3 tools/sync_game.py              # copy the game file to index.html (root) and the APK's asset
 node tools/prerender_textures.js        # re-paint assets/tex/ (after a change to a texture painter)
 cd tools/android
