@@ -29,23 +29,28 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     };
     const gs = () => D.Re.t;
     const record = async (x, z, gameS) => {
-      D.At.position.set(x, D.At.position.y, z); await wait(800);
+      D.At.position.set(x, D.At.position.y, z); { const g1 = gs(); while (gs() - g1 < 3) await wait(100); }   // the game keeps the audio clock 1.5 s after it stops being heard
       log = []; const g0 = gs(), w0 = performance.now();
       while (gs() - g0 < gameS && performance.now() - w0 < gameS * 6000) await wait(100);
       const l = log; log = null; return l;
     };
     const judge = (l) => {
       const clocks = [...new Set(l.map((e) => e.clock))];
-      const hits = []; let late = 0, early = 0, maxLate = 0, prevNow = null;
-      for (const e of l) { for (const [t, v] of e.fired) { hits.push([t, v]); const d = e.now - t; if (d < -1e-6) early++; maxLate = Math.max(maxLate, d); } prevNow = e.now; }
-      // the beat grid: bars start BAR apart from the first crash or brush-on-one; every hit is on a twelfth of a beat
-      const frames = l.slice(1).map((e, i) => e.now - l[i].now).filter((d) => d > 0).sort((a, b) => a - b);
-      const frame = frames.length ? frames[Math.floor(frames.length * 0.95)] : 0;
-      for (const e of l) for (const [t] of e.fired) if (e.now - t > frame + 0.02) late++;
-      const t0 = hits.length ? hits[0][0] : 0;
-      const off = hits.map(([t]) => { const q = ((t - t0) / BEAT) * 12; return Math.abs(q - Math.round(q)) * BEAT / 12; });
-      const offGrid = off.filter((d) => d > 0.002).length;
-      return { clocks, hits: hits.length, kinds: [...new Set(hits.map((h) => h[1]))], early, late, maxLate: +maxLate.toFixed(3), frame: +frame.toFixed(3), offGrid, maxOff: +Math.max(0, ...off).toFixed(4), aheadMin: Math.min(...l.filter((e) => e.clock === 'a').map((e) => e.ahead)), bar: J.state.bar, part: J.state.part };
+      const hits = []; let late = 0, early = 0, maxLate = 0, offGrid = 0, maxOff = 0, seg = null;
+      for (let i = 0; i < l.length; i++) {
+        const e = l[i], gap = i ? e.now - l[i - 1].now : 0;
+        if (!seg || seg.clock !== e.clock) seg = { clock: e.clock, t0: null };   // a new clock starts the bars again
+        for (const [t, v] of e.fired) {
+          hits.push([t, v]); const d = e.now - t;
+          if (d < -1e-6) early++;
+          if (i && d > Math.max(gap, 0) + 0.005) late++;   // at most the frame it fell in
+          maxLate = Math.max(maxLate, d);
+          if (seg.t0 === null) seg.t0 = t;
+          const q = ((t - seg.t0) / BEAT) * 12, off = Math.abs(q - Math.round(q)) * BEAT / 12;
+          if (off > 0.002) offGrid++; maxOff = Math.max(maxOff, off);
+        }
+      }
+      return { clocks, hits: hits.length, kinds: [...new Set(hits.map((h) => h[1]))], early, late, maxLate: +maxLate.toFixed(3), offGrid, maxOff: +maxOff.toFixed(4), aheadMin: Math.min(...l.filter((e) => e.clock === 'a').map((e) => e.ahead)), bar: J.state.bar, part: J.state.part };
     };
     // heard: at the kit (the audio clock)
     out.heard = judge(await record(-36.6, 21.2, 14));
@@ -69,7 +74,7 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
   expect('within 45 m but not heard they run on the game clock (the sticks move, no sound)', r.ghost.clocks.includes('g') && !r.ghost.clocks.includes('a') && r.ghost.hits >= 40, JSON.stringify(r.ghost));
   for (const [k, x] of [['heard', r.heard], ['within 45 m', r.ghost]]) {
     expect(`${k}: every hit lies on the beat grid (a twelfth of a beat at 104 bpm, within 2 ms)`, x.offGrid === 0, JSON.stringify({ offGrid: x.offGrid, maxOff: x.maxOff }));
-    expect(`${k}: hits reach the drummer's animation when due, never early, at most one frame late`, x.early === 0 && x.late === 0, JSON.stringify({ early: x.early, late: x.late, maxLate: x.maxLate, frame: x.frame }));
+    expect(`${k}: hits reach the drummer's animation when due, never early, at most one frame late`, x.early === 0 && x.late === 0, JSON.stringify({ early: x.early, late: x.late, maxLate: x.maxLate }));
   }
   expect('heard: the audio is scheduled ahead of the clock (the 3 s look-ahead never runs dry)', r.heard.aheadMin > 0, String(r.heard.aheadMin));
   expect('far from the kit the drums are off', r.far.fired === 0 && r.far.clocks.every((c) => c === ''), JSON.stringify(r.far));
