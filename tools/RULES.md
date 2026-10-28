@@ -15,8 +15,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
    itself can be rebuilt from the index.html file"; "as a rule this should always be possible"). It runs fully with
    nothing beside it (no files, no server, nothing from the web), and everything shipped with it is derived from it:
    the copies (`sync_game.py`) and the pre-painted textures in the APK's `assets/tex/`
-   (`node tools/prerender_textures.js`, after any change to a texture painter). `test_standalone.js` (standard
-   tier) proves both: it runs the game file alone and checks every pre-painted texture is exactly what the game
+   (`node tools/prerender_textures.js`, after any change to a texture painter). `tools/build.sh` rebuilds all of it
+   from the game file in one command. `test_standalone.js` (every tier but quick, and the last step of `build.sh`)
+   proves both: it runs the game file alone and checks every pre-painted texture is exactly what the game
    paints [88].
 3. **No original, no compressed build kept** (2026-10-28: "we don't need to save the original anywhere in the
    repo"; "we will no longer have a 'compressed' version either") [87]. Git history has them.
@@ -47,7 +48,8 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 
 11. **The repository root holds only** `GreeblisTown-release.apk`, `index.html` and `tools/` (2026-10-27).
 12. **The root APK is always the latest build** (2026-10-27): every change to the game is followed by a rebuild and a
-    version bump (`versionCode` only goes up) before it is committed; the pre-commit hook checks it.
+    version bump (`versionCode` only goes up) before it is committed (`tools/build.sh --bump`); the pre-commit hook
+    checks it.
 13. **Never commit the signing keystore.**
 14. **Commit often**; living documentation lives in `tools/`.
 15. **Changes to the entry script, the layers shim or the multiview path ship first as an experiment APK**

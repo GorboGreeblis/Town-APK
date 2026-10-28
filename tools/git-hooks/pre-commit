@@ -14,7 +14,7 @@ if git diff --cached --name-only | grep -qE '^(index\.html|GreeblisTown-release\
   fi
   if ! unzip -p "$ROOT/GreeblisTown-release.apk" assets/index.html 2>/dev/null | cmp -s - "$ASSET"; then
     echo "pre-commit: GreeblisTown-release.apk at the root does not contain the current game (stale build)." >&2
-    echo "            Rebuild: (cd tools/android && ./gradlew assembleRelease) && cp tools/android/app/build/outputs/apk/release/app-release.apk GreeblisTown-release.apk" >&2
+    echo "            Rebuild: tools/build.sh --bump   (everything from the game file; see tools/BUILD.md)" >&2
     exit 1
   fi
 fi

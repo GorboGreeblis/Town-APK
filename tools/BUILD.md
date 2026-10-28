@@ -87,10 +87,22 @@ Requirements: JDK 17+, Android SDK with `platforms;android-34` and
 `sdk.dir=...`). Gradle 8.14 via the wrapper.
 
 ```sh
-python3 tools/sync_game.py              # after editing tools/uncompressed.html: copy it to index.html (root) and the APK's asset
 git config core.hooksPath tools/git-hooks   # once per clone: refuses a commit whose copies or root APK are stale
-cd android
-./gradlew assembleRelease               # -> app/build/outputs/apk/release/app-release.apk
+tools/build.sh --bump                   # after editing tools/uncompressed.html: everything, from the game file alone
+```
+
+`tools/build.sh` copies the game file to `index.html` (root) and the APK's asset, re-paints the pre-painted
+textures in `assets/tex/`, raises the version by one if what ships changed (`--bump`; without it the build stops
+and says so), builds the release APK, copies it to the root as `GreeblisTown-release.apk`, and checks the result
+(`sync_game.py --check`, `check_apk.sh`, `test_standalone.js`). Painting is seeded (FIXES R1), so an unchanged game
+file rebuilds the same `tex/` and the same APK, byte for byte. Add the new version's row to `tools/VERSIONS.md`.
+The steps by hand:
+
+```sh
+python3 tools/sync_game.py              # copy the game file to index.html (root) and the APK's asset
+node tools/prerender_textures.js        # re-paint assets/tex/ (after a change to a texture painter)
+cd tools/android
+./gradlew assembleRelease               # -> app/build/outputs/apk/release/app-release.apk (copy it to the root)
 ```
 
 ### Signing
