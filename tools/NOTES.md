@@ -1361,3 +1361,18 @@ VR-entry fix; each item is for discussion first.
     nothing to draw, so it was a false positive. The census let batched parts through its "shown now" filter whatever
     the groups above them; it now judges only what is shown. With the UFO out, every remaining object in both states
     is seen from somewhere the player can stand, so the census leaves nothing to remove.
+
+87. **One game file, edited directly (3.15.43).** The author: "I want all edits applied to the game file itself. Not
+    applied after. Please edit the actual file", "this also means adding all changes to the actual uncompressed
+    file", and neither the original nor the compressed build needs keeping. Until now the build kept the author's
+    original untouched (`tools/uncompressed.html`) and generated the shipped game from it with `apply_entry_fix.py`
+    (167 exact text edits, `--verify` proving the result). Now `tools/uncompressed.html` is the game with every edit
+    in it (byte-identical to 3.15.43), and every change is made in it directly; `sync_game.py` copies it to
+    `index.html` at the root and into the APK, and `--check` (quick tier, pre-commit hook) refuses copies that differ.
+    Removed: `apply_entry_fix.py`, `gen_fixes_doc.py`, the shim sources and boot map in `tools/lib/` (their code
+    lives in the game file), the compressed build `index.compressed.html` and its `test_parity.js`; the original is
+    in git history only. FIXES.md keeps the record of the 167 edits and is the changelog from here on, by hand.
+    The diagnostic variants moved to `experiment.py` (applied to a copy, never to the game file); four that no
+    longer applied (`native`, `nogovernor`, `directrequest`, `keepalive`: the settings and entry code they targeted
+    are gone) were dropped. `test_bend_exact.js` keeps P13's guarantee without the original: its 400 outputs from
+    the original are recorded as SHA-256 fingerprints (`test_bend_golden.json`).

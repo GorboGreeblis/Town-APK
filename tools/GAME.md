@@ -63,7 +63,7 @@ The HTML is 93 lines; a few of them are very long script blocks.
    Quest" and nothing else runs.
 
 The APK build adds a head script and three one-line hooks so the immersive
-launch's grant is never dropped (see `apply_entry_fix.py`).
+launch's grant is never dropped (FIXES.md, entry edits).
 
 ## Controls (WebXR)
 

@@ -145,7 +145,7 @@ does not come back cleanly in `tools/BUGS.md`.
    a higher number) and `versionName` if the game version changed.
 5. Build and check:
    ```sh
-   python3 tools/apply_entry_fix.py          # regenerate the game asset
+   python3 tools/sync_game.py                # copy the game file into the APK (and index.html at the root)
    cd tools/android && ./gradlew assembleRelease && cd ..
    tools/check_apk.sh                        # store packaging rules
    ```
@@ -253,7 +253,7 @@ release; `adb install -r`, reinstall the release afterwards). With logcat open
 
 ## 6. Every later update
 
-Rule for the VR-entry script (`EDITS` in `tools/apply_entry_fix.py`): it is
+Rule for the VR-entry script (the head script at the top of the game file; FIXES.md, entry edits): it is
 the one path proven on the headset. Any change to how the session is
 requested, parked, drawn into, or handed to the game goes out first as an
 experiment APK (`tools/build_experiment.sh NAME`) for a headset test, and
@@ -270,8 +270,8 @@ them first, with the candidate list from `tools/test_coincident.js`.
 
 Rule for the repository root (the author, 2026-10-27): the one-file game as
 bundled in the APK is kept at the root as `index.html` next to the APK.
-`tools/apply_entry_fix.py` writes it, `--verify` (every test tier) and
-`tools/check_apk.sh` check it, and the pre-commit hook in `tools/git-hooks/`
+`tools/sync_game.py` copies it from the game file `tools/uncompressed.html` (where every change is made), `--check`
+(every test tier) and `tools/check_apk.sh` check it, and the pre-commit hook in `tools/git-hooks/`
 (`git config core.hooksPath tools/git-hooks`, once per clone) refuses a commit
 in which the two differ, or in which the root APK does not contain the current
 asset, so a release commit carries the latest build and the exact game file

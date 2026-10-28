@@ -9,9 +9,9 @@ that keep it fast and flash-free, each with the test that enforces it. Details a
 | Piece | Where | What it does |
 | --- | --- | --- |
 | Loopback server | `android/.../GameServer` | Serves the one-file game at `http://localhost:17777/` to the Quest Browser's immersive activity; idle after the first transfer. |
-| Entry script | head script, `apply_entry_fix.py` `EDITS` | Requests the session early (`sessiongranted`), shows the loader in compositor layers, hands the session to the game when loading ends. Any change here ships first as an experiment APK (RELEASE.md 6). |
-| Layers shim | `lib/xr_layers_shim.js` [42, 47] | The game's three.js only knows `baseLayer`, which the `layers` feature forbids. The game gets a facade session whose `baseLayer` is a projection layer; every frame callback is wrapped in `begin(frame)` / `end()`. Layer swaps (render scale changes) insert the new layer behind the old one, so no undrawn frame shows. |
-| Multiview | `lib/xr_multiview.js` and the `_multiview()` edits [65, 67] | Both eyes in one pass into a texture-array projection layer. The release path since 3.15.34. |
+| Entry script | the head script at the top of the game file (FIXES.md, entry edits) | Requests the session early (`sessiongranted`), shows the loader in compositor layers, hands the session to the game when loading ends. Any change here ships first as an experiment APK (RELEASE.md 6). |
+| Layers shim | in the head script of the game file [42, 47] | The game's three.js only knows `baseLayer`, which the `layers` feature forbids. The game gets a facade session whose `baseLayer` is a projection layer; every frame callback is wrapped in `begin(frame)` / `end()`. Layer swaps (render scale changes) insert the new layer behind the old one, so no undrawn frame shows. |
+| Multiview | in the head script, and the multiview edits to the bundled three.js in the game file [65, 67] | Both eyes in one pass into a texture-array projection layer. The release path since 3.15.34. |
 | Batcher `gcEB` | the game, plus P8-P10, P12 | Merges opaque Phong/Lambert/Basic meshes into batches; per-part transform, colour, shininess and specular live in a uniform array read by a patched vertex shader. |
 | Quality governor `Ge` | the game, plus P1 [47], P16 [72] | Frame-time average against the 72 Hz budget; five levels, render scale [1.2, 1.1, 1, 1, 1] and fixed foveation [0, 0, 0, .5, 1]. The planting Event locks the lowest level from its first frame [71]; in it, under 62 fps for 3 s drops the scale to 0.9, and under 60 fps at 0.9 to 0.82, until the Event ends (P16, P17); a Quest 3 starts the Event at 0.9. Emergency: 0.82 at 1.6x the budget, for the session, unless it fired during the Event, when it ends with the Event (P18). |
 
@@ -77,17 +77,20 @@ per eye and kept working by the tests below.
 | Multiview and classic draw the same pixels per eye. | Multiview must not change the look. | `multiview_check.js` pixel compare (spawn, town centre, garden, Event). |
 | A performance change that claims no visible change is pixel-identical. | The author's rule: as little visual change as possible. | `opt_identity.js` (on/off switches in the same frame, full tier), `sides_check.js` (P6), `test_bend_exact.js` (P13); `geom_compare.js` by hand when model builders change. |
 | Creature geometry stays non-indexed. | The ground-fit scan samples every 6th vertex; indexing would move the creatures (P12 excludes them). | The `gcIdx` creature exclusion in P12; `geom_compare.js` by hand. |
-| The fixes doc matches the generator. | FIXES.md is generated. | `gen_fixes_doc.py --check` (quick tier). |
+| The shipped copies are the game file. | One source: `tools/uncompressed.html`, edited directly. | `sync_game.py --check` (quick tier, pre-commit hook), `check_apk.sh`. |
 
 ## 5. Where to change what
 
-- **A game fix or a performance change**: add an edit pair to `GAME_FIXES` in `apply_entry_fix.py`, with a
-  comment that starts with its ID (B, P, L, D), then run `gen_fixes_doc.py`. If it claims no visible change,
-  give it a switch and add it to `opt_identity.js`.
-- **Anything in the head script, the loader or VR entry**: `EDITS` or the `lib/` files. Ship it first as an
-  experiment (`build_experiment.sh NAME`; the experiments are listed in FIXES.md).
-- **The multiview shader macros or the per-eye matrices**: `_multiview()` in `apply_entry_fix.py`. Run
-  `multiview_check.js` and `uniform_budget.js`.
+Everything is changed in one place, the game file `tools/uncompressed.html` (since 3.15.43, NOTES 87); then
+`python3 tools/sync_game.py` copies it to `index.html` and the APK, and an entry in FIXES.md records the change, its
+ID (B, P, L, D), why, and how it was proven.
+
+- **A game fix or a performance change**: edit the game file. If it claims no visible change, give it a switch and
+  add it to `opt_identity.js`.
+- **Anything in the head script, the loader or VR entry**: the head script at the top of the game file. Ship it
+  first as an experiment: add a variant to `experiment.py` and build it with `build_experiment.sh NAME`.
+- **The multiview shader macros or the per-eye matrices**: the multiview edits to the bundled three.js in the game
+  file (search for `GC_MULTIVIEW`). Run `multiview_check.js` and `uniform_budget.js`.
 - **A new texture that changes during play**: nothing to do, as long as it is marked with
   `texture.needsUpdate = true`. Direct `gl` uploads during a frame will fail `multiview_check.js`.
 

@@ -30,7 +30,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Item | How | Coverage |
 | --- | --- | --- |
 | APK manifest, SDK levels, signature, size, features (VRC.Quest.Packaging.1-6) | `check_apk.sh` | done |
-| Bundled game byte-identical to the generated asset; asset = original + 4 entry edits | `check_apk.sh`, `apply_entry_fix.py --verify` | done |
+| Bundled game byte-identical to the game file; `index.html` at the root the same file | `check_apk.sh`, `sync_game.py --check` | done |
 | Loopback server: serves the document, HEAD/404/405, query ignored, concurrency, malformed input, slow client, traversal | `test_server.sh` | done |
 | Launcher starts the server and opens the Quest Browser immersive activity; browser fires `sessiongranted`; app closes on `finishAndRemoveTask` | sideload | headset |
 | Android lint | `gradle lintRelease` | done (warnings recorded) |
@@ -165,7 +165,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 
 | Item | How | Coverage |
 | --- | --- | --- |
-| Compressed release build carries the same content as the APK source | `test_parity.js` | done |
+| Compressed release build carries the same content as the APK source | retired with the compressed build (3.15.43, NOTES 87) | n/a |
 
 ## Latest results (newest first, headless harness)
 

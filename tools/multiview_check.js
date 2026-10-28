@@ -67,7 +67,7 @@ const outDir = path.join(root, 'tools/.runs/multiview');
   const placeAt = (x, z, yaw) => page.evaluate(([x, z, yaw]) => { const D = window.__dbg; D.At.position.x = x; D.At.position.z = z; window.__fakeXR.pose.yaw = yaw; }, [x, z, yaw]);
   // Flash fix (the author's flashes on pickups and menu hovers, NOTES 67): nothing may make the GPU save and reload a
   // half-drawn multiview frame: no texture upload or copy, mipmap build, pixel read, blit or switch to another
-  // framebuffer while a frame draws (the game counts them, tools/lib/xr_multiview.js). Pickups, a dialogue, the
+  // framebuffer while a frame draws (the game counts them, in its multiview code). Pickups, a dialogue, the
   // shop, a battle panel and the Speech. Runs first, before the comparisons below switch programs to the classic path and back.
   // B27, deterministic: the Gem (the Speech) must be fully warmed, with and without Sparkakus's light bulb on. Compiling
   // its pieces both ways now must create no program (a missed variant would otherwise only show in some runs).

@@ -2,15 +2,15 @@
 // Pre-renders the game's procedural canvas textures once, at build time, into
 // tools/android/app/src/main/assets/tex/ (PNG + manifest.json). At runtime the
 // head script loads them and the painter blits them instead of repainting
-// (tools/apply_entry_fix.py, edit 9). Painters that draw text are skipped so
-// fonts stay the headset's own. Re-run whenever tools/uncompressed.html or the
-// fix list changes:   node tools/prerender_textures.js
+// (FIXES.md, entry edit 9). Painters that draw text are skipped so fonts stay
+// the headset's own. Re-run whenever a painter in tools/uncompressed.html (the
+// game file) changes:   node tools/prerender_textures.js
 const fs = require('fs'); const path = require('path'); const { execFileSync } = require('child_process');
 const { boot, root } = require('./lib/harness.js');
 const out = path.join(root, 'tools/android/app/src/main/assets/tex');
 (async () => {
   const cap = path.join(root, 'tools/.runs/exp_texcapture.html');
-  execFileSync('python3', [path.join(root, 'tools/apply_entry_fix.py'), '--experiment', 'texcapture', path.join(root, 'tools/uncompressed.html'), cap], { stdio: 'inherit' });
+  execFileSync('python3', [path.join(root, 'tools/experiment.py'), 'texcapture', path.join(root, 'tools/uncompressed.html'), cap], { stdio: 'inherit' });
   fs.rmSync(out, { recursive: true, force: true }); fs.mkdirSync(out, { recursive: true });   // capture must not load old files
   const { page, browser, bootS } = await boot({ file: cap, vr: true });
   console.log(`booted in ${bootS}s`);
