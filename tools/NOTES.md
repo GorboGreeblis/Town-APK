@@ -1213,3 +1213,38 @@ VR-entry fix; each item is for discussion first.
     waits for free speakers and holds him, as the game does for a visit);
     and `me.active` (the Event) is a read-only getter, so a test starts the
     real Event to see what it stops.
+
+79. **The 3.15.41 headset run on the Quest 3S: the flashes are back, and
+    the Event is limited by draw calls.** The author's log (saved by
+    PowerShell as UTF-16, which `perf_log.js` now reads) and reports:
+    - **The Quest 3S calls itself "Quest 3".** Its browser's user agent says
+      "Quest 3" (the perf lines read `dev=Quest_3`; the system log names the
+      headset `panther`, the 3S). So P17's Quest 3 branch (start the Event at
+      0.9) ran on the 3S: the user agent cannot tell the two apart.
+    - **The Event, at scale 0.9: 55-61 fps; after 216 frames under 60 the
+      step to 0.82: 58-65.** 17% fewer pixels bought 2-3 fps, so the Event is
+      not limited by pixels (the estimates in PERF.md 11 assumed it was, and
+      were wrong). The frame rate follows the draw calls (correlation -0.80;
+      triangles -0.57): about 315-340 draws give 55-61 fps, 200-220 give
+      62-67. The levers are fewer draws and less work per frame.
+    - **Flashes: bright and washed out**, like F-B26: three in the first run
+      (one walking about, two partway through the Event), on a second launch
+      (better frame rate throughout) one when the Summoning Pillar started the
+      Event and one while planting. The log kept only the last 110 s (logcat's
+      ring buffer), with no hazard or compile lines but two layer swaps.
+    - **Two suspects.** (1) Render-scale layer swaps: the Event's start swaps
+      to 0.9 on the 3S, the 0.82 step swaps again, the governor's levels swap
+      in town. (2) Uploads the hazard watch did not count: headless, the
+      Event's start uploads new geometry (`bufferData`) while a multiview
+      frame draws, and planting adds new objects; the watch counted only
+      texture calls and logged only its first 12 hazards per session.
+    - **Experiments**: `flashlog` (plays like the release; B on the right
+      controller, the one free button, writes "MARK flash seen"; the watch
+      also counts texture storage, framebuffer attachments, renderbuffer
+      storage, buffer uploads, flushes and syncs, logs up to 300 with frame
+      numbers and puts its totals in the perf line; long frames and the old
+      layer's destruction are logged) and `noswap` (the same, and the layer
+      is never rebuilt: every scale stays 1, only foveation changes). Both
+      checked headless: no page errors, the marks logged, no swap in noswap.
+      Capture the whole session live: `adb logcat -c`, then
+      `adb logcat -s GreeblisServer > run.txt` while playing.

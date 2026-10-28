@@ -77,6 +77,37 @@ EXPERIMENTS = {
         'window.__gtXR.pending||navigator.xr.requestSession(',
         '(window.__gtXR.taken=!0,window.__gtXR.pending)||navigator.xr.requestSession(',
     )],
+    # Flash diagnostics (3.15.41 on the author's Quest 3S: three bright, washed-out flashes, two partway through
+    # the Event; NOTES 79). Plays exactly like the release; only the log changes: B on the right controller (the one
+    # button the game leaves free) writes "MARK flash seen" (with a short buzz), so each flash can be lined up with what happened then; the hazard watch
+    # also counts texture storage, framebuffer attachments, renderbuffer storage, buffer uploads, flushes and syncs
+    # while a frame draws, logs up to 300 with the frame number (not only the first 12), and every perf line carries
+    # the totals; frames over 28 ms are logged; the old layer's destruction after a swap is logged.
+    "flashlog": [(
+        '["texImage2D", "texSubImage2D", "texImage3D", "texSubImage3D", "generateMipmap", "copyTexImage2D", "copyTexSubImage2D", "readPixels", "blitFramebuffer", "bindFramebuffer", "invalidateFramebuffer"].forEach(function (k) {',
+        '["texImage2D", "texSubImage2D", "texImage3D", "texSubImage3D", "generateMipmap", "copyTexImage2D", "copyTexSubImage2D", "readPixels", "blitFramebuffer", "bindFramebuffer", "invalidateFramebuffer", "texStorage2D", "texStorage3D", "compressedTexImage2D", "compressedTexSubImage2D", "framebufferTexture2D", "framebufferTextureLayer", "framebufferRenderbuffer", "renderbufferStorage", "renderbufferStorageMultisample", "bufferData", "flush", "finish", "fenceSync", "clientWaitSync", "deleteTexture", "deleteFramebuffer", "deleteRenderbuffer"].forEach(function (k) {',
+    ), (
+        'if (st.inFrame <= 12) __gtLog("multiview: " + k + " while a frame draws (" + st.inFrame + ")");',
+        'if (st.inFrame <= 300) __gtLog("multiview: " + k + " while a frame draws (" + st.inFrame + ", frame " + (X.mvFrame || 0) + ")");',
+    ), (
+        '      X.mvInFrame = true;\n',
+        '      X.mvFrame = (X.mvFrame || 0) + 1; X.mvInFrame = true;\n',
+    ), (
+        '.replace(/\\s+/g,"_"))))}catch(e){}F.ctrls',
+        '.replace(/\\s+/g,"_"))+(function(){try{var S=window.__gtXR&&window.__gtXR.mvStats;return" hz="+(S?S.inFrame:0)+(S&&S.inFrame?":"+JSON.stringify(S.inFrameKinds).replace(/[{}"]/g,""):"")+" pre="+(S?S.preUploads:0)+" tex="+O.info.memory.textures+" geo="+O.info.memory.geometries}catch(e){return""}})()))}catch(e){}F.ctrls',
+    ), (
+        'const t=performance.now(),l=e?t-e:16.7;e=t;',
+        'const t=performance.now(),l=e?t-e:16.7;e&&l>28&&t-(window.__gtLongAt||0)>500&&(window.__gtLongAt=t,window.__gtLog&&window.__gtLog("long frame "+Math.round(l)+" ms"+(me&&me.active?" event":"")));e=t;',
+    ), (
+        'r&&N(r,5)&&ve();',
+        'r&&N(r,5)&&ve(),i&&N(i,5)&&(window.__gtLog&&window.__gtLog("MARK flash seen"+(me&&me.active?" event":"")+" frame "+((window.__gtXR&&window.__gtXR.mvFrame)||0)),Y(i,.5,60));',
+    ), (
+        'var o = S.old; S.old = null; setTimeout(function () { try { o.destroy(); } catch (e) {} }, 100);',
+        'var o = S.old; S.old = null; setTimeout(function () { try { o.destroy(); __gtLog("old projection layer destroyed"); } catch (e) {} }, 100);',
+    ), (
+        '__gtLog("multiview " + (ok ? "planned" : "not used") + " (" + why + ")");',
+        '__gtLog("flashlog experiment; multiview " + (ok ? "planned" : "not used") + " (" + why + ")");',
+    )],
     # Draw every mesh individually: no gcEB batches, no custom vertex shader.
     "nobatch": [("const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[]};",
                  "const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[],off:!0};")],
@@ -86,6 +117,14 @@ EXPERIMENTS = {
     "nogovernor": [("quality:[1,1,1,1,1],foveation:[0,.25,.5,.75,1],sosScale:.82,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:30,",
                     "quality:[1,1,1,1,1],foveation:[0,0,0,0,0],sosScale:1,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:0,")],
 }
+# No swaps (NOTES 79): the flash diagnostics above, and the projection layer is never rebuilt: every quality level, the
+# Event's steps (0.9, 0.82) and the emergency step keep the native scale 1, so only foveation changes (on the same
+# layer). The author saw a flash the moment the Summoning Pillar started the Event, which is also when the Event's
+# scale swap happens; if the flashes are gone in this build, the swaps are the cause.
+EXPERIMENTS["noswap"] = [(a, b.replace('"flashlog experiment; ', '"noswap experiment; ')) for a, b in EXPERIMENTS["flashlog"]] + [(
+    "quality:[1.2,1.1,1,1,1],foveation:[0,0,0,.5,1],sosScale:.82,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:30,evScale:.9,evFps:62,evFrames:216,ev2Scale:.82,",
+    "quality:[1,1,1,1,1],foveation:[0,0,0,.5,1],sosScale:1,sosFrac:1.6,sosFrames:216,maxLayerRebuilds:0,evScale:1,evFps:62,evFrames:216,ev2Scale:1,",
+)]
 experiment = None
 _argv = sys.argv[1:]
 if "--experiment" in _argv:

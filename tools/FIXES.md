@@ -398,6 +398,14 @@ a tiny WebGL layer and a clear-colour frame loop right away, so the OS sees fram
 screen stall / session timeout) until the game takes the session over. Candidate fix for the 3.15.6
 symptom.
 
+- **flashlog**: Flash diagnostics (3.15.41 on the author's Quest 3S: three bright, washed-out flashes, two partway
+through the Event; NOTES 79). Plays exactly like the release; only the log changes: B on the right
+controller (the one button the game leaves free) writes "MARK flash seen" (with a short buzz), so
+each flash can be lined up with what happened then; the hazard watch also counts texture storage,
+framebuffer attachments, renderbuffer storage, buffer uploads, flushes and syncs while a frame
+draws, logs up to 300 with the frame number (not only the first 12), and every perf line carries the
+totals; frames over 28 ms are logged; the old layer's destruction after a swap is logged.
+
 - **nobatch**: Draw every mesh individually: no gcEB batches, no custom vertex shader.
 
 - **noeffects**: No pickup effects: no sparkle particles, no floating labels, no HUD/label texture churn from
