@@ -60,7 +60,8 @@ const probe = () => {
       try { D.Dbt.start(ent(['w_mont', 'p_etcher', 'p_glyph'][k])); did.push('battle'); await wait(3000); D._t.close(); } catch (e) { out.log.push('battle: ' + e); }
       try { D.ot.activate(); did.push('portal'); await wait(2500); D.ot.close(); } catch (e) { out.log.push('portal: ' + e); }
       try { D.Bulb.hold = true; D.Bulb.start(() => D.st.pos(), 3.6); did.push('bulb'); await wait(2500); D.Bulb.hold = false; D.Bulb.stop(); } catch (e) { out.log.push('bulb: ' + e); }
-      try { const J = D.JAZZ; if (J && J.start) { J.start(D.Re.t); did.push('jazz'); await wait(6000); J.stop(); } } catch (e) { out.log.push('jazz: ' + e); }
+      // the jazz drums play while the player is at King Dino's kit (they follow the player's distance, no start call)
+      try { const a0 = D.At.position.clone(); D.At.position.set(-36.6, a0.y, 21.2); const s0 = A.started; await wait(6000); if (A.started - s0 > 10) did.push('jazz'); D.At.position.copy(a0); await wait(2500); } catch (e) { out.log.push('jazz: ' + e); }
       try { for (let i = 0; i < 4; i++) { D.G.pickup(); D.G.jingle(); await wait(150); } did.push('pickups'); } catch (e) { out.log.push('pickups: ' + e); }
       await settle();
       const s1 = snap();
@@ -78,9 +79,14 @@ const probe = () => {
   r.rounds.forEach((x, i) => note(`round ${i + 1} (${x.did.join(', ')}): ${x.started} sources started, ${x.ended} ended, ${x.made} nodes made, ${x.endedConnected} ended still connected; playing after it settles: ${x.live}`));
   if (r.log.length) note('log: ' + r.log.slice(0, 5).join(' | '));
   expect('the game uses one audio context', r.ctxs === 1, String(r.ctxs));
-  expect('each round played its sounds (talk, a gift, a battle, the Portal, the bulb, the jazz, pickups)', r.rounds.length === 3 && r.rounds.every((x) => x.started >= 20 && x.did.length >= 6), JSON.stringify(r.rounds.map((x) => [x.did, x.started])));
+  expect('each round played its sounds (talk, a gift, a battle, the Portal, the bulb, the jazz, pickups)', r.rounds.length === 3 && r.rounds.every((x) => x.started >= 20 && x.did.length >= 7 && x.did.includes('jazz')), JSON.stringify(r.rounds.map((x) => [x.did, x.started])));
   const maxLive = Math.max(...r.rounds.map((x) => x.live));
   expect('after each round settles, no more sources are playing than after boot: every source a round started has ended', maxLive <= r.base.live, JSON.stringify({ base: r.base.live, rounds: r.rounds.map((x) => x.live) }));
+  // a source that ends still connected to its gain is released by the browser once it has finished (and the drum hits
+  // set their own cleanup after start(), so this probe sees them before it runs); what matters is
+  // that the count per round does not grow (the same sounds leave the same number each time)
+  const ec = r.rounds.map((x) => x.endedConnected), made = r.rounds.map((x) => x.made);
+  expect('the same round leaves no more behind each time (ended-but-connected sources and nodes made per round do not grow)', ec[2] <= ec[0] * 1.3 + 5 && made[2] <= made[0] * 1.3 + 20, JSON.stringify({ endedConnected: ec, made }));
   expect('the context is running throughout', r.rounds.every((x) => x.state === 'running'), JSON.stringify(r.rounds.map((x) => x.state)));
   expect('a suspended context runs again when the game is back in focus', r.resumed && r.resumed.was === 'suspended' && r.resumed.now === 'running', JSON.stringify(r.resumed));
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
