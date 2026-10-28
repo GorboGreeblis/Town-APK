@@ -70,7 +70,9 @@ async function prepare(page, state) {
     C.traverse((o) => {
       if (!(o.isMesh || o.isPoints || o.isLine || o.isSprite) || skip.has(o) || o.frustumCulled === false) return;
       if (D.gcEB.root && o.parent === D.gcEB.root) return;   // the batch meshes themselves (their parts are judged)
-      if (!shown(o) && !(o.layers.mask === (1 << 31))) return;
+      // switched off now (itself or a group above it, batched or not): not judged. The first full run judged the UFO,
+      // hidden between its flights every 10 minutes, and called its 40 parts never seen (NOTES 86)
+      if (!shown(o)) return;
       box.setFromObject(o); if (box.isEmpty()) return; box.getCenter(v); box.getSize(sz);
       const geo = o.geometry, pos = geo && geo.attributes && geo.attributes.position;
       const tris = pos ? Math.floor((geo.index ? geo.index.count : pos.count) / 3) : 0;

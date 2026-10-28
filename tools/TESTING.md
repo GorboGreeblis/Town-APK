@@ -85,6 +85,8 @@ needs real frames, the batcher's uniform arrays or the dialogue box's canvas), `
 random visit scheduler is held off), `initScripts` (functions that run before the game's first line, e.g. to
 wrap a browser API, as `test_audio.js` wraps Web Audio).
 
+**Standalone mode.** `boot({ standalone: true })` serves the game file and nothing else (every other path is a 404, as from any plain web server with the file alone) and returns every request the page made in `requests`; `test_standalone.js` uses it to prove the game needs nothing beside it (RULES.md 2).
+
 **Reaching the game.** `window.__dbg` holds the game's top-level names (`HOOK_NAMES` in `lib/harness.js`): `It`
 (all entities; `It.byId`), `JGP` (navigation, roaming, `JGP.jazz`, `JGP.farDetail`, `JGP.slug`), `Kt` (the
 player's inventory and rewards), `At` (the player's rig), `Re.t` (the game clock in seconds), `qt` (the dialogue

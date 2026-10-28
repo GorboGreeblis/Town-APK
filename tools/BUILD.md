@@ -10,11 +10,12 @@ loopback server inside the app.
 GreeblisTown-release.apk   the final signed build (the only file at the root besides tools/)
 tools/
   android/                 Android Studio / Gradle project that produces the APK
-    app/src/main/assets/index.html             the game as bundled (generated, see below)
+    app/src/main/assets/index.html             the game as bundled (a copy of uncompressed.html)
     app/src/main/java/.../GameServer.java      loopback HTTP server for the game
     app/src/main/java/.../LauncherActivity.java launches the Quest Browser immersive
-  uncompressed.html        the original game, untouched (source of truth)
-  apply_entry_fix.py       generates the bundled copy = original + the approved edits
+  uncompressed.html        THE GAME FILE: the whole game, every change made in it directly
+  sync_game.py             copies it to index.html (root) and the APK's asset; --check compares
+  experiment.py            diagnostic variants of a copy, for headset A/B tests
   test_*.js, *.sh          test suite (see tools/README.md)
   BUILD.md                 this file: how the APK works, building, signing, testing
   RELEASE.md               what the author does: signing key, headset test, store upload
@@ -43,11 +44,11 @@ tools/
 
 ## Changes to the game: the entry script, the loading screen, and the gameplay fixes
 
-`tools/apply_entry_fix.py` generates the bundled copy as the original plus a
-fixed list of text edits, and `--verify` proves that equality byte for byte.
-Two lists: `EDITS` (the VR entry and loading screen, outside the game's
-logic) and `GAME_FIXES` (approved gameplay fixes, one entry per fix with its
-reason; the list of what they fix is `tools/BUGS.md`, section Fixed).
+Every change is made directly in the game file, `tools/uncompressed.html` (since 3.15.43, NOTES 87; before that a
+build script applied a list of text edits to the author's original, which is no longer kept). `tools/FIXES.md` is the
+changelog: each change with its reason and how it was proven (add an entry for every new one); `tools/BUGS.md`,
+section Fixed, lists what they fix. After editing the game file, `python3 tools/sync_game.py` copies it to `index.html`
+at the root and into the APK; the quick tier and the pre-commit hook refuse copies that differ.
 
 What the entry script does on a Quest browser (NOTES 34, 41, 42):
 
@@ -61,7 +62,7 @@ What the entry script does on a Quest browser (NOTES 34, 41, 42):
 3. slices the boot (`await __gtY(label)` before each heavy step, each character,
    and eight shader-compile chunks) and posts the slice timings to the loopback
    server at the handover (`page: m=... boot slices ms: ...` in logcat);
-4. hands the session to the game through a facade (`tools/lib/xr_layers_shim.js`):
+4. hands the session to the game through a facade (the layers shim in the head script):
    the browser forbids `baseLayer` on a session with the `layers` feature, so
    the game renders through an `XRProjectionLayer` behind an object that shows
    three.js its usual base layer (an MSAA framebuffer resolved into the layer's
@@ -86,10 +87,22 @@ Requirements: JDK 17+, Android SDK with `platforms;android-34` and
 `sdk.dir=...`). Gradle 8.14 via the wrapper.
 
 ```sh
-python3 tools/apply_entry_fix.py        # regenerate the asset from tools/uncompressed.html (also mirrored to index.html at the repo root)
-git config core.hooksPath tools/git-hooks   # once per clone: refuses a commit whose root index.html is stale
-cd android
-./gradlew assembleRelease               # -> app/build/outputs/apk/release/app-release.apk
+git config core.hooksPath tools/git-hooks   # once per clone: refuses a commit whose copies or root APK are stale
+tools/build.sh --bump                   # after editing tools/uncompressed.html: everything, from the game file alone
+```
+
+`tools/build.sh` copies the game file to `index.html` (root) and the APK's asset, re-paints the pre-painted
+textures in `assets/tex/`, raises the version by one if what ships changed (`--bump`; without it the build stops
+and says so), builds the release APK, copies it to the root as `GreeblisTown-release.apk`, and checks the result
+(`sync_game.py --check`, `check_apk.sh`, `test_standalone.js`). Painting is seeded (FIXES R1), so an unchanged game
+file rebuilds the same `tex/` and the same APK, byte for byte. Add the new version's row to `tools/VERSIONS.md`.
+The steps by hand:
+
+```sh
+python3 tools/sync_game.py              # copy the game file to index.html (root) and the APK's asset
+node tools/prerender_textures.js        # re-paint assets/tex/ (after a change to a texture painter)
+cd tools/android
+./gradlew assembleRelease               # -> app/build/outputs/apk/release/app-release.apk (copy it to the root)
 ```
 
 ### Signing

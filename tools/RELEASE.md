@@ -141,29 +141,24 @@ does not come back cleanly in `tools/BUGS.md`.
 2. Point the build at the SDK: `export ANDROID_HOME=/path/to/sdk` or create
    `tools/android/local.properties` with `sdk.dir=/path/to/sdk`.
 3. Put the signing files in place (section 1).
-4. Bump `versionCode` in `tools/android/app/build.gradle` (every store upload needs
-   a higher number) and `versionName` if the game version changed.
-5. Build and check:
+4. Build and check, from the game file alone:
    ```sh
-   python3 tools/apply_entry_fix.py          # regenerate the game asset
-   cd tools/android && ./gradlew assembleRelease && cd ..
-   tools/check_apk.sh                        # store packaging rules
+   tools/build.sh --bump                     # copies, tex/, version +1 if what ships changed, APK at the root, checks
    ```
-   The APK is at `tools/android/app/build/outputs/apk/release/app-release.apk`.
-   `tools/run_tests.sh` runs the full suite if Node and Playwright are
-   installed.
+   (`tools/BUILD.md` lists the steps it runs.) Every store upload needs a higher `versionCode`; `--bump` raises it
+   and `versionName` together. Add the version's row to `tools/VERSIONS.md`.
+5. `tools/run_tests.sh` runs the standard suite (Node and Playwright needed); `--full` before an upload.
 
 ## 5. Upload to the Meta Quest Store
 
-**Upload candidate: 3.15.42 (versionCode 42)**, the root `GreeblisTown-release.apk`
-(always the latest build). New since 3.15.41: no texture is made during play (F-B29: one colour
-per emote glyph, the author's call; F-B30: the courier's pizza, Montgummery's faces, the speech
-bubbles and the shop mirror made while loading), the lead on the flashes the author placed at
-Nextessa's emote, dance battles, planting and the Summoning Pillar; and the Event's pizza batched
-(P20, 14% fewer draws in the heaviest Event view, identical pixels). The quick tier and the browser
-tests that cover these pass on it; a full standard pass waits for a quiet machine (NOTES 82). Its
-headset pass: no flashes in a dance battle, speaking to Nextessa, planting or at the Summoning
-Pillar; the Event's frame rate in the log (`perf_log.js`); the emote colours look right. The Alpha
+**Upload candidate: 3.15.44 (versionCode 44)**, the root `GreeblisTown-release.apk`
+(always the latest build). New since 3.15.41 (VERSIONS.md has each build): no texture is made during play (F-B29,
+F-B30, 3.15.42), the Event's pizza batched (P20); native render scale and no layer swaps (F-B31), the Event scale
+removed, the Ancient left out from outside the church (P21), Gooward's translucent parts merged (P22, 3.15.43);
+painted textures seeded so the build is rebuildable from the game file (R1, 3.15.44). The quick tier and
+`test_standalone.js` pass on it; a full standard pass waits for a quiet machine. Its headset pass: no flashes in a
+dance battle, speaking to Nextessa, planting or at the Summoning Pillar; the Event's frame rate in the log
+(`perf_log.js`); the emote colours and Gooward look right. The Alpha
 channel is only you and invited testers, so uploading there first and running that same build
 from the store is a fair way to do that pass.
 
@@ -253,7 +248,7 @@ release; `adb install -r`, reinstall the release afterwards). With logcat open
 
 ## 6. Every later update
 
-Rule for the VR-entry script (`EDITS` in `tools/apply_entry_fix.py`): it is
+Rule for the VR-entry script (the head script at the top of the game file; FIXES.md, entry edits): it is
 the one path proven on the headset. Any change to how the session is
 requested, parked, drawn into, or handed to the game goes out first as an
 experiment APK (`tools/build_experiment.sh NAME`) for a headset test, and
@@ -270,8 +265,8 @@ them first, with the candidate list from `tools/test_coincident.js`.
 
 Rule for the repository root (the author, 2026-10-27): the one-file game as
 bundled in the APK is kept at the root as `index.html` next to the APK.
-`tools/apply_entry_fix.py` writes it, `--verify` (every test tier) and
-`tools/check_apk.sh` check it, and the pre-commit hook in `tools/git-hooks/`
+`tools/sync_game.py` copies it from the game file `tools/uncompressed.html` (where every change is made), `--check`
+(every test tier) and `tools/check_apk.sh` check it, and the pre-commit hook in `tools/git-hooks/`
 (`git config core.hooksPath tools/git-hooks`, once per clone) refuses a commit
 in which the two differ, or in which the root APK does not contain the current
 asset, so a release commit carries the latest build and the exact game file

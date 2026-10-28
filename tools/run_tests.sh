@@ -61,9 +61,8 @@ report() { name=$1; shift; wanted "report: $name" || return 0; KEY=$(key "$@")
   if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  INFO  $name (see log)"; printf '%s\t%s\n' "$KEY" "report: $name" >> "$STATE"; else SUMMARY="$SUMMARY\n  INFO  $name (probe exit $rc)"; fi; }
 
 echo "Greeblis Town test pass: $TIER${ONLY:+ (only stages matching /$ONLY/)}"; T_ALL=$(date +%s)
-run "asset == original + the entry edits + the gameplay fixes (apply_entry_fix.py --verify)" python3 -I "$ROOT/tools/apply_entry_fix.py" --verify
+run "the shipped copies (index.html, the APK asset) are the game file tools/uncompressed.html (sync_game.py --check)" python3 -I "$ROOT/tools/sync_game.py" --check
 run "loopback server harness" "$ROOT/tools/test_server.sh"
-run "FIXES.md matches the fix list (gen_fixes_doc.py --check)" python3 -I "$ROOT/tools/gen_fixes_doc.py" --check
 run "docs consistency (check_docs.py)" python3 -I "$ROOT/tools/check_docs.py"
 run "dialogue spell-check" sh -c "python3 '$ROOT/tools/spellcheck_dialogue.py' '$ROOT/tools/uncompressed.html' >/dev/null"
 run "tentacle bend is bit-identical to the original (P13)" node "$ROOT/tools/test_bend_exact.js" "$ASSET"
@@ -75,6 +74,7 @@ if [ "$TIER" != quick ]; then
   run "multiview: each eye matches the classic path, half the draw calls; no frame hazard or compile during play" node "$ROOT/tools/multiview_check.js" "$ASSET"
   run "uniform budget: every shader fits a Quest 3S's GPU limits (multiview and classic)" node "$ROOT/tools/uniform_budget.js" "$ASSET"
   run "warm-up coverage: every lit material has its shaders for every light state the game can reach (P19 frame check)" node "$ROOT/tools/warm_coverage.js" "$ASSET"
+  run "standalone: the game runs on its own (nothing from the web, no extras); every pre-painted texture in tex/ is what the game paints (RULES.md 2)" node "$ROOT/tools/test_standalone.js" "$ASSET"
   run "texture census: no texture is made during play (emotes, faces, bubbles, pizza: the flash causes, F-B29/F-B30)" node "$ROOT/tools/texture_census.js" "$ASSET"
   run "quality governor: levels change foveation only, never the layer (F-B31); the Event locks the lowest level" env GT_DEVICE=quest3s node "$ROOT/tools/test_governor.js" "$ASSET"
   run "game content: gifts, talk order, shyness, bribe, outfits, battles, the Ancient, the robin, Event lines, Backpacka" node "$ROOT/tools/test_content.js" "$ASSET"
@@ -100,7 +100,6 @@ if [ "$TIER" != quick ]; then
   esac
   if [ "$NPC_N" = 0 ]; then run "NPC return-home (Mushroom), all scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S";
   else run "NPC return-home (Mushroom), first $NPC_N scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S" "$NPC_N"; fi
-  if [ "$TIER" = full ]; then run "release parity (compressed build vs source)" node "$ROOT/tools/test_parity.js"; else skip "release parity" "$TIER tier; run --full"; fi
   if [ "$TIER" = full ]; then
     # Graphical and performance pass (T12/T13): z-fighting (planar and curved) fails the pass;
     # the probes report loading time, the handover, frame cost and texture sharpness for the record.
@@ -114,7 +113,7 @@ if [ "$TIER" != quick ]; then
     report "handover profile (frames after entering VR)" node "$ROOT/tools/entry_profile.js" "$ASSET"
     # Frame timings are only meaningful without the layers path (its MSAA resolve is software-rendered here),
     # so the hitch probe runs on the no-layers variant of the same asset.
-    python3 -I "$ROOT/tools/apply_entry_fix.py" --experiment nolayers "$ROOT/tools/uncompressed.html" "$ROOT/tools/.runs/hitch_nolayers.html" >/dev/null 2>&1 \
+    python3 -I "$ROOT/tools/experiment.py" nolayers "$ROOT/tools/uncompressed.html" "$ROOT/tools/.runs/hitch_nolayers.html" >/dev/null 2>&1 \
       && report "in-game hitches (pickups, dialogue, Event; no-layers variant)" node "$ROOT/tools/hitch_probe.js" "$ROOT/tools/.runs/hitch_nolayers.html" \
       || report "in-game hitches (pickups, dialogue, Event)" node "$ROOT/tools/hitch_probe.js" "$ASSET"
     report "scene cost (draw calls, triangles, materials)" node "$ROOT/tools/perf_probe.js" "$ASSET"

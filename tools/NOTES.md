@@ -1352,3 +1352,46 @@ VR-entry fix; each item is for discussion first.
     pixels on a Quest 3S), so hiding them by distance is not proposed. A test harness lesson: a check that waits
     between renders must bind the canvas again before each one, since the XR frame loop binds its own framebuffer
     meanwhile; the first runs of the bubble check and of `ancient_check.js` compared stale images.
+
+86. **The occlusion census's first full run: nothing to remove.** Both states, 741 minutes. Of 653 judged objects, 40
+    were never seen from any reachable point at any eye height, in the town or the Event, and all 40 were the UFO
+    (the saucer, its 18 lights, the gold portholes, the green pilot and his antennae): the game keeps it hidden and
+    flies it over the park every 10 minutes from the 10th (about 15 s each; held off during the Event and at least
+    60 s after it), and the census ran neither long enough nor at the right moment to see it. A hidden object costs
+    nothing to draw, so it was a false positive. The census let batched parts through its "shown now" filter whatever
+    the groups above them; it now judges only what is shown. With the UFO out, every remaining object in both states
+    is seen from somewhere the player can stand, so the census leaves nothing to remove.
+
+87. **One game file, edited directly (3.15.43).** The author: "I want all edits applied to the game file itself. Not
+    applied after. Please edit the actual file", "this also means adding all changes to the actual uncompressed
+    file", and neither the original nor the compressed build needs keeping. Until now the build kept the author's
+    original untouched (`tools/uncompressed.html`) and generated the shipped game from it with `apply_entry_fix.py`
+    (167 exact text edits, `--verify` proving the result). Now `tools/uncompressed.html` is the game with every edit
+    in it (byte-identical to 3.15.43), and every change is made in it directly; `sync_game.py` copies it to
+    `index.html` at the root and into the APK, and `--check` (quick tier, pre-commit hook) refuses copies that differ.
+    Removed: `apply_entry_fix.py`, `gen_fixes_doc.py`, the shim sources and boot map in `tools/lib/` (their code
+    lives in the game file), the compressed build `index.compressed.html` and its `test_parity.js`; the original is
+    in git history only. FIXES.md keeps the record of the 167 edits and is the changelog from here on, by hand.
+    The diagnostic variants moved to `experiment.py` (applied to a copy, never to the game file); four that no
+    longer applied (`native`, `nogovernor`, `directrequest`, `keepalive`: the settings and entry code they targeted
+    are gone) were dropped. `test_bend_exact.js` keeps P13's guarantee without the original: its 400 outputs from
+    the original are recorded as SHA-256 fingerprints (`test_bend_golden.json`).
+88. **The game is rebuildable from the game file alone; painted textures seeded (3.15.44, FIXES R1).** The author:
+    the game "can run fully without any outside things", "the game itself can be rebuilt from the index.html file",
+    "as a rule this should always be possible", and "we should cut as much randomness as possible" (Flint and
+    Blossom spawns, where NPCs wander, NPCs' interactions and chats, and the UFO's heading stay random; the rest is
+    the author's call). All now in RULES.md, the new single list of the author's rules ("Please be sure to always
+    note all rules in the documentation"). What was found: the game file needs nothing beside it. It loads no
+    fonts, libraries or files from the web, and its two optional requests (`tex/manifest.json`, the APK's
+    pre-painted textures, and `/log`, the APK server's log) fall back silently: without `tex/` it paints every
+    texture itself. But `tex/` was not rebuildable: 25 painters call `Math.random`, so a rebuild painted different
+    grain than the shipped copies. Fix (R1): the texture maker seeds `Math.random` per painter call (size, painter
+    source, call count), so every painted texture is the same on every launch; `tex/` was rebuilt
+    (`prerender_textures.js`, 132 textures, 11.70 MB). New `test_standalone.js` (every tier but quick) serves the game
+    file alone, checks the requests (only the optional extras, nothing from another host), plays (boot, VR, walking,
+    dialogue, the Event) with every texture painted by the game, and compares all 132 `tex/` textures with the
+    game's own painting: 132 identical (the comparison decodes both sides from PNG: a canvas read directly rounds
+    semi-transparent pixels differently from a decoded PNG, which showed as 64 values in the atlas until both went
+    the same way). An incident along the way: an edit the author had rejected (keeping only non-random painters in
+    `tex/`) had already reached `experiment.py` and `prerender_textures.js`; it was found (72 textures instead of
+    132), reported to the author and reverted before anything was committed.

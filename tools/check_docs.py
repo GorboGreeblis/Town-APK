@@ -44,7 +44,7 @@ notes = open(os.path.join(T, 'NOTES.md'), encoding='utf-8').read()
 last_note = max(int(n) for n in re.findall(r'^(\d+)\. \*\*', notes, re.M))
 for doc in sorted(f for f in os.listdir(T) if f.endswith('.md')):
     text = open(os.path.join(T, doc), encoding='utf-8').read()
-    if doc != 'FIXES.md':   # generated from apply_entry_fix.py's comments, checked by gen_fixes_doc.py --check
+    if doc not in ('FIXES.md', 'NOTES.md', 'BUGS.md'):   # records of what was done at the time; they name tools since retired
         for f in sorted(set(re.findall(r'`(?:tools/)?(?:lib/)?([\w-]+\.(?:js|py|sh))[` ]', text))):
             if f not in existing and not os.path.exists(os.path.join(T, '..', f)):
                 problems.append(f'{doc} names {f}, which is not in tools/')
