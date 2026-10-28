@@ -38,7 +38,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (54 blocks)
+## Gameplay, performance and other fixes (55 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -321,33 +321,21 @@ with the bulb's light on (`Bulb.warm()`, as the warm-up already does for everyth
 after the check caught the second variant). Nothing is drawn differently; the Speech then reuses the
 compiled programs.
 
-- **P16** (6 edits): (the author: "We just need to be steadily above 60 fps"; chose this over every other option):
-the planting Event already drops the quality governor to its lowest level on its first frame (scale
-1, full foveation, locked; NOTES 71), and the headset still measured 58-65 fps there. The governor's
-only lower step was an emergency 0.82 scale after three seconds at 1.6 times the frame budget (about
-45 fps), which 58 fps never reaches. Now, during the Event only, at the lowest level, when the
-smoothed frame rate stays under 62 fps for 216 frames (three seconds), the render scale drops to 0.9
-(19% fewer pixels; a slightly softer picture) for the rest of the Event, and returns to the level's
-own scale when the Event ends (unless the emergency drop fired meanwhile, which by the game's own
-rule stays for the session). A headset with headroom never triggers it. Logged as "event scale 0.9
-(...)"; the emergency drop still applies on top.
+- (1 edit) F-B31 (the author: "Lets push both experiments into the main build"; 3.15.43, NOTES 83): the flash
+experiments become the release. 1. No layer swap: every quality level and the emergency step keep
+the native render scale (1), so the governor only changes foveation, on the same layer; the Event's
+own scale steps (P16, P17: 2-3 fps, and the 3S took the Quest 3's branch because its browser calls
+itself "Quest 3") and P18 (which ended an emergency drop with the Event) go with them (the author:
+"Lets get rid of it and close out that option"). In town the governor no longer renders above native
+scale (1.2, 1.1) when it has headroom.
 
-- **P17** (4 edits): (the author: "Apply 1 and 2"; closes the Event performance work): two refinements of P16. 1. On
-a Quest 3 (user agent "Quest 3", not "Quest 3S"), which renders noticeably more pixels per eye than
-a 3S, the Event starts at the 0.9 scale at once instead of after three slow seconds; at 0.9 it still
-draws about as many pixels as a 3S at full scale. The level drop and the scale come in one layer
-swap (the governor's level change picks the Event scale directly), never two in a row. 2. A second
-step on any headset: still under 60 fps for 216 frames at 0.9, the scale goes to 0.82 (the game's
-own emergency scale, which otherwise waits for 1.6 times the frame budget, about 45 fps). Both end
-with the Event, like P16. Logged as "event scale 0.9 (Quest 3, from the start)" and "event scale
-0.82 (under 60 fps for 216 frames)".
-
-- **P18** (3 edits): (VRC.Quest.Performance.4, recommended: render scale at least 85%, except "individual, non-
-consecutive sequences such as boss battles" that "return above 85% after"; the author: "let's do
-it"): the game's emergency drop (0.82 after three seconds at 1.6 times the frame budget) stayed for
-the rest of the session. When it fires during the planting Event it now ends with the Event, like
-P16 and P17, and the scale returns to the level's own. Fired in ordinary play, it keeps the game's
-rule and stays.
+- **2** (1 edit): . No texture upload inside an XR frame (NOTES 80): during multiview play a texture marked for
+upload is held back (three.js keeps drawing its old content for that frame) and uploaded in a task
+right after the frame is submitted; for that one frame an object whose texture was never uploaded is
+skipped instead of drawn without it. The VR panels (battle, dialogue, menu, wrist HUD) paint into
+the next of three canvases; a panel keeps its last uploaded canvas and swaps to the new one once
+that is uploaded (the deferupload build's flicker on quick presses, NOTES 81). Since F-B29/F-B30 no
+texture is made during play, so the log line for one made for the first time should never appear.
 
 - **P19** (3 edits): (found by tools/warm_coverage.js; the author chose this fix): the number of point lights is part
 of every lit shader's key, and the warm-up compiles the town with no point light, with the Portal's
@@ -379,7 +367,7 @@ planting. Each glyph now has one colour (the one it used most): heart pink, note
 star and sparkle yellow, "?" teal, the rest white. Every glyph's texture is made during the loading
 warm-up, so none is made during play.
 
-- (10 edits) F-B30 (flashes, NOTES 82): the other textures the game made during play, each the first time it was
+- (1 edit) F-B30 (flashes, NOTES 82): the other textures the game made during play, each the first time it was
 needed, now made once during the loading warm-up and kept: the printed lid of the pizza Nextessa
 carries (made anew at every phone call, the moment she comes through the Portal), Montgummery's
 screen faces (nine: idle, talking twice, robot dance twice, shovel, rock, paper, scissors; each made
@@ -388,6 +376,28 @@ per chat, thrown away after it). A bubble's texture now comes from a pool, one p
 bubble height, made at load and redrawn for each line: the same canvas size and drawing, so the same
 pixels; redrawing a texture that exists is what the dialogue box does all the time. The entity
 clean-up keeps textures marked to keep. Checked by tools/texture_census.js.
+
+- **P21** (1 edit): (draw calls; nothing drawn differently, NOTES 84): the Ancient (15 parts, 11.5k triangles) lives
+in the church, which has no door and a closed interior; it was drawn whenever the church was in
+view, from anywhere in the town. While a frame renders with the camera at least 0.5 m outside the
+church (its collision outline) and the Ancient inside it, the Ancient's body is left out; it is put
+back right after the render, so loading-time shader compiles, picking and everything else still see
+it. Proof: from 17,045 views at least 0.5 m outside (a 1 m grid to 30 m, five eye heights 0.5-2.8 m,
+aimed at it), rendered with and without it with only the church drawn, 3 views from about 30 m
+showed one pixel (a seam between the interior walls), and none of those 3 with the whole town drawn.
+The margin covers the camera's near plane and a frame of head movement. `__gtAnc.set(false)` turns
+it off for opt_identity.js.
+
+- **P22** (11 edits): (draw calls; the author asked for this prototype, NOTES 85): the author marked Gooward's
+translucent parts for merging (`userData.mergeTr`: the 20 bubbles in his goo, the three crystals of
+each wing) but nothing ever merged them, so each was its own draw (26 of the Event's heaviest view).
+Parts with the mark that share a parent and a material become one mesh (their geometry placed by
+their own transforms, which never change; the parent's animation moves them as before). Translucent
+objects are drawn far to near, one by one; the merged mesh keeps that: before it is drawn it orders
+its parts far to near from the camera by their origins, as three.js orders separate objects,
+rewriting its index only when the order changes. What differs: the merged parts are ordered as one
+block against other translucent objects (a bubble seen through a wing crystal). `__gtMT.set(false)`
+restores the parts.
 
 ## Multiview (release path since 3.15.34)
 
