@@ -1376,3 +1376,22 @@ VR-entry fix; each item is for discussion first.
     longer applied (`native`, `nogovernor`, `directrequest`, `keepalive`: the settings and entry code they targeted
     are gone) were dropped. `test_bend_exact.js` keeps P13's guarantee without the original: its 400 outputs from
     the original are recorded as SHA-256 fingerprints (`test_bend_golden.json`).
+88. **The game is rebuildable from the game file alone; painted textures seeded (3.15.44, FIXES R1).** The author:
+    the game "can run fully without any outside things", "the game itself can be rebuilt from the index.html file",
+    "as a rule this should always be possible", and "we should cut as much randomness as possible" (Flint and
+    Blossom spawns, where NPCs wander, NPCs' interactions and chats, and the UFO's heading stay random; the rest is
+    the author's call). All now in RULES.md, the new single list of the author's rules ("Please be sure to always
+    note all rules in the documentation"). What was found: the game file needs nothing beside it. It loads no
+    fonts, libraries or files from the web, and its two optional requests (`tex/manifest.json`, the APK's
+    pre-painted textures, and `/log`, the APK server's log) fall back silently: without `tex/` it paints every
+    texture itself. But `tex/` was not rebuildable: 25 painters call `Math.random`, so a rebuild painted different
+    grain than the shipped copies. Fix (R1): the texture maker seeds `Math.random` per painter call (size, painter
+    source, call count), so every painted texture is the same on every launch; `tex/` was rebuilt
+    (`prerender_textures.js`, 132 textures, 11.70 MB). New `test_standalone.js` (every tier but quick) serves the game
+    file alone, checks the requests (only the optional extras, nothing from another host), plays (boot, VR, walking,
+    dialogue, the Event) with every texture painted by the game, and compares all 132 `tex/` textures with the
+    game's own painting: 132 identical (the comparison decodes both sides from PNG: a canvas read directly rounds
+    semi-transparent pixels differently from a decoded PNG, which showed as 64 values in the atlas until both went
+    the same way). An incident along the way: an edit the author had rejected (keeping only non-random painters in
+    `tex/`) had already reached `experiment.py` and `prerender_textures.js`; it was found (72 textures instead of
+    132), reported to the author and reverted before anything was committed.

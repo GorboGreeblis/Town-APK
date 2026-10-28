@@ -6,7 +6,7 @@ what it does, why, who decided it, and how it was proven), newest at the end of 
 3.15.43 were generated from the comments of the build script that applied them as text edits to the original
 (`apply_entry_fix.py`, now retired; the tool names below are as they were then).
 IDs: numbers are the entry edits, B a bug fix (tools/BUGS.md), P a performance change (tools/PERF.md),
-L the license notice, D diagnostics. NOTES numbers point to tools/NOTES.md.
+L the license notice, D diagnostics, R a change made to meet one of the author's rules (tools/RULES.md). NOTES numbers point to tools/NOTES.md.
 
 ## Entry edits (9 blocks)
 
@@ -401,6 +401,18 @@ rewriting its index only when the order changes. What differs: the merged parts 
 block against other translucent objects (a bubble seen through a wing crystal). `__gtMT.set(false)`
 restores the parts.
 
+- **R1** (3.15.44; the author: the game must always be rebuildable from the game file, and "we should cut as much
+randomness as possible", RULES.md 2 and 5; NOTES 88): painted textures are seeded. 25 of the game's texture painters
+call `Math.random` (grain, speckles, bark, grass, stars and the like), so each launch painted them slightly
+differently, and the pre-painted copies in the APK's `tex/` were one launch's dice rolls that no rebuild could
+reproduce. Now the texture maker `b()` gives each painter call its own generator: `Math.random` is swapped, for that
+call only, for a fixed sequence (Park-Miller, 16807 mod 2^31-1) seeded from the texture's size, the painter's own
+source text and how many times that painter has run before. The same painter, called in the same order, paints the
+same pixels on every launch and in every rebuild; editing a painter changes its seed, as it changes its `tex/` key.
+Randomness everywhere else (spawns, wandering, chats, the UFO) is untouched. What differs: each texture's grain is a
+different (fixed) roll than any one earlier launch's; its look, density and colours are unchanged. Proven by
+`test_standalone.js`: all 132 textures in the rebuilt `tex/` match the game's own painting pixel for pixel.
+
 ## Multiview (release path since 3.15.34)
 
 Edits for the multiview experiment, in order. Three groups:
@@ -415,11 +427,7 @@ Edits for the multiview experiment, in order. Three groups:
        is wrapped so the loading warm-up renders into a multiview target.
     3. The layers shim: texture-array projection layer, multiview attachments, no resolve blit.
 
-## Experiments (never in the release; `tools/build_experiment.sh NAME`)
-
-- **native**: Native: the release renders at scale 1.2 / 1.1 at the top two quality levels and native 1.0 below
-(the author found the sharper picture better; the governor steps down under load, swaps are flash-
-free). This variant goes back to native scale at every level for A/B comparisons.
+## Experiments (never in the release; `tools/experiment.py`, `tools/build_experiment.sh NAME`)
 
 - **nolayers**: No layers: the release requests the WebXR "layers" feature (compositor layers for the loading
 screen, projection layer for the game, NOTES 42, confirmed on the headset). This variant goes back
@@ -431,15 +439,6 @@ tools/prerender_textures.js, never shipped).
 - **nomultiview**: No multiview (NOTES 65, 67): the release draws both eyes in one pass (multiview, headset- confirmed
 in 3.15.33's experiment); this variant plans it off, so the game takes the classic path (each eye
 drawn separately) for A/B comparisons.
-
-- **directrequest**: Direct request: once the world is ready, call the game's own VR request (je) immediately without
-waiting for sessiongranted, and log the browser's reason to the console (logcat shows it) if it
-refuses. Tests whether the immersive activity accepts a page-initiated request without a press.
-
-- **keepalive**: Session keep-alive: when the grant arrives before the world is built, the early-created session gets
-a tiny WebGL layer and a clear-colour frame loop right away, so the OS sees frames (no loading-
-screen stall / session timeout) until the game takes the session over. Candidate fix for the 3.15.6
-symptom.
 
 - **flashlog**: Flash diagnostics (3.15.41 on the author's Quest 3S: three bright, washed-out flashes, two partway
 through the Event; NOTES 79). Plays exactly like the release; only the log changes: B on the right
@@ -454,4 +453,4 @@ totals; frames over 28 ms are logged; the old layer's destruction after a swap i
 - **noeffects**: No pickup effects: no sparkle particles, no floating labels, no HUD/label texture churn from
 pickups.
 
-- **nogovernor**: Quality governor frozen: foveation stays 0 and the layer is never rebuilt.
+Dropped in 3.15.43 (NOTES 87; the code they changed is gone): `native`, `nogovernor`, `directrequest`, `keepalive`.
