@@ -13,7 +13,7 @@ no name labels over anyone): emotes at height + 0.4 m, vignette speech bubbles a
 pick target at half the height; a carried pizza box sits on the model's real top (its bounding box) instead.
 Model scale and body radius come from the cast table (`ROWS` in `JGP`). Each townsperson's signature colour (`color` in the cast table) colours their dialogue
 box when they speak. The emotes over their heads have one colour per glyph since F-B29 (the author: "no emotes need to be
-random colors"): heart pink, note lime, flower, `!`, star and sparkle yellow, `?` teal, the rest white.
+random colors"): heart pink, note lime, flower, `!`, star and sparkle yellow, `?` teal, the rest white (approved by the author, 2026-10-28).
 
 | Character | Id | Model | Generation | Height | Scale | Body radius | Signature colour | Built from |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
