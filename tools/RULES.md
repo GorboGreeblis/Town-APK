@@ -87,7 +87,8 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     [89]. `tools/index.compressed.html`, built by `build_compressed.js` (in `build.sh`) with the previous compressed
     version's method. Checked: it unpacks to the game file exactly (`build_compressed.js --check`: quick tier,
     pre-commit hook) and works as an inscription would (`test_compressed.js`: alone, under the ordinal content
-    policy, unpacks, boots, enters VR; under 390,000 bytes).
+    policy, unpacks, boots, enters VR; under 390,000 bytes). Its readable loader page carries no license notice (2026-10-28: "The License notice is not
+    needed in the compressed ordinal version"); the notices are inside its payload.
 
 ## Priorities
 

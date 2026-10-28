@@ -17,7 +17,8 @@ comment at the top of the game file carries it (kept by the minification, FIXES 
 built by `build_compressed.js`, RULES.md 20; never in the APK) also contains the
 whole game file, three.js included. Both notices are inside its compressed
 payload and appear once it unpacks to the game file; the readable loader page
-around the payload carries none.
+around the payload carries none, and needs none (the author, 2026-10-28: "The License notice is not
+needed in the compressed ordinal version"; RULES.md 20).
 
 ## The Android wrapper
 
