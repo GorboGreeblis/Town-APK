@@ -38,7 +38,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (51 blocks)
+## Gameplay, performance and other fixes (54 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -357,6 +357,37 @@ Speech, 16 m away; dozens of shaders would then compile mid-Speech, a stall of s
 While the bulb is lit the Portal's light is held off (its glowing doorway still shows; only its
 faint blue light on the surroundings goes for those seconds), from both sides so no frame has both:
 the Portal's own update and the bulb's.
+
+- **P20** (5 edits): (draw calls in the Event; nothing drawn differently, NOTES 82): the pizza the Event lays out
+(eight stacks of one to three boxes round the garden, and the pie Anomalee serves: its box, lid and
+eight slices of four parts each) is built after the batcher ran, so every part was its own draw: 56
+of the 388 draws of the heaviest Event view (the headset's lowest readings, at (-21, -5)). Each
+stacked box (one mesh, the card colour on five faces and the printed lid on the top) becomes two
+meshes, the five faces and the top, with the same vertices and the same triangles in the order P8
+already draws them; then both groups go through the batcher as the garden's plants do. The pizza is
+also built once during the warm-up (out of sight, and cleared before play), so its printed lid
+texture is made and uploaded while loading instead of the moment the Event starts (the noswap run's
+flash at the Event start came with one new texture: this one), and its batch shaders are compiled
+there. `__gtPZ.set(false)` puts the original boxes back for opt_identity.js.
+
+- (3 edits) F-B29 (flashes; the author: "no emotes need to be random colors. It would be better to standardize
+them", NOTES 82): an emote (the glyph that floats over a character) is a 64x64 canvas texture per
+glyph and colour, made the first time that pair shows. Most callers pick the colour at random (seven
+for a chat or a dance battle's hit, five for a new plant), so new textures were made and uploaded in
+the middle of play exactly where the author saw flashes: dance battles, speaking to Nextessa,
+planting. Each glyph now has one colour (the one it used most): heart pink, note lime, flower, "!",
+star and sparkle yellow, "?" teal, the rest white. Every glyph's texture is made during the loading
+warm-up, so none is made during play.
+
+- (10 edits) F-B30 (flashes, NOTES 82): the other textures the game made during play, each the first time it was
+needed, now made once during the loading warm-up and kept: the printed lid of the pizza Nextessa
+carries (made anew at every phone call, the moment she comes through the Portal), Montgummery's
+screen faces (nine: idle, talking twice, robot dance twice, shovel, rock, paper, scissors; each made
+the first time he showed it), and the speech bubbles of the townsfolk's text chats (two new textures
+per chat, thrown away after it). A bubble's texture now comes from a pool, one per speaker and
+bubble height, made at load and redrawn for each line: the same canvas size and drawing, so the same
+pixels; redrawing a texture that exists is what the dialogue box does all the time. The entity
+clean-up keeps textures marked to keep. Checked by tools/texture_census.js.
 
 ## Multiview (release path since 3.15.34)
 

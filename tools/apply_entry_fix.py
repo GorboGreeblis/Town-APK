@@ -292,6 +292,11 @@ def _multiview():
         '  S.end = function () {\n'
         '    if (MV && mvOk && mvOwn && tex && !X.keepDepth) { try { g.bindFramebuffer(g.FRAMEBUFFER, fb); g.invalidateFramebuffer(g.FRAMEBUFFER, [g.DEPTH_STENCIL_ATTACHMENT]); X.depthDiscards = (X.depthDiscards || 0) + 1; } catch (e) {} }\n')
     add('  var shim = null, fake = null;\n', '  var shim = null, fake = null;\n  try { s.addEventListener("end", function () { X.mvDone = true; X.mvActive = false; }); } catch (e) {}\n')
+    # The eye buffer's size, once per layer (the layer's first frame): the Quest 3S's browser reports "Quest 3"
+    # in its user agent (NOTES 82), so the size is how a log tells the two apart.
+    add('    S.w = tw; S.h = th; vp.length = vs.length;\n',
+        '    S.w = tw; S.h = th; vp.length = vs.length;\n'
+        '    if (S.sized !== L) { S.sized = L; try { __gtLog("eye buffer " + tw + "x" + th + " at scale " + S.scale); } catch (e) {} }\n')
     add('__gtLog("projection layer live, scale " + sc + ", msaa " + shim.samples);', '__gtLog("projection layer live, scale " + sc + ", msaa " + shim.samples + ", multiview " + !!X.mvActive);')
     return E
 
@@ -985,6 +990,57 @@ GAME_FIXES = [
     ('A=new THREE.PointLight(3844351,0,11);A.visible=!1,Oe=A,', 'A=new THREE.PointLight(3844351,0,11);A.visible=!1,Oe=A,e.light=A,'),
     ('A.intensity=1.5*a*(.85+.15*Math.sin(5*t)),A.visible=A.intensity>0', 'A.intensity=1.5*a*(.85+.15*Math.sin(5*t)),A.visible=A.intensity>0&&!("undefined"!=typeof Bulb&&Bulb.level>0)'),
     ('a.intensity=3.5*s,a.visible=s>0', 'a.intensity=3.5*s,a.visible=s>0,s>0&&"undefined"!=typeof ot&&ot.light&&(ot.light.visible=!1)'),
+    # P20 (draw calls in the Event; nothing drawn differently, NOTES 82): the pizza the Event lays out (eight stacks
+    # of one to three boxes round the garden, and the pie Anomalee serves: its box, lid and eight slices of four
+    # parts each) is built after the batcher ran, so every part was its own draw: 56 of the 388 draws of the
+    # heaviest Event view (the headset's lowest readings, at (-21, -5)). Each stacked box (one mesh, the card
+    # colour on five faces and the printed lid on the top) becomes two meshes, the five faces and the top, with
+    # the same vertices and the same triangles in the order P8 already draws them; then both groups go through
+    # the batcher as the garden's plants do. The pizza is also built once during the warm-up (out of sight, and
+    # cleared before play), so its printed lid texture is made and uploaded while loading instead of the moment
+    # the Event starts (the noswap run's flash at the Event start came with one new texture: this one), and its
+    # batch shaders are compiled there. `__gtPZ.set(false)` puts the original boxes back for opt_identity.js.
+    ('const PIZZA=(()=>{let stacks=null,pie=null;',
+     'const PIZZA=(()=>{let stacks=null,pie=null;const pzS=[],pzOn={v:!0},pzSplit=(grp,M2)=>{const out=[];grp.children.slice().forEach((o=>{if(!o.isMesh||!Array.isArray(o.material)||o.material.length!==6)return;const g=o.geometry;V.pzSG||(V.pzSG=(()=>{const I=g.index.array,sd=[],tp=[];g.groups.forEach((q=>{const a=Array.from(I.subarray(q.start,q.start+q.count));(o.material[q.materialIndex]===M2.box[2]?tp:sd).push(...a)}));const mk=ix=>{const n=new THREE.BufferGeometry;for(const k in g.attributes)n.setAttribute(k,g.attributes[k]);return n.setIndex(ix),n.computeBoundingSphere(),n.computeBoundingBox(),n};return[mk(sd),mk(tp)]})());const a=new THREE.Mesh(V.pzSG[0],M2.plain),b2=new THREE.Mesh(V.pzSG[1],M2.box[2]);[a,b2].forEach((m=>{m.position.copy(o.position),m.quaternion.copy(o.quaternion),m.scale.copy(o.scale),m.renderOrder=o.renderOrder,m.visible=o.visible,grp.add(m)})),grp.remove(o),out.push({o:o,a:a,b:b2,p:grp})}));return out},pzBatch=(grp,M2)=>{pzS.push(...pzSplit(grp,M2));try{gcEB.ready&&_e(grp)}catch(e){}};window.__gtPZ={set(v){v=!!v;if(v===pzOn.v)return;pzOn.v=v;for(const r of pzS)v?(r.p.remove(r.o),r.a.visible=r.b.visible=!0):(r.a.visible=r.b.visible=!1,r.p.add(r.o))},warm(){show(),serve(0,0,0);const M2=V.pzM;M2&&M2.box[2].map&&O.initTexture&&O.initTexture(M2.box[2].map);return clear},count:()=>pzS.length,where:()=>pzS.map((r=>r.a)).concat(pie?[pie.g]:[]).map((o=>{const v=o.getWorldPosition(new THREE.Vector3);return[v.x,v.y,v.z]}))};'),
+    ('C.add(stacks)}function serve(', 'C.add(stacks),pzBatch(stacks,M2)}function serve('),
+    ('slices.push(sg)}pie={g:g,slices:slices,eaten:0,t:0}}', 'slices.push(sg)}pzBatch(g,M2);pie={g:g,slices:slices,eaten:0,t:0}}'),
+    ('function clear(){stacks&&(C.remove(stacks),stacks=null);pie&&(C.remove(pie.g),pie=null)}',
+     'function clear(){stacks&&(C.remove(stacks),stacks=null);pie&&(C.remove(pie.g),pie=null);pzS.length=0,pzOn.v=!0}'),
+    ('vo(e,"gem-prewarm")}})(),', 'vo(e,"gem-prewarm")}})(),(function(){try{const done=window.__gtPZ.warm();O.compile(C,B),done()}catch(e){vo(e,"pizza-prewarm")}})(),'),
+    # F-B29 (flashes; the author: "no emotes need to be random colors. It would be better to standardize them",
+    # NOTES 82): an emote (the glyph that floats over a character) is a 64x64 canvas texture per glyph and colour,
+    # made the first time that pair shows. Most callers pick the colour at random (seven for a chat or a dance
+    # battle's hit, five for a new plant), so new textures were made and uploaded in the middle of play exactly
+    # where the author saw flashes: dance battles, speaking to Nextessa, planting. Each glyph now has one colour
+    # (the one it used most): heart pink, note lime, flower, "!", star and sparkle yellow, "?" teal, the rest
+    # white. Every glyph's texture is made during the loading warm-up, so none is made during play.
+    ('const Ut=(()=>{const t=[],e={};let wl=0;',
+     'const Ut=(()=>{const t=[],e={};let wl=0,EMO=null;const emoCol=o=>(EMO||(EMO={"♥":M.pink,"♪":M.lime,"✿":M.yellow,"!":M.yellow,"?":M.teal,"✦":M.yellow,"★":M.yellow}))[o]||M.white;'),
+    ('g=(o,a)=>{const n=o+a;', 'g=(o,a)=>{a=emoCol(o);const n=o+a;'),
+    ('[["♥",M.pink],["♥","#e8a838"],["!",M.yellow],["!",M.pink],["?",M.teal],["✦",M.yellow],["✦","#62d6c8"],["♪",M.lime],["~",M.yellow],["✿",M.yellow],["✿",M.pink],["·",M.white]].forEach',
+     '[["♥"],["!"],["?"],["✦"],["♪"],["~"],["✿"],["·"],["z"],["…"],["..."],["≈"],["★"]].forEach'),
+    # F-B30 (flashes, NOTES 82): the other textures the game made during play, each the first time it was needed,
+    # now made once during the loading warm-up and kept: the printed lid of the pizza Nextessa carries (made anew at
+    # every phone call, the moment she comes through the Portal), Montgummery's screen faces (nine: idle, talking
+    # twice, robot dance twice, shovel, rock, paper, scissors; each made the first time he showed it), and the
+    # speech bubbles of the townsfolk's text chats (two new textures per chat, thrown away after it). A bubble's
+    # texture now comes from a pool, one per speaker and bubble height, made at load and redrawn for each line: the
+    # same canvas size and drawing, so the same pixels; redrawing a texture that exists is what the dialogue box
+    # does all the time. The entity clean-up keeps textures marked to keep. Checked by tools/texture_census.js.
+    ('const PIZZA=(()=>{let stacks=null,pie=null;const pzS=[]',
+     'const PZ_CARRY=(t=>{t.fillStyle="#f3ece0",t.fillRect(0,0,256,256),t.save(),t.translate(128,104),t.fillStyle="#e2a64c",t.beginPath(),t.moveTo(0,50),t.lineTo(-54,-38),t.quadraticCurveTo(0,-62,54,-38),t.closePath(),t.fill(),t.fillStyle="#f4cc4a",t.beginPath(),t.moveTo(0,40),t.lineTo(-44,-30),t.quadraticCurveTo(0,-48,44,-30),t.closePath(),t.fill(),t.fillStyle="#c8352c",[[-14,-18],[16,-22],[0,8],[-22,-34],[24,-38]].forEach((([e,o])=>{t.beginPath(),t.arc(e,o,8,0,l),t.fill()})),t.restore(),t.fillStyle="#c8352c",t.font="bold 50px \'Trebuchet MS\', Arial, sans-serif",t.textAlign="center",t.textBaseline="middle",t.fillText("PIZZA",128,204)});window.__gtMirDraw=(t=>{const e=t.createLinearGradient(0,0,0,128);e.addColorStop(0,"#dfeef6"),e.addColorStop(1,"#b9d2e2"),t.fillStyle=e,t.fillRect(0,0,64,128)});window.__gtBbTex=(who,H,fn)=>{const P=window.__gtBb||(window.__gtBb={}),k=(who||0)+"|"+H;let t=P[k];if(!t)return t=P[k]=b(512,H,fn),t.gtKeep=!0,t;const c=t.image.getContext("2d");return c.setTransform(1,0,0,1,0,0),c.globalAlpha=1,c.clearRect(0,0,512,H),fn(c,512,H),t.needsUpdate=!0,t};const PIZZA=(()=>{let stacks=null,pie=null;const pzS=[]'),
+    ('const a=b(256,256,(t=>{t.fillStyle="#f3ece0",t.fillRect(0,0,256,256),t.save(),t.translate(128,104),t.fillStyle="#e2a64c",t.beginPath(),t.moveTo(0,50),t.lineTo(-54,-38),t.quadraticCurveTo(0,-62,54,-38),t.closePath(),t.fill(),t.fillStyle="#f4cc4a",t.beginPath(),t.moveTo(0,40),t.lineTo(-44,-30),t.quadraticCurveTo(0,-48,44,-30),t.closePath(),t.fill(),t.fillStyle="#c8352c",[[-14,-18],[16,-22],[0,8],[-22,-34],[24,-38]].forEach((([e,o])=>{t.beginPath(),t.arc(e,o,8,0,l),t.fill()})),t.restore(),t.fillStyle="#c8352c",t.font="bold 50px \'Trebuchet MS\', Arial, sans-serif",t.textAlign="center",t.textBaseline="middle",t.fillText("PIZZA",128,204)}));return R(T.plane(.76,.76)', 'const a=V.pzCT||(V.pzCT=b(256,256,PZ_CARRY),V.pzCT.gtKeep=!0,V.pzCT);return R(T.plane(.76,.76)'),
+    ('warm(){show(),serve(0,0,0);const M2=V.pzM;M2&&M2.box[2].map&&O.initTexture&&O.initTexture(M2.box[2].map);return clear}',
+     'warm(){show(),serve(0,0,0);const M2=V.pzM,pre=[M2&&M2.box[2].map];V.pzCT||(V.pzCT=b(256,256,PZ_CARRY),V.pzCT.gtKeep=!0),pre.push(V.pzCT),pre.push(window.__gtMirT||(window.__gtMirT=b(64,128,window.__gtMirDraw))),window.__gtBbM||(window.__gtBbM=b(8,8,(()=>{})).image.getContext("2d"));for(const w of[0,1])for(let r=1;r<=6;r++)pre.push(window.__gtBbTex(w,66+42*r,(()=>{})));pre.push(...(window.__gtPreTex||[]));for(const t of pre)t&&O.initTexture&&O.initTexture(t);return clear}'),
+    ('const o=b(64,128,(t=>{const e=t.createLinearGradient(0,0,0,128);e.addColorStop(0,"#dfeef6"),e.addColorStop(1,"#b9d2e2"),t.fillStyle=e,t.fillRect(0,0,64,128)}));', 'const o=window.__gtMirT||(window.__gtMirT=b(64,128,window.__gtMirDraw));'),
+    ('zT={idle0:z};', 'zT={idle0:z};[["idle",1],["idle",2],["robot",0],["robot",1],["shovel",0],["rock",0],["paper",0],["scissors",0]].forEach((([m2,p2])=>{zT[m2+p2]=$b(512,512,(e=>zF(e,m2,p2)))})),Object.values(zT).forEach((t=>{t.gtKeep=!0})),(window.__gtPreTex=window.__gtPreTex||[]).push(...Object.values(zT));'),
+    ('bubble=text=>{const words=text.split(" "),rows=[];let line="";const meas=b(8,8,(()=>{})).image.getContext("2d");',
+     'bubble=(text,who)=>{const words=text.split(" "),rows=[];let line="";const meas=window.__gtBbM||(window.__gtBbM=b(8,8,(()=>{})).image.getContext("2d"));'),
+    (',tex=b(512,H,(c=>{c.fillStyle="#fffdf6",', ',tex=window.__gtBbTex(who,H,(c=>{c.fillStyle="#fffdf6",'),
+    ('c0.bubbles.push({who:who,t0:at,sp:bubble(line)})', 'c0.bubbles.push({who:who,t0:at,sp:bubble(line,who)})'),
+    ('cur.bubbles.forEach((bb=>(C.remove(bb.sp),bb.sp.material.map.dispose(),bb.sp.material.dispose())))',
+     'cur.bubbles.forEach((bb=>(C.remove(bb.sp),bb.sp.material.map.gtKeep||bb.sp.material.map.dispose(),bb.sp.material.dispose())))'),
+    ('e.forEach((t=>t.dispose())),o.forEach((t=>t.dispose())),a.forEach((t=>t.dispose()))}', 'e.forEach((t=>t.dispose())),o.forEach((t=>t.dispose())),a.forEach((t=>t.gtKeep||t.dispose()))}'),
 ]
 # Multiview (NOTES 65, 67): the experiment became the release in 3.15.34 (the author, after the headset
 # run: "We're going to use the Multiview version as the main build").

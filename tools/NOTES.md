@@ -1291,3 +1291,27 @@ VR-entry fix; each item is for discussion first.
     upload log that no longer runs out (the wrist HUD's routine uploads used
     up its 300 lines early). Frame rate: this Event drew 408-445 calls at
     52-58 fps, more than earlier runs, still following the draw calls.
+
+82. **Flashes and textures made during play; the Event's pizza (in progress).** The author placed the flashes
+    precisely: when Nextessa emoted after being spoken to, in dance battles, while planting, at the Summoning
+    Pillar. Each of those makes a texture on the spot. An emote is a 64x64 canvas per glyph and colour, made the
+    first time the pair shows, and most callers picked the colour at random (seven for a chat or a battle hit,
+    five for a new plant). The Event's start makes the pizza's printed lid; Nextessa's arrival makes the lid of
+    the pizza she carries (anew at every call); Montgummery's screen makes each face the first time he shows it;
+    every text chat between townsfolk makes two speech-bubble textures and throws them away; the shop's mirror
+    makes its gradient the first time it opens. Redrawing a texture that already exists (the dialogue box does it
+    all the time) was never seen to flash, so a texture made and allocated mid-play is the lead. The author:
+    "no emotes need to be random colors. It would be better to standardize them." F-B29 gives each glyph one
+    colour and makes every glyph's texture while loading; F-B30 makes the rest while loading and keeps them (the
+    bubbles come from a pool, one per speaker and height, redrawn per line). `texture_census.js` plays those
+    situations and fails on any canvas or GL texture made during play. The same textures cost hitches as well
+    (a canvas drawn and a texture of up to 1 MB uploaded in one frame), not the Event's steady frame rate, which
+    follows the draw calls.
+
+    P20: the Event's pizza (eight stacks of boxes round the garden and the pie of 8 slices) is built after the
+    batcher ran, so each part was a draw: 56 of the heaviest Event view's 378. The stacked boxes are split into
+    their card faces and printed top (same vertices, same triangles in P8's order) and both groups are batched as
+    the plants are; 378 -> 324 draws in that view, and `opt_identity.js` shows identical pixels over 92 Event
+    views (1,108 fewer draws). Raising the batcher's part limit from 27 to 33 (the uniform budget has room) was
+    measured and dropped: 382 -> 377 draws, and some views draw more triangles. Also: the perf log now records
+    the eye buffer's size once per layer, since the Quest 3S's browser reports "Quest 3" in its user agent.
