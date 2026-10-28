@@ -14,7 +14,6 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | T18 | Standard pass on 3.15.45 | running | `TESTING.md`; the quick tier and `test_standalone.js` pass (RELEASE.md 5) |
 | T8 | Remaining test-plan rows: the dialogue layout test (`test_textfit.js`, written, to run and add to the tier), a 10-minute play rerun on the latest build (`test_soak.js`; last recorded in TEST_PLAN.md on 3.15.19), the townsfolk's spreading (`ho`; first check it ever runs, since every townsperson has an idle pattern) | in progress | `tools/TEST_PLAN.md` |
 | T9 | Full pass on the final build, with `--resume` | last done for 3.15.41 (NOTES 77); due for 3.15.45 after T18, before an upload | `TESTING.md` |
-| T10 | Lore Bible: the open questions (the Ancient, Mama W, the Field Office, names on posters and book covers, Hennrick's era, Backpacka, the mayor; flint vs acorns is answered) | open, author | `tools/LORE.md` |
 | T15 | Keep the docs and tools current with each change | ongoing | `README.md`, `TESTING.md` |
 
 ## Resume point (3.15.45: one game file, rebuildable, minified)
@@ -26,7 +25,7 @@ Living list. Done items move to the bottom with the date. Bugs live in
   `RULES.md`, `build.sh`, `test_standalone.js`. **3.15.45** (branch `claude/gallant-fermi-pydail`): the game file
   minified (R2); the compressed version back as a Bitcoin ordinal, `tools/index.compressed.html` (never in the APK).
 - **Running:** the standard pass on 3.15.45 (T18).
-- **Open (author):** T3 (headset run of 3.15.45), T4, T10, T17's decisions.
+- **Open (author):** T3 (headset run of 3.15.45), T4, T17's decisions.
 - **Then:** T16, Event performance on the Quest 3S (PERF.md 13).
 
 ## Earlier resume point (3.15.41: release; tests for the town's life)
@@ -60,6 +59,7 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D12 | The flashes after the 3.15.41 headset run: textures made during play (F-B29, F-B30, `texture_census.js`) and the Event's pizza batched (P20) (3.15.42) | 2026-10-28 |
 | D13 | No layer swaps and no uploads inside a frame (F-B31), the Event scale removed (P16-P18), P21, P22, the occlusion census (nothing to remove); one game file edited directly (3.15.43) | 2026-10-28 |
 | D14 | The game rebuildable from the game file: painted textures seeded (R1), `test_standalone.js`, `build.sh`; `RULES.md` (3.15.44) | 2026-10-28 |
+| D16 | Lore Bible open questions answered by the author (2026-10-28): Mama W, the Field Office, the poster and book names, the eras (Hennrick far past, Nextessa far future), the Consortium (Maltoe and Mushroom), the Ancient (not the Originator), Backpacka (unknown), the mayor (Montgummery, near future); two left open on purpose | `tools/LORE.md` |
 | D15 | The game file minified (R2, `minify_identity.js`); the compressed version as a Bitcoin ordinal (`build_compressed.js`, `test_compressed.js`) (3.15.45) | 2026-10-28 |
 
 ## Earlier resume point (3.15.34: multiview is the release path)

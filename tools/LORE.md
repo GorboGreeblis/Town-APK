@@ -30,16 +30,18 @@ it is **Zollod** who is shy (the book cures him), the **Gem trade is Gemtoe's**,
   "We are all digital monsters."
 - **Greeblis Town / Greeblis Park.** A cartoon town around a park. Mama Gorbo:
   "What a beautiful day in Greeblis Park!" Hennrick, a visitor from the
-  future: "In my era, the towers of Greeblis City reach the clouds. I never
-  imagined the far future would have… picket fences." *(inference: the town
-  exists in an early era of a long timeline that later becomes Greeblis City.)*
+  far past (the author): "In my era, the towers of Greeblis City reach the clouds. I never
+  imagined the far future would have… picket fences." The town is the far future of Hennrick's
+  era, when Greeblis City's towers reached the clouds; Nextessa is from the far future of the town
+  (the author, 2026-10-28).
 - **Places with signs:** FIRST BANK OF GREEBLIS (kept by Gemtoe), Gemtoe's
   Gazebo, GARDEN SUPPLIES (Zollod's shop), JUICE BAR (Fortizmo's), POST OFFICE
   (Somlet sleeps on the mail), GOOWARD'S GALLERY (Gooward's art gallery), the
   LIBRARY (Sparkakus), the Sheriff's kiosk (Mushroom), a TELEPHONE (calls
   Nextessa), the SUMMONING PILLAR in the garden at the park centre ("Use the
   Summoning Pillar"), WANTED posters, and King Dino's billboard (painted by
-  Gooward). The world builders also place a Field Office, Fire Station, Gas
+  Gooward). The world builders also place a Field Office
+  (Hennrick's office in the far past, the author), Fire Station, Gas
   Station, Hotel, School, Courthouse, Nursery, Water Tower, Gooburger, houses,
   a church (the Ancient's home, below), a pond and the billboard.
 - **The billboard:** "A Prehistoric Era in Jazz!", with a banner: "Let King
@@ -80,7 +82,8 @@ it is **Zollod** who is shy (the book cures him), the **Gem trade is Gemtoe's**,
 - **The Consortium.** The authority the Sheriff answers to: "This town is
   under the protection of the Consortium." It locked the Portal, inspects
   Fortizmo's bar and watches Sparkakus's books. Faced with the Ancient, the
-  Sheriff can only stammer: "Th-the Consortium will be informed."
+  Sheriff can only stammer: "Th-the Consortium will be informed." The Consortium is run by Maltoe and
+  Mushroom (the author, 2026-10-28).
 - **Gree-mail.** "When you see creatures exchanging symbols, that's
   Gree-mail." (Glyph)
 - **The player** is "Human", a visitor the Sheriff is hunting ("Mont will
@@ -120,8 +123,8 @@ The one character who is not on the town's cast list, and the one the others def
 
 *(inference: the Ancient is one of the Ancients, returned ("I have returned", "the one reborn"); it
 claims to be older than writing ("I was the first symbol") and to have made some of the townsfolk
-("You were made with love", "You were made to learn"). Whether it is the Originator Anomalee talks
-about is not stated.)*
+("You were made with love", "You were made to learn"). It is **not** the Originator Anomalee talks
+about (the author, 2026-10-28).)*
 
 ## The gallery painting
 
@@ -164,7 +167,8 @@ are the code's.
 
 **Right panel: the edge (storm).**
 - A huge **red mushroom cap with an eye** looming at the top, a star on its brim *(inference: the
-  Sheriff)* (`mushroom`), with a small figure the code calls the `mayor` beneath it.
+  Sheriff)* (`mushroom`), with a small figure the code calls the `mayor` beneath it: the mayor is Montgummery in the near
+  future (the author, 2026-10-28).
 - From the cap, faint dotted lines run to nine of the townsfolk: Sparkakus, Gemtoe, Gooward, Glyph, King
   Dino, Somlet, Montgummery, Anomalee, Zollod *(inference: the Sheriff watching them; Mama Gorbo,
   Etcher, Fortizmo, Nextessa and Hennrick are not on it)*.
@@ -185,7 +189,7 @@ Etcher–Hennrick, Zollod–Fortizmo, Nextessa–Mushroom, Hennrick–Mushroom, 
 Mama–Mama W, Fortizmo–Somlet, Mont–Mushroom.
 
 Two nodes have no character in town: the **Ancient** (dark, bottom right) and **Mama W** (in Mama
-Gorbo's colour, high in the centre, tied only to Mama).
+Gorbo's colour, high in the centre, tied only to Mama): Mama W is a name for Mama Gorbo (the author).
 
 Across the middle runs a row of twelve small tokens: a cube, a spore, a pixel, a crown, goo, a sprout,
 a letter, a note, a card, a gem, a tile, a coin. They are the townsfolk's Gree-mail: in the vignettes each
@@ -268,7 +272,7 @@ editions.") and the Ancient texts.
 | Etcher | `p_etcher` | Data preservation; dance floor | Tentacles etch data into everything; scales hold "a backup of a backup"; "My skin is a ledger." The three yellow marks on his back (a stroked "B", three stacked parallelograms, two diamonds) are symbols of the ledgers he can etch on (author). |
 | Glyph | `p_glyph` | "Master of symbols"; dance floor | Plates "fit together like a sentence"; ends lines with "don't you think?" |
 | Montgummery (Mont) | `w_mont` | Dance floor; hides the Human from the Sheriff | Robot with a screen face; eats VHS tapes ("Knowledge in the reels. Dinner in the cassette."); "We are all digital monsters." Speaks in third person. Ate the Library's tapes. |
-| Hennrick | `gratelet` | Researcher from the far future, stuck by the Portal | "Casing" and "joints… built for fieldwork"; collects samples in jars; "unwilling guest of the Sheriff"; observes Somlet ("Subject remains asleep. Observation day 41."). |
+| Hennrick | `gratelet` | Researcher from the far past (the author), stuck by the Portal | "Casing" and "joints… built for fieldwork"; collects samples in jars; "unwilling guest of the Sheriff"; observes Somlet ("Subject remains asleep. Observation day 41."). |
 | Mushroom (the Sheriff) | `drifter` | Sheriff's kiosk desk | Cap with gills; investigates UFOs; enforces the Consortium; takes bribes ("A bribe? ...Make it a double."). |
 | Fortizmo | `frog` | Juice Bar | She (Etcher: "her dancefloor"). Brass valves ("My valves turn a breath into a brass note"); "sugar"/"honey"; Blossoms only; practising a song for Backpacka. The four small dots beside his eyes are beauty marks (author). |
 | King Dino | `m_kingdino` | Drums at the Juice Bar | "King of Jazz, baby!"; drums "since the Cretaceous"; works off his bar tab; stamps his own coins; wears a crown ("The crown is extra"). The lit buttons on his sides and the sockets on his back are synthetic parts of his own body (author). |
@@ -276,9 +280,9 @@ editions.") and the Ancient texts.
 | Anomalee | `blinker` | Gazes up at the Window | Speaks in CAPITALS about CODE and the ORIGINATOR; "chewing cables" into the Computer Core; "My SIGNAL flickers. My FRAME remembers how to STAND." (a sad melody plays under "ORIGINATOR…"). |
 | Zollod | `cutebex` | Garden Supplies | Gardener; seedlings, mint, carrots; "A little goo is good for the soil."; shy until the book cures him. |
 | Sparkakus | (library, `st`) | Librarian | Seeks the three Artifacts; member of a "genealogical society"; a Blossom sets him romping about the Library ("…sorry I don't know what got into me."); elsewhere he holds back ("I must resist the urge to run. Not out here, in front of everyone."). |
-| Nextessa | (pizza shop) | Inter-temporal pizza shop, reached by phone | "I love my job!"; courier delivers. |
+| Nextessa | (pizza shop) | Inter-temporal pizza shop in the far future (the author), reached by phone | "I love my job!"; courier delivers. |
 | The Ancient | `slug` | Inside the church | "I am the one reborn." See its own section. |
-| Mama W | map node `MAMA_W` | On the gallery painting only | In Mama Gorbo's colour, tied to her. Never seen in town. |
+| Mama W | map node `MAMA_W` | On the gallery painting only | A name for Mama Gorbo (the author); in her colour, tied to her. |
 
 ### Gifts and gardening lines
 
@@ -312,18 +316,23 @@ Hennrick wanting to go home, everyone refusing King Dino's coins, Blossoms-only 
 etching everything (including citations and snores), Mont having eaten the Library's VHS tapes, Mama
 offering everyone a goo burger, Gemtoe claiming whatever is worth something.
 
-## Open questions for the author
+## The author's answers (2026-10-28)
 
-1. Who is "Mama W"? On the painting only, in Mama Gorbo's colour, tied to her.
-2. (answered) Flint and the code's acorns are the same thing; flint is the game's word.
-3. What is the Field Office for? The building exists but carries no text.
-4. GLOOPERNAUGHT (on a WANTED poster), PATCHOOLEE, APPTERIX, ORSON, Walter Bigsby, Ranger Bobert,
-   Zortoe, *Traveler's Truth*: names on posters and book covers only; any backstory?
-5. Hennrick's era: how far in the future, and who is the Consortium there?
-6. The Ancient: is it the Originator? Which page is missing from Sparkakus's texts? What does the Window
-   remember?
-7. Backpacka: where does it come from, and why does Fortizmo compose for it?
-8. Who is the mayor under the Sheriff's cap in the painting? There is no mayor in town.
+1. **Mama W** is a name for Mama Gorbo.
+2. **Flint** and the code's acorns are the same thing; flint is the game's word.
+3. **The Field Office** is Hennrick's office in the far past.
+4. **The names on posters and book covers** (GLOOPERNAUGHT, PATCHOOLEE, APPTERIX, ORSON, Walter Bigsby,
+   Ranger Bobert, Zortoe, *Traveler's Truth*) all have backstories, but this game does not tell them.
+5. **Eras:** Hennrick is from the far past; Nextessa is from the far future. **The Consortium** is run by
+   Maltoe and Mushroom.
+6. **The Ancient** is not the Originator.
+7. **Backpacka:** where it comes from, and why Fortizmo composes for it, is not known.
+8. **The mayor** under the Sheriff's cap in the painting is Montgummery in the near future.
+
+## Left open on purpose
+
+- Which page is missing from Sparkakus's texts, and what the Window remembers: intentionally left open
+  here (the author).
 
 ## Two names the author uses (keep them apart)
 
