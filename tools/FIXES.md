@@ -44,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (78 blocks)
+## Gameplay, performance and other fixes (87 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -659,6 +659,85 @@ uses it, and every material went back to its unlit program when the light went o
 made in those lit warm-ups is pinned (one extra use count) so it stays in the cache for the moment the light is on in
 play. The census's Speech had been cut short by its real-time limit (the Speech takes 18 game s, about 110 s of
 headless real time), leaving the Bulb lit into the Event; it now gets 900 s.
+
+- **F-B44, completed** (3.15.57; the author's 3.15.56 headset log, c8e2109f): the Event still compiled two Lambert
+programs at its start on the headset (`numPointLights` 1 -> 0). Pinning only the programs the lit warm-ups made let
+three.js release the unlit programs those materials had before. Every program in the cache is now pinned at the pizza
+warm-up as well, so none is released while loading.
+
+- **F-B45** (3.15.57; the author: "If Nextessa arrives during the Gem animation, she'll continue to walk against the
+player, and she will jitter in position when the user moves. She should pause ... after coming through the Portal if
+the Gem animation is ongoing"): while the Gem assembles (`Bulb.hold`) and she is through the Portal, Nextessa stands
+where she is and turns to face the player; she walks up and hands over the pizza once the Speech is over.
+`test_courier_gem.js` (on 3.15.56: moved 11.3 m, walking in 45 of 157 samples; now 0 m, never walking).
+
+- **F-B46** (3.15.57; the author: "After returning from a visit: Mushroom left again but [he] appeared to jump into his
+desk and then was pulled to the side of his kiosk. He should never fall inside of his desk. Can we give the desk solid
+collision and make it wider? Also he should never be jumping now that he has the ramp"): when he set out on a visit,
+the visitor's desk-hop animation (meant for townsfolk who stand on a raised spot) lowered him straight through the
+desk to the ground; the host's hop already skipped him, the visitor's did not. Now neither does: he walks down the
+ramp. His height follower (`gcRY`) no longer lets him rise more than 0.25 m or drop more than 0.3 m in one step
+anywhere (the 1 m allowance by his home is gone): such a step is not taken, so the desk and the ramp's sides are solid
+and he never steps off an edge; and at ground level the desk's front is 0.35 m deeper (wider) for him. Probe
+(`mvisit`, back-to-back visits): on 3.15.56 4 jumps and 175 frames inside the desk in 6 visits; now none in 6 visits,
+none in 4 with the player standing in front of the desk, none in 4 with the player at the ramp's foot.
+
+- **A9** (3.15.57; the author: "The fog moves in and moves out too quickly. Let's extend the Event and give the fog
+more time", "The fog is too bright to be comfortably looked at for users in VR", "if the user approaches the fence, the
+fog effect appears to recede from the fence. This should never happen when the user moves closer to the fog, for any
+object"; pictures shown): the mist bank rolls in and out over 15 s (was 6 s) and the Event's planting lasts 190 s (was
+180 s); the bank is drawn at 80% of the fog colour (a soft grey). The bank was translucent, so what stood beyond it (the
+lamp posts by the church, hills, houses) came clear as the player walked up to it. Now everything with fog is also
+misted by where it stands, not by the viewer's distance: three.js's fog chunks carry the world position, and a surface
+0-3 m beyond the fence (below the bank's top, 18-30 m) blends into the mist's colour as the mist rolls in
+(`fogDensity` carries its strength, 0 outside the Event, so the town is unchanged then). Walking up to the fence shows
+only the fence, a metre of ground and the mist (pictures by the church at 30, 20, 12, 7, 4 and 1 m).
+`test_event_fade.js` checks the 15 s timing and that the scene's mist follows the bank and is 0 after the Event.
+
+- **A10** (3.15.57; the author: "Please give Gemtoe a neck tie. no shirt, just a tie"; pictures shown, then "a little
+too high", lowered): a tie on his bib, a knot under the bill and a pointed blade following the chest, in his gems'
+purple with gold stripes (a canvas texture painted while loading).
+
+- **F-B47** (3.15.57; the author: "examine the houses in the outside ring: On the sides of the houses, where the wall
+meets the triangle of the roof, a slight flicker", "it's this area on all houses"; then "one more full pass looking for
+any flickering"): two flat pieces in one plane that meet edge to edge are drawn as one surface only if the shared
+edge has the same corners on both; the houses' gable triangles (a fan from a corner at the middle of their base) met
+their walls' top edges at T-junctions, and the background showed through as a dotted line that sparkled. And the
+triangles were narrower than their roofs, leaving a tapering sliver of dark roof underside. Every gable is now as
+wide as its roof (its sloped edges on the roof), reaches 4 cm down over its wall and stands 1 cm proud of it (no gap
+and no shared plane) on all five house builders and the church. The same seam test found and fixed: the church's
+plinth (front and back blocks butted 1.6 cm lower against the side blocks; now 2 cm into them, faces 1 cm back), its
+belfry and window arches (the cut-out reached the frame's bottom edge; it now starts 3 cm up), Gooward's mural (its
+canvas in the plane of its frame, edge to edge; now 1 cm behind it and 4 cm taller, tucked behind the frame), the
+juice bar's counter lip (ends flush with the counter top's; now 5 mm longer and 2 cm into it) and Mushroom's ramp
+landing (top flush with the desk top, side flush with its front; now 1 cm lower and shorter). `test_seams.js` (new,
+full tier) finds such T-junctions and checks each by rendering whether it can be seen from where the player can stand.
+
+- **F-B48** (3.15.57; the author's flashes after leaving the Cave and right after loading on picking up a pickup, logs
+2bd67b97 and 8e76b4aa): nothing the game watched for (shaders, textures, GPU work inside a frame) happened; but
+three.js uploads a geometry's buffers the first time it is drawn, and loading drew only what the start view showed,
+so walking to the first pickup uploaded 47 buffers inside headset frames, the Cave's inside about 240, the first goo
+Gooward threw 8 (texture uploads inside the frame were the earlier flashes' cause, F-B26, F-B31). Every geometry in the
+scene, hidden ones too, is now drawn once with a plain material into a 1x1 corner while loading (after the first
+draw, with the Gem's pieces and the Event's pizza in place, at the end) and at VR entry (the controller rays):
+204 -> 453 geometries on the GPU before the first headset frame. Gooward's goo blob and the goo splat on the view are
+made while loading. The test harness's frame-hazard watch now also fails any buffer made inside a headset frame,
+in every test.
+
+- **F-B49** (3.15.57; the author: "The pizza box that Anomalee is eating from, in the center of the Garden during the
+Event, is missing the Pizza logo from its lid", "ensure that Anomalee has a pizza in their pizza box during the Event
+(Only when Pizza (snacks) has been completed)"): her box is an open one built apart from the others, its lid in plain
+cardboard; the lid now carries the logo on its outside. She ate a slice every 5 s, so the box was empty 40 s in; she
+now eats one every 22 s and leaves the last two, so there is pizza in it for the whole Event. Without Snacks she plants
+like everyone else and there is no box (as before; `test_anomalee.js` checks both).
+
+- **D3** (3.15.57; the author: "let's try to make the logs more verbose so that we can track down these issues"): a
+flight recorder in the headset log. Every frame keeps its time, draw calls, programs, textures, geometries and whether
+the head is inside a character (the last 720 frames); pressing B (the flash mark) writes the slow frames, every change
+of those counts and the head-inside moments of the last 10 s, with their times before the mark. An event trail logs,
+with frame numbers, every change of Blossoms, Flint, Artifacts, the Cave, a vignette, the Event, the screen (playing,
+dialogue, panel), the courier and the Gem; the XR session's focus changes (the system menu) are logged too; and any
+geometry buffer made inside a headset frame is logged with its frame.
 
 ## Multiview (release path since 3.15.34)
 

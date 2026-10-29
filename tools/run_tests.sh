@@ -95,6 +95,7 @@ if [ "$TIER" != quick ]; then
   run "interaction menu: never shows the previous menu's picture (after the last Blossom, after another character; F-B38); the controller rays' shader made while loading (F-B41)" node "$ROOT/tools/test_menu.js" "$ASSET"
   run "visitors to the Ancient while the player is in the Cave, back to normal outside (A3)" node "$ROOT/tools/test_cave.js" "$ASSET"
   run "the Event's start and end: mist rolls in and out, clouds and pickups fade, UFO leaves, Backpacka into the mist, flowers in a later Event (A4-A7, F-B43)" node "$ROOT/tools/test_event_fade.js" "$ASSET"
+  run "Anomalee in the Event: plants without Snacks, eats from her pizza box with them (F-B49)" node "$ROOT/tools/test_anomalee.js" "$ASSET"
   run "Backpacka at the pond: the player cannot walk into her; she is not moved; no circles once she leaves" node "$ROOT/tools/test_backpacka.js" "$ASSET"
   run "far detail and the batcher: one model at a time, swaps at 62/66 m; exact matrices in every batch, every frame" node "$ROOT/tools/test_lod.js" "$ASSET"
   run "world: routes, hulls, pickups, watchdog (${WORLD_S}s)" node "$ROOT/tools/test_world.js" "$ASSET" "$WORLD_S"
@@ -108,7 +109,8 @@ if [ "$TIER" != quick ]; then
   esac
   case "$TIER" in
     smoke) ;;
-    *)     run "courier: Nextessa reaches a player behind the Ancient and leaves (B11)" node "$ROOT/tools/test_courier.js" "$ASSET" left;;
+    *)     run "courier: Nextessa reaches a player behind the Ancient and leaves (B11)" node "$ROOT/tools/test_courier.js" "$ASSET" left
+           run "courier: Nextessa waits while the Gem assembles, then delivers (F-B45)" node "$ROOT/tools/test_courier_gem.js" "$ASSET";;
   esac
   if [ "$NPC_N" = 0 ]; then run "NPC return-home (Mushroom), all scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S";
   else run "NPC return-home (Mushroom), first $NPC_N scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S" "$NPC_N"; fi
@@ -119,6 +121,7 @@ if [ "$TIER" != quick ]; then
     # for the record.
     run "z-fighting / flicker on environmental surfaces (jittered render)" node "$ROOT/tools/test_zfight.js" "$ASSET"
     run "z-fighting on curved surfaces (near-coincident geometry)" node "$ROOT/tools/test_coincident.js" "$ASSET"
+    run "seams: no T-junction crack the player can see (F-B47)" node "$ROOT/tools/test_seams.js" "$ASSET"
     run "single-sided pass is pixel-identical (edges aside)" node "$ROOT/tools/sides_check.js" "$ASSET"
     run "optimisations render identical pixels (batcher, P8, P12) and save draws" node "$ROOT/tools/opt_identity.js" "$ASSET"
     run "the Ancient never shows from outside the church, so P21 may leave it out (2 m grid to 30 m)" node "$ROOT/tools/ancient_check.js" "$ASSET"
