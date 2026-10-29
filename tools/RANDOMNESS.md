@@ -1,7 +1,6 @@
 # Randomness decisions for Greeblis Town (RULES.md 5)
 
-The author's decision list (TASKS T17, 2026-10-29, 3.15.50). Every item waits for the author's call unless the
-**Decided** section below says otherwise.
+The author's decision list (TASKS T17, 2026-10-29, 3.15.50). Every item is decided (the **Decided** section below); the list is closed.
 
 ## Decided
 
@@ -12,6 +11,8 @@ The author's decision list (TASKS T17, 2026-10-29, 3.15.50). Every item waits fo
 | The UFO's flight path (seeded, not random) | "The UFO's path is currently fine the way it is. Mark as intended." | Intended as it is (RULES.md 5); no change |
 | d1 stars, d2 clouds, c1 blinks, c2 idle phases (Nextessa's too), c3 Anomalee's glitch timing (her shake stays random), c4 her jaw, c9 the Event ring's sway | "1 to 7: seed" | Seeded in 3.15.51 (FIXES R5): the same every launch, still varied |
 | Everything recommended to stay random: c5 Sparkakus's tail mist, c6 Mama Gorbo's drops, c7 goo blobs and splats, c8 the pickups' bob and glint, c10 the typewriter tick's pitch, Anomalee's shake in c3, and the appendix's (c) items (goo on the player's view, sound pitch and noise variation, Backpacka's droplets and the finale's reactions, vignette confetti and token trails, the robin's return, the Gem's sparkles) | "whatever you recommended we keep random, keep random" | Stay random; no change |
+| The dance battle's BOW OUT (the player's button to leave a battle early; it worked 70% of the time) | "a random 80% chance of working makes sense for the Bow Out button" | 80% in 3.15.52 (FIXES R6), still random |
+| The dance battle opponent's move (Glyph, Etcher, Montgummery: rock, scissors or paper each round, shown before the player picks) | "For the Dancer's moves: what they pick should always be random" | Stays random; no change |
  Positions are those of 3.15.49's game file; after an edit, `node tools/random_census.js` lists them again.
 
 This list covers the 120 `Math.random` call sites found by `random_census.js` (`tools/.runs/random_census.json`;
@@ -108,7 +109,7 @@ approximate (≈), estimated from the nearest census site. Only the first two ne
 | What | ≈ Site | Category |
 | --- | --- | --- |
 | **Dance battle: the opponent's move** (rock, scissors or paper), which sets the counter the player must pick | via 7:4739 at ≈7:92830 | **(e)** |
-| **Dance battle: BOW OUT works 70 % of the time** (otherwise "The beat won't let you go!") | ≈7:93294 | **(e)** |
+| **Dance battle: BOW OUT works 70 % of the time** (otherwise "The beat won't let you go!"); 80 % since 3.15.52 (Decided) | ≈7:93294 | **(e)** |
 | Generic townsfolk wandering and treks to waypoints | ≈7:64955-66573 | (b) |
 | Visit planning (whether a visit happens, which pair, bubbles or tokens, next gap) | ≈7:671750-672502 | (b) |
 | Spot in the clearing for a creature without a post (`Mo`/`g()`) | ≈7:5331, 7:5363 | probably (b); not sure which creature uses it |

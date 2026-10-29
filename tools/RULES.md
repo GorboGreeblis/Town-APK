@@ -34,7 +34,10 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
    launch (2026-10-29: "1 to 7: seed", FIXES R5): the stars, the clouds, blinks, idle sway phases, Anomalee's glitch
    timing and jaw, the Event ring's sway. Random by the author's word too (2026-10-29: "whatever you recommended we
    keep random, keep random"): particles and splats, the pickups' bob and glint, sound pitch variation, Anomalee's
-   glitch shake, the robin's return, the Gem's sparkles (RANDOMNESS.md). Painted textures are seeded (the same on every launch, FIXES R1 [88]). Any other randomness is the author's
+   glitch shake, the robin's return, the Gem's sparkles, and the dancers' moves in a battle (2026-10-29: "For the Dancer's moves: what they pick should
+   always be random") (RANDOMNESS.md). The dance
+   battle's BOW OUT works at random 80% of the time (2026-10-29: "a random 80% chance of working makes sense for the
+   Bow Out button"; it was 70%). Painted textures are seeded (the same on every launch, FIXES R1 [88]). Any other randomness is the author's
    call ("other instances of randomness are questionable"): list it and ask before changing it.
 
 ## How the game looks

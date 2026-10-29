@@ -44,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (61 blocks)
+## Gameplay, performance and other fixes (62 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -450,6 +450,11 @@ jaw's chomps, and the townsfolk's sway in the Event ring. Each draws from its ow
 Park-Miller generator like the UFO's, seeded from the name), so nothing else that happens can shift it. Checked:
 two launches build the same stars and clouds; the census drops from 120 `Math.random` sites to 81, the rest being the
 ones that stay random.
+
+- **R6** (3.15.52; the author: "a random 80% chance of working makes sense for the Bow Out button"; RANDOMNESS.md,
+RULES.md 5): in a dance battle (Glyph, Etcher, Montgummery) the player's BOW OUT now works 80% of the time instead of
+70%; otherwise, as before, "The beat won't let you go!" and the battle goes on. The dancers' moves stay random (the
+author: "For the Dancer's moves: what they pick should always be random").
 
 - **F-B32** (3.15.46; flashes, the rule that no texture is made during play, RULES.md 9): the soft glow behind an item
 tossed in a townsfolk text exchange (goo, a card, a tile, a coin) was painted the first time a vignette tossed one,

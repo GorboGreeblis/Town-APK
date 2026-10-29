@@ -245,7 +245,7 @@ editions.") and the Ancient texts.
 
 - **Dance battles** (vs Etcher, Glyph, Montgummery; "KING DINO on drums."):
   rock / scissors / paper as "Rock out!", "Do the splits like scissors!",
-  "Go horizontal like paper!"; stamina 10; "BOW OUT" / "TAKE A BOW" ("You take a bow.", "The beat
+  "Go horizontal like paper!"; stamina 10; "BOW OUT" / "TAKE A BOW" ("You take a bow."; BOW OUT works 80% of the time, otherwise "The beat
   won't let you go!"); first win: "<name> awards you an Ancient Artifact!". Each dancer's stamina bar
   counts their signature move: "Robot steps left" (Montgummery), "Tentacle twists left" (Etcher),
   "Macarena moves left" (Glyph). A Blossom given to a dancer is an invitation: "Let's dance!", and the
