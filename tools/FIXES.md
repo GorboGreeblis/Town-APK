@@ -653,7 +653,12 @@ pizza, the Speech, then the Event): a Lambert material with a map at the garden'
 warmed one only in `numPointLights` (0 -> 1). Loading compiles the scene once with the portal's light on and once
 with the Bulb's, but before the Event's plants and pizza are built for their warm-ups, so those were never compiled
 lit. The pizza warm-up (plants still in the scene) now also compiles with the portal light, with portal and Bulb
-lights together, and with the Bulb's alone.
+lights together, and with the Bulb's alone (3.15.55). That was not enough: the census on 3.15.55 still compiled two
+programs whose keys equalled ones made by those warm-ups, because three.js deletes a program as soon as no material
+uses it, and every material went back to its unlit program when the light went off. Since 3.15.56 each program first
+made in those lit warm-ups is pinned (one extra use count) so it stays in the cache for the moment the light is on in
+play. The census's Speech had been cut short by its real-time limit (the Speech takes 18 game s, about 110 s of
+headless real time), leaving the Bulb lit into the Event; it now gets 900 s.
 
 ## Multiview (release path since 3.15.34)
 
