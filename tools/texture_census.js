@@ -31,7 +31,11 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
   });
   const r = await page.evaluate(async () => {
     const D = window.__dbg, V = D.VIGS, TC = window.__tc, wait = (ms) => new Promise((r) => setTimeout(r, ms)), out = { steps: [] };
-    const step = (s) => { TC.step = s; out.steps.push(s); };
+    // every shader program made during play, with the step it appeared in (a compile in a frame is a hitch or a flash)
+    const progSeen = new Set(D.O.info.programs.map((p) => p.id)); out.newProgs = [];
+    const progCheck = () => { for (const p of D.O.info.programs) if (!progSeen.has(p.id)) { progSeen.add(p.id); out.newProgs.push(TC.step + ': ' + p.name); } };
+    const progTimer = setInterval(progCheck, 100);
+    const step = (s) => { progCheck(); TC.step = s; out.steps.push(s); };
     const adv = setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250);
     const near = (e, d = 1.4) => { D.At.position.x = e.group.position.x + d; D.At.position.z = e.group.position.z; };
     const gwait = async (cond, gameS, wallS = 300) => { const g0 = D.Re.t, w0 = performance.now(); while (!cond() && D.Re.t - g0 < gameS && performance.now() - w0 < wallS * 1000) await wait(100); return cond(); };
@@ -45,13 +49,13 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     step('phone call and Nextessa');
     try { D.ue.call(); await gwait(() => !!D.ue.courier, 45, 90); const n = D.ue.courier; out.courier = !!n; if (n) { near(n); await wait(500); const a = D.xe.actionsFor(n) || []; for (const x of a.slice(0, 2)) { x.run(); await gwait(() => !D.qt.isOpen, 20, 30); } await gwait(() => !D.ue.courier, 60, 120); } } catch (e) { out.courierErr = String(e); }
     step('text exchanges'); out.vigs = 0;
-    try { const m = V.lineUp(); const town = V.all.filter((pk) => pk[0] !== 'SL' && pk[1] !== 'SL'); for (const pk of town.filter((_, i) => i % 7 === 0).slice(0, 8)) { const A = m[pk[0]], B = m[pk[1]]; if (!A || !B) continue; D.xe.lastTarget = null; await gwait(() => !A.busy && !B.busy && !D.qt.isOpen, 30, 60); if (V.play(A, B, true)) { out.vigs++; await gwait(() => !V.playing(), 12, 120); } } } catch (e) { out.vigErr = String(e); }
+    try { const m = V.lineUp(); const town = V.all.filter((pk) => pk[0] !== 'SL' && pk[1] !== 'SL'); for (const pk of town.filter((_, i) => i % 7 === 0).slice(0, 8)) { const A = m[pk[0]], B = m[pk[1]]; if (!A || !B) continue; D.xe.lastTarget = null; await gwait(() => !A.busy && !B.busy && !D.qt.isOpen, 30, 60); if (V.play(A, B, true)) { out.vigs++; await gwait(() => !V.playing(), 12, 120); } else (out.vigNo = out.vigNo || []).push(pk[0] + pk[1] + (V.playing() ? ' (one already playing)' : '') + (V.computeInCave() ? ' (player in the Cave)' : '') + (A.busy || B.busy ? ' (busy: ' + (A.busy || B.busy) + ')' : '')); } } catch (e) { out.vigErr = String(e); }
     // the Speech: Sparkakus with the three Artifacts (the Gem assembled with the glue bottle)
     step('the Speech');
     try { const Kt = D.Kt; Kt.artifacts = 3; Kt.rewards.artifacts = false; if (D.st && D.st.group) { D.At.position.x = D.st.group.position.x + 1.4; D.At.position.z = D.st.group.position.z; } await wait(500); D.LIB.talk(); await gwait(() => Kt.rewards.artifacts, 120, 400); out.speech = !!Kt.rewards.artifacts; await wait(3000); } catch (e) { out.speechErr = String(e); }
     step('the Event');
     try { const Kt = D.Kt; Kt.rewards.stone = Kt.rewards.seeds = Kt.rewards.snacks = true; D.oe.open(); await wait(300); const yes = (D._t.state && D._t.state.items || []).find((i) => i.label === 'Yes'); if (yes) yes.onClick(); await gwait(() => D.me.active, 10, 30); out.event = !!D.me.active; await gwait(() => !D.me.active, 240, 900); out.eventEnded = !D.me.active; } catch (e) { out.eventErr = String(e); }
-    clearInterval(adv); step('done (the census\'s own measuring)');
+    clearInterval(adv); step('done (the census\'s own measuring)'); clearInterval(progTimer);
     // every text exchange's lines laid out as the bubble lays them out: their heights must be in the loading pool
     const meas = document.createElement('canvas').getContext('2d'); meas.font = 'bold 34px sans-serif';
     const rowsOf = (text) => { const rows = []; let line = ''; for (const w of String(text).split(' ')) { const t = line ? line + ' ' + w : w; meas.measureText(t).width > 440 && line ? (rows.push(line), line = w) : line = t; } line && rows.push(line); return rows.length; };
@@ -61,7 +65,8 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     out.canvases = TC.canvases; out.textures = TC.textures;
     return out;
   });
-  note(`played: ${r.steps.join(', ')}; Nextessa came: ${r.courier}; text exchanges: ${r.vigs}; the Speech: ${r.speech}; the Event ran: ${r.event} (to its end: ${r.eventEnded})`);
+  note(`played: ${r.steps.join(', ')}; Nextessa came: ${r.courier}; text exchanges: ${r.vigs}${r.vigNo ? ' (refused: ' + r.vigNo.join(', ') + ')' : ''}${r.vigErr ? ' (error: ' + r.vigErr + ')' : ''}; the Speech: ${r.speech}; the Event ran: ${r.event} (to its end: ${r.eventEnded})`);
+  note('shader programs made during play: ' + (r.newProgs && r.newProgs.length ? r.newProgs.join(' | ') : 'none'));
   for (const k of ['courierErr', 'vigErr', 'speechErr', 'eventErr']) if (r[k]) note(`${k}: ${r[k]}`);
   const play = (l) => l.filter((x) => !/^done/.test(x.step)); r.canvases = play(r.canvases); r.textures = play(r.textures);
   const show = (l) => l.slice(0, 12).map((x) => `${x.t}s [${x.step}] ${x.what}  ${x.where}`).join('\n      ');
