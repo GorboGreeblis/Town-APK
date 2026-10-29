@@ -1475,3 +1475,16 @@ VR-entry fix; each item is for discussion first.
     the census also plays the Speech and the Event to its end (Backpacka's show); `perf_log.js` lists the flash marks
     with what the log shows in the 3 s before each, the long frames, and a CPU- or GPU-bound verdict per scene from the
     runtime's lines; `capture_log.ps1` / `capture_log.sh` capture a whole session live as UTF-8.
+
+92. **The mipmap switch after entering VR (F-B36, 3.15.49).** The frame-hazard watch (NOTES 91) failed `test_lod.js`:
+    136 texture uploads and mipmap builds inside XR frames as the player was moved around a kiosk. Not the far-detail
+    swap: right after loading every texture is on the GPU, but 2.6 s after the VR entry the game turns on mipmaps and
+    anisotropy for every texture (`De(!0)`) and marks them all to upload again. On the classic path each then uploads
+    when it is next drawn, so in the middle of a frame wherever the player first looks (172 of 195 still waiting 9 s
+    after the entry); on multiview the upload hook (F-B31) holds them and uploads all of them after one frame, a single
+    long stall with every mipmap built at once. Fix: slices of at most 0.6 Mpx, 40 ms apart, each texture uploaded
+    right after its switch. The same final settings on all 195 textures (compared old against new), so the same
+    pixels. The same probe found the comfort vignette's texture never uploaded until the first move (uploaded when made
+    now) and, on the classic path, panel text uploaded mid-draw (now before the frame draws, as on multiview). Tools:
+    `event_start_check.js` now also fails if any texture in the scene is not on the GPU at its current version; the
+    harness's watch counts an explicit upload before three.js starts drawing as the frame's start, not as drawing.

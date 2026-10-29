@@ -113,8 +113,9 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
             const st = (new Error()).stack.split('\n').slice(2, 9).map((l) => l.trim()).join(' < ');
             // multiview (the headset's path): every texture operation inside the frame is a hazard (F-B31 defers them all to
             // after the frame); the classic path uploads changed textures at the frame's start, before drawing, so there
-            // only work done while three.js draws counts (a texture uploaded on first sight, mid-frame on either path)
-            const mv = !!(window.__gtXR && window.__gtXR.mvActive), drawing = /\/:3:\d+/.test(st);
+            // only work done while three.js draws counts (a texture uploaded on first sight, mid-frame on either path); an
+            // explicit initTexture before the draw starts (the render wrapper's pre-upload, F-B36) is the frame's start
+            const mv = !!(window.__gtXR && window.__gtXR.mvActive), drawing = /safeSetTexture2D|renderBufferDirect/.test(st) || (/\/:3:\d+/.test(st) && !/initTexture/.test(st));
             if (!/XRWebGLBindingFake|fakexr|Fake/.test(st) && (mv || drawing)) {
               H.n++; H.kinds[k] = (H.kinds[k] || 0) + 1;
               if (H.first.length < 8) { const a = arguments, src = a[a.length - 1]; H.first.push({ k, frame: X.frames, size: src && src.width ? src.width + 'x' + src.height : '', stack: st.slice(0, 240) }); }
