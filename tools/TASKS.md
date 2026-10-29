@@ -8,9 +8,9 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
 | T16 | **Top priority** (RULES.md "Priorities"; the biggest blocker for the Store submission): the planting Event on the Quest 3S steadily above 60 fps. It is limited by draw calls (NOTES 79); next readings from T3; open lever: the batcher's 4,000-vertex scenery cap | open, after the other open tasks | `PERF.md` sections 12-13 |
-| T3 | Headset run of the latest build (3.15.46): no flashes in a dance battle, speaking to Nextessa, planting or at the Summoning Pillar (F-B29-F-B31), the Event's frame rate in the log (`perf_log.js`), the emote colours, Gooward (P22), the Speech after a pizza call (P19's case), quit cleanly. The 3.15.41 run is done (NOTES 79-81) | open, author | `RELEASE.md` sections 3 and 5, `RENDERING.md` section 6 |
-| T4 | Store upload: 3.15.46 to the Alpha channel, then the age group (13+) on its build page | open, author | `RELEASE.md` section 5; the listing, IARC rating, privacy page and supported devices are done |
-| T17 | Randomness decision list: `random_census.js` run on 3.15.49 (120 call sites); the list is `RANDOMNESS.md`: 3 world-layout items to seed (stars, clouds, flint facing), 11 cosmetic, 10 settled by the rule, 2 library; two dance-battle outcomes not reached by the census; the UFO's heading is not random today (seeded generator) | waiting on the author's decisions | `RULES.md` 5, `RANDOMNESS.md` |
+| T3 | Headset run of the latest build (3.15.52), log captured live (`capture_log.ps1` / `.sh`): the Event's frame rate, especially with Backpacka in view (P25) and from the ring back to the dance floor (P23, P24); no flashes, B pressed right after any (D2); the first seconds after entering VR (F-B36) and the Event's first start (F-B33); Backpacka solid at the pond (F-B37); the seeded sky and blinks (R5); quit cleanly. Earlier runs: 3.15.41 (NOTES 79-81), 3.15.46-3.15.47 (NOTES 90-91) | open, author | `HEADSET_DIAG.md`, `RELEASE.md` sections 3 and 5 |
+| T4 | Store upload: the latest build (3.15.52) to the Alpha channel, then the age group (13+) on its build page, once T16's frame rate holds | open, author | `RELEASE.md` section 5; the listing, IARC rating, privacy page and supported devices are done |
+| T17 | Randomness decision list (`RANDOMNESS.md`): all decided. Removed the no-effect colour picks (R4); seeded the stars, clouds, blinks, idle phases, Anomalee's glitch timing and jaw, the Event ring's sway (R5); BOW OUT 80% (R6); everything else stays random or as it is (flint facing, the UFO's path, particles, sound pitch, the dancers' moves) | done (3.15.52) | `RULES.md` 5, `RANDOMNESS.md` |
 | T18 | Standard pass on 3.15.45 | running | `TESTING.md`; the quick tier and `test_standalone.js` pass (RELEASE.md 5) |
 | T8 | Remaining test-plan rows: the dialogue layout test (`test_textfit.js`, written, to run and add to the tier), a 10-minute play rerun on the latest build (`test_soak.js`; last recorded in TEST_PLAN.md on 3.15.19), the townsfolk's spreading (`ho`; first check it ever runs, since every townsperson has an idle pattern) | in progress | `tools/TEST_PLAN.md` |
 | T9 | Full pass on the final build, with `--resume` | last done for 3.15.41 (NOTES 77); due for 3.15.45 after T18, before an upload | `TESTING.md` |
@@ -25,7 +25,7 @@ Living list. Done items move to the bottom with the date. Bugs live in
   `RULES.md`, `build.sh`, `test_standalone.js`. **3.15.45** (branch `claude/gallant-fermi-pydail`): the game file
   minified (R2); the compressed version back as a Bitcoin ordinal, `tools/index.compressed.html` (never in the APK).
 - **Running:** the standard pass on 3.15.45 (T18).
-- **Open (author):** T3 (headset run of 3.15.46), T4, T17's decisions.
+- **Open (author):** T3 (headset run of 3.15.52), T4.
 - **Then:** T16, Event performance on the Quest 3S (PERF.md 13).
 
 ## Earlier resume point (3.15.41: release; tests for the town's life)
