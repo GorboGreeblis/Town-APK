@@ -587,7 +587,10 @@ Cave (the inside of the church). Rates should return to normal after the user ex
 the Cave, 1 try in 10 of the visit scheduler considers only the Ancient's visits (the other tries are as before: the
 Ancient's visits may be picked on 32% of tries in the Cave, 12.5% outside). Whether the player is in the Cave is now
 checked at each try; it was a flag refreshed only while some vignette played, so the Cave rate could start late and
-stay on after the player left. `test_cave.js` (standard tier; forces the scheduler's draw; fails on 3.15.52).
+stay on after the player left. Measured with the clock run 4 times fast, 48 game minutes each (with F-B42): 0.23
+visits to the Ancient a game minute outside the Cave, 0.23 in it without the new tries, 0.29 with them (about 27% more:
+one every 3.4 game minutes instead of 4.4). `test_cave.js` (standard tier; forces the scheduler's draw; fails on
+3.15.52).
 
 - **F-B42** (3.15.53; found while measuring A3; NOTES 94): visits could stall for long stretches early in the game. The
 scheduler picked Sparkakus as a visitor before the player had the Gem or the Stone, which the visit plan refuses; his

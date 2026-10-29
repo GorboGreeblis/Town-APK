@@ -9,8 +9,8 @@
 //   1. in the Cave, draw 0.05: the visit made is to the Ancient;
 //   2. just out of the Cave, draw 0.2 (inside it, 0.32 would allow the Ancient): the visit made is not to the Ancient;
 //   3. no page errors.
-// Measured rates (sped-up clock, NOTES 94): about 0.2 visits to the Ancient a game minute in the Cave before, about
-// 0.3 after; outside unchanged.
+// Measured (clock run 4 times fast, 48 game minutes each, NOTES 94): visits to the Ancient a game minute, 0.23 outside
+// the Cave, 0.23 in it without the 1-in-10 tries, 0.29 with them (about 27% more).
 //
 //   node tools/test_cave.js [file]
 const path = require('path');

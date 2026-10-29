@@ -1569,4 +1569,7 @@ beyond the VR-entry fix.
     had the Gem or the Stone, which the visit plan then refused; his pairs score best (he never visits), so the same
     refused pick came back every 4 s and visits stalled (one headless run: 13 visits in 47 game minutes against about
     75). Since 3.15.53 he is left out of the pick until then, as Shy Zollod already was before the book (F-B42). The
-    Cave flag the scheduler read was refreshed only while a vignette played; it is now checked at each try (A3).
+    Cave flag the scheduler read was refreshed only while a vignette played; it is now checked at each try (A3). With
+    the clock run 4 times fast (an init script scaling `performance.now`), 48 game minutes each: 0.23 visits to the
+    Ancient a game minute outside the Cave and 0.23 in it before A3 (the 32% chance changes little, as the pick favours
+    whoever has visited least), 0.29 with A3's 1-in-10 tries (11 of 13 such tries made a visit).
