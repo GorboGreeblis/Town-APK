@@ -112,6 +112,7 @@ if [ "$TIER" != quick ]; then
     *)     run "courier: Nextessa reaches a player behind the Ancient and leaves (B11)" node "$ROOT/tools/test_courier.js" "$ASSET" left
            run "courier: Nextessa waits while the Gem assembles, then delivers (F-B45)" node "$ROOT/tools/test_courier_gem.js" "$ASSET";;
   esac
+  [ "$TIER" = smoke ] || run "Mushroom and his desk: back-to-back visits with the player in front; never a jump, never inside the desk (F-B46)" node "$ROOT/tools/test_mushroom_desk.js" "$ASSET"
   if [ "$NPC_N" = 0 ]; then run "NPC return-home (Mushroom), all scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S";
   else run "NPC return-home (Mushroom), first $NPC_N scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S" "$NPC_N"; fi
   if [ "$TIER" = full ]; then run "stability soak: 10 min of pickups, dialogue, shop, battle and pizza; no errors, heap, programs and entities bounded" node "$ROOT/tools/test_soak.js" "$ASSET" 10; fi

@@ -44,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (87 blocks)
+## Gameplay, performance and other fixes (88 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -719,17 +719,24 @@ three.js uploads a geometry's buffers the first time it is drawn, and loading dr
 so walking to the first pickup uploaded 47 buffers inside headset frames, the Cave's inside about 240, the first goo
 Gooward threw 8 (texture uploads inside the frame were the earlier flashes' cause, F-B26, F-B31). Every geometry in the
 scene, hidden ones too, is now drawn once with a plain material into a 1x1 corner while loading (after the first
-draw, with the Gem's pieces and the Event's pizza in place, at the end) and at VR entry (the controller rays):
-204 -> 453 geometries on the GPU before the first headset frame. Gooward's goo blob and the goo splat on the view are
+draw, with the Gem's pieces and the Event's pizza in place, at the end) and at VR entry (the controller rays), with
+every render layer on, so the batcher's parked sources are uploaded too (3.15.58: the clouds' pieces, drawn on their
+own when they fade at the Event's start, uploaded 4 buffers in its first frame): 204 -> 1207 geometries on the GPU
+before the first headset frame. Gooward's goo blob and the goo splat on the view are
 made while loading. The test harness's frame-hazard watch now also fails any buffer made inside a headset frame,
 in every test.
 
 - **F-B49** (3.15.57; the author: "The pizza box that Anomalee is eating from, in the center of the Garden during the
 Event, is missing the Pizza logo from its lid", "ensure that Anomalee has a pizza in their pizza box during the Event
 (Only when Pizza (snacks) has been completed)"): her box is an open one built apart from the others, its lid in plain
-cardboard; the lid now carries the logo on its outside. She ate a slice every 5 s, so the box was empty 40 s in; she
+cardboard; the lid now carries the logo on its outside (3.15.57 put it on the inside face; the author: "The pizza logo
+should be on the outside side of the lid", fixed in 3.15.58). She ate a slice every 5 s, so the box was empty 40 s in; she
 now eats one every 22 s and leaves the last two, so there is pizza in it for the whole Event. Without Snacks she plants
 like everyone else and there is no box (as before; `test_anomalee.js` checks both).
+
+- **F-B50** (3.15.58; found when a boot error skipped the pizza warm-up): the pizza box Nextessa carries painted its lid
+with `PZ_CARRY`, a name the minifier had not kept (R2), so building the box threw unless the lid texture had already
+been made by the pizza warm-up (it always was, so it never showed). It now names the painter itself.
 
 - **D3** (3.15.57; the author: "let's try to make the logs more verbose so that we can track down these issues"): a
 flight recorder in the headset log. Every frame keeps its time, draw calls, programs, textures, geometries and whether

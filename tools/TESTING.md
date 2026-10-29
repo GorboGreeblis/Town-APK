@@ -28,11 +28,12 @@ applies, the server harness, docs consistency, spell-check, the bend test, the A
 entry, runtime play, multiview, uniform budget, warm-up coverage, standalone, the compressed version as an ordinal,
 the Event's first start, the texture census, the quality governor, game content, greeting, wrist HUD, roaming
 (`--long` in full), meetings, jazz drums, audio, seeded decoration (`test_seeded.js`), the interaction menu
-(`test_menu.js`), visitors to the Ancient in the Cave (`test_cave.js`), the Event's start and end (`test_event_fade.js`), Backpacka at the pond, far detail and the batcher, world, input, progression (`--long` in full),
-visits, the courier (not in smoke), NPC return-home; then the frame-hazard verdict. Smoke shortens play (8 s), world
+(`test_menu.js`), visitors to the Ancient in the Cave (`test_cave.js`), the Event's start and end (`test_event_fade.js`), Anomalee in the Event (`test_anomalee.js`), Backpacka at the pond, far detail and the batcher, world, input, progression (`--long` in full),
+visits, the courier and the courier during the Gem (`test_courier_gem.js`; not in smoke), Mushroom and his desk
+(`test_mushroom_desk.js`; not in smoke), NPC return-home; then the frame-hazard verdict. Smoke shortens play (8 s), world
 (15 s), the NPC scenarios (the first four) and visits (one scenario); standard runs 20 s, 40 s, eight scenarios and
 two visit scenarios; full 120 s, 180 s and every scenario. Full only: the stability soak (`test_soak.js`, 10
-minutes), z-fighting (planar, curved), the single-sided check, optimisation identity, the Ancient check, the
+minutes), z-fighting (planar, curved), seams (`test_seams.js`), the single-sided check, optimisation identity, the Ancient check, the
 performance report, and the loading, handover, Event-cost, creature census and sharpness reports. Not in any tier:
 `test_textfit.js` (too slow: a run took over 30 minutes) and the other census and probe reports (README.md marks each as a report).
 
@@ -115,7 +116,7 @@ needs real frames, the batcher's uniform arrays or the dialogue box's canvas), `
 random visit scheduler is held off), `initScripts` (functions that run before the game's first line, e.g. to
 wrap a browser API, as `test_audio.js` wraps Web Audio).
 
-**The frame-hazard watch.** Every boot through the harness watches for GPU work inside an XR frame callback (texture uploads and copies, mipmap builds, pixel reads, renderbuffer storage, shader compiles: the flash causes, NOTES 67, 80, 91), on both render paths, whatever the test is about. On multiview every texture operation inside the frame counts; on the classic path only work done while three.js draws (an upload on first sight), and the render wrapper's upload before the first draw counts as the frame's start (F-B36). `close()` prints a WARNING line and appends to `.runs/frame_hazards.log`; `run_tests.sh` lists them in its summary and fails the pass. A test can read the record itself with `g.frameHazards()`.
+**The frame-hazard watch.** Every boot through the harness watches for GPU work inside an XR frame callback (texture uploads and copies, mipmap builds, pixel reads, renderbuffer storage, geometry buffers made the first time something is drawn (3.15.57, F-B48), shader compiles: the flash causes, NOTES 67, 80, 91), on both render paths, whatever the test is about. On multiview every texture operation inside the frame counts; on the classic path only work done while three.js draws (an upload on first sight), and the render wrapper's upload before the first draw counts as the frame's start (F-B36). `close()` prints a WARNING line and appends to `.runs/frame_hazards.log`; `run_tests.sh` lists them in its summary and fails the pass. A test can read the record itself with `g.frameHazards()`.
 
 **Standalone mode.** `boot({ standalone: true })` serves the game file and nothing else (every other path is a 404, as from any plain web server with the file alone) and returns every request the page made in `requests`; `test_standalone.js` uses it to prove the game needs nothing beside it (RULES.md 2).
 

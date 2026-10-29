@@ -46,7 +46,7 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
    claims no visible change must prove identical pixels (`opt_identity.js`, or a dedicated proof); anything visible
    is put to the author first, with pictures.
 7. **Creature designs are final** (2026-10-27). Fix a model with care and without changing its look; anything the
-   author would notice is their call (RELEASE.md 6, CREATURES.md).
+   author would notice is their call (RELEASE.md 6; the looks: LORE.md "Creature design and style").
 8. **Emotes have one colour per glyph** (2026-10-28, F-B29, approved): heart pink, note lime, flower, `!`, star and
    sparkle yellow, `?` teal, the rest white.
 9. **No texture is made during play** (2026-10-28, F-B29/F-B30): everything is made while loading

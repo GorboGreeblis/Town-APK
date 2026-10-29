@@ -10,6 +10,9 @@
 // A log saved by Windows PowerShell (UTF-16) is read as well. Each reading carries the render scale in force at the
 // time (from the layer lines), the layer swaps are listed with their times, and the limiter is named from the
 // readings themselves: whichever of draw calls and triangles the frame rate follows more closely.
+// Since 3.15.57 it also reads the flight recorder written after each flash mark, geometry first drawn inside a frame,
+// the XR focus changes and the event trail (`--trail` prints it), and finds the stretches when another process (the
+// system shell) drew instead of the game (HEADSET_DIAG.md, D3).
 const fs = require('fs');
 const file = process.argv[2];
 if (!file) { console.error('usage: node tools/perf_log.js <logcat.txt>'); process.exit(2); }
@@ -61,18 +64,45 @@ for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w
 }
 // Flash marks (B on the right controller, 3.15.48): each with what the log shows in the 3 s before it
 {
-  const ev = []; let e2; const re2 = /m=(\d+)ms (MARK flash seen[^\n]*|long frame \d+ ms[^\n]*|uploaded \d+ texture[^\n]*|multiview: \d+ shader program[^\n]*|multiview: \w+ while a frame draws[^\n]*)/g;
+  const ev = []; let e2; const re2 = /m=(\d+)ms (MARK flash seen[^\n]*|long frame \d+ ms[^\n]*|uploaded \d+ texture[^\n]*|multiview: \d+ shader program[^\n]*|multiview: \w+ while a frame draws[^\n]*|frame \d+: \d+ geometry buffer[^\n]*|ev [^\n]*|xr visibility [^\n]*|rec [^\n]*)/g;
   while ((e2 = re2.exec(text))) ev.push({ ms: +e2[1], what: e2[2].trim() });
   const marks = ev.filter((x) => x.what.startsWith('MARK'));
   if (marks.length) {
     console.log(`flash marks (B pressed): ${marks.length}`);
     for (const mk of marks) {
-      const near = ev.filter((x) => !x.what.startsWith('MARK') && x.ms <= mk.ms && x.ms >= mk.ms - 3000);
+      // since 3.15.57 the flight recorder writes its 10 s right after the mark (rec lines), and the event trail runs all along
+      const near = ev.filter((x) => !x.what.startsWith('MARK') && !x.what.startsWith('rec ') && x.ms <= mk.ms && x.ms >= mk.ms - (ev.some((y) => y.what.startsWith('ev ')) ? 10000 : 3000));
       console.log(`  ${(mk.ms / 1000).toFixed(1)} s ${mk.what}: ${near.length ? near.map((x) => `${((x.ms - mk.ms) / 1000).toFixed(1)} s ${x.what.slice(0, 120)}`).join('; ') : 'nothing logged in the 3 s before'}`);
+      const rec = ev.filter((x) => x.what.startsWith('rec ') && x.ms >= mk.ms && x.ms <= mk.ms + 1000);
+      for (const x of rec) console.log(`    recorder: ${x.what.slice(0, 600)}`);
     }
   }
-  const longs = ev.filter((x) => x.what.startsWith('long frame'));
+  // geometry first drawn inside a headset frame (3.15.57, F-B48: should be none)
+  const geo = ev.filter((x) => /^frame \d+: \d+ geometry buffer/.test(x.what));
+  if (geo.length) console.log(`geometry buffers made inside headset frames (a flash cause, F-B48): ${geo.length} frame(s); first ${(geo[0].ms / 1000).toFixed(1)} s: ${geo[0].what}`);
+  // the XR session's focus (the system menu, the headset taken off) as the game saw it, and in the runtime's lines
+  const vis = ev.filter((x) => x.what.startsWith('xr visibility'));
+  if (vis.length) console.log(`XR focus changes: ${vis.map((x) => `${(x.ms / 1000).toFixed(1)} s ${x.what.slice(14)}`).join(', ')}`);
+  {
+    // when the runtime's VrApi lines switch to another process (the system shell) while the game runs, the game is out of
+    // the foreground (the system menu): list those stretches from the timestamps
+    const vr = []; const rv = /^(\d\d-\d\d \d\d:\d\d:\d\d)\.\d+\s+(\d+)\s+\d+ I VrApi\s+: FPS=/gm; let v;
+    while ((v = rv.exec(text))) vr.push({ t: v[1], pid: v[2] });
+    if (vr.length) {
+      const count = {}; for (const x of vr) count[x.pid] = (count[x.pid] || 0) + 1;
+      const game = Object.keys(count).sort((a, b) => count[b] - count[a])[0], out = []; let run = null, seenGame = false;
+      for (const x of vr) { if (x.pid === game) { seenGame = true; if (run) { out.push(run); run = null; } } else if (seenGame) { if (!run) run = { from: x.t, to: x.t }; else run.to = x.t; } }
+      const away = out.filter((r) => r.from !== r.to);
+      if (away.length) console.log(`the game out of the foreground (another process drew, e.g. the system menu): ${away.map((r) => r.from.slice(6) + '-' + r.to.slice(12)).join(', ')}`);
+    }
+  }
+  const trail = ev.filter((x) => x.what.startsWith('ev '));
+  if (trail.length) console.log(`event trail: ${trail.length} changes logged (pickups, Cave, vignettes, Event, screens, courier, Gem); pass --trail to print them`);
+  if (process.argv.includes('--trail')) for (const x of trail) console.log(`  ${(x.ms / 1000).toFixed(1)} s ${x.what.slice(3)}`);
+  {
+    const longs = ev.filter((x) => x.what.startsWith('long frame'));
   if (longs.length) console.log(`long frames (over 28 ms, at most two a second): ${longs.length}; longest ${Math.max(...longs.map((x) => +x.what.match(/\d+/)[0]))} ms`);
+  }
 }
 if (!rows.length) {
   console.log('no perf lines found (needs a 3.15.27 or later build; the line reads "page: m=perf fps=...").');
