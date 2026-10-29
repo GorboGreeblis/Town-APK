@@ -1,7 +1,17 @@
 # Randomness decisions for Greeblis Town (RULES.md 5)
 
-The author's decision list (TASKS T17, 2026-10-29, 3.15.50). Nothing here has been changed: every item waits for the
-author's call. Positions are those of 3.15.49's game file; after an edit, `node tools/random_census.js` lists them again.
+The author's decision list (TASKS T17, 2026-10-29, 3.15.50). Every item waits for the author's call unless the
+**Decided** section below says otherwise.
+
+## Decided
+
+| Item | The author | What was done |
+| --- | --- | --- |
+| c11, the unused emote and sparkle colour picks | "8. Let's remove this." | Removed in 3.15.51 (FIXES R4); every emote looks the same |
+| d3, which way each flint lies | "9. Close out as intended." | Stays random, with the flint spawns; no change |
+| The UFO's flight path (seeded, not random) | "The UFO's path is currently fine the way it is. Mark as intended." | Intended as it is (RULES.md 5); no change |
+| d1 stars, d2 clouds, c1 blinks, c2 idle phases (Nextessa's too), c3 Anomalee's glitch timing (her shake stays random), c4 her jaw, c9 the Event ring's sway | "1 to 7: seed" | Seeded in 3.15.51 (FIXES R5): the same every launch, still varied |
+ Positions are those of 3.15.49's game file; after an edit, `node tools/random_census.js` lists them again.
 
 This list covers the 120 `Math.random` call sites found by `random_census.js` (`tools/.runs/random_census.json`;
 counts are loading / 60 s in town / 60 s in the planting Event). Positions are the census's `line:col`. Line 7 is the

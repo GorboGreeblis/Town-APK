@@ -44,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (59 blocks)
+## Gameplay, performance and other fixes (61 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -432,6 +432,24 @@ code names quoted in the entries above are those of the unminified file (git his
 21): the license comment at the top of the game file no longer ends its CC0 dedication with a pointer to the
 repository's license file; it keeps the dedication with the license's public address and three.js's full MIT notice.
 A comment only: nothing the page does changes.
+
+- **R4** (3.15.51; the author, on the randomness decision list: "8. Let's remove this."; RANDOMNESS.md c11, RULES.md 5):
+seven random colour picks that had no effect are gone: the sparkle burst's, the talk emote's, the two at the end of an
+Event chat, a vignette's opening emote, the dance battle's winning note and the pickup's glyph. Since F-B29 an emote is
+coloured by its glyph and the colour it was handed was dropped, so every emote looks exactly as before; the unused
+colour list went with them. The same decision list closed two items as intended, with no change: flint pickups keep a
+random facing ("9. Close out as intended") and the UFO's flight path stays as it is ("The UFO's path is currently fine
+the way it is. Mark as intended.").
+
+- **R5** (3.15.51; the author, on the recommended seeding list: "1 to 7: seed"; RANDOMNESS.md, RULES.md 5): seven kinds
+of decoration and idle motion are now the same on every launch instead of new each time, still varied within a launch:
+the 700 night-sky stars, the 7 clouds (puffs, sizes, orbits, heights, drift speeds), when each townsperson blinks
+(first blink and the gaps after it, Mama Gorbo's own timer too), the idle sway phases of Anomalee, Hennrick,
+Fortizmo, Montgummery and Nextessa, when Anomalee's screen glitches (the shake during a glitch stays random), her
+jaw's chomps, and the townsfolk's sway in the Event ring. Each draws from its own named stream (`gcRnd(name)`: a
+Park-Miller generator like the UFO's, seeded from the name), so nothing else that happens can shift it. Checked:
+two launches build the same stars and clouds; the census drops from 120 `Math.random` sites to 81, the rest being the
+ones that stay random.
 
 - **F-B32** (3.15.46; flashes, the rule that no texture is made during play, RULES.md 9): the soft glow behind an item
 tossed in a townsfolk text exchange (goo, a card, a tile, a coin) was painted the first time a vignette tossed one,
