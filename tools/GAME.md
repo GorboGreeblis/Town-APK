@@ -118,6 +118,14 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   a battle) it is scheduled on the audio clock 3 s ahead; within 45 m it runs on the game clock only, to move the
   drummer's sticks; 1.5 s after the player stops hearing it, it switches clocks and starts the bars again. It is
   silent while the horn plays. `test_jazz.js`.
+- **Dance battles.** Glyph, Etcher and Montgummery: rock, scissors or paper each round, the dancer's move picked at
+  random and shown before the player picks; stamina 10; BOW OUT works at random 80% of the time (otherwise "The
+  beat won't let you go!"; 70% until 3.15.52, FIXES R6). `test_progression.js`, `test_content.js`.
+- **Backpacka at the pond.** While she drinks (her show's 16-40 s) the player cannot walk into her: player-only
+  circles round her feet, body, neck and head (F-B37). `test_backpacka.js`.
+- **Seeded decoration.** The stars, the clouds, blinks, idle phases, Anomalee's glitch timing and jaw and the Event
+  ring's sway are the same on every launch (R5); what stays random is in RULES.md 5 and RANDOMNESS.md.
+  `test_seeded.js`.
 - **Far detail.** The kiosk with fine parts has a coarse model: the full one within 62 m of the camera, the coarse
   one beyond 66 m, whichever it had in between. `test_lod.js`.
 - **Sound.** One audio context, made on VR entry; every note is an oscillator and a gain that disconnect

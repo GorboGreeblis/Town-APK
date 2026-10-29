@@ -4,7 +4,8 @@
  *   - left stick forward moves the player at about t.player.speed
  *   - dead-zone: a tiny deflection does not move
  *   - right stick sideways snap-turns the view by t.xr.snapAngle once per
- *     deflection (no repeat while held), and again after re-centering
+ *     deflection (no repeat while held), and again after re-centering; at most one turn per t.xr.snapGap
+ *     (0.3 s): a flick let go inside the gap is dropped, one still held when it ends turns once
  *   - trigger (select) and grip (squeeze) events do not throw
  *   - the player cannot walk through a building hull
  *
@@ -80,6 +81,25 @@ const file = process.argv[2];
   const y2 = await yawOf();
   expect('re-centre then deflect again turns a second step', Math.abs(Math.abs(norm(y2 - y0)) - 2 * snap) < 0.08, `${(norm(y2 - y0) * 180 / Math.PI).toFixed(1)} deg`);
   await inputs([ctl('left', [0, 0, 0, 0]), ctl('right', [0, 0, 0, 0])]);
+  // The gap between snap turns (the author: "a short delay for snap turning, if the user attempts to snap turn too
+  // quickly after previously snap turning"; t.xr.snapGap, 0.3 s): flicks timed in the page, so the runner's latency
+  // does not blur them. A second flick let go inside the gap is dropped; one still held when the gap ends turns once.
+  const gap = await page.evaluate(() => window.__dbg.t.xr.snapGap);
+  const flicks = (seq) => page.evaluate(async (seq) => {
+    const R = (x) => [{ handedness: 'left', axes: [0, 0, 0, 0], buttons: [{}, {}, {}, {}, {}, {}, {}] }, { handedness: 'right', axes: [0, 0, x, 0], buttons: [{}, {}, {}, {}, {}, {}, {}] }];
+    const t0 = performance.now(); for (const [ms, x] of seq) { while (performance.now() - t0 < ms) await new Promise((r) => setTimeout(r, 5)); window.__fakeXR.setInputs(R(x)); }
+    await new Promise((r) => setTimeout(r, 600));
+  }, seq);
+  await page.waitForTimeout(800);
+  let ya = await yawOf();
+  await flicks([[0, 1], [100, 0], [160, 1], [240, 0]]);
+  let yb = await yawOf();
+  expect(`snap gap (${gap} s): a second flick let go inside the gap is dropped (one step, not two)`, gap > 0 && Math.abs(Math.abs(norm(yb - ya)) - snap) < 0.05, `${(norm(yb - ya) * 180 / Math.PI).toFixed(1)} deg`);
+  await page.waitForTimeout(800);
+  ya = await yawOf();
+  await flicks([[0, 1], [100, 0], [160, 1], [Math.round(gap * 1000) + 300, 0]]);
+  yb = await yawOf();
+  expect('snap gap: a second flick still held when the gap ends turns once (two steps)', Math.abs(Math.abs(norm(yb - ya)) - 2 * snap) < 0.08, `${(norm(yb - ya) * 180 / Math.PI).toFixed(1)} deg`);
 
   mark('select');
   // Select / squeeze events.

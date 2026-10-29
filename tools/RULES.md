@@ -27,10 +27,10 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
    longer investigations in NOTES.md and bugs in BUGS.md.
 5. **Randomness: cut it where it is not part of play** (2026-10-28: "we should cut as much randomness as possible").
    These stay random, by the author's word: where Flint and Blossoms spawn ("should still spawn randomly"), where
-   NPCs wander, NPCs' interactions with each other and which chats play ("should still appear random"), the UFO's
-   heading, and which way each flint lies (2026-10-29: "Close out as intended"). The UFO's flight path is as intended
+   NPCs wander, NPCs' interactions with each other and which chats play ("should still appear random"), and
+   which way each flint lies (2026-10-29: "Close out as intended"). The UFO's flight path is as intended
    the way it is (2026-10-29: "The UFO's path is currently fine the way it is. Mark as intended": it draws from the
-   game's seeded generator, so its first flight is likely the same on every launch). Seeded, the same on every
+   game's seeded generator, so its first flight is likely the same on every launch; this rule listed the UFO's heading as random until then). Seeded, the same on every
    launch (2026-10-29: "1 to 7: seed", FIXES R5): the stars, the clouds, blinks, idle sway phases, Anomalee's glitch
    timing and jaw, the Event ring's sway. Random by the author's word too (2026-10-29: "whatever you recommended we
    keep random, keep random"): particles and splats, the pickups' bob and glint, sound pitch variation, Anomalee's
@@ -123,3 +123,5 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 
 - Texture arrays for batching: closed (2026-10-27, PERF.md 10).
 - The Event's own render scale (P16, P17) and P18: removed (2026-10-28) [83].
+- The experiment-first rule (15): retired (2026-10-28, rule 22).
+- The randomness decision list: closed (2026-10-29, RANDOMNESS.md; FIXES R4-R6).

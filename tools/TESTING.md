@@ -8,15 +8,32 @@ how-to. Numbers in brackets are NOTES.md entries.
 
 ```
 tools/run_tests.sh --quick      static checks, no browser                    about 1 minute
-tools/run_tests.sh --smoke      a spot check of every element                 about 10 minutes
-tools/run_tests.sh              the standard pass (default)                   about an hour
-tools/run_tests.sh --full       every scenario, long soaks, graphics, perf    2-2.5 hours; the final build only
+tools/run_tests.sh --smoke      the standard stages but the courier, short    over an hour
+tools/run_tests.sh              the standard pass (default)                   about 1.5-2 hours (95 min on 3.15.45)
+tools/run_tests.sh --full       every scenario, long soaks, graphics, perf    2-2.5 hours (3.15.41); every build (RULES.md 23)
 ... --resume                    skip the stages that already passed (section 2)
 ... --only=REGEX                run only the stages whose name matches, with the tier's settings
 ```
 
 The summary at the end gives each stage's time and the whole pass's. To re-run one failed stage exactly as the tier
 ran it: `tools/run_tests.sh --only='quality governor'` (any part of its name; case does not matter).
+
+Until 2026-10-29 the full tier was for the final build only; superseded by RULES.md 23 (every build is treated as
+the final build until the author says otherwise). The smoke tier is no longer a few minutes: it runs the standard
+stages with shorter soaks.
+
+**What each tier runs** (`run_tests.sh`, in order). Every tier: the copies are the game file, minified, the
+compressed version unpacks, every experiment applies, the server harness, docs consistency, spell-check, the bend
+test, the APK check. Every tier but quick: VR entry, runtime play, multiview, uniform budget, warm-up coverage,
+standalone, the compressed version as an ordinal, the Event's first start, the texture census, the quality
+governor, game content, greeting, wrist HUD, roaming (`--long` in full), meetings, jazz drums, audio, seeded
+decoration, Backpacka at the pond, far detail and the batcher, world, input, progression (`--long` in full), visits,
+the courier (not in smoke), NPC return-home; then the frame-hazard verdict. Smoke shortens play (8 s), world
+(15 s), the NPC scenarios (the first four) and visits (one scenario); standard runs 20 s, 40 s, eight scenarios and
+two visit scenarios; full 120 s, 180 s and every scenario. Full only: z-fighting (planar, curved), the single-sided
+check, optimisation identity, the Ancient check, the performance report, and the loading, handover, hitch
+(no-layers variant), scene-cost, Event-cost and sharpness reports. Not in any tier: `test_textfit.js`,
+`test_soak.js`, `zfight_sweep.js` and the census and probe reports.
 
 Times are on a 4-core cloud container. Every browser stage runs one headless Chromium with SwiftShader (the GPU
 is software), so the stages run one after another. Do not run a second browser test while a pass runs: the
@@ -32,14 +49,14 @@ Environment switches for the browser tests:
 
 | Variable | Effect |
 | --- | --- |
-| `GT_ASSET=path` | The game file the browser tests load (an experiment build); the copy, minify, compressed and APK checks always check the game file and the root APK. |
+| `GT_ASSET=path` | The game file the browser tests load (a diagnostic variant, or an older build); the copy, minify, compressed and APK checks always check the game file and the root APK. |
 | `GT_MULTIVIEW=0` | The classic two-pass path instead of multiview (the headset's path since 3.15.34, the default). |
 | `GT_DEVICE=quest3s` / `quest3` / `quest2` | That headset's user agent and GPU limits (`fakexr.js` `DEVICES`); the default user agent is a Quest 3. |
 | `GT_HEADSET_FOV=1` | Quest 3-shaped eyes, for draw counts and culling as on the headset. |
 | `GT_LAYER_DEPTH=0` | The layer brings no depth texture, so multiview draws into the game's own depth buffer as on the headset (P14's depth discard runs). |
 
 Logs: pipe a pass into `tools/.runs/` (git-ignored), for example
-`nohup sh tools/run_tests.sh --resume >> tools/.runs/std_v41.log 2>&1 &`. Each stage prints its PASS/FAIL/NOTE
+`nohup sh tools/run_tests.sh --full --resume >> tools/.runs/full_3.15.52.log 2>&1 &`. Each stage prints its PASS/FAIL/NOTE
 lines; the summary at the end lists every stage (and is kept in `tools/.runs/summary_<tier>.txt`); the first line
 names the tier, the build and the time. Record a finished pass in TEST_PLAN.md ("Latest results") and in the pull
 request: `node tools/pass_report.js tools/.runs/full_X.log --md` writes the paragraph (stages, PASS and FAIL lines,
@@ -63,6 +80,8 @@ kills every process. Files, commits and logs survive; environment variables do n
   command names (its test script). Run the same command again after a restart and every stage that already
   passed on those same files is shown as `PASS ... (earlier run)` and skipped; failed and new stages run.
   Editing one test re-runs only that test. Delete the state file to start clean.
+- `--resume` keeps `tools/.runs/frame_hazards.log` (a plain run empties it), so hazards seen before the restart
+  still fail the pass; after fixing a hazard, delete the file or run without `--resume`.
 - For a single test, check the end of its log: a test cut short has no `... PASSED` / `... FAILED` line.
 
 ## 3. Machine speed and the performance report
@@ -95,7 +114,7 @@ needs real frames, the batcher's uniform arrays or the dialogue box's canvas), `
 random visit scheduler is held off), `initScripts` (functions that run before the game's first line, e.g. to
 wrap a browser API, as `test_audio.js` wraps Web Audio).
 
-**The frame-hazard watch.** Every boot through the harness watches for GPU work inside an XR frame callback (texture uploads and copies, mipmap builds, pixel reads, renderbuffer storage, shader compiles: the flash causes, NOTES 67, 80, 91), on both render paths, whatever the test is about. `close()` prints a WARNING line and appends to `.runs/frame_hazards.log`; `run_tests.sh` lists them in its summary and fails the pass. A test can read the record itself with `g.frameHazards()`.
+**The frame-hazard watch.** Every boot through the harness watches for GPU work inside an XR frame callback (texture uploads and copies, mipmap builds, pixel reads, renderbuffer storage, shader compiles: the flash causes, NOTES 67, 80, 91), on both render paths, whatever the test is about. On multiview every texture operation inside the frame counts; on the classic path only work done while three.js draws (an upload on first sight), and the render wrapper's upload before the first draw counts as the frame's start (F-B36). `close()` prints a WARNING line and appends to `.runs/frame_hazards.log`; `run_tests.sh` lists them in its summary and fails the pass. A test can read the record itself with `g.frameHazards()`.
 
 **Standalone mode.** `boot({ standalone: true })` serves the game file and nothing else (every other path is a 404, as from any plain web server with the file alone) and returns every request the page made in `requests`; `test_standalone.js` uses it to prove the game needs nothing beside it (RULES.md 2).
 

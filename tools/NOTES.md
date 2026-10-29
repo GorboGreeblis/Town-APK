@@ -1,9 +1,8 @@
 # Notes for discussion
 
-Observations made while packaging. Nothing here has been acted on beyond the
-VR-entry fix; each item is for discussion first.
-
-## Must be confirmed on a headset
+The working notes, numbered: every investigation, measurement and decision, with the reasoning (other docs cite
+them as "NOTES n"). The first entries were written while packaging, for discussion, when nothing had been acted on
+beyond the VR-entry fix.
 
 ## Index
 
@@ -64,6 +63,44 @@ VR-entry fix; each item is for discussion first.
 55. The VRC check and the focus-aware fix (3.15.25)
 56. Performance pass and Zollod's kiosk (3.15.26)
 57. The frame-rate log line and what was not done (3.15.27)
+58. Hardening the performance tools (3.15.27)
+59. Draw calls (3.15.28)
+60. Shininess and specular per batch part (3.15.29)
+61. A blind spot in the identity check, found and closed
+62. The visibility census and indexed batches (3.15.30)
+63. Indexed scenery, and what the GPU side is not (3.15.31)
+64. The tentacle bend (3.15.32)
+65. Multiview, as an experiment (built on 3.15.33)
+66. The play test's 2D window measured the boot
+67. The multiview flashes (3.15.34)
+68. Devices and tool hardening (3.15.34)
+69. The Gem's shader, and where vertex work stands (3.15.35)
+70. What is left that changes nothing on screen (3.15.36)
+71. The governor already meets the Event at its lowest level
+72. The Event's adaptive render scale (P16, 3.15.37)
+73. The Quest 3 and a second step (P17, 3.15.38); the Event performance work closed
+74. B27's second variant, and checks that cannot be lucky (3.15.39)
+75. The emergency drop ends with the Event (P18, 3.15.40)
+76. One light at a time (P19, 3.15.41)
+77. The performance report's baseline, and machine speed (3.15.41)
+78. Five more of the test plan's open rows (3.15.41)
+79. The 3.15.41 headset run on the Quest 3S: the flashes are back, and the Event is limited by draw calls
+80. The noswap run: the flashes come with new textures
+81. The deferupload run, and the panels' three canvases
+82. Flashes and textures made during play; the Event's pizza (done in 3.15.42)
+83. The flash experiments become the release; the Event scale goes (done in 3.15.43)
+84. The Ancient left out from outside the church (P21)
+85. Gooward's translucent parts merged (P22)
+86. The occlusion census's first full run: nothing to remove
+87. One game file, edited directly (3.15.43)
+88. The game is rebuildable from the game file alone; painted textures seeded (3.15.44)
+89. The game file minified; the compressed version is back, as a Bitcoin ordinal (3.15.45)
+90. The author's 3.15.46 run; the Event's first start (F-B33); the stepped-back Event view (3.15.47)
+91. The author's 3.15.47 run: flashes and the CPU-bound Event (3.15.48)
+92. The mipmap switch after entering VR (F-B36, 3.15.49)
+93. Backpacka: the frame-rate drop, her collision, and two side findings (3.15.50)
+
+## Must be confirmed on a headset
 
 1. **Immersive launch from a loopback origin.** Meta's immersive app mode was
    designed for hosted PWAs whose Digital Asset Links the browser can verify.

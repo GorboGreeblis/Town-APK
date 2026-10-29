@@ -162,7 +162,8 @@ Right after the build the game merges each model's static parts (`io`, called wi
 find moving): sibling meshes that share every material property except
 colour become one mesh, their colours baked into vertex colours. Parts that move, eyelids, and anything marked
 `userData.keep` stay separate. This is why a character made of a hundred primitives draws in a handful of calls,
-and why the batcher (RENDERING.md) can then merge them further.
+and why the batcher (RENDERING.md) can then merge them further: since P24 (3.15.48) the creatures are batched
+together in one pass.
 
 ## 4. The house style
 
@@ -191,7 +192,8 @@ What the models have in common, as built:
   monitor head, keyboard jaw and "adb" labels; Montgummery's CRT head with "gfxinfo" on screen and scrolling code on
   his body; Hennrick's data screen; Etcher's three back marks (a stroked "B", three stacked parallelograms, two
   diamonds): symbols of the ledgers he can etch on (the author), fitting his line "My skin is a ledger."
-- **Always moving, never in sync.** Every character breathes, sways or bobs with slow sines (mostly 0.7-2.1 rad/s,
+- **Always moving, never in sync** (the idle phases seeded since 3.15.51, R5: still out of step, the same on every
+  launch). Every character breathes, sways or bobs with slow sines (mostly 0.7-2.1 rad/s,
   a few centimetres or a few hundredths of a radian), each part at a different rate and phase, so nothing looks
   frozen and no two move alike. Talking adds a nod, a bounce or a moving mouth (`tkS`); walking adds a stride or a
   hop. Dancers follow the beat (`gcBeatHz`, 104 beats a minute in town, 88 in the Event).
@@ -318,7 +320,8 @@ What the models have in common, as built:
   filtered; a cyan head, a magenta screen; "adb" labels; re-skinned with the plastic surface by her wrapper.
 - **Face**: the magenta screen (a corner bracket and wifi arcs; static when she glitches; an equaliser while she
   dances); the jaw chomps now and then.
-- **Motion**: a four-legged walk, cables swaying, a glitch every 5-13 s; gazes up at the church when idle.
+- **Motion**: a four-legged walk, cables swaying, a glitch every 5-13 s (its timing and the jaw's chomps seeded since
+  3.15.51, R5; the shake stays random); gazes up at the church when idle.
 
 ### Fortizmo
 - **Body**: a pear body that widens at the bottom, a round head with long upright ears, a trumpet-bell muzzle, arms
@@ -395,6 +398,12 @@ What the models have in common, as built:
 - **Use the shared kit**: `x.*` and `KIT.surf` cache materials, so a new part in an existing look adds no material
   and batches with the rest. A new material created after loading must be warmed (`warm_coverage.js` fails on a lit
   material without its shaders; B27 was the Gem's).
+- **A model built after loading** (as Backpacka is, by her module's pre-warm, after the step that batches the
+  scene) must be handed to the batcher when it is built, or every part draws on its own (P25: 96 parts, about 83
+  draws a frame). Its geometry must not change while it plays, or a batch copy goes stale.
+- **Collision**: the player's movement checks player-only circles (`uo.pc`); Backpacka's at the pond (F-B37) grow
+  as her parts come below head height and never move her. A new body the player must not walk into gets its own,
+  with a test like `test_backpacka.js`.
 - **Faces**: use `KIT.eye` and `KIT.mouth` for the house face; pass the lids to `born` so they blink.
 - **A new screen face or painted texture**: make it while loading and keep it (Montgummery's faces are all made at
   load since F-B30): no texture may be made during play (RULES.md 9; `texture_census.js` fails on one). A canvas

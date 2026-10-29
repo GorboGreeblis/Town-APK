@@ -1,10 +1,10 @@
 #!/bin/sh
 # Greeblis Town test passes. Three tiers share the same scripts:
 #
-#   tools/run_tests.sh --smoke     spot check of every element, a few minutes
-#   tools/run_tests.sh             standard pass (default), about an hour on a 4-core machine
+#   tools/run_tests.sh --smoke     the standard stages but the courier, with shorter soaks (over an hour)
+#   tools/run_tests.sh             standard pass (default), about 1.5-2 hours on a 4-core machine (95 min on 3.15.45)
 #   tools/run_tests.sh --full      FULL pass: every scenario, long soak times.
-#                                  Run only on the final build (2-2.5 hours).
+#                                  Every build, until the author says otherwise (RULES.md 23; 2-2.5 hours on 3.15.41).
 #   tools/run_tests.sh --quick     static checks only, no browser (about a minute)
 #   ... --only=REGEX               (with any tier) run only the stages whose name matches (case-insensitive), with
 #                                  that tier's settings, e.g. to re-run one failed stage as the tier runs it
@@ -92,6 +92,7 @@ if [ "$TIER" != quick ]; then
   run "jazz drums: on the beat on both clocks, on time for the drummer, look-ahead, silent far away and under the horn" node "$ROOT/tools/test_jazz.js" "$ASSET"
   run "audio: one context, nothing left playing after rounds of every sound, resumes on focus" node "$ROOT/tools/test_audio.js" "$ASSET"
   run "seeded decoration: the author's seeded items draw from their own streams; two launches build the same stars and clouds (R5)" node "$ROOT/tools/test_seeded.js" "$ASSET"
+  run "interaction menu: never shows the previous menu's picture (after the last Blossom, after another character; F-B38)" node "$ROOT/tools/test_menu.js" "$ASSET"
   run "Backpacka at the pond: the player cannot walk into her; she is not moved; no circles once she leaves" node "$ROOT/tools/test_backpacka.js" "$ASSET"
   run "far detail and the batcher: one model at a time, swaps at 62/66 m; exact matrices in every batch, every frame" node "$ROOT/tools/test_lod.js" "$ASSET"
   run "world: routes, hulls, pickups, watchdog (${WORLD_S}s)" node "$ROOT/tools/test_world.js" "$ASSET" "$WORLD_S"

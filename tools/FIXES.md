@@ -44,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (62 blocks)
+## Gameplay, performance and other fixes (63 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -455,6 +455,16 @@ ones that stay random.
 RULES.md 5): in a dance battle (Glyph, Etcher, Montgummery) the player's BOW OUT now works 80% of the time instead of
 70%; otherwise, as before, "The beat won't let you go!" and the battle goes on. The dancers' moves stay random (the
 author: "For the Dancer's moves: what they pick should always be random").
+
+- **F-B38** (3.15.53; the author: "When I interact with Shy Zollod, after previously speaking to another NPC, I very
+quickly see an interact menu with 3 options flash on screen before his normal 2 option menu appears"; "The same issue
+occurs with other NPCs after you've given your last Blossom"; BUGS B40): the XR interaction menu is one panel whose
+picture is painted into the next of its three canvases; on the headset's multiview path the new picture reaches the
+panel only after the frame (F-B31). The menu was made visible the moment it opened, so for a frame it showed the last
+menu it had drawn, already resized for the new one. Now opening a menu holds it hidden until its own picture is on the
+panel (on the classic path that is the same frame, on multiview the next one); hover changes on an open menu are
+unaffected. `test_menu.js` (new, standard tier) reproduces the author's case on the multiview path: 3.15.52 showed the
+previous picture for one frame in both cases, the fix none (two runs).
 
 - **F-B32** (3.15.46; flashes, the rule that no texture is made during play, RULES.md 9): the soft glow behind an item
 tossed in a townsfolk text exchange (goo, a card, a tile, a coin) was painted the first time a vignette tossed one,
