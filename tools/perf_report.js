@@ -154,7 +154,8 @@ const excerpt = (line, col) => { const l = assetLines[line]; if (!l) return ''; 
     const isEvent = /Event/.test(r.name);
     const cause = r.top.slice(0, 3).map((t) => t.fn.replace(/ @.*$/, '') + ' ' + t.pct + '%').join(', ') || 'no script samples';
     expect(`${r.name}: no setup error`, !r.setupError, r.setupError || '');
-    expect(`${r.name}: no shader program compiled during play`, r.newPrograms === 0, `${r.newPrograms} new: ${r.newProgramNames.join(', ')}`);
+    expect(`${r.name}: no shader program compiled during play`, r.newPrograms <= 0,   // -1: the renderer released one
+       `${r.newPrograms} new: ${r.newProgramNames.join(', ')}`);
     if (r.frames < 60) note(`${r.name}: only ${r.frames} frames measured (GL stalls on this machine), frame-time verdicts skipped`);
     else {
       expect(`${r.name}: script p99 under ${+((isEvent ? 16 : 12) * kAbs).toFixed(1)} ms headless (cause: ${cause})`, r.p99 < (isEvent ? 16 : 12) * kAbs, `p99 ${r.p99} ms`);
