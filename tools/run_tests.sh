@@ -92,7 +92,8 @@ if [ "$TIER" != quick ]; then
   run "jazz drums: on the beat on both clocks, on time for the drummer, look-ahead, silent far away and under the horn" node "$ROOT/tools/test_jazz.js" "$ASSET"
   run "audio: one context, nothing left playing after rounds of every sound, resumes on focus" node "$ROOT/tools/test_audio.js" "$ASSET"
   run "seeded decoration: the author's seeded items draw from their own streams; two launches build the same stars and clouds (R5)" node "$ROOT/tools/test_seeded.js" "$ASSET"
-  run "interaction menu: never shows the previous menu's picture (after the last Blossom, after another character; F-B38)" node "$ROOT/tools/test_menu.js" "$ASSET"
+  run "interaction menu: never shows the previous menu's picture (after the last Blossom, after another character; F-B38); the controller rays' shader made while loading (F-B41)" node "$ROOT/tools/test_menu.js" "$ASSET"
+  run "visitors to the Ancient while the player is in the Cave, back to normal outside (A3)" node "$ROOT/tools/test_cave.js" "$ASSET"
   run "Backpacka at the pond: the player cannot walk into her; she is not moved; no circles once she leaves" node "$ROOT/tools/test_backpacka.js" "$ASSET"
   run "far detail and the batcher: one model at a time, swaps at 62/66 m; exact matrices in every batch, every frame" node "$ROOT/tools/test_lod.js" "$ASSET"
   run "world: routes, hulls, pickups, watchdog (${WORLD_S}s)" node "$ROOT/tools/test_world.js" "$ASSET" "$WORLD_S"
@@ -110,9 +111,11 @@ if [ "$TIER" != quick ]; then
   esac
   if [ "$NPC_N" = 0 ]; then run "NPC return-home (Mushroom), all scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S";
   else run "NPC return-home (Mushroom), first $NPC_N scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S" "$NPC_N"; fi
+  if [ "$TIER" = full ]; then run "stability soak: 10 min of pickups, dialogue, shop, battle and pizza; no errors, heap, programs and entities bounded" node "$ROOT/tools/test_soak.js" "$ASSET" 10; fi
   if [ "$TIER" = full ]; then
     # Graphical and performance pass (T12/T13): z-fighting (planar and curved) fails the pass;
-    # the probes report loading time, the handover, frame cost and texture sharpness for the record.
+    # the probes report loading time, the handover, the Event's frame cost, each creature's cost and texture sharpness
+    # for the record.
     run "z-fighting / flicker on environmental surfaces (jittered render)" node "$ROOT/tools/test_zfight.js" "$ASSET"
     run "z-fighting on curved surfaces (near-coincident geometry)" node "$ROOT/tools/test_coincident.js" "$ASSET"
     run "single-sided pass is pixel-identical (edges aside)" node "$ROOT/tools/sides_check.js" "$ASSET"
@@ -121,13 +124,8 @@ if [ "$TIER" != quick ]; then
     run "performance report (script cost, shader compiles, scene load per situation)" node "$ROOT/tools/perf_report.js" "$ASSET"
     report "loading time (boot profile)" node "$ROOT/tools/boot_profile.js" "$ASSET"
     report "handover profile (frames after entering VR)" node "$ROOT/tools/entry_profile.js" "$ASSET"
-    # Frame timings are only meaningful without the layers path (its MSAA resolve is software-rendered here),
-    # so the hitch probe runs on the no-layers variant of the same asset.
-    python3 -I "$ROOT/tools/experiment.py" nolayers "$ROOT/tools/uncompressed.html" "$ROOT/tools/.runs/hitch_nolayers.html" >/dev/null 2>&1 \
-      && report "in-game hitches (pickups, dialogue, Event; no-layers variant)" node "$ROOT/tools/hitch_probe.js" "$ROOT/tools/.runs/hitch_nolayers.html" \
-      || report "in-game hitches (pickups, dialogue, Event)" node "$ROOT/tools/hitch_probe.js" "$ASSET"
-    report "scene cost (draw calls, triangles, materials)" node "$ROOT/tools/perf_probe.js" "$ASSET"
     report "Garden Event frame cost (90 s)" node "$ROOT/tools/event_probe.js" "$ASSET" 90
+    report "creature census (meshes, batched parts, triangles, materials per character)" node "$ROOT/tools/creature_census.js" "$ASSET"
     report "render sharpness (scale, foveation, texture filtering)" node "$ROOT/tools/sharpness_probe.js" "$ASSET"
   else skip "graphical and performance pass (z-fight, profiles, sharpness)" "$TIER tier; run --full"; fi
 else

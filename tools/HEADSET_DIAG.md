@@ -112,34 +112,15 @@ Capture with `adb logcat -s GreeblisServer GreeblisLauncher cr_VrShellDelegate c
 A launch that exits shows `exitWebVRPresent` in `cr_VrShellDelegate` right
 after the page's last `page:` line, which names the cause.
 
-## Layers experiment (B13)
+## What to read at boot and handover
 
-History: the `layers` experiment became the release in 3.15.13 (VERSIONS.md) and is no longer in `experiment.py`;
-the release now shows these lines itself. As written for the experiment:
-`tools/.runs/GreeblisTown-exp-layers.apk` (same package/version as the release;
-`adb install -r`, and reinstall the release afterwards). Expected `page:` lines:
-`session parked, features=...,layers`, then at the handover `projection layer
-live, scale <q>, msaa 4`. Trouble lines: `loader layers failed`, `loader
-projection layer failed`, `loader layers frame failed`, `entry failed (n)`.
-What to watch: no black bars while turning the head during loading (the panel
-should stay put in the world), a clean switch into the town, and the picture
-quality in the town compared with 3.15.12.
-
-## What to read in a 3.15.19 log
-
-History: the render-scale steps below ended in 3.15.43 (F-B31). From then on the log shows
-`projection layer live, scale 1, msaa 4, multiview true` at the handover and no `swapped to scale` lines at
-all; the governor changes foveation only. The rest of this section still applies.
+Since 3.15.43 (F-B31) the handover line is `projection layer live, scale 1, msaa 4, multiview true` and there are no
+`swapped to scale` lines: the governor changes foveation only.
 
 - `boot slices ms: ...`: the total from `start` to `textures` is the loading time.
   3.15.14 measured 8.2 s; the march change (NOTES 49) and the build-time probe
   points (the `textures` slice, 792 ms before) should bring it near 6 s. The five
   heavy `townsfolk` entries were 573/493/585/488 ms; expect roughly half.
-- `projection layer live, scale 1, msaa 4` at the handover (native start), then
-  `projection layer swapped to scale 1.1` and `... 1.2` a few seconds apart while
-  frames stay under budget; a later `swapped to scale 1.1` or `1` means the
-  governor stepped down under load (normal in the garden Event). No black frame
-  should accompany any of these.
 - `entry failed`, `loader ... failed`, `[xr-enter]`, `[boot]`: must be absent.
 
 ## Frame-rate lines (3.15.27)

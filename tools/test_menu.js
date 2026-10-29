@@ -7,7 +7,8 @@
 // The author's case, on the multiview path the headset runs: with one Blossom, open a townsperson's menu with the
 // controller (Talk, Give, CLOSE), give the Blossom, open the same menu again (Talk, CLOSE). Every frame drawn while the
 // menu is visible is checked: its picture must not be the previous menu's canvas. Then once more with another
-// townsperson. Also: the reopened menu has the right options, it does show, and no page errors.
+// townsperson. Also: the reopened menu has the right options, it does show, and no page errors. Then the controller
+// rays are drawn and must not need a new shader program (F-B41), and none was compiled during play at all.
 //
 //   node tools/test_menu.js [file]
 process.env.GT_MULTIVIEW = process.env.GT_MULTIVIEW === '0' ? '' : '1';
@@ -62,6 +63,15 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       watch = null;
     }
     O.render = R;
+    // the controller rays: drawn only once a real controller tracks (headless the controllers stay hidden), so draw
+    // them for a second; their program must come from the loading warm-up (the author's 3.15.52 log: LineBasicMaterial
+    // compiled at VR entry, F-B41)
+    const lines = []; D.C.traverse((o) => { if (o.isLine) lines.push(o); });
+    const n0 = O.info.programs.length;
+    O.render = function () { for (const o of lines) for (let q = o; q; q = q.parent) q.visible = true; return R.apply(this, arguments); };
+    await wait(1000); O.render = R;
+    out.rays = { n: lines.length, newPrograms: O.info.programs.length - n0 };
+    out.duringPlay = (window.__gtXR && window.__gtXR.mvStats && window.__gtXR.mvStats.newPrograms) || [];
     return out;
   });
   await g.close();
@@ -73,6 +83,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     expect('after giving the last Blossom the menu has two options (Talk, CLOSE)', re && re.open && re.labels.length === 2, JSON.stringify(re && re.labels));
     expect('the reopened menu shows', re && re.shownNow && re.frames > 0, JSON.stringify(re));
     expect('no frame shows the previous menu (the 3-option picture) after giving the last Blossom', re && re.staleFrames === 0, `${re && re.staleFrames} of ${re && re.frames} frames`);
+    expect('the controller rays draw with a program made while loading (none compiled when they first show)', r.rays && r.rays.n >= 2 && r.rays.newPrograms === 0, JSON.stringify(r.rays));
+    expect('no shader program compiled during play (multiview log)', r.duringPlay.length === 0, r.duringPlay.slice(0, 3).join(' | '));
     if (other) expect(`no frame shows the previous character's menu when opening ${other.who}'s`, other.staleFrames === 0 && other.shownNow, `${other.staleFrames} of ${other.frames} frames`);
   }
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));

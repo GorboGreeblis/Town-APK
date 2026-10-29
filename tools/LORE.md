@@ -273,7 +273,7 @@ editions.") and the Ancient texts.
 | Glyph | `p_glyph` | "Master of symbols"; dance floor | Plates "fit together like a sentence"; ends lines with "don't you think?" |
 | Montgummery (Mont) | `w_mont` | Dance floor; hides the Human from the Sheriff | Robot with a screen face; eats VHS tapes ("Knowledge in the reels. Dinner in the cassette."); "We are all digital monsters." Speaks in third person. Ate the Library's tapes. |
 | Hennrick | `gratelet` | Researcher from the far past (the author), stuck by the Portal | "Casing" and "joints… built for fieldwork"; collects samples in jars; "unwilling guest of the Sheriff"; observes Somlet ("Subject remains asleep. Observation day 41."). |
-| Mushroom (the Sheriff) | `drifter` | Sheriff's kiosk desk | Cap with gills; investigates UFOs; enforces the Consortium; takes bribes ("A bribe? ...Make it a double."). |
+| Mushroom (the Sheriff) | `drifter` | Sheriff's kiosk desk, reached by a little ramp at its left end (since 3.15.53) | Cap with gills; investigates UFOs; enforces the Consortium; takes bribes ("A bribe? ...Make it a double."). |
 | Fortizmo | `frog` | Juice Bar | She (Etcher: "her dancefloor"). Brass valves ("My valves turn a breath into a brass note"); "sugar"/"honey"; Blossoms only; practising a song for Backpacka. The four small dots beside his eyes are beauty marks (author). |
 | King Dino | `m_kingdino` | Drums at the Juice Bar | "King of Jazz, baby!"; drums "since the Cretaceous"; works off his bar tab; stamps his own coins; wears a crown ("The crown is extra"). The lit buttons on his sides and the sockets on his back are synthetic parts of his own body (author). |
 | Somlet | `m_somlet` | Asleep on a pile of mail at the Post Office | She says "Zzz"; "a letter peeks out from under her cap"; "a tiny paw curls beneath her cap"; "a patron of the Library". |
@@ -339,6 +339,6 @@ offering everyone a goo burger, Gemtoe claiming whatever is worth something.
 - **The Event** is the planting event: the "GARDEN EVENT" the campfire panel
   starts (Summoning Stone, Seeds, Snacks), the gardening at the garden with the
   pillar and the night. In the code it is `me`, whose own label is "finale".
-  The performance notes, `event_probe.js` and `event_profile.js` all mean this.
+  The performance notes, `event_probe.js` and `perf_report.js` all mean this.
 - **The Speech** is Sparkakus's finale in the library: with the three Artifacts
   he assembles the Eye and awards the Gem. In the code it is `speech`.

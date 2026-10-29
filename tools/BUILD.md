@@ -144,26 +144,8 @@ means the store listing can never be updated.
 skip stages already passed after a machine restart). How to run and write tests: `tools/TESTING.md`; one row per
 tool: `tools/README.md`; what each thing is tested by: `tools/TEST_PLAN.md`.
 
-- **Every tier (`--quick` alone):** the shipped copies are the game file (`sync_game.py --check`); the game file is
-  fully minified (`minify_game.js --check`); the compressed version unpacks to it exactly (`build_compressed.js
-  --check`); every experiment still applies (`experiment.py --check`); the loopback server serves the game
-  byte-for-byte (JVM harness); the docs are consistent (`check_docs.py`); dialogue spelling; the tentacle bend is
-  bit-identical; the APK passes the Meta store packaging checks (VRC.Quest.Packaging.1-6).
-- **The standard pass** (and smoke, without the courier and with shorter soaks) adds, in headless Chromium with a fake WebXR headset: VR entry (early, late, no grant),
-  runtime play with the layers path, a layer swap, visibility and context loss; multiview (each eye matches the
-  classic path, no mid-frame upload or compile); the Quest 3S uniform budget; warm-up coverage; the game runs
-  alone and its `tex/` is what it paints (`test_standalone.js`); the compressed version works as an ordinal
-  (`test_compressed.js`); no texture made during play (`texture_census.js`); the Event's first start (`event_start_check.js`, F-B33/F-B36); the quality governor on a Quest 3S
-  (foveation only, never a layer swap; the Event locks the lowest level); the game's content (gifts, talk, shyness, the bribe, outfits, battles, the
-  Ancient, the robin, vignettes, the Event, Backpacka); greeting; the wrist HUD and haptics; roaming; the
-  meetings; the jazz drums; audio; seeded decoration (`test_seeded.js`, R5); Backpacka at the pond
-  (`test_backpacka.js`, F-B37); far detail and the batcher; world, input, progression, visits, the courier and
-  the return-home scenarios. Every browser stage runs under the harness's frame-hazard watch; any GPU work inside an
-  XR frame in any of them fails the pass.
-- **The full pass** adds long soaks and every scenario, the z-fight and single-sided checks, optimisation
-  identity, the Ancient check (P21), the performance report and the loading, handover, hitch, scene-cost, Event and sharpness
-  reports. It runs after every build (RULES.md 23: every build is treated as the final build until the author says
-  otherwise; "run it on the final build" is superseded), and its result goes into TEST_PLAN.md.
+What each tier runs, stage by stage: `tools/TESTING.md` section 1. The full tier runs after every build (RULES.md
+23), and its result goes into TEST_PLAN.md.
 
 What cannot be tested here: the actual launch on a headset. Sideload and
 confirm that the app goes straight into VR:

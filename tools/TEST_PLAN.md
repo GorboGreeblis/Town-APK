@@ -12,27 +12,8 @@ Legend for the Coverage column: **done** (automated and passing), **partial**,
 
 ## Test passes
 
-Four tiers run the same scripts with different scope (`tools/run_tests.sh`):
-
-- **Smoke** (`--smoke`): every browser stage of the standard pass but the
-  courier, with shorter play (8 s) and world (15 s) runs, the first four NPC
-  scenarios and one visit scenario. Over an hour: the multiview, content and
-  census stages run in full. (It was "a few minutes, for every build" before
-  the tiers grew; superseded.)
-- **Standard** (default): every browser stage (TESTING.md section 1 lists
-  them), 20 s play, 40 s world, eight NPC scenarios, two visit scenarios, the
-  courier.
-- **Full** (`--full`): every scenario, long soak and sampling windows, plus
-  the graphical and performance pass (10a). Run on every build until the
-  author says otherwise (RULES.md 23; "meant for the final build only" is
-  superseded), its result recorded below.
-- **Quick** (`--quick`): the static checks only (the copies are the game file,
-  the game file is minified, the compressed version unpacks to it, every
-  experiment applies, server harness, docs consistency, spell-check, the bend
-  test, the APK check). About a minute; every other tier runs them first.
-
-Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
-`GT_MULTIVIEW=0` runs the classic fallback.
+Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same scripts with different scope
+(`tools/run_tests.sh`); TESTING.md section 1 lists each tier's stages, settings and times.
 
 ## 1. Packaging and launch (APK)
 
@@ -92,7 +73,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 
 | Item | How | Coverage |
 | --- | --- | --- |
-| Every talk line, gift line, campfire line renders without overflow and has no spelling errors | `spellcheck_dialogue.py`; `test_textfit.js` (written, not yet in a tier, TASKS T8) | partial (spelling done; layout to run) |
+| Every talk line, gift line, campfire line renders without overflow and has no spelling errors | `spellcheck_dialogue.py`; `test_textfit.js` (not in a tier: a run on 3.15.52 was stopped unfinished after 30 minutes, TASKS T8) | partial (spelling done; layout test too slow to finish) |
 | Talk flow: `Talk to`, cycling lines, `|` page breaks, typewriter speed | `test_progression.js` (every line shown) | partial |
 | Panels (`_t`): shop, campfire/garden event, battle; buttons CLOSE/DONE/LEAVE | `test_progression.js` | partial |
 | HUD counts (blossoms, acorns, artifacts) update; the wrist HUD on the left grip shows the Event checkboxes and every held item, redraws only on change; haptic pulses on a gained Blossom (0.3, 35 ms) and a new friend (0.5, 70 ms) | `test_hud.js` (standard tier; fake controllers record pulses) | done |
@@ -107,7 +88,7 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | Dance battles (Dbt): rock/paper/scissors, stamina, bow-out, first win awards an Artifact, `danceWins`; BOW OUT works 80% of the time (R6, 3.15.52) | `test_progression.js` (the 80% is not asserted: the test fights to the end) | done |
 | Garden event (`bt`): summoning pillar, gather timer `GATHER_S`, seeds/snacks/stone rewards, NPCs sent home afterwards (`fe`) within 90 s | `test_progression.js --long` | done (full tier) |
 | Pizza courier (`ue`): call, spawn 30 s later at 75 m, arrival, give-up after 100 s | `test_progression.js` | partial |
-| Long session stability: heap, programs, entity count over N minutes with all systems exercised (GPU counters are stubbed in the harness) | `test_soak.js` | Soak 10 min on 3.15.8: PASS, heap 119 -> 118 MB, programs 114 -> 114, 13 entities, no errors |
+| Long session stability: heap, programs, entity count over N minutes with all systems exercised (GPU counters are stubbed in the harness) | `test_soak.js` (full tier, 10 min) | done: 10 min on 3.15.52 (11 min with the boot): PASS, heap 126 -> 129 MB after the 2-minute mark, programs 140, textures 209, geometries 206, 13 entities, no errors |
 | Pizza courier inside the church: detour around the Ancient to a player on the far side, deliver, walk back out (B11) | `test_courier.js` | done |
 | Library finale: three Artifacts → Sparkakus awards the Gem | `test_progression.js` | done |
 | Backpacka sequence (`BP`) and jazz (`JAZZ`) timings | `test_content.js` (Backpacka); `test_jazz.js` (standard tier: on the audio clock at the kit, the game clock within 45 m, every hit on the 104 bpm grid, never early, at most a frame late, the 3 s look-ahead, off far away and under the horn) | done (3.15.41) |
@@ -151,8 +132,6 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | --- | --- | --- |
 | Loading time: boot slices, where the time goes, with pre-rendered textures | `tools/boot_profile.js` (report stage) | 3.15.13: about 8 s on the headset (author's log: projection layer live at 9.0 s after page start) |
 | Handover: nothing heavy after the user is dropped in | `tools/entry_profile.js` (report stage); B16 moved the UI build and the texture capture into the loading phase | 3.15.13: no long gap after the grant |
-| In-game hitches: first pickup, label, dialogue, battle panel, Event start | `tools/hitch_probe.js` (report stage): worst frame, new programs/textures/geometries/objects per scenario | 3.15.13: no new shader programs anywhere; Event start 26 ms headless after B17 (was 46) |
-| Scene cost: draw calls, triangles, materials, transparent meshes | `tools/perf_probe.js` (report stage) | recorded in `PERF.md` |
 | Performance per situation with the cause named: script frame time (p50/p99/max), top functions, shader compiles, uploads, draw calls, triangles, transparent objects, lights, creatures in range; the Event in three phases | `tools/perf_report.js` (pass/fail stage, baseline in `tools/perf_baseline.json`) | 3.15.27: see PERF.md section 7 |
 | Headset frame rate by scene from the game's own log line | `tools/perf_log.js` on a live capture (`capture_log.ps1` / `.sh`: the game's lines and the runtime's `VrApi` lines): frame rate by scene, CPU- or GPU-bound per scene, flash marks, long frames | 3.15.47 (NOTES 91): town median 71.8 fps, the Event 63.3 median and 56.4 at worst at (-24, -2); CPU-bound (app GPU time 9.3 of 13.9 ms) |
 | Render sharpness: render scale per quality level, foveation, pixel ratio, MSAA, texture mipmaps/anisotropy | `tools/sharpness_probe.js` (report stage) | 3.15.16: adaptive scale 1.2 / 1.1 / 1.0 (author: the sharp build looks better; 1.2 alone was stepped down within 4 s on the headset), 4x MSAA through the projection layer, textures mipmapped with anisotropy 8; layer swaps flash-free (the play test checks the swap). Superseded in 3.15.43 (F-B31): native scale 1 at every level, no swaps during play |
@@ -174,6 +153,10 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 | The mipmap switch 2.6 s after entering VR goes in slices, each texture uploaded right away (F-B36); every texture in the scene on the GPU at its current version | `test_lod.js` and every test (the harness's watch), `event_start_check.js` | done (3.15.49, NOTES 92) |
 | The B button writes "MARK flash seen"; long frames over 28 ms and a mid-play compile's differing key fields are logged (D2) | headset; `perf_log.js` lists them | headset (3.15.48 on) |
 | The author's seeded items (stars, clouds, blinks, idle phases, Anomalee's glitch timing and jaw, the Event ring's sway) draw from their own named streams and repeat across launches (R5); `Math.random` sites (81 since R4/R5) | `test_seeded.js` (standard tier); `random_census.js` (report) | done (3.15.52) |
+| The mipmaps are made while loading: none left for the slices after entering VR, no texture uploaded during play (F-B40) | `test_lod.js` and the harness's watch; the boot log line "mipmaps on: N textures set while loading" | done (3.15.53) |
+| The interaction menu never shows the previous menu's picture (F-B38); the controller rays' shader is made while loading, no shader compiled during play (F-B41) | `test_menu.js` (standard tier, multiview path; fails on 3.15.52) | done (3.15.53) |
+| Mushroom reaches his desk by the ramp from anywhere (F-B39) | `test_npc_home.js` (17 starts), `test_visits.js` | done (3.15.53) |
+| Visitors to the Ancient while the player is in the Cave, back to normal outside (A3); visits never stall on Sparkakus before the Gem (F-B42) | `test_cave.js` (standard tier; fails on 3.15.52) | done (3.15.53) |
 
 ## 10b. Store submission (VRC)
 
@@ -204,39 +187,3 @@ Browser stages run multiview by default (`GT_MULTIVIEW=1`, the release path);
 **Full tier on 3.15.41** (`tools/.runs/full_v41.log`, `full_v41_rest.log`, `content_v41.log`; the container restarted twice during it, so the stages after the single-sided check and the content test were run again on their own with the same commands): every pass/fail stage passes. The content test's one failure in the tier (the Sparkakus-Hennrick vignette cut short because Sparkakus had set off to browse his shelves, a busy speaker ends a vignette) was the test's: it now waits for both speakers to be free and holds Sparkakus in place as the game does for a visit, and passes in full (all 102 vignettes known, 15 played). The performance report first failed its time limits in every situation by about the same factor: its baseline had been written on 3.15.27, before multiview, on a faster machine, in raw milliseconds. Run back to back on one machine, 3.15.40 and 3.15.41 match within its noise (script p50 6.0-7.9 and 5.8-8.0 ms), with no shader compiled during play in either, so the build changed nothing (NOTES 77). The report is now calibrated to machine speed, with a baseline written from 3.15.41, and 3.15.41 passes it (`tools/.runs/perf_check_v41.log`). The report probes (loading, handover, hitches, scene cost, the Event's frame cost, sharpness) ran and are in the log.
 
 **Standard tier on 3.15.41** (`tools/.runs/std_v41.log`, multiview): all stages pass (338 PASS lines, no FAIL), including the new greeting and wrist HUD tests, warm-up coverage with the P19 frame check, the quality governor for the Quest 3S and the Quest 3, and the game content test with its courier and vignette fixes.
-
-**Standard tier on 3.15.34** (`tools/.runs/std_v34c.log`, multiview): 218 PASS lines; one FAIL, B27 (one shader program compiled during the pickups/dialogue/shop sequence of `multiview_check.js`; a standalone run had none). Every other multiview check passes: per-eye pixel match, draw calls halved, no frame hazard (207 uploads moved before the frame), uniform budget in both modes.
-
-**3.15.33**: smoke tier passes (`tools/.runs/smoke_v33.log`). **Multiview experiment** (`GT_MULTIVIEW=1 GT_ASSET=tools/.runs/multiview.html tools/run_tests.sh`, `tools/.runs/std_mv.log`): every stage passes except the 2D frame-loop check, which failed identically on the release (the test timed the boot; fixed in `test_play.js`, NOTES 66; both builds pass it now). `multiview_check.js`: both eyes match the classic path, draw calls halved.
-
-**Standard tier on 3.15.32** (`tools/.runs/std_v32.log`): all stages pass (188 PASS lines, no FAIL) with P8-P13 in, including the new bend exactness test. Per optimisation, `opt_identity.js` (identical pixels), the sides check, both z-fight tests and the perf report's compile check passed (VERSIONS.md).
-
-**Standard tier on 3.15.27** (`tools/.runs/std_v27.log`): all stages pass (186 PASS lines, no FAIL) with P7 in. The new performance report passes on it (PERF.md section 7; baseline written from the run).
-
-**Standard tier on 3.15.26** (`tools/.runs/std_v26.log`): all stages pass (186 PASS lines, no FAIL) with the performance pass (P1, P2, P4, P5, P6) and B25 in; planar and curved z-fight tests pass (0 new; 155 batch meshes now, the single-sided split adds a few), and `sides_check.js` passes (140 of 184 views differ on one-pixel silhouette outlines only, worst area 0.012%). **Zollod's return-home scenarios on 3.15.26** (`tools/test_npc_home.js ... cutebex`, the test now spawns him): all 17 pass with no teleports; behind the kiosk 24.5 s with a teleport before -> 7.7 s, inside the back 23.7 s -> 8.3 s, interrupted visit from behind 25.1 s -> 4.2 s; Mushroom's 17 scenarios still pass (behind the kiosk 3 m now walks round by the entry path, 20.6 s, no stuck). **Standard tier on 3.15.25** (`tools/.runs/std_v25.log`): all stages pass (186 PASS lines, no FAIL), including the two new focus-aware checks (controllers hidden while the session is blurred and shown after, in the input stage; rendering continues and the game is blurred, in the play stage). **Standard tier on 3.15.24** (`tools/.runs/std_v24.log`): all stages pass (184 PASS lines, no FAIL). **Z-fighting on 3.15.24**: planar test 3 coplanar overlaps, all hidden (two church wall tops buried in the roof and end wall, the juice stand's undersides at ground level), 0 new; curved test 161 near pairs, 0 new depth fights, 7 hidden resting contacts, 20 crossings; the parapet bands (B21), Mushroom's hat band (B22) and the Robin's tail (B23) no longer appear; baseline empty. **Standard tier on 3.15.23** (`tools/.runs/std_v23.log`): all stages pass (184 PASS lines, no FAIL). **Planar z-fighting on 3.15.23** (`tools/test_zfight.js`, now reading the batcher's sources and failing on any new different-looking coplanar overlap): 17 overlap pairs, 5 handled, 3 to 4 different-looking depending on the boot (the juice stand's floor plank, two church slabs, the perimeter wall against the hills), all accepted in the baseline for the author's call; passes. **Curved z-fighting on 3.15.23** (`tools/test_coincident.js`, `tools/.runs/coinc_v23.log`): 640k triangles, 115k sampled pairs, 0 new depth fights, 4 of the 6 accepted ones present in this boot (the rest depend on the characters' pose), 23 crossings, 13 same-look; the pre-fix asset reports Hennrick's cuff as a depth fight and 3.15.23 does not. **Standard tier on 3.15.22** (`tools/.runs/std_v22.log`): one test-side failure only (the blank-frame screenshot check in the `vr-nofloor` scenario, now skipped in layers mode like the `vr` scenario). **Standard tier on 3.15.21** (`tools/.runs/std_v21.log`): all stages pass, including the new `vr-nofloor` scenario and the hidden/visible check; the context-loss check reports B19 as known. **Standard tier on 3.15.20** (`tools/.runs/std_v20.log`): every stage passes except the play stage's blank-frame screenshot check, which in layers mode sees a canvas that is blank by design (the game draws into the projection layer; the XR-frames check covers rendering); the check is now skipped in layers mode and the play test passes standalone. **Full tier on 3.15.19** (`tools/.runs/full_v19.log`): **all stages pass**, including the play stage's layer-swap check and the z-fight test; report stages: handover clean (one 284 ms first-frame gap headless), hitch probe on the no-layers variant worst frames 6-37 ms (Event start 37 ms, pickups 26 ms), scene cost and sharpness recorded. 3.15.19 adds the native-start governor, build-time texture probe points and the sphere-traced blob march (characters build about twice as fast, geometry identical per `geom_compare.js`). **Soak on 3.15.19** (`tools/test_soak.js`, 10 minutes, `tools/.runs/soak_v19.log`): no errors, heap 115 to 123 MB after the 2-minute mark, textures 121, geometries 287, programs 114 and entities 13 all bounded; SOAK TEST PASSED.
-
-**Full tier on 3.15.17** (`tools/.runs/full_v17.log`): every stage passes (entry verify, server harness incl. /log, spell-check, APK check, VR entry, world incl. B2 and 20/20 routes, input, progression incl. the Event, visits all, courier, return-home all, release parity, z-fight: nothing flickers) except one check in the play stage: the new layer-swap check timed out waiting 400 ms for frames while the tier loaded the machine (frames 0); the same check passes standalone (24 frames) and now waits for frames instead of a fixed time. Report stages recorded: handover clean (one 235 ms first-frame gap headless), hitch probe moved to the no-layers variant for meaningful timings.
-
-Standard tier on the 3.15.13 asset (layers loading screen, B16, name): **all stages pass**. Z-fight test, sharpness probe and hitch probe added and run on it (see 10a).
-
-3.15.13 (layers loading screen, B16, name): entry test 3/3 scenarios and play test (2D + fake VR, projection layer live, 1045 XR frames/20 s) pass on the final asset; standard tier on the final asset recorded below when done. Headset (author): experiment build with the same entry path, no black bars, no drop-in stall.
-
-Full tier on 3.15.11: all stages pass except world routes, 16/20 (four random routes through the Shop, all starting in the sealed corner behind it; the earlier 20/20 runs had simply not sampled that corner). Fixed as B14 in 3.15.12; world test 20/20 in four runs since. Standard tier on the 3.15.12 asset (B14, before the B15 entry change): all stages pass. 3.15.12 then dropped the `layers` feature and hardened the entry (B15, see BUGS.md); entry test passes on the final asset (3/3 scenarios) and the 3.15.11 feature list fails it; standard tier on the final asset recorded below.
-
-Full tier on 3.15.10 (all fixes, pre-rendered textures): **all stages pass** (entry fix verify, server harness incl. ETag/304, spell-check, APK check, VR entry wiring, runtime 120 s, world incl. B2 rescue and 20/20 routes, input 12/12, progression incl. garden event, visits all, courier, return-home all 17, release parity). 3.15.11 differs only in the head-script loader (compositor layers); play and entry tests pass on it; full tier running.
-
-### Earlier (3.15.7/3.15.8)
-
-Standard tier on 3.15.7: all stages pass except the world routes check (2/20 random routes clipped the shop corner at their final leg), fixed as B4r in 3.15.8 (world test 20/20 afterwards). Entry test rewritten for the page-start request and the in-VR loading screen; play test passes in 2D and fake VR.
-
-### Earlier (3.15.6)
-
-| Test | Result |
-| --- | --- |
-| entry fix verify, server harness (incl. asset links), APK check, VR entry wiring, runtime play, input | PASS (smoke tier) |
-| progression: talk, battle, shop pause, shop, library, trade, pizza | PASS (all 14 checks) |
-| world: 20/20 routes, hulls, bounds, pickups + regrow, watchdog (Fortizmo home in 63 s) | PASS |
-| courier/Ancient (B11), left and right | PASS; entry-only build reproduces the bug |
-| Mushroom return-home 17/17, visits 6/6 | PASS |
-| full tier (`run_tests.sh --full`) on 3.15.6: entry, server, spell-check, APK check, VR entry, runtime 120 s, input, progression incl. garden event, visits (all), courier, return-home (all), release parity | PASS except world: 2/20 random routes clipped the shop corner by 0.3 m / 0.02 m (B4 residual, cosmetic) |
-

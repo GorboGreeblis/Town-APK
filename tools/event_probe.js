@@ -1,5 +1,5 @@
-// Garden Event render cost (report, T12): what the Event adds to the frame. Starts the Event the way the
-// hitch probe does (Stone + Seeds + Snacks, then "Yes") and samples the renderer every 2 s for 90 s:
+// Garden Event render cost (report, T12): what the Event adds to the frame. Starts the Event the way a
+// player does (Stone + Seeds + Snacks, then "Yes") and samples the renderer every 2 s for 90 s:
 // draw calls, triangles, points, visible meshes, visible transparent objects and lights, with the
 // scene's heaviest visible objects at a few points in time. The GPU cost on the headset follows these
 // counts (fill rate for transparent objects and points, vertices for triangles).

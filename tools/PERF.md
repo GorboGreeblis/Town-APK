@@ -99,9 +99,10 @@ launch is faster), while `no-store` currently prevents the script code cache
 ## 5. Demanding moments (pickups, the Event)
 
 See `BUGS.md` F-B12 and `NOTES.md` item 32 for the flash investigation. The
-hitch probe (`tools/hitch_probe.js`) reports what each action creates on the
-GPU (programs, textures, geometries) and the frame-time spike around it
-(software GL; spikes are relative):
+hitch probe (retired; `tools/perf_report.js` now reports the new programs and
+textures per situation) recorded what each action created on the GPU
+(programs, textures, geometries) and the frame-time spike around it (software
+GL; spikes are relative):
 
 | Action | New programs | New textures | New geometries | Worst frame vs baseline |
 | --- | --- | --- | --- | --- |
@@ -155,8 +156,8 @@ before each render; P5 creature ground-fit scan throttled; P6 back-face culling
 for closed, outward, opaque meshes (the game had every material double-sided;
 297k of 659k source triangles now single-sided, checked pixel-identical by
 `tools/sides_check.js`). Tools:
-`tools/event_probe.js` (what the Event adds to the frame, every 2 s) and
-`tools/event_profile.js` (main-thread profile before and during the Event).
+`tools/event_probe.js` (what the Event adds to the frame, every 2 s); the
+main-thread profile of the Event, with source excerpts, is in `tools/perf_report.js`.
 Game logic with rendering stubbed: town 0.7 ms a frame, Event second half
 1.8-2.1 ms (p99 4.7 ms) headless. Levers left that change the look, for the
 author to decide after the headset readings: the Event's point light and

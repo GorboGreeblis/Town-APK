@@ -10,7 +10,7 @@ Code names: since 3.15.45 the game file is minified (R2). Names at the top level
 so the entries before R2 quote the unminified file (`git show 21596f1:tools/uncompressed.html`).
 IDs: numbers are the entry edits, B or F-B a bug fix (tools/BUGS.md; F-B is the ID BUGS.md gives it once fixed),
 P a performance change (tools/PERF.md), L the license notice, D diagnostics, R a change made to meet one of the
-author's rules (tools/RULES.md). NOTES numbers point to tools/NOTES.md.
+author's rules (tools/RULES.md), A a change the author asked for (new content or behaviour). NOTES numbers point to tools/NOTES.md.
 
 ## Entry edits (9 blocks)
 
@@ -44,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (63 blocks)
+## Gameplay, performance and other fixes (70 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -433,39 +433,6 @@ code names quoted in the entries above are those of the unminified file (git his
 repository's license file; it keeps the dedication with the license's public address and three.js's full MIT notice.
 A comment only: nothing the page does changes.
 
-- **R4** (3.15.51; the author, on the randomness decision list: "8. Let's remove this."; RANDOMNESS.md c11, RULES.md 5):
-seven random colour picks that had no effect are gone: the sparkle burst's, the talk emote's, the two at the end of an
-Event chat, a vignette's opening emote, the dance battle's winning note and the pickup's glyph. Since F-B29 an emote is
-coloured by its glyph and the colour it was handed was dropped, so every emote looks exactly as before; the unused
-colour list went with them. The same decision list closed two items as intended, with no change: flint pickups keep a
-random facing ("9. Close out as intended") and the UFO's flight path stays as it is ("The UFO's path is currently fine
-the way it is. Mark as intended.").
-
-- **R5** (3.15.51; the author, on the recommended seeding list: "1 to 7: seed"; RANDOMNESS.md, RULES.md 5): seven kinds
-of decoration and idle motion are now the same on every launch instead of new each time, still varied within a launch:
-the 700 night-sky stars, the 7 clouds (puffs, sizes, orbits, heights, drift speeds), when each townsperson blinks
-(first blink and the gaps after it, Mama Gorbo's own timer too), the idle sway phases of Anomalee, Hennrick,
-Fortizmo, Montgummery and Nextessa, when Anomalee's screen glitches (the shake during a glitch stays random), her
-jaw's chomps, and the townsfolk's sway in the Event ring. Each draws from its own named stream (`gcRnd(name)`: a
-Park-Miller generator like the UFO's, seeded from the name), so nothing else that happens can shift it. Checked:
-two launches build the same stars and clouds; the census drops from 120 `Math.random` sites to 81, the rest being the
-ones that stay random.
-
-- **R6** (3.15.52; the author: "a random 80% chance of working makes sense for the Bow Out button"; RANDOMNESS.md,
-RULES.md 5): in a dance battle (Glyph, Etcher, Montgummery) the player's BOW OUT now works 80% of the time instead of
-70%; otherwise, as before, "The beat won't let you go!" and the battle goes on. The dancers' moves stay random (the
-author: "For the Dancer's moves: what they pick should always be random").
-
-- **F-B38** (3.15.53; the author: "When I interact with Shy Zollod, after previously speaking to another NPC, I very
-quickly see an interact menu with 3 options flash on screen before his normal 2 option menu appears"; "The same issue
-occurs with other NPCs after you've given your last Blossom"; BUGS B40): the XR interaction menu is one panel whose
-picture is painted into the next of its three canvases; on the headset's multiview path the new picture reaches the
-panel only after the frame (F-B31). The menu was made visible the moment it opened, so for a frame it showed the last
-menu it had drawn, already resized for the new one. Now opening a menu holds it hidden until its own picture is on the
-panel (on the classic path that is the same frame, on multiview the next one); hover changes on an open menu are
-unaffected. `test_menu.js` (new, standard tier) reproduces the author's case on the multiview path: 3.15.52 showed the
-previous picture for one frame in both cases, the fix none (two runs).
-
 - **F-B32** (3.15.46; flashes, the rule that no texture is made during play, RULES.md 9): the soft glow behind an item
 tossed in a townsfolk text exchange (goo, a card, a tile, a coin) was painted the first time a vignette tossed one,
 mid-play; F-B30 had missed it because only some exchanges toss items. Now it is painted while loading and handed to
@@ -548,6 +515,85 @@ her, she swells as she drinks), one on each neck segment and her head. Each coun
 height (1.9 m) and grows as the part comes down, so a landing nudges the player aside instead of a jump. Her pose comes
 from her show's clock alone; the circles never move her or any townsperson. `test_backpacka.js` (standard tier).
 
+- **R4** (3.15.51; the author, on the randomness decision list: "8. Let's remove this."; RANDOMNESS.md c11, RULES.md 5):
+seven random colour picks that had no effect are gone: the sparkle burst's, the talk emote's, the two at the end of an
+Event chat, a vignette's opening emote, the dance battle's winning note and the pickup's glyph. Since F-B29 an emote is
+coloured by its glyph and the colour it was handed was dropped, so every emote looks exactly as before; the unused
+colour list went with them. The same decision list closed two items as intended, with no change: flint pickups keep a
+random facing ("9. Close out as intended") and the UFO's flight path stays as it is ("The UFO's path is currently fine
+the way it is. Mark as intended.").
+
+- **R5** (3.15.51; the author, on the recommended seeding list: "1 to 7: seed"; RANDOMNESS.md, RULES.md 5): seven kinds
+of decoration and idle motion are now the same on every launch instead of new each time, still varied within a launch:
+the 700 night-sky stars, the 7 clouds (puffs, sizes, orbits, heights, drift speeds), when each townsperson blinks
+(first blink and the gaps after it, Mama Gorbo's own timer too), the idle sway phases of Anomalee, Hennrick,
+Fortizmo, Montgummery and Nextessa, when Anomalee's screen glitches (the shake during a glitch stays random), her
+jaw's chomps, and the townsfolk's sway in the Event ring. Each draws from its own named stream (`gcRnd(name)`: a
+Park-Miller generator like the UFO's, seeded from the name), so nothing else that happens can shift it. Checked:
+two launches build the same stars and clouds; the census drops from 120 `Math.random` sites to 81, the rest being the
+ones that stay random.
+
+- **R6** (3.15.52; the author: "a random 80% chance of working makes sense for the Bow Out button"; RANDOMNESS.md,
+RULES.md 5): in a dance battle (Glyph, Etcher, Montgummery) the player's BOW OUT now works 80% of the time instead of
+70%; otherwise, as before, "The beat won't let you go!" and the battle goes on. The dancers' moves stay random (the
+author: "For the Dancer's moves: what they pick should always be random").
+
+- **F-B38** (3.15.53; the author: "When I interact with Shy Zollod, after previously speaking to another NPC, I very
+quickly see an interact menu with 3 options flash on screen before his normal 2 option menu appears"; "The same issue
+occurs with other NPCs after you've given your last Blossom"; BUGS B40): the XR interaction menu is one panel whose
+picture is painted into the next of its three canvases; on the headset's multiview path the new picture reaches the
+panel only after the frame (F-B31). The menu was made visible the moment it opened, so for a frame it showed the last
+menu it had drawn, already resized for the new one. Now opening a menu holds it hidden until its own picture is on the
+panel (on the classic path that is the same frame, on multiview the next one); hover changes on an open menu are
+unaffected. `test_menu.js` (new, standard tier) reproduces the author's case on the multiview path: 3.15.52 showed the
+previous picture for one frame in both cases, the fix none (two runs).
+
+- **F-B39** (3.15.53; the author: "another must fix issue, Mushroom was observed getting stuck again", "he started getting
+stuck before I moved there"; then "add a small ramp for him on the side of his desk. Instead of jumping, it'll be funny
+for him to move up a small ramp to climb it", "push Mushroom's desk all the way to the right and then add the ramp on
+the left side", "he should be on top of the desk"; BUGS B41): Mushroom no longer hops onto his desk. The Sheriff
+kiosk's counter now runs from the right wall (kiosk-local x 2.86) to x -1.09 and a wooden ramp (#c8a070, 0.91 m wide,
+2.55 m long with five cleats and a landing at desk height) climbs from the ground in front of the kiosk to its left
+end; the stools moved with it. His height comes from the surface under him (`gcRY`: ramp, desk top 1.545 m or ground,
+at most 4 m/s; never more than 0.25 m up in one go unless within 1 m of home, so he cannot rise through the counter).
+Collision: the ramp is passable on its centre line and the counter only above 1 m, and the space behind the counter is
+sealed. Every way home goes by the ramp: the post pattern, goHome, the routes (`Ve`) and the stuck re-plan (`De`) take
+his via whenever he is below the desk top. If he is ever below the desk top inside the back of the kiosk for 2 s
+(not reachable on foot), he is put back on his desk with a sparkle. Shown to the author in pictures before the build.
+`test_npc_home.js` (17 starts, frame anchored on the kiosk: all home), a 15-start sweep (all home, never inside the
+desk), `test_visits.js` (all six scenarios, host and visitor).
+
+- **F-B40** (3.15.53; the author: "1 quick full screen flash was observed while moving around", "I only saw 1 quick
+flash at the start of my run this time"; the 3.15.52 log with the B mark at 11.8 s; BUGS B42): the mipmaps that F-B36
+spread over slices in the first seconds in VR (11.0-11.95 s in the log) are now made while loading: every texture gets
+its mipmaps before the first frame (182 of 182 headless), the slices find nothing left to do, and no texture is
+uploaded again during play. The loading warm-ups that upload textures (pizza, plants) run after it.
+
+- **F-B41** (3.15.53; the author's 3.15.52 log, BUGS B39): two shader programs the log showed compiled during play
+are now made while loading. The controller rays' line material (compiled at VR entry, a 92 ms frame): a hidden copy of
+the ray is compiled with the rest of the scene; `test_menu.js` draws the rays and checks no program is made. The
+Event's plants (a Lambert program with a map, compiled the instant the Event started on the headset, not reproduced
+headless): a full set of plants is built below the ground and compiled while loading, then removed.
+
+- **A1** (3.15.53; the author: "can we please add a short delay for snap turning, if the user attempts to snap turn too
+quickly after previously snap turning? For comfort, performance, and stability"): a snap turn within 0.3 s of the
+previous one is ignored (`snapGap`); as before, the stick must come back to centre between turns. `test_input.js`.
+
+- **A2** (3.15.53; the author: "New additional non-Event Talk line for Gemtoe"): Gemtoe's talk lines gain "I’m selling
+digital plots out here in the Greeblis-verse!" (LORE.md).
+
+- **A3** (3.15.53; the author: "slightly increase the frequency of visitors to the Ancient while the user is inside the
+Cave (the inside of the church). Rates should return to normal after the user exits the Cave"): while the player is in
+the Cave, 1 try in 10 of the visit scheduler considers only the Ancient's visits (the other tries are as before: the
+Ancient's visits may be picked on 32% of tries in the Cave, 12.5% outside). Whether the player is in the Cave is now
+checked at each try; it was a flag refreshed only while some vignette played, so the Cave rate could start late and
+stay on after the player left. `test_cave.js` (standard tier; forces the scheduler's draw; fails on 3.15.52).
+
+- **F-B42** (3.15.53; found while measuring A3; NOTES 94): visits could stall for long stretches early in the game. The
+scheduler picked Sparkakus as a visitor before the player had the Gem or the Stone, which the visit plan refuses; his
+pairs score best because he never visits, so the same refused pick came back every 4 s. He is now left out of the pick
+until then, as Shy Zollod already was before the book.
+
 ## Multiview (release path since 3.15.34)
 
 Edits for the multiview experiment, in order. Three groups:
@@ -566,22 +612,17 @@ Edits for the multiview experiment, in order. Three groups:
 
 - **nolayers**: No layers: the release requests the WebXR "layers" feature (compositor layers for the loading
 screen, projection layer for the game, NOTES 42, confirmed on the headset). This variant goes back
-to the plain projection-layer loader for A/B comparisons.
+to the plain projection-layer loader, to measure or diagnose.
 
 - **texcapture**: Texture capture: record every pre-renderable canvas painter's output during the boot (used by
 tools/prerender_textures.js, never shipped).
 
 - **nomultiview**: No multiview (NOTES 65, 67): the release draws both eyes in one pass (multiview, headset- confirmed
 in 3.15.33's experiment); this variant plans it off, so the game takes the classic path (each eye
-drawn separately) for A/B comparisons.
+drawn separately), to measure or diagnose.
 
-- **flashlog**: Flash diagnostics (3.15.41 on the author's Quest 3S: three bright, washed-out flashes, two partway
-through the Event; NOTES 79). Plays exactly like the release; only the log changes: B on the right
-controller (the one button the game leaves free) writes "MARK flash seen" (with a short buzz), so
-each flash can be lined up with what happened then; the hazard watch also counts texture storage,
-framebuffer attachments, renderbuffer storage, buffer uploads, flushes and syncs while a frame
-draws, logs up to 300 with the frame number (not only the first 12), and every perf line carries the
-totals; frames over 28 ms are logged; the old layer's destruction after a swap is logged (the release swaps no layers since F-B31).
+- **flashlog** (removed 2026-10-29 with the tools cleanup: its B mark has been in the release since D2, 3.15.48, and its
+swap log has had nothing to log since F-B31; in git history only).
 
 - **nobatch**: Draw every mesh individually: no gcEB batches, no custom vertex shader.
 

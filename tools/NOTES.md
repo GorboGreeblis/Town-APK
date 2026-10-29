@@ -110,11 +110,16 @@ beyond the VR-entry fix.
    `sessiongranted` for an unverified origin is only provable on a device.
    If it does not, the fallback is the 2D app mode (`horizonos.pwa.APP_MODE =
    2D`, `com.oculus.intent.category.2D`), where the player clicks the panel.
+   **Resolved** (3.15.4-3.15.7): the server is addressed as `localhost` and
+   serves the asset links (F-B9), and the page requests the session itself at
+   page start, which the immersive activity accepts without a grant (NOTES 34).
 2. **Grant timing.** The fix requests the session inside the grant handler and
    parks it until the world is built (about 30 s under software rendering
    here, much less on a Quest). During that time the headset shows the
    browser's empty XR view rather than the OS splash. Check that this looks
    acceptable.
+   **Resolved** (3.15.7, F-B6): the session is entered at page start and the
+   game's own loading screen is drawn while the boot runs (NOTES 34).
 3. **Package name and key.** If a build was ever uploaded to app
    1441937125658740 before, its package name and signing key are locked in.
    The APK here uses `com.montgummery.greeblis` and a fresh key.
@@ -126,6 +131,8 @@ beyond the VR-entry fix.
    thing shown is the OS three-dot splash, which the VRC says does not count
    if loading exceeds a few seconds. Fixing this would require making the
    game's boot asynchronous (a game change).
+   **Resolved** (3.15.7, F-B6): the boot is sliced and our own loading screen
+   (title, progress bar) is drawn in VR while it runs (NOTES 34).
 5. **VRC.Quest.Packaging.6, 64-bit.** The APK has no native code at all, so
    `aapt2` reports no `native-code` line rather than `arm64-v8a`. Meta's own
    PWA packages have the same shape, but a reviewer reading the rule
@@ -143,6 +150,7 @@ beyond the VR-entry fix.
    the inscription's own page." The frame loop overwrites it with "Press A to
    Continue." within one frame, so players never see it, but the wording is
    from another distribution context.
+   **Resolved** (3.15.3, F-B7): the text is no longer in the game file.
 8. **User-agent gate.** The game refuses to run unless the user agent matches
    `/OculusBrowser|Quest/`. The APK always runs in the Quest Browser so this
    holds, but a future browser UA change would block the game with the
@@ -159,6 +167,9 @@ beyond the VR-entry fix.
     unpacking would be lost before any game script runs, so the compressed
     file is not suitable for the APK even with the entry fix. The APK uses
     the uncompressed source, as agreed.
+    **Resolved** (3.15.43): that compressed build was removed (NOTES 87). The
+    compressed version made since 3.15.45 is a Bitcoin ordinal only and never
+    in the APK (RULES.md 20, NOTES 89).
 12. **three.js warning.** The bundled three.js can log "Depth Texture with cube
     render targets is not supported"; it is a library message, not a game
     error, and did not appear in the headless runs.
@@ -175,6 +186,10 @@ beyond the VR-entry fix.
     joins are accounted for. The APK is built from the uncompressed source,
     so it is "on par" with the release in content, but anyone wanting a
     byte-identical guarantee would need the original minifier pipeline.
+    **Resolved** (3.15.43): `test_parity.js` and that compressed build were
+    retired (NOTES 87); the shipped files are copies of the game file
+    (`sync_game.py --check`), and the compressed version unpacks to it byte for
+    byte (`build_compressed.js --check`, NOTES 89).
 
 ## From general testing (round 2)
 
@@ -1539,3 +1554,19 @@ beyond the VR-entry fix.
     comes from the game's seeded generator (confirmed at runtime), not random as RULES.md 5 says (RANDOMNESS.md, the
     author's call); `opt_identity.js`'s batcher check fails on 3.15.49 and 3.15.50 alike at the multi-material mesh at
     (-26.8, -26.8), heading 90: 0.021-0.027% of pixels, scattered, none in areas, just over its 0.02% line (open).
+
+94. **The author's 3.15.52 run, and the fixes for 3.15.53.** The log (`greeblis-run-1`, multiview): the B mark at
+    11.8 s fell inside the mipmap slices of the first seconds in VR (11.0-11.95 s), so every texture now gets its mipmaps
+    while loading (F-B40: 182 of 182 headless, none uploaded during play). Two shader programs were compiled during
+    play: the controller rays' line material at VR entry (a 92 ms frame; "no program of its kind"; reproduced headless
+    by drawing the rays, which headless controllers never show) and a Lambert program with a map the instant the Event
+    started (the key differs from the closest at fields 8, `map`, and 38, `vertexUvs`; not reproduced headless). Both
+    are now warmed while loading (F-B41). The Event ran at a median of 66 fps, at least 59.8; a town dip to 55.8 at
+    (10, 1); the app is CPU-bound (GPU 7.3 ms of 13.9). A 45 m Event view distance (fog beyond) would cut the heaviest
+    view from 275 to about 203 draws (-26%; 40 m -31%, 50 m -17%), a visible change for the author to choose.
+    Mushroom (F-B39): his stuck spot was on the ground at the outer end of the counter, where the hop onto the desk
+    started; the author's ramp replaces the hop. Visits: the scheduler picked Sparkakus as a visitor before the player
+    had the Gem or the Stone, which the visit plan then refused; his pairs score best (he never visits), so the same
+    refused pick came back every 4 s and visits stalled (one headless run: 13 visits in 47 game minutes against about
+    75). Since 3.15.53 he is left out of the pick until then, as Shy Zollod already was before the book (F-B42). The
+    Cave flag the scheduler read was refreshed only while a vignette played; it is now checked at each try (A3).

@@ -6,7 +6,8 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 
 | Version | versionCode | What changed | Headset |
 | --- | --- | --- | --- |
-| 3.15.52 | 52 | **R6** (the author): a dance battle's BOW OUT works at random 80% of the time instead of 70%. The randomness list is closed (RANDOMNESS.md). | awaiting the author's run |
+| 3.15.53 | 53 | **F-B38** the interaction menu never shows the previous menu's picture (Shy Zollod; after the last Blossom). **F-B39** Mushroom walks up a ramp at the left end of his desk, moved to the right (the author's design), instead of hopping; every way home goes by the ramp. **F-B40** every texture gets its mipmaps while loading (the flash at the start of a run). **F-B41** the controller rays' and the Event plants' shader programs are made while loading. **A1** snap turns at least 0.3 s apart. **A2** a new talk line for Gemtoe. **A3** more visitors to the Ancient while the player is in the Cave. Full tier (RULES.md 23) | pending |
+| 3.15.52 | 52 | **R6** (the author): a dance battle's BOW OUT works at random 80% of the time instead of 70%. The randomness list is closed (RANDOMNESS.md). | the author's run (NOTES 94): the menu flash (F-B38), Mushroom stuck (F-B39), one flash at the start (F-B40), two shader compiles (F-B41), the Event's frame rate at least 59.8 fps |
 | 3.15.51 | 51 | The author's randomness decisions (RANDOMNESS.md). **R5** ("1 to 7: seed"): the stars, the clouds, blinks, idle sway phases, Anomalee's glitch timing and jaw, and the Event ring's sway are the same on every launch (each its own named seeded stream). **R4** ("8. Let's remove this."): seven colour picks that had no effect removed; emotes look the same. Flint facing and the UFO's path kept as intended. `Math.random` sites 120 -> 81. | awaiting the author's run |
 | 3.15.50 | 50 | **P25** (the author: "FPS dropped below 60 fps while Backpacka was present"): Backpacka batched when built (she was never batched: 96 parts drawn one by one); about 83 fewer draws a frame while she is in view; identical pixels in 28 views of her show. **F-B37** (the author's request): while she is down at the pond the player cannot walk into her (player-only circles round her feet, body, neck and head; her animation untouched); new `test_backpacka.js`. `RANDOMNESS.md`: the randomness decision list for the author (T17). | awaiting the author's run |
 | 3.15.49 | 49 | **F-B36** (found by the frame-hazard watch in `test_lod.js`): 2.6 s after entering VR the switch of every texture to mipmaps re-uploaded all 195 at once (multiview: one long stall; classic path: each inside the frame where it was first seen); now in slices of at most 0.6 Mpx, 40 ms apart, each texture uploaded right away; the same final settings, so the same pixels. The comfort vignette's texture uploaded when made; the classic path uploads changed textures before the frame draws. Tools: `event_start_check.js` fails if any scene texture is not uploaded at its current version; the harness watch tells the pre-draw upload from drawing (it still flags 3.15.48). | awaiting the author's run |
@@ -62,9 +63,8 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 Diagnostic APKs (`tools/build_experiment.sh NAME`, same package and version as
 the release, never uploaded; since RULES.md 22 for measurement only, never to try a
 change, where they were once A/B builds). Current variants (`python3 tools/experiment.py --list`):
-`nolayers` (the plain projection-layer loader), `nomultiview` (the classic path), `flashlog` (extra
-hazard counts; its B mark is in the release since D2, 3.15.48), `nobatch`, `noeffects`, and `texcapture` (used by
+`nolayers` (the plain projection-layer loader), `nomultiview` (the classic path), `nobatch`, `noeffects`, and `texcapture` (used by
 `prerender_textures.js`, never built as an APK). Earlier ones, in git history only:
-`layers` (became the release in 3.15.13), `multiview` (became the release in
+`flashlog` (removed 2026-10-29; its B mark is in the release since D2, 3.15.48), `layers` (became the release in 3.15.13), `multiview` (became the release in
 3.15.34), `sharp` (retired; its setting became the adaptive scale), `native`,
 `directrequest`, `keepalive`, `nogovernor` (dropped in 3.15.43).

@@ -1,4 +1,5 @@
-// Dialogue layout (standard tier): every line the game can say fits its dialogue box. The box wraps a page at 920 px
+// Dialogue layout (not in a tier: too slow; each page is given up to a second to type out, and a run on 3.15.52
+// was stopped unfinished after 30 minutes): every line the game can say fits its dialogue box. The box wraps a page at 920 px
 // and shrinks the font from 56 px down to its floor before it gives up and cuts the page short with "…"; a cut page
 // loses words. This collects every dialogue-like string the game holds (each townsperson's talk and gift lines and the
 // rest of their definition, the Library's, the shop's and the battles' texts, every place's lines), shows each through

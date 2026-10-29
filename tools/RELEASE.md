@@ -89,6 +89,11 @@ and look at **Distribution → Builds**:
    You should see `Serving <n> bytes on http://127.0.0.1:17777/` (n is the size of
    `tools/android/app/src/main/assets/index.html`) and
    `Setting Oculus Browser launch mode to immersive`.
+   Multiview (the release path since 3.15.34), with `adb logcat -s GreeblisServer` open: at boot the log says
+   `multiview planned (... OCULUS_multiview true ...)`, and at entry `projection layer live, ..., multiview true`
+   and `multiview live: WxH per eye, msaa 4`. `multiview not used` or `framebuffer incomplete` means the headset
+   fell back to the classic path; send the log. Both eyes must look right: depth, lighting and the 3D effect (look
+   at a lamp, a creature close up, the garden), no flicker in one eye, smooth edges (MSAA).
    For a play session, capture live with `tools/capture_log.ps1` (Windows) or `tools/capture_log.sh` (macOS,
    Linux) from before the launch to the end; `adb logcat -d` afterwards keeps only the last minutes
    (`tools/HEADSET_DIAG.md` section 1).
@@ -239,53 +244,22 @@ author, 3.15.35: its XR2+ GPU is close to a Quest 2's, under half a 3S's,
 and the Event already runs 58-65 fps on a 3S). The same two headsets are
 selected in the Developer Dashboard (done by the author, 2026-10-27).
 
-## 5d. Multiview (release path since 3.15.34; was the experiment below)
-
-History: the `multiview` experiment was retired in 3.15.34, when multiview became the release path; there is no
-`multiview` variant in `tools/experiment.py` any more. The same checks now apply to the release APK itself.
-As written for the experiment: `tools/.runs/GreeblisTown-exp-multiview.apk` (same package and version as the
-release; `adb install -r`, reinstall the release afterwards). With logcat open
-(`adb logcat -s GreeblisServer`):
-1. At boot the log says `multiview planned (... OCULUS_multiview true ...)`, and
-   at entry `projection layer live, ..., multiview true` and `multiview live:
-   WxH per eye, msaa 4`. `multiview not used` or `framebuffer incomplete` means
-   the headset fell back to the classic path; send the log.
-2. Both eyes look right: depth, lighting and the 3D effect are as in the
-   release (look at a lamp, a creature close up, the garden); no flicker in
-   one eye; edges as smooth as before (MSAA).
-3. Entering VR is as smooth as before (no stall after the drop-in).
-4. Run through the town and the planting Event, then `node tools/perf_log.js
-   run.txt`; compare with the same run on the release.
-
 ## 6. Every later update
 
-Rule for the VR-entry script (the head script at the top of the game file; FIXES.md, entry edits): it is
-the one path proven on the headset. Until 2026-10-28 any change to how the session is
-requested, parked, drawn into, or handed to the game went out first as an
-experiment APK for a headset test; since then (RULES.md 22) changes go
-straight into the main build and the author tests after the merge, so test
-entry changes headless first (`test_entry.js`; 3.15.11 crashed at launch,
-`tools/BUGS.md` F-B15). Capture a headset test live (`tools/capture_log.ps1` / `.sh`);
-`adb logcat -s GreeblisServer GreeblisLauncher cr_VrShellDelegate` shows the
-page's own events and errors (`page: ...`).
+The rules for every update are in `tools/RULES.md`: changes go straight into the main build and the author tests
+after the merge (22; the experiment-first rule 15 is retired); every change is made in the game file and followed by
+a rebuild and a version bump before it is committed, so the root `index.html` and APK are always the latest build
+(1, 11, 12; `tools/build.sh --bump`); creature models are fixed with care and without changing their look (7); each
+build gets the full test pass (23).
 
-Rule for the creature models (the author, 2026-10-27): be careful fixing any
-issue on a creature model; the author is otherwise happy with their designs. A
-fix touches only the offending surfaces and leaves the look unchanged (B20 sank
-the cuff lights by millimetres); anything the author would notice is put to
-them first, with the candidate list from `tools/test_coincident.js`.
-
-Rule for the repository root (the author, 2026-10-27): the one-file game as
-bundled in the APK is kept at the root as `index.html` next to the APK.
-`tools/sync_game.py` copies it from the game file `tools/uncompressed.html` (where every change is made), `--check`
-(every test tier) and `tools/check_apk.sh` check it, and the pre-commit hook in `tools/git-hooks/`
-(`git config core.hooksPath tools/git-hooks`, once per clone) refuses a commit
-in which the two differ, in which the root APK does not contain the current
-asset, in which the game file is not fully minified, or in which
-`tools/index.compressed.html` does not unpack to the game file, so a release commit carries the latest build and the exact game file
-inside it. Rule for the root APK (the author, 2026-10-27): `GreeblisTown-release.apk`
-at the root is always the latest build; every change to the asset is followed by
-a rebuild and a version bump before it is committed.
+The VR-entry script (the head script at the top of the game file; FIXES.md, entry edits) is the one path proven on
+the headset: test entry changes headless first (`test_entry.js`; 3.15.11 crashed at launch, `tools/BUGS.md`
+F-B15). Capture a headset test live (`tools/capture_log.ps1` / `.sh`); `adb logcat -s GreeblisServer
+GreeblisLauncher cr_VrShellDelegate` shows the page's own events and errors (`page: ...`). A creature fix touches
+only the offending surfaces (B20 sank the cuff lights by millimetres); anything the author would notice is put to
+them first, with the candidate list from `tools/test_coincident.js`. The pre-commit hook in `tools/git-hooks/`
+(`git config core.hooksPath tools/git-hooks`, once per clone) refuses a commit whose copies, root APK or compressed
+version are stale, or whose game file is not fully minified.
 
 Same key, same package name, higher `versionCode`, rebuild, run
 `tools/check_apk.sh`, upload to Alpha, test, promote.

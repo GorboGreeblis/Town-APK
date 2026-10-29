@@ -259,7 +259,9 @@ What the models have in common, as built:
 - **Face**: on the stem, under the cap: shared eyes, angled brown brows, pink cheeks with freckles, a small smile.
 - **Extras**: a six-point sheriff's star; a cowboy hat whose brim and crown are shaped by moving the lathe's vertices
   (sides curled up, a front dent, a centre crease).
-- **Motion**: the stem sways, the cap bobs and nods while he talks. No walk.
+- **Motion**: the stem sways, the cap bobs and nods while he talks. No walk cycle: he glides. He stands on his desk
+  (1.545 m up) and goes up and down by a ramp at its left end (since 3.15.53, the author's design; it was a hop),
+  his height following the ramp (FIXES.md F-B39).
 
 ### King Dino
 - **Body**: his own signed-distance blob (torso, a head nearly as wide, a wide snout, two thighs), pear-shaped.
@@ -389,7 +391,7 @@ What the models have in common, as built:
 ## 6. Changing or adding a creature
 
 - **Do not change how anyone looks** (the author's rule). A fix to a model must leave its pixels the same:
-  `geom_compare.js` compares built geometry, `test_coincident.js` and `test_zfight.js` catch depth fights between
+  `minify_identity.js BEFORE AFTER` compares the whole built scene bit for bit, `test_coincident.js` and `test_zfight.js` catch depth fights between
   parts (B20-B23 were fixed that way, moving parts by a millimetre or two inside each other).
 - **Keep creature geometry non-indexed**: the ground fit samples every 6th vertex, so indexing a creature's mesh
   would move it (P12 skips creatures; RENDERING.md 4).
@@ -409,6 +411,8 @@ What the models have in common, as built:
   load since F-B30): no texture may be made during play (RULES.md 9; `texture_census.js` fails on one). A canvas
   repainted during play goes through `needsUpdate`; since F-B31 the upload happens in a task after the frame, never
   inside it.
+- **Measure a change**: `creature_census.js` (full-tier report, `.runs/creature_census.json`) gives each character's
+  meshes, batched parts, triangles, materials and textures; compare before and after.
 
 ## 7. The author's answers
 

@@ -17,14 +17,9 @@ T = os.path.dirname(os.path.abspath(__file__))
 README = open(os.path.join(T, 'README.md'), encoding='utf-8').read()
 problems = []
 
-# tools that are not meant to be documented one by one (generated output, scratch)
-IGNORE = set()   # every tool, check_docs.py included, has its row
-
 tools = sorted([f for f in os.listdir(T) if f.endswith(('.js', '.sh', '.py'))] +
                ['lib/' + f for f in os.listdir(os.path.join(T, 'lib')) if f.endswith('.js')])
 for f in tools:
-    if f in IGNORE:
-        continue
     name = os.path.basename(f)
     # a row names the tool in backticks, possibly with arguments or its folder (`build_experiment.sh NAME`, `lib/harness.js`)
     if not re.search(r'`(?:[\w./-]*/)?' + re.escape(name) + r'(?:[ `])', README):
