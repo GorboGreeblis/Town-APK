@@ -1,4 +1,4 @@
-// Compressed version test (every tier but quick): tools/index.compressed.html works as a Bitcoin ordinal (RULES.md 20).
+// Compressed version test (every tier but quick): index.compressed.html works as a Bitcoin ordinal (RULES.md 20).
 // The page is served alone, as an inscription is: every other path is a 404, and the response carries the content
 // security policy ordinals.com serves inscriptions with (only the page's own origin, inline code, data: and blob:),
 // so anything the game would fetch from elsewhere fails here as it would there. Checked:
@@ -8,14 +8,14 @@
 //     nothing from another host;
 //   - with a desktop browser's user agent: the page says the game is made for Meta Quest and unpacks nothing.
 //
-//   node tools/test_compressed.js [page]          default: tools/index.compressed.html
+//   node tools/test_compressed.js [page]          default: index.compressed.html
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const { execFileSync } = require('child_process');
 const { chromium } = require('playwright');
 const { reporter, root } = require('./lib/harness');
-const file = path.resolve(process.argv[2] || path.join(root, 'tools/index.compressed.html'));
+const file = path.resolve(process.argv[2] || path.join(root, 'index.compressed.html'));
 const CSP = "default-src 'self' 'unsafe-eval' 'unsafe-inline' data: blob:";
 const QUEST = 'Mozilla/5.0 (X11; Linux x86_64; Quest 3) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/35.0 Chrome/128.0 VR Safari/537.36';
 const DESKTOP = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36';

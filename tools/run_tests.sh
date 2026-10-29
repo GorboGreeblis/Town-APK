@@ -94,6 +94,7 @@ if [ "$TIER" != quick ]; then
   run "seeded decoration: the author's seeded items draw from their own streams; two launches build the same stars and clouds (R5)" node "$ROOT/tools/test_seeded.js" "$ASSET"
   run "interaction menu: never shows the previous menu's picture (after the last Blossom, after another character; F-B38); the controller rays' shader made while loading (F-B41)" node "$ROOT/tools/test_menu.js" "$ASSET"
   run "visitors to the Ancient while the player is in the Cave, back to normal outside (A3)" node "$ROOT/tools/test_cave.js" "$ASSET"
+  run "the Event's start and end: mist rolls in and out, clouds and pickups fade, UFO leaves, Backpacka into the mist, flowers in a later Event (A4-A7, F-B43)" node "$ROOT/tools/test_event_fade.js" "$ASSET"
   run "Backpacka at the pond: the player cannot walk into her; she is not moved; no circles once she leaves" node "$ROOT/tools/test_backpacka.js" "$ASSET"
   run "far detail and the batcher: one model at a time, swaps at 62/66 m; exact matrices in every batch, every frame" node "$ROOT/tools/test_lod.js" "$ASSET"
   run "world: routes, hulls, pickups, watchdog (${WORLD_S}s)" node "$ROOT/tools/test_world.js" "$ASSET" "$WORLD_S"

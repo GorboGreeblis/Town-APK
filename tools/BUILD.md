@@ -8,18 +8,19 @@ loopback server inside the app.
 
 ```
 GreeblisTown-release.apk   the final signed build
-index.html                 the game file's copy (the root holds only these two and tools/)
+index.html                 the game file's copy
+index.compressed.html      the compressed version (a Bitcoin ordinal; never in the APK), built from it
+                           (the root holds only these three and tools/; RULES.md 11)
 tools/
   android/                 Android Studio / Gradle project that produces the APK
     app/src/main/assets/index.html             the game as bundled (a copy of uncompressed.html)
     app/src/main/java/.../GameServer.java      loopback HTTP server for the game
     app/src/main/java/.../LauncherActivity.java launches the Quest Browser immersive
   uncompressed.html        THE GAME FILE: the whole game, minified, every change made in it directly
-  index.compressed.html    the compressed version (a Bitcoin ordinal; never in the APK), built from it
   build.sh                 rebuilds everything from the game file (minify, copies, tex/, version, APK, compressed)
   minify_game.js           minifies the game file in place (RULES.md 19); --check
   build_compressed.js      builds index.compressed.html from the game file; --check
-  sync_game.py             copies it to index.html (root) and the APK's asset; --check compares
+  sync_game.py             updates every copy: index.html (root), the APK's asset, index.compressed.html; --check
   experiment.py            diagnostic variants of a copy (measurement only, RULES.md 22)
   test_*.js, *.sh          test suite (see tools/README.md)
   RULES.md                 the author's rules: read before any change
@@ -106,7 +107,7 @@ tools/build.sh --bump                   # after editing tools/uncompressed.html:
 `tools/build.sh` minifies the game file (a no-op when it already is), copies it to `index.html` (root) and the APK's
 asset, re-paints the pre-painted textures in `assets/tex/`, raises the version by one if what ships changed
 (`--bump`; without it the build stops and says so), builds the release APK, copies it to the root as
-`GreeblisTown-release.apk`, builds the compressed version `tools/index.compressed.html` (never in the APK), and
+`GreeblisTown-release.apk`, builds the compressed version `index.compressed.html` at the root (never in the APK), and
 checks the result (`sync_game.py --check`, `experiment.py --check`, `check_apk.sh`, `test_standalone.js`,
 `test_compressed.js`; `--no-test` skips the last two). Painting is seeded (FIXES R1), so an unchanged game
 file rebuilds the same `tex/` and the same APK, byte for byte. Add the new version's row to `tools/VERSIONS.md`.
@@ -118,7 +119,7 @@ python3 tools/sync_game.py              # copy the game file to index.html (root
 node tools/prerender_textures.js        # re-paint assets/tex/ (after a change to a texture painter)
 # raise versionCode and versionName in tools/android/app/build.gradle if what ships changed (RULES.md 12)
 (cd tools/android && ./gradlew assembleRelease)   # -> app/build/outputs/apk/release/app-release.apk (copy it to the root)
-node tools/build_compressed.js          # rebuild tools/index.compressed.html (RULES.md 20; the pre-commit hook refuses a stale one)
+node tools/build_compressed.js          # rebuild index.compressed.html (RULES.md 20; the pre-commit hook refuses a stale one)
 ```
 
 ### Signing

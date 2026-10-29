@@ -377,7 +377,8 @@ What the models have in common, as built:
   curled tail, four legs ending in open pipe feet, ten leaf-like wing blades; she flies the whole time.
 - **Palette**: tan skin (`#d48e64`) with orange, yellow, ochre and pink patches, green wings, a rainbow.
 - **Motion**: the planting Event's set piece: she flies in, drinks from the pond and swells, flies to the garden,
-  spins while her four feet spray water on the plants, a rainbow fades in, and she flies away (84 s in all).
+  spins while her four feet spray water on the plants, a rainbow fades in, and she flies away low over the north-west
+  fence into the Event's mist bank, where she is switched off (88 s in all; 84 s until 3.15.54, FIXES A7).
 - **Performance and collision** (3.15.50): batched when built (P25: 94 of 96 parts in 11 batches); while she is down at
   the pond the player cannot walk into her (F-B37: player-only circles round her feet, body, neck and head).
 

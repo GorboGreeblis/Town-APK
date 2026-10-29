@@ -8,7 +8,7 @@
 #      (RULES.md 12): --bump raises versionCode by one and versionName's last number to match; without it the build
 #      stops and says so;
 #   4. the release APK (Gradle), copied to the root as GreeblisTown-release.apk;
-#   5. the compressed version, tools/index.compressed.html (build_compressed.js; never in the APK, RULES.md 20);
+#   5. the compressed version, index.compressed.html at the root (build_compressed.js; never in the APK, RULES.md 20);
 #   6. the checks: sync_game.py --check, experiment.py --check, check_apk.sh (store rules, the root APK holds the
 #      current game), test_standalone.js (the game runs alone; tex/ is what it paints) and test_compressed.js (the
 #      compressed version works as an ordinal). --no-test skips the last two.

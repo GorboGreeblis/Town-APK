@@ -338,7 +338,8 @@ offering everyone a goo burger, Gemtoe claiming whatever is worth something.
 
 - **The Event** is the planting event: the "GARDEN EVENT" the campfire panel
   starts (Summoning Stone, Seeds, Snacks), the gardening at the garden with the
-  pillar and the night. In the code it is `me`, whose own label is "finale".
+  pillar, in daylight (the author: it is never night during the Event). Since 3.15.54 a mist bank rolls in beyond
+  the town fence while it runs. In the code it is `me`, whose own label is "finale".
   The performance notes, `event_probe.js` and `perf_report.js` all mean this.
 - **The Speech** is Sparkakus's finale in the library: with the three Artifacts
   he assembles the Eye and awards the Gem. In the code it is `speech`.
