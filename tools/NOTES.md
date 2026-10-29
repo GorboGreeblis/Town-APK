@@ -1488,3 +1488,17 @@ VR-entry fix; each item is for discussion first.
     now) and, on the classic path, panel text uploaded mid-draw (now before the frame draws, as on multiview). Tools:
     `event_start_check.js` now also fails if any texture in the scene is not on the GPU at its current version; the
     harness's watch counts an explicit upload before three.js starts drawing as the frame's start, not as drawing.
+
+93. **Backpacka: the frame-rate drop, her collision, and two side findings (3.15.50).** The author: "FPS dropped below 60
+    fps while Backpacka was present". A 5-second timeline of the Event at the author's low spot (-24, -2), heading 225,
+    headset field of view, draws stubbed so script time carries over: about 52 s into the Event the draws rose from 545
+    to 714 (classic path, both eyes) and stayed until the end, with only 1% more triangles. The new draws were 95 of
+    Backpacka's 96 parts: she is built hidden by her module's pre-warm, after the loading step that batches the scene,
+    so the batcher never saw her (P25: 714 -> 545, her views about 93 draws fewer each). Her script cost is small: what
+    rises in the same window is `bend` (Etcher's six tentacles, deformed for the rock, scissors and paper moves while the
+    townsfolk dance) and `gFit` (the ground fit of moving creatures, a vertex scan every other frame while they move):
+    the next CPU candidates. Collision (F-B37): her low parts while down are her four legs round (31.3, -2.75) and her
+    neck and head into the pond at about (29.7-30.8, -2.7); her body hangs at about 3 m. Side findings: the UFO's heading
+    comes from the game's seeded generator (confirmed at runtime), not random as RULES.md 5 says (RANDOMNESS.md, the
+    author's call); `opt_identity.js`'s batcher check fails on 3.15.49 and 3.15.50 alike at the multi-material mesh at
+    (-26.8, -26.8), heading 90: 0.021-0.027% of pixels, scattered, none in areas, just over its 0.02% line (open).

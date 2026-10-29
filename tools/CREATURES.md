@@ -373,6 +373,8 @@ What the models have in common, as built:
 - **Palette**: tan skin (`#d48e64`) with orange, yellow, ochre and pink patches, green wings, a rainbow.
 - **Motion**: the planting Event's set piece: she flies in, drinks from the pond and swells, flies to the garden,
   spins while her four feet spray water on the plants, a rainbow fades in, and she flies away (84 s in all).
+- **Performance and collision** (3.15.50): batched when built (P25: 94 of 96 parts in 11 batches); while she is down at
+  the pond the player cannot walk into her (F-B37: player-only circles round her feet, body, neck and head).
 
 ### The player
 - In VR the player sees only their hands: cartoon three-fingered hands (skin `#f4dcc6`) with a white cuff and a

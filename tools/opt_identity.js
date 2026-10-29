@@ -21,7 +21,7 @@ const outDir = path.join(root, 'tools/.runs/opt_identity');
 const OPTS = [
   // The batcher as a whole (and P9's per-part shininess and specular inside it): batches drawn, against
   // every source mesh drawn on its own with the batch meshes hidden.
-  { name: 'batcher (merged parts vs their own meshes)', expr: 'window.__idBatch(v)', present: '!!(window.__dbg && window.__dbg.gcEB && window.__dbg.gcEB.list.length)', moreTris: true },
+  { name: 'batcher (merged parts vs their own meshes)', expr: 'window.__idBatch(v)', present: '!!(window.__dbg && window.__dbg.gcEB && window.__dbg.gcEB.list.length)', moreTris: true, bp: true },
   // P12 indexes merged scenery at load; the switch puts back the exact non-indexed layout (expanding an
   // index reproduces the original arrays bit for bit, in the same triangle order).
   { name: 'P12 indexed scenery', expr: 'window.__idIdx(v)', present: '!!window.__idIdx && window.__idIdx.count() > 0' },
@@ -81,6 +81,12 @@ const OPTS = [
     // spots a fix publishes (P20: every pizza box and the pie, laid out in the Event), orbited closer
     const spots = (() => { try { return (window.__gtPZ && window.__gtPZ.where()) || []; } catch (e) { return []; } })();
     for (const [x, y, z] of spots) { const c = new T.Vector3(x, y, z); for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.4; view(`pizza at (${x.toFixed(1)}, ${z.toFixed(1)}) angle ${k * 90}`, new T.Vector3(x + Math.cos(a) * 1.3, y + 1.0, z + Math.sin(a) * 1.3), c); } }
+    // Backpacka (P25: batched since 3.15.50), posed by her module at moments of her show, orbited at 5 m
+    if (opt.bp && window.__gtBP && window.__gtBP.preview && D.me && D.me.active) for (const ts of [22, 30, 36, 45, 55, 62, 68]) {
+      let R = null; try { R = window.__gtBP.preview(ts); } catch (e) {} if (!R || !R.visible) continue;
+      R.updateMatrixWorld(true); const c = new T.Box3().setFromObject(R).getCenter(new T.Vector3());
+      for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.4; view(`Backpacka at ${ts} s of her show, angle ${k * 90}`, new T.Vector3(c.x + Math.cos(a) * 5, c.y + 1.2, c.z + Math.sin(a) * 5), c); }
+    }
     O.xr.enabled = xrWas; O.setRenderTarget(rtWas);
     return { label, views, stats, mm: mm.length };
   }, { label, opt, save });
