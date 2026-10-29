@@ -44,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (56 blocks)
+## Gameplay, performance and other fixes (57 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -485,6 +485,18 @@ release log (they were only in the `flashlog` diagnostic build): B on the right 
 with a short buzz; frames over 28 ms are logged (at most two a second); a shader compiled during play names the key
 fields that differ from the closest program of its kind (the key was cut after 40 characters); XR frames are numbered
 for the marks.
+
+- **F-B36** (3.15.49; flashes and the first seconds in VR; found by the frame-hazard watch in `test_lod.js`; NOTES 92):
+2.6 s after entering VR the game switches every texture to mipmaps and 4x anisotropy (sharper at a distance) and
+marked all of them (195, a 2048x2048 one among them) to be uploaded again. On the headset's path (multiview) the
+upload hook did all of them in one go between two frames: one long stall, every mipmap made at once. On the classic
+path (the fallback) each one was uploaded the first time it came into view after that, inside the frame (172 still
+waiting 9 s after entering VR in a headless run). Now the switch goes through the textures in slices of at most
+0.6 million pixels, 40 ms apart, each texture uploaded right after its switch (19 slices, done in about 1 s; the log
+says "mipmaps on: N textures re-uploaded between frames"). Also: the comfort vignette's texture is uploaded when it is
+made (it had waited for the first move), and on the classic path the textures changed since the last frame (panel
+text) are uploaded before the frame draws, as multiview already did. The same settings on every texture once done
+(all 195 compared), so the same pixels.
 
 ## Multiview (release path since 3.15.34)
 

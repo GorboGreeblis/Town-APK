@@ -5,6 +5,7 @@
 // reads; NOTES 67, 80) and a projection-layer swap (NOTES 81). Every WebGL call of those kinds, plus vertex-buffer
 // uploads, buffer and texture creation and shader compiles, is recorded with the frame it falls in and whether a frame
 // was drawing at the time; foveation changes and layer swaps are recorded too, from 3 s before the start to 8 s after.
+// Then every texture in the scene must be on the GPU at its current version (none left to upload on first sight).
 // Fails on any texture, framebuffer or pixel operation or shader compile inside a frame, and on a layer swap; vertex
 // uploads inside a frame are listed (the buffers a new mesh needs; not a known flash cause, reported for the record).
 //
@@ -43,7 +44,11 @@ const INFO = ['bufferData', 'bufferSubData', 'createBuffer', 'createTexture', 'b
     const ts = performance.now(); while (!D.me.active && performance.now() - ts < 15000) await wait(20);
     const tActive = performance.now() - t0, started = !!D.me.active;
     await wait(8000); rec = false; clearInterval(poll); clearInterval(adv);
-    return { log, started, tYes, tActive, level: D.Ge && D.Ge.level, foveationNow: sh().fixedFoveation };
+    // every texture in the scene is on the GPU at its current version: none waits to be uploaded when it first comes into
+    // view (on the classic path that upload falls inside the frame; the mipmap switch after entering VR re-uploads all, F-B36)
+    const P = D.O.properties, seen = new Set(), waiting = [];
+    D.C.traverse((o) => { for (const m of [].concat(o.material || [])) for (const k in m) { const t = m[k]; if (!t || !t.isTexture || !t.image || seen.has(t)) continue; seen.add(t); const p = P.get(t); if (!(p && p.__webglTexture && p.__version === t.version)) waiting.push(`${k} ${t.image.width}x${t.image.height} ${p && p.__webglTexture ? 'stale' : 'never uploaded'}${o.visible ? '' : ' (hidden)'}`); } });
+    return { log, started, tYes, tActive, level: D.Ge && D.Ge.level, foveationNow: sh().fixedFoveation, textures: seen.size, waiting };
   }, [HAZARD, INFO]);
   await g.close();
   const L = r.log, frames = L.filter((e) => e.k === 'frame');
@@ -60,5 +65,6 @@ const INFO = ['bufferData', 'bufferSubData', 'createBuffer', 'createTexture', 'b
   expect('no texture, framebuffer or pixel operation inside a frame around the Event start (the flash causes)', inside.filter((e) => e.k !== 'compileShader' && e.k !== 'linkProgram').length === 0, inside.slice(0, 4).map((e) => `${e.k} ${e.arg} at ${(e.t / 1000).toFixed(2)} s: ${e.stack}`).join(' | '));
   expect('no shader compiled around the Event start', compiles.length === 0, compiles.slice(0, 3).map((e) => `${e.k} at ${(e.t / 1000).toFixed(2)} s${e.inFrame ? ' (in a frame)' : ''}`).join(' | '));
   expect('no projection-layer swap', !L.some((e) => e.k === 'layer swap'));
+  expect(`every texture in the scene (${r.textures}) is uploaded and current: none waits for its first sight`, r.waiting.length === 0, `${r.waiting.length}: ${r.waiting.slice(0, 4).join(', ')}`);
   console.log(failures.length ? `EVENT START CHECK FAILED (${failures.length})` : 'EVENT START CHECK PASSED'); process.exit(failures.length ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });
