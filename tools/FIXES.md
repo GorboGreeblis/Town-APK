@@ -44,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (70 blocks)
+## Gameplay, performance and other fixes (78 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -596,6 +596,69 @@ one every 3.4 game minutes instead of 4.4). `test_cave.js` (standard tier; force
 scheduler picked Sparkakus as a visitor before the player had the Gem or the Stone, which the visit plan refuses; his
 pairs score best because he never visits, so the same refused pick came back every 4 s. He is now left out of the pick
 until then, as Shy Zollod already was before the book.
+
+- **A4** (3.15.54; the author, on a 45 m fog shown in pictures: "too aggressive", "the fog seems to cover the church
+which is also still reachable"; then "Would it be possible to apply [it] only to the fence and to have it fade in
+(while hidden objects fade out)? I'd want an actual effect that appears like fog moving in and not just a filter
+applied", "trees inside the fence and the church inside the fence should not be hidden by fog"; pictures shown, then
+"Push these changes directly to the main build"): during the Event a bank of mist rolls in from far out and settles
+just outside the town fence (the rectangle x -37.6..37.6, z -37.6..49.6; the player's reachable area ends inside it).
+Four bands 1.5, 5, 10 and 16 m outside the fence, 22-34 m tall, drift sideways at different speeds (two samples of
+one soft-blob texture each); dense at the ground, thinning upwards. It comes in over 6 s from 1.6 times the fence's
+size, and rolls back out over 6 s when the Event ends; its colour is the scene's fog colour. Everything inside the
+fence is untouched. Made while loading: the texture is painted from its own seeded stream (`gcRnd("mist")`) and
+uploaded, and its one shader program (`gcMist`) is compiled with the scene. 4 draws while it shows, none otherwise.
+The scene's regular fog is unchanged.
+
+- **A5** (3.15.54; the author: "For the clouds and anything else hidden during the Event: everything hidden must fade
+out at the start of the Event and then fade in at the end of the Event. Nothing should ever appear to pop out or pop
+in"; "Blossoms and Flint should fade out at the start of the Event and then fade in at the end", "Pickups should also
+fade out for the Event. Not shrink out"): what the Event hides now fades. The clouds (and anything else the Event's
+safeguard hides: objects beyond 26 m of the centre, smaller than 60 m) fade their opacity to 0 over 2.5 s and only
+then hide, and at the end show at 0 and fade back in; an object that shares a material with something still visible
+is left visible rather than faded. Every Blossom and Flint (before: only those within 12 m of the centre, which popped)
+fades out over 2.5 s through a per-instance opacity that now covers all of their instanced parts, and back in at the
+end; while any is fading their materials are drawn as transparent. Goo splats and blobs are left alone: they last a
+second or two and fade on their own.
+
+- **A6** (3.15.54; the author: "Please also add logic that prevents the UFO from appearing during the Event", "The UFO
+leaving by its normal exit path is what's intended"): as before no UFO starts during the Event; one already flying
+when it starts no longer vanishes on the spot but goes straight into its exit path from where it is (it climbs away
+and is switched off far out, about 250 m).
+
+- **A7** (3.15.54; the author: "Have Backpacka fly into the fog before popping out at the end of the Event, instead of
+having her pop out in the sky", "It's ok to extend Backpacka's outro"): her way out ends low and deep in the mist,
+at (-62, 5, 72), past the fence's north-west corner, instead of 40 m up in open sky; her outro is 4 s longer (her
+show 84 -> 88 s). She crosses the fence about 9 m up at her show's 82 s, is hidden by the mist within a second or so,
+and is switched off at 88 s inside it. Pictures shown to the author.
+
+- **F-B43** (3.15.54; the author: "If the user starts a subsequent Event: let's have the Garden Flowers shrink out at
+the start of the Event and then grow back in as normal during the Event. This change will fix the issue of creatures
+clipping into the flowers during their planting in subsequent Events"): flowers are planted in the first Event only;
+in a later one the townsfolk planted into the grown flowers. Now, when a later Event starts, the garden's flowers
+shrink away over 1.2 s and grow back the usual way once Backpacka waters them (or after the Event, if it ends first).
+
+- **P26** (3.15.54; the author: "Im assuming that hiding pickups will at least improve FPS a little"): the pickups
+are drawn as instances (one draw per part for all of them); a hidden pickup was a zero-scale instance, still drawn.
+When no pickup is showing, each instanced draw is now switched off, so the Event draws none of them.
+
+- **R7** (3.15.54; the author: "Please also move the Compressed game file into root", "Rule: keep all copies of the game
+file updated at all times"; RULES.md 11, 20, 24): the compressed version is `index.compressed.html` at the repository
+root (moved from `tools/`). `sync_game.py` now updates every copy after an edit: `index.html`, the APK's asset, and the
+compressed version (rebuilt); `--check` checks all three.
+
+- **F-B44** (3.15.55; found by the 3.15.54 full pass, frame-hazard watch in `texture_census.js`; NOTES 96): two
+shader programs were compiled inside XR frames during the Event in the census's sequence (shop, battle, Nextessa's
+pizza, the Speech, then the Event): a Lambert material with a map at the garden's centre, its key differing from the
+warmed one only in `numPointLights` (0 -> 1). Loading compiles the scene once with the portal's light on and once
+with the Bulb's, but before the Event's plants and pizza are built for their warm-ups, so those were never compiled
+lit. The pizza warm-up (plants still in the scene) now also compiles with the portal light, with portal and Bulb
+lights together, and with the Bulb's alone (3.15.55). That was not enough: the census on 3.15.55 still compiled two
+programs whose keys equalled ones made by those warm-ups, because three.js deletes a program as soon as no material
+uses it, and every material went back to its unlit program when the light went off. Since 3.15.56 each program first
+made in those lit warm-ups is pinned (one extra use count) so it stays in the cache for the moment the light is on in
+play. The census's Speech had been cut short by its real-time limit (the Speech takes 18 game s, about 110 s of
+headless real time), leaving the Bulb lit into the Event; it now gets 900 s.
 
 ## Multiview (release path since 3.15.34)
 

@@ -128,6 +128,11 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   beat won't let you go!"; 70% until 3.15.52, FIXES R6). `test_progression.js`, `test_content.js`.
 - **Backpacka at the pond.** While she drinks (her show's 16-40 s) the player cannot walk into her: player-only
   circles round her feet, body, neck and head (F-B37). `test_backpacka.js`.
+- **The Event's start and end (3.15.54).** A mist bank rolls in over 6 s and settles just outside the town fence
+  (A4); the clouds and every Blossom and Flint fade out over 2.5 s (A5); a UFO in flight leaves by its exit path and
+  none starts (A6). At the end Backpacka flies off into the mist (her show is 88 s, A7), the mist rolls back out and
+  everything fades back in. In a second or later Event the garden's flowers shrink away at the start and grow back
+  when watered (F-B43). Nothing is shown or hidden at once. `test_event_fade.js`.
 - **Seeded decoration.** The stars, the clouds, blinks, idle phases, Anomalee's glitch timing and jaw and the Event
   ring's sway are the same on every launch (R5); what stays random is in RULES.md 5 and RANDOMNESS.md.
   `test_seeded.js`.

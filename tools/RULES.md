@@ -57,7 +57,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 
 ## Builds and the repository
 
-11. **The repository root holds only** `GreeblisTown-release.apk`, `index.html` and `tools/` (2026-10-27).
+11. **The repository root holds only** `GreeblisTown-release.apk`, `index.html`, `index.compressed.html` and `tools/`
+    (2026-10-27; the compressed version moved to the root 2026-10-29: "Please also move the Compressed game file into
+    root").
 12. **The APK and `index.html` at the root are always the latest build** (2026-10-27; restated 2026-10-28: "The .apk
     and index.html file in root must always be the latest build"). Every change to the game is followed by a rebuild
     and a version bump (`versionCode` only goes up) before it is committed (`tools/build.sh --bump`). Enforced:
@@ -87,14 +89,14 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     minified game; `node tools/minify_game.js --check` (quick tier, pre-commit hook, `build.sh`) fails if minifying
     it again would change it. `minify_identity.js` proved the minified game builds the same world as before, object
     for object, bit for bit.
-20. **The compressed version lives in `tools/` beside the uncompressed one, works as a Bitcoin ordinal, and is always
+20. **The compressed version lives at the repository root (in `tools/` until 2026-10-29), works as a Bitcoin ordinal, and is always
     updated with the others; the APK never uses it** (2026-10-28: "create a Bitcoin ordinal compressed version of the
     game and store it in the tools folder. This build must always always be updated with the others", "The Compressed
     version should always be the latest version of the game", "must be fully
     functional as a Bitcoin ordinal, as the previous compressed version was", "The .apk should never use the
     compressed version of the game file. The tools folder should contain both a compressed version and an
     uncompressed version of the game file", "Look to the previous compressed game file for methods of compression")
-    [89]. `tools/index.compressed.html`, built by `build_compressed.js` (in `build.sh`) with the previous compressed
+    [89]. `index.compressed.html` (root), built by `build_compressed.js` (in `build.sh` and `sync_game.py`) with the previous compressed
     version's method. Checked: it unpacks to the game file exactly (`build_compressed.js --check`: quick tier,
     pre-commit hook) and works as an inscription would (`test_compressed.js`: alone, under the ordinal content
     policy, unpacks, boots, enters VR; under 390,000 bytes). Its readable loader page carries no license notice (2026-10-28: "The License notice is not
@@ -113,6 +115,12 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     otherwise: treat this as if it were the final build and do a full test pass"). After each build the full tier runs
     (`tools/run_tests.sh --full`, 2-2.5 hours; `--resume` after a container restart), and its result is reported and
     recorded in TEST_PLAN.md before the work moves on.
+
+24. **Every copy of the game file is kept updated at all times** (2026-10-29: "keep all copies of the game file
+    updated at all times"): `index.html` and the APK's asset (byte copies), `index.compressed.html` (the compressed
+    version) and the APK at the root. `sync_game.py` writes all three copies after every edit of the game file
+    (the compressed one is rebuilt, about 20 s) and `--check` checks all three; the APK follows with
+    `tools/build.sh --bump` before any commit (rule 12; the pre-commit hook refuses a stale one).
 
 ## Priorities
 

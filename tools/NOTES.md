@@ -1573,3 +1573,36 @@ beyond the VR-entry fix.
     the clock run 4 times fast (an init script scaling `performance.now`), 48 game minutes each: 0.23 visits to the
     Ancient a game minute outside the Cave and 0.23 in it before A3 (the 32% chance changes little, as the pick favours
     whoever has visited least), 0.29 with A3's 1-in-10 tries (11 of 13 such tries made a visit).
+
+95. **The Event's frame rate, 3.15.53 against 3.15.54 (the mist bank and the fades).** `perf_report.js`, twice on each
+    build, one after the other (draw calls stubbed, so script time carries to a headset; GL time is upload cost only).
+    Event script p50, 3.15.53 / 3.15.54: start 5.5-5.6 / 5.2-5.6 ms, middle 5.6-6.0 / 5.5-6.2 ms, late 6.3-6.7 /
+    6.7-6.7 ms: the same within run-to-run noise (about +-0.4 ms). Draw calls: start 250-254 / 254-260 (the mist's 4
+    draws, while the pickups are still fading), middle and late 252-272 / 246-270 (the pickups' instanced draws off,
+    P26, the mist on). Visible see-through objects: 52-56 / 35-40 (the pickups' glints). No shader program compiled
+    during play in either. Estimate for the headset, from the author's 3.15.52 log (the Event at a median 66 fps,
+    lowest 59.8; CPU-bound, the GPU at 7.3 ms of a 13.9 ms frame) and the headset's measured cost per draw
+    (0.014-0.024 ms): 3.15.53 and 3.15.54 both about 66 fps median and about 60 at the lowest (within 1 fps of each
+    other). The mist adds blended fill on the GPU (four bands across the horizon in each eye; estimated well under
+    1 ms on a Quest 3S), which stays inside the GPU's headroom while the frame is CPU-bound. The mist cannot remove
+    what it hides: no object lies wholly outside the fence (the batcher merges the scenery across it), and splitting
+    those batches would add draws outside the Event. The CPU candidates for a real gain remain `gFit` and Etcher's
+    `bend` (NOTES 93). Side finding: `perf_report.js`'s triangle baseline (3.15.41) fails every situation on both
+    builds, because since P23/P24 large batches are drawn whole (more triangles, fewer draws, on purpose); it is
+    rewritten from 3.15.54 (`--update-baseline`).
+
+96. **The 3.15.54 full pass (`tools/.runs/full_3.15.54.log`, 216 min) and what it found.** It ran while diagnostic runs
+    of mine loaded the machine (load average up to 19 on 4 cores), and seven stages failed. Alone, the roaming test
+    and the long progression test pass (Mama Gorbo's walk through a scenery zone by the gallery, B45, and three
+    townsfolk not home 100 s after the Event did not recur). Test fixes: `test_greet.js` waits for frames as well as
+    game time (Sparkakus's second greeting was missed when a game second passed in a few frames); the census waits
+    for a playing text exchange to end before the next (all were refused with "one already playing") and now says
+    why one is refused and names every shader program made during play with its step and key difference;
+    `ancient_check.js` looks only from where the player can stand (inside the fence; its views from beyond it, z over
+    49.6, showed a pixel through the church by chance) and lists single-pixel seams in the church's walls (under 1%
+    of the Ancient's width in its zoomed 128-pixel view; which views show one changes with the Ancient's pose)
+    instead of failing on them. The batcher check's 0.021-0.025% is B38. The performance report's one failure was
+    a p99 spike in the dialogue situation under that load. Real: two Lambert programs compiled during the Event in
+    the census's sequence, `numPointLights` 0 -> 1 (F-B44, fixed in 3.15.55); not reproduced by starting the Event
+    with the pizza portal open, so the light was the Bulb's or both. Standalone only: three 4x2 placeholder textures
+    by the gallery uploaded in frames when their painting finished after VR entry (B44, open; not in the APK).

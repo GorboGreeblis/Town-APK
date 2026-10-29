@@ -16,6 +16,9 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     const D = window.__dbg, At = D.At, wait = (ms) => new Promise((res) => setTimeout(res, ms)), out = { npcs: [] };
     const gs = () => D.Re.t;   // game seconds
     const gwait = async (s) => { const g0 = gs(), w0 = performance.now(); while (gs() - g0 < s && performance.now() - w0 < s * 6000) await wait(50); };
+    // and at least n animation frames: under load a game second can pass in a handful of frames (the 3.15.54 full pass)
+    let fr = 0; (function tick() { fr++; requestAnimationFrame(tick); })();
+    const fwait = async (s, n) => { const f0 = fr; await gwait(s); const w0 = performance.now(); while (fr - f0 < n && performance.now() - w0 < 20000) await wait(50); };
     const angTo = (e) => { const p = e.group.position; return Math.atan2(At.position.x - p.x, At.position.z - p.z); };
     const diff = (a, b) => { let d = (a - b) % (2 * Math.PI); if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; return Math.abs(d); };
     const tried = new Set();
@@ -40,7 +43,7 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     // Sparkakus: a "!" from 6 m
     let bang = 0; const ua = D.Ut.at; D.Ut.at = function (x, y, z, s) { if (s === '!') bang++; return ua.apply(this, arguments); };
     const sp = D.st && D.st.pos ? D.st.pos() : null;
-    if (sp) { At.position.set(sp.x + 9, At.position.y, sp.z); await gwait(1); const b0 = bang; At.position.set(sp.x + 4.5, At.position.y, sp.z); await gwait(1.5); out.spBang = bang - b0; At.position.set(sp.x + 9, At.position.y, sp.z); await gwait(1); At.position.set(sp.x + 4.5, At.position.y, sp.z); await gwait(1.5); out.spBangAgain = bang - b0; }
+    if (sp) { At.position.set(sp.x + 9, At.position.y, sp.z); await fwait(1, 20); const b0 = bang; At.position.set(sp.x + 4.5, At.position.y, sp.z); await fwait(1.5, 20); out.spBang = bang - b0; At.position.set(sp.x + 9, At.position.y, sp.z); await fwait(1, 20); At.position.set(sp.x + 4.5, At.position.y, sp.z); await fwait(1.5, 20); out.spBangAgain = bang - b0; }
     D.Ut.at = ua;
     return out;
   });

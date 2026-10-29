@@ -28,7 +28,7 @@ applies, the server harness, docs consistency, spell-check, the bend test, the A
 entry, runtime play, multiview, uniform budget, warm-up coverage, standalone, the compressed version as an ordinal,
 the Event's first start, the texture census, the quality governor, game content, greeting, wrist HUD, roaming
 (`--long` in full), meetings, jazz drums, audio, seeded decoration (`test_seeded.js`), the interaction menu
-(`test_menu.js`), visitors to the Ancient in the Cave (`test_cave.js`), Backpacka at the pond, far detail and the batcher, world, input, progression (`--long` in full),
+(`test_menu.js`), visitors to the Ancient in the Cave (`test_cave.js`), the Event's start and end (`test_event_fade.js`), Backpacka at the pond, far detail and the batcher, world, input, progression (`--long` in full),
 visits, the courier (not in smoke), NPC return-home; then the frame-hazard verdict. Smoke shortens play (8 s), world
 (15 s), the NPC scenarios (the first four) and visits (one scenario); standard runs 20 s, 40 s, eight scenarios and
 two visit scenarios; full 120 s, 180 s and every scenario. Full only: the stability soak (`test_soak.js`, 10

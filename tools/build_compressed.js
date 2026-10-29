@@ -1,4 +1,4 @@
-// Builds the compressed version of the game, tools/index.compressed.html: the game file (minified, RULES.md 19)
+// Builds the compressed version of the game, index.compressed.html at the repository root: the game file (minified, RULES.md 19)
 // compressed into one self-contained HTML page small enough to inscribe as a Bitcoin ordinal (the author: "must be
 // fully functional as a Bitcoin ordinal, as the previous compressed version was"; RULES.md 20). The APK never uses it.
 //
@@ -16,13 +16,13 @@
 // character, except 0, 13 and 60 (NUL, carriage return and "<", which a page's script text cannot hold as they are),
 // which are joined with the next group into one character from 128 up (two bytes in UTF-8).
 //
-//   node tools/build_compressed.js            write tools/index.compressed.html from tools/uncompressed.html
+//   node tools/build_compressed.js            write index.compressed.html (root) from tools/uncompressed.html
 //   node tools/build_compressed.js --check    exit 1 unless the compressed version unpacks to the game file exactly
 const fs = require('fs');
 const path = require('path');
 const root = path.resolve(__dirname, '..');
 const gameFile = path.join(root, 'tools/uncompressed.html');
-const outFile = path.join(root, 'tools/index.compressed.html');
+const outFile = path.join(root, 'index.compressed.html');
 const template = fs.readFileSync(path.join(__dirname, 'lib/compressed_loader.html'), 'utf8');
 const ESC = [0, 13, 60];
 
@@ -69,17 +69,17 @@ function build() {
   const back = decodeBytes(fromText(text, coded.length), game.length);
   if (Buffer.compare(Buffer.from(back), game) !== 0) throw new Error('round trip failed: the compressed version does not unpack to the game file');
   fs.writeFileSync(outFile, page);
-  console.log(`wrote tools/index.compressed.html: ${Buffer.byteLength(page)} bytes (game ${game.length} bytes, coded ${coded.length}; ${((Date.now() - t0) / 1000).toFixed(0)} s); unpacks to the game file exactly`);
+  console.log(`wrote index.compressed.html: ${Buffer.byteLength(page)} bytes (game ${game.length} bytes, coded ${coded.length}; ${((Date.now() - t0) / 1000).toFixed(0)} s); unpacks to the game file exactly`);
 }
 
 function check() {
   const game = fs.readFileSync(gameFile);
-  if (!fs.existsSync(outFile)) { console.log('COMPRESSED CHECK FAILED: no tools/index.compressed.html (run node tools/build_compressed.js)'); process.exit(1); }
+  if (!fs.existsSync(outFile)) { console.log('COMPRESSED CHECK FAILED: no index.compressed.html (run node tools/build_compressed.js)'); process.exit(1); }
   const page = fs.readFileSync(outFile, 'utf8');
   const a = page.indexOf('<script type="b">') + 17, b = page.indexOf('</script>', a);
   const nb = +(page.match(/new Uint8Array\((\d+)\)/) || [])[1], ng = +(page.match(/\}\(n,(\d+)\)/) || [])[1];
   const ok = ng === game.length && Buffer.compare(Buffer.from(decodeBytes(fromText(page.slice(a, b), nb), ng)), game) === 0;
-  console.log(ok ? `COMPRESSED CHECK PASSED: tools/index.compressed.html (${Buffer.byteLength(page)} bytes) unpacks to the game file exactly` : 'COMPRESSED CHECK FAILED: tools/index.compressed.html does not unpack to the current game file (run node tools/build_compressed.js)');
+  console.log(ok ? `COMPRESSED CHECK PASSED: index.compressed.html (${Buffer.byteLength(page)} bytes) unpacks to the game file exactly` : 'COMPRESSED CHECK FAILED: index.compressed.html does not unpack to the current game file (run node tools/build_compressed.js)');
   process.exit(ok ? 0 : 1);
 }
 

@@ -157,6 +157,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | The interaction menu never shows the previous menu's picture (F-B38); the controller rays' shader is made while loading, no shader compiled during play (F-B41) | `test_menu.js` (standard tier, multiview path; fails on 3.15.52) | done (3.15.53) |
 | Mushroom reaches his desk by the ramp from anywhere (F-B39) | `test_npc_home.js` (17 starts), `test_visits.js` | done (3.15.53) |
 | Visitors to the Ancient while the player is in the Cave, back to normal outside (A3); visits never stall on Sparkakus before the Gem (F-B42) | `test_cave.js` (standard tier; fails on 3.15.52) | done (3.15.53) |
+| The Event's start and end never pop anything: mist bank (A4), fades (A5), UFO (A6), Backpacka into the mist (A7), flowers in a later Event (F-B43) | `test_event_fade.js` (standard tier) | done (3.15.54) |
 
 ## 10b. Store submission (VRC)
 
