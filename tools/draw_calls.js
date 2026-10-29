@@ -12,10 +12,13 @@ const path = require('path');
 const { boot, root } = require('./lib/harness');
 const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : undefined;
 const withEvent = process.argv.includes('--event');
+// The batcher's vertex cap for scenery parts: the game batches the scene's other top-level objects with _e(w, 6e4)
+// (P23; it was 4000 before 3.15.47); the creatures' groups have no cap.
+const VCAP = 60000;
 (async () => {
   const g = await boot({ file, vr: true, fastSim: false });
   const page = g.page;
-  await page.evaluate(() => {
+  await page.evaluate((VCAP) => {
     const D = window.__dbg, O = D.O, T = window.THREE;
     const sig = (m) => [m.type, m.color ? '#' + m.color.getHexString() : '', m.emissive && m.emissive.getHex() ? 'e' + m.emissive.getHexString() : '', m.map ? 'map' : '', m.transparent ? 'T' + (m.opacity < 1 ? m.opacity.toFixed(2) : '') : '', m.side, m.vertexColors ? 'vc' : '', m.flatShading ? 'flat' : '', m.shininess != null ? 's' + m.shininess : ''].filter(Boolean).join(' ');
     window.__dc = { draws: null };
@@ -39,7 +42,7 @@ const withEvent = process.argv.includes('--event');
       if (e.onBeforeCompile !== obc) return 'custom shader hook';
       if (o.drawRange.start || o.drawRange.count !== Infinity) return 'drawRange';
       if (Object.keys(o.morphAttributes).length) return 'morph';
-      if (o.attributes.position.count > 4000 && !D.It.all.some((x) => x.group === tp)) return 'over 4000 vertices';
+      if ((o.userData.gcN || o.attributes.position.count) > VCAP && !D.It.all.some((x) => x.group === tp)) return `over ${VCAP} vertices`;
       if (!tp.userData.gcEB) return 'added after batching';
       const part = D.gcEB.list.some((b) => b.P.some((q) => q.o === t && !q.on)); if (part) return 'batch part switched off';
       return 'lone signature in its group';
@@ -48,7 +51,7 @@ const withEvent = process.argv.includes('--event');
     const rbd = O.renderBufferDirect.bind(O);
     O.renderBufferDirect = (cam, sc, geo, mat, obj, grp) => { if (window.__dc.draws) { const idx = geo.index, pos = geo.attributes.position; let n = idx ? idx.count : pos ? pos.count : 0; if (grp && grp.count !== Infinity) n = grp.count; let cat = 'other', p = obj, ent = null; while (p) { if (D.gcEB && p === D.gcEB.root) cat = 'batch'; if (p.userData && p.userData.xrUI) cat = 'ui'; p = p.parent; } if (cat === 'other') { ent = D.It.all.find((e) => { let q = obj; while (q) { if (q === e.group) return true; q = q.parent; } return false; }); if (ent) cat = 'creature'; else if (obj === D.At || (() => { let q = obj; while (q) { if (q === D.At) return true; q = q.parent; } return false; })()) cat = 'player'; } if (obj.isPoints) cat = 'points'; const nm = (() => { const out = []; let p = obj; while (p && p !== D.C) { if (p.name) out.push(p.name); p = p.parent; } return out.slice(0, 3).join('<'); })(); const tp = (() => { let p = obj; while (p.parent && p.parent !== D.C) p = p.parent; return p; })(); window.__dc.draws.push({ nm, mm: Array.isArray(obj.material) ? obj.material.map((m) => m.type + (m.map ? '+map' : '') + '#' + (m.color ? m.color.getHexString() : '')).join(',') : '', cat, why: cat === 'other' || cat === 'creature' ? why(obj) : '', top: (tp.name || tp.type) + '#' + D.C.children.indexOf(tp), verts: geo.attributes.position ? geo.attributes.position.count : 0, sig: sig(mat), tris: Math.round(n / 3), name: obj.name || '', ent: ent && ent.def ? ent.def.name : '', parts: (() => { const b = D.gcEB.list.find((x) => x.mesh === obj); return b ? b.P.length : 0; })(), cap: D.gcEB.N, pos: cat !== 'batch' ? [Math.round(obj.getWorldPosition(new T.Vector3()).x), Math.round(obj.getWorldPosition(new T.Vector3()).z)] : null }); } return rbd(cam, sc, geo, mat, obj, grp); };
     window.__dcFrame = () => new Promise((res) => { window.__dc.draws = []; const sess = O.xr.getSession(); const real = sess.__real || sess; real.requestAnimationFrame(() => setTimeout(() => { const d = window.__dc.draws; window.__dc.draws = null; res(d); }, 0)); });
-  });
+  }, VCAP);
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const summarise = (draws) => {
     // one draw per eye: the fake session renders both eyes in one render call, three.js issues the draw once per view
@@ -102,7 +105,7 @@ const withEvent = process.argv.includes('--event');
   }
   if (process.argv.includes('--detail')) {
     const d = await page.evaluate(() => window.__dcFrame());
-    const rows = {}; for (const x of d.filter((x) => x.why && x.why !== 'over 4000 vertices')) { const k = `${x.why} | ${x.cat} ${x.ent} | top ${x.top} ${x.nm} | ${x.verts}v | ${x.sig}${x.mm ? ' | ' + x.mm : ''}`; rows[k] = (rows[k] || 0) + 1; }
+    const rows = {}; for (const x of d.filter((x) => x.why && x.why !== `over ${VCAP} vertices`)) { const k = `${x.why} | ${x.cat} ${x.ent} | top ${x.top} ${x.nm} | ${x.verts}v | ${x.sig}${x.mm ? ' | ' + x.mm : ''}`; rows[k] = (rows[k] || 0) + 1; }
     console.log('\n== detail (count = draws, both eyes)'); for (const [k, v] of Object.entries(rows).sort((a, b) => b[1] - a[1])) console.log(`  ${String(v).padStart(3)}  ${k}`);
   }
   await g.close(); process.exit(0);

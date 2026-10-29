@@ -1,8 +1,8 @@
 #!/bin/sh
-# Builds a diagnostic APK variant for headset A/B tests (same package and version as the release; install over it
-# with `adb install -r`, and reinstall the release afterwards): one experiment from tools/experiment.py applied to a
-# copy of the game file (tools/uncompressed.html), which is never changed. The APK's asset is put back and checked
-# at the end.
+# Builds a diagnostic APK variant for a headset diagnosis or measurement only (RULES.md 22: never an A/B build of a
+# change; same package and version as the release; install over it with `adb install -r`, and reinstall the release
+# afterwards): one experiment from tools/experiment.py applied to a copy of the game file (tools/uncompressed.html),
+# which is never changed. The APK's asset is put back and checked at the end.
 #   tools/build_experiment.sh NAME        (python3 tools/experiment.py --list)
 set -e
 ROOT=$(cd "$(dirname "$0")/.." && pwd); NAME=$1; [ -n "$NAME" ] || { echo "usage: $0 NAME   ($(python3 "$ROOT/tools/experiment.py" --list | tr '\n' ' '))"; exit 2; }

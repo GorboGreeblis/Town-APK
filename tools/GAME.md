@@ -79,7 +79,8 @@ the game file itself since 3.15.43 (FIXES.md, entry edits: 9 blocks).
 ## Controls (WebXR)
 
 - Left thumbstick: walk (dead-zone 0.15).
-- Right thumbstick left/right: snap turn by 30 degrees.
+- Right thumbstick left/right: snap turn by 30 degrees; the stick returns to centre between turns, and a turn within
+  0.3 s of the last is ignored (A1).
 - Trigger (`select`): interact / pick up / choose in menus; the pick cone and
   range are in `t.xr`.
 - Grip (`squeeze`): secondary action; both also wake the audio engine.
@@ -111,13 +112,25 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   player's reachable area must test with the player's own position object (`occlusion_census.js` does).
 - **Visits and vignettes.** Townsfolk visit each other (`visitPlan`); pairs standing near each other play one of
   90 two-line vignettes (speech bubbles, or Gree-mail tokens flying between them), the Ancient's 12 only inside
-  the church. A vignette ends at once if a speaker becomes busy or the player talks to one of them; Sparkakus is
+  the church. A new visit is tried every 4 s once due (22-32 s after the last); the pick favours the pairs that have
+  visited least. The Ancient's visits may be picked on 12.5% of tries, 32% while the player is in the Cave, where
+  1 try in 10 also considers only the Ancient's visits (A3); the Cave is checked at each try. Sparkakus is only
+  picked as a visitor once the player has the Gem or the Stone (F-B42). Mushroom reaches his desk by its ramp
+  (F-B39). A vignette ends at once if a speaker becomes busy or the player talks to one of them; Sparkakus is
   busy whenever he walks to his shelves. `test_visits.js`, `test_content.js`.
 - **The jazz drums.** King Dino's kit plays a swung pattern at 104 beats a minute (a bar of 2.31 s): 8 bars of
   brushes, then time, funk, trades and shout choruses of 8 bars each. Heard (on the dance floor, at the kit, or in
   a battle) it is scheduled on the audio clock 3 s ahead; within 45 m it runs on the game clock only, to move the
   drummer's sticks; 1.5 s after the player stops hearing it, it switches clocks and starts the bars again. It is
   silent while the horn plays. `test_jazz.js`.
+- **Dance battles.** Glyph, Etcher and Montgummery: rock, scissors or paper each round, the dancer's move picked at
+  random and shown before the player picks; stamina 10; BOW OUT works at random 80% of the time (otherwise "The
+  beat won't let you go!"; 70% until 3.15.52, FIXES R6). `test_progression.js`, `test_content.js`.
+- **Backpacka at the pond.** While she drinks (her show's 16-40 s) the player cannot walk into her: player-only
+  circles round her feet, body, neck and head (F-B37). `test_backpacka.js`.
+- **Seeded decoration.** The stars, the clouds, blinks, idle phases, Anomalee's glitch timing and jaw and the Event
+  ring's sway are the same on every launch (R5); what stays random is in RULES.md 5 and RANDOMNESS.md.
+  `test_seeded.js`.
 - **Far detail.** The kiosk with fine parts has a coarse model: the full one within 62 m of the camera, the coarse
   one beyond 66 m, whichever it had in between. `test_lod.js`.
 - **Sound.** One audio context, made on VR entry; every note is an oscillator and a gain that disconnect

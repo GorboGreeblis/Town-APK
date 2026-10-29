@@ -1,10 +1,10 @@
 #!/bin/sh
 # Greeblis Town test passes. Three tiers share the same scripts:
 #
-#   tools/run_tests.sh --smoke     spot check of every element, a few minutes
-#   tools/run_tests.sh             standard pass (default), about an hour on a 4-core machine
+#   tools/run_tests.sh --smoke     the standard stages but the courier, with shorter soaks (over an hour)
+#   tools/run_tests.sh             standard pass (default), about 1.5-2 hours on a 4-core machine (95 min on 3.15.45)
 #   tools/run_tests.sh --full      FULL pass: every scenario, long soak times.
-#                                  Run only on the final build (2-2.5 hours).
+#                                  Every build, until the author says otherwise (RULES.md 23; 2-2.5 hours on 3.15.41).
 #   tools/run_tests.sh --quick     static checks only, no browser (about a minute)
 #   ... --only=REGEX               (with any tier) run only the stages whose name matches (case-insensitive), with
 #                                  that tier's settings, e.g. to re-run one failed stage as the tier runs it
@@ -60,7 +60,8 @@ report() { name=$1; shift; wanted "report: $name" || return 0; KEY=$(key "$@")
   echo; echo "=== report: $name ==="; "$@"; rc=$?
   if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  INFO  $name (see log)"; printf '%s\t%s\n' "$KEY" "report: $name" >> "$STATE"; else SUMMARY="$SUMMARY\n  INFO  $name (probe exit $rc)"; fi; }
 
-echo "Greeblis Town test pass: $TIER${ONLY:+ (only stages matching /$ONLY/)}"; T_ALL=$(date +%s)
+VER=$(sed -n 's/^ *versionName "\([^"]*\)".*/\1/p' "$ROOT/tools/android/app/build.gradle" 2>/dev/null | head -1)
+echo "Greeblis Town test pass: $TIER${ONLY:+ (only stages matching /$ONLY/)}; build ${VER:-unknown}; $(date -u +%Y-%m-%dT%H:%MZ)"; T_ALL=$(date +%s)
 HAZ="$ROOT/tools/.runs/frame_hazards.log"; mkdir -p "$ROOT/tools/.runs"; [ -n "$RESUME" ] || : > "$HAZ"   # every test's frame-hazard watch (lib/harness.js) appends here
 run "the shipped copies (index.html, the APK asset) are the game file tools/uncompressed.html (sync_game.py --check)" python3 -I "$ROOT/tools/sync_game.py" --check
 run "the game file is minified, not compressed (minify_game.js --check, RULES.md 19)" node "$ROOT/tools/minify_game.js" --check
@@ -90,6 +91,9 @@ if [ "$TIER" != quick ]; then
   run "Mama Gorbo and Gooward's meetings: schedule, spots, goo arcs and hearts, called off by the Event" node "$ROOT/tools/test_meet.js" "$ASSET"
   run "jazz drums: on the beat on both clocks, on time for the drummer, look-ahead, silent far away and under the horn" node "$ROOT/tools/test_jazz.js" "$ASSET"
   run "audio: one context, nothing left playing after rounds of every sound, resumes on focus" node "$ROOT/tools/test_audio.js" "$ASSET"
+  run "seeded decoration: the author's seeded items draw from their own streams; two launches build the same stars and clouds (R5)" node "$ROOT/tools/test_seeded.js" "$ASSET"
+  run "interaction menu: never shows the previous menu's picture (after the last Blossom, after another character; F-B38); the controller rays' shader made while loading (F-B41)" node "$ROOT/tools/test_menu.js" "$ASSET"
+  run "visitors to the Ancient while the player is in the Cave, back to normal outside (A3)" node "$ROOT/tools/test_cave.js" "$ASSET"
   run "Backpacka at the pond: the player cannot walk into her; she is not moved; no circles once she leaves" node "$ROOT/tools/test_backpacka.js" "$ASSET"
   run "far detail and the batcher: one model at a time, swaps at 62/66 m; exact matrices in every batch, every frame" node "$ROOT/tools/test_lod.js" "$ASSET"
   run "world: routes, hulls, pickups, watchdog (${WORLD_S}s)" node "$ROOT/tools/test_world.js" "$ASSET" "$WORLD_S"
@@ -107,9 +111,11 @@ if [ "$TIER" != quick ]; then
   esac
   if [ "$NPC_N" = 0 ]; then run "NPC return-home (Mushroom), all scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S";
   else run "NPC return-home (Mushroom), first $NPC_N scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S" "$NPC_N"; fi
+  if [ "$TIER" = full ]; then run "stability soak: 10 min of pickups, dialogue, shop, battle and pizza; no errors, heap, programs and entities bounded" node "$ROOT/tools/test_soak.js" "$ASSET" 10; fi
   if [ "$TIER" = full ]; then
     # Graphical and performance pass (T12/T13): z-fighting (planar and curved) fails the pass;
-    # the probes report loading time, the handover, frame cost and texture sharpness for the record.
+    # the probes report loading time, the handover, the Event's frame cost, each creature's cost and texture sharpness
+    # for the record.
     run "z-fighting / flicker on environmental surfaces (jittered render)" node "$ROOT/tools/test_zfight.js" "$ASSET"
     run "z-fighting on curved surfaces (near-coincident geometry)" node "$ROOT/tools/test_coincident.js" "$ASSET"
     run "single-sided pass is pixel-identical (edges aside)" node "$ROOT/tools/sides_check.js" "$ASSET"
@@ -118,13 +124,8 @@ if [ "$TIER" != quick ]; then
     run "performance report (script cost, shader compiles, scene load per situation)" node "$ROOT/tools/perf_report.js" "$ASSET"
     report "loading time (boot profile)" node "$ROOT/tools/boot_profile.js" "$ASSET"
     report "handover profile (frames after entering VR)" node "$ROOT/tools/entry_profile.js" "$ASSET"
-    # Frame timings are only meaningful without the layers path (its MSAA resolve is software-rendered here),
-    # so the hitch probe runs on the no-layers variant of the same asset.
-    python3 -I "$ROOT/tools/experiment.py" nolayers "$ROOT/tools/uncompressed.html" "$ROOT/tools/.runs/hitch_nolayers.html" >/dev/null 2>&1 \
-      && report "in-game hitches (pickups, dialogue, Event; no-layers variant)" node "$ROOT/tools/hitch_probe.js" "$ROOT/tools/.runs/hitch_nolayers.html" \
-      || report "in-game hitches (pickups, dialogue, Event)" node "$ROOT/tools/hitch_probe.js" "$ASSET"
-    report "scene cost (draw calls, triangles, materials)" node "$ROOT/tools/perf_probe.js" "$ASSET"
     report "Garden Event frame cost (90 s)" node "$ROOT/tools/event_probe.js" "$ASSET" 90
+    report "creature census (meshes, batched parts, triangles, materials per character)" node "$ROOT/tools/creature_census.js" "$ASSET"
     report "render sharpness (scale, foveation, texture filtering)" node "$ROOT/tools/sharpness_probe.js" "$ASSET"
   else skip "graphical and performance pass (z-fight, profiles, sharpness)" "$TIER tier; run --full"; fi
 else
@@ -132,6 +133,8 @@ else
 fi
 
 echo; echo "=== SUMMARY ($TIER, $(( ($(date +%s) - T_ALL) / 60 )) min) ==="; printf "$SUMMARY\n"
+# the summary also goes to a file, read by `node tools/pass_report.js` with the log (TEST_PLAN.md "Latest results")
+{ echo "=== SUMMARY ($TIER, build ${VER:-unknown}, $(date -u +%Y-%m-%dT%H:%MZ)) ==="; printf "$SUMMARY\n"; } > "$ROOT/tools/.runs/summary_$TIER.txt"
 # GPU work inside XR frames seen by any test (the flash causes; lib/harness.js): a failure of the pass
 if [ -s "$HAZ" ]; then echo "  FAIL  frame hazards (GPU work inside XR frames, the flash causes) seen by $(wc -l < "$HAZ") test run(s):"; sed 's/^/        /' "$HAZ" | cut -c1-400; rc_all=1
 elif [ "$TIER" != quick ]; then echo "  PASS  no GPU work inside XR frames in any test (frame-hazard watch)"; fi

@@ -1,12 +1,12 @@
 # Performance analysis of the APK build
 
 Started as an analysis (sections 1-6); sections 6-13 record the changes that
-were applied, each listed in FIXES.md (section 13 is the latest: 3.15.43-3.15.45). The render path itself is described in
+were applied, each listed in FIXES.md (section 13 is the latest: 3.15.43-3.15.52). The render path itself is described in
 RENDERING.md. Numbers from the headless harness (software GL) are marked as such: draw calls, triangle counts, program counts
 and JS time are meaningful there, GPU time is not. Headset measurements: the author's 3.15.33-3.15.34 run on a
-Quest 3S (section 10) and the 3.15.41, noswap and deferupload runs (section 13, NOTES 79-81), which showed the Event
-is limited by draw calls, not pixels. The changes since are estimates until the next measurement, the author's
-3.15.45 headset run.
+Quest 3S (section 10) and the 3.15.41, noswap and deferupload runs (section 13, NOTES 79-81), which showed the frame rate
+follows draw calls, not pixels, and the 3.15.46 and 3.15.47 runs (NOTES 90-91), whose runtime lines show the Event
+CPU-bound (app GPU time 9.3 of a 13.9 ms frame). The changes since are estimates until the author's 3.15.52 run.
 
 **Performance is now the top priority** (RULES.md "Priorities", the author: "once all other tasks are completed,
 performance should be our focus"; the biggest blocker for the Store submission): the planting Event on a Quest 3S,
@@ -99,9 +99,10 @@ launch is faster), while `no-store` currently prevents the script code cache
 ## 5. Demanding moments (pickups, the Event)
 
 See `BUGS.md` F-B12 and `NOTES.md` item 32 for the flash investigation. The
-hitch probe (`tools/hitch_probe.js`) reports what each action creates on the
-GPU (programs, textures, geometries) and the frame-time spike around it
-(software GL; spikes are relative):
+hitch probe (retired; `tools/perf_report.js` now reports the new programs and
+textures per situation) recorded what each action created on the GPU
+(programs, textures, geometries) and the frame-time spike around it (software
+GL; spikes are relative):
 
 | Action | New programs | New textures | New geometries | Worst frame vs baseline |
 | --- | --- | --- | --- | --- |
@@ -155,8 +156,8 @@ before each render; P5 creature ground-fit scan throttled; P6 back-face culling
 for closed, outward, opaque meshes (the game had every material double-sided;
 297k of 659k source triangles now single-sided, checked pixel-identical by
 `tools/sides_check.js`). Tools:
-`tools/event_probe.js` (what the Event adds to the frame, every 2 s) and
-`tools/event_profile.js` (main-thread profile before and during the Event).
+`tools/event_probe.js` (what the Event adds to the frame, every 2 s); the
+main-thread profile of the Event, with source excerpts, is in `tools/perf_report.js`.
 Game logic with rendering stubbed: town 0.7 ms a frame, Event second half
 1.8-2.1 ms (p99 4.7 ms) headless. Levers left that change the look, for the
 author to decide after the headset readings: the Event's point light and
@@ -237,7 +238,8 @@ between the spawn (66 calls, 160k triangles) and the town centre or the garden
 (300-390 calls, 500k triangles both eyes, eleven creatures in range during the
 Event). The author's 38 fps reading in the Event is consistent with GPU-bound
 there: the Event adds the point light and night lighting on top of the heaviest
-view. The 63 ms script frame at the Event's start is the setup frame (B17).
+view. The 63 ms script frame at the Event's start is the setup frame (B17). *(Superseded: the 3.15.47 runtime
+lines show the Event CPU-bound, section 13.)*
 
 `tools/perf_log.js` reads the headset's own `perf` lines (HEADSET_DIAG.md) into
 the same picture: frame rate by scene, the lowest readings with where the
@@ -390,16 +392,17 @@ where the creatures stand), with identical pixels (`opt_identity.js`: 92 Event v
 | P20: the pizza batched | 378 -> 324 draws in the heaviest view; identical pixels. Kept |
 | The batcher's part limit 27 -> 33 (the uniform budget leaves 65 rows) | 382 -> 377 draws; some views more triangles (bigger batches cull worse). Dropped |
 | Batching across neighbouring buildings (cells of 8, 12, 16 m) | 337 -> 332 at best: the scenery is already merged in a few big groups; half of all batches (68 of 136) are the creatures'. Dropped |
-| One set of batches for all the creatures (each is now batched only with itself) | Heaviest Event view 334 -> 307 draws; but over 5 points x 8 headings: town 147 -> 145 draws for 264k -> 311k triangles (+18%), the Event 152 -> 146 for 294k -> 321k (+9%), since a batch spanning the town is drawn whenever one of its creatures is. Measured, not applied |
+| One set of batches for all the creatures (each is now batched only with itself) | Heaviest Event view 334 -> 307 draws; but over 5 points x 8 headings: town 147 -> 145 draws for 264k -> 311k triangles (+18%), the Event 152 -> 146 for 294k -> 321k (+9%), since a batch spanning the town is drawn whenever one of its creatures is. Measured, not applied then; applied as P24 in 3.15.48 once the 3.15.47 log showed the GPU has room (section 13) |
 
 What is left in that view (before P21 and P22, section 13): about 100 batches, 90 creature parts (Gooward alone 30, 26 of them translucent), 36
 one-off parts of the garden's central group (each with its own texture, the closed texture-array question), and the
-church, Mama Gorbo, Glyph, Mushroom and Anomalee parts.
+church, Mama Gorbo, Glyph, Mushroom and Anomalee parts. *(Since: P23 took the large garden meshes, P24 the
+creatures, P25 Backpacka; section 13.)*
 
 Textures made during play (F-B29, F-B30) cost a hitch each (a canvas drawn and up to 1 MB uploaded in one frame) as
 well as being the flash lead; since 3.15.42 none is made (`texture_census.js`).
 
-## 13. The headset's verdict, and 3.15.43-3.15.45 (NOTES 79-89)
+## 13. The headset's verdict, and 3.15.43-3.15.52 (NOTES 79-93)
 
 **What the headset runs said** (Quest 3S, whose browser reports "Quest 3"). 3.15.41 (NOTES 79): the Event 55-61 fps
 at scale 0.9, 58-65 after the step to 0.82. The frame rate follows the draw calls (correlation -0.80; triangles
@@ -423,9 +426,10 @@ objects the only ones never seen from where the player can stand were the UFO's 
 between flights (a hidden object costs nothing). Every other object is seen from somewhere. Small creature details
 (Etcher's marks, Mama Gorbo's pins, Anomalee's cards, about 10 draws) would still show at Event distances (NOTES 85).
 
-**Open lever** (NOTES 84): the batcher refuses scenery parts over 4,000 vertices, so nine large garden meshes that
-share one material draw on their own; raising the cap to 60,000 saves 13 draws in the heaviest Event view for 16k
-more triangles (+2.6%). The comparison over many views is still to do.
+**The scenery cap** (NOTES 84, 90): the batcher refused scenery parts over 4,000 vertices, so nine large garden
+meshes that share one material drew on their own; raising the cap to 60,000 saved 13 draws in the heaviest Event view
+for 16k more triangles (+2.6%). Once an open lever; applied as P23 in 3.15.47 after the comparison over many views
+(below).
 
 **3.15.47 (NOTES 90).** The author's 3.15.46 run: below 60 fps when moving from the ring back to the dance floor
 (x = -27). Headless along that path: 240-402 draws, 510-650k triangles facing the garden. P23 raises the batcher's
@@ -433,3 +437,19 @@ scenery cap to 60,000 vertices: 144 -> 134 draws a view, heaviest 402 -> 380, +1
 Event-start hitch (434 -> 67 ms headless). CPU per frame there, headless: three.js render 20 of 24.8 ms (its uniform
 uploads mostly the software GPU's cost), matrix walk 2.6-3.4 ms, the batcher's pass 2.2 ms, culling 1.8 ms; a
 memoised visibility walk in the batcher's pass was slower (2.12 -> 2.45 ms) and reverted.
+
+**The 3.15.47 run: the Event is CPU-bound (NOTES 91).** Live log: town median 71.8 fps, the Event median 63.3 and
+56.4 at worst, all four readings under 60 at (-24, -2), the south end of the dance floor, 330-370 draws. The
+runtime's lines there: app GPU time 9.3 ms of a 13.9 ms frame, GPU 62% busy, the GPU clock not raised. So the Event is
+limited by draw submission and script on the CPU; triangles cost little while the GPU has room.
+
+| Change | Build | What it does | Visible? |
+| --- | --- | --- | --- |
+| P23 | 3.15.47 | The batcher's scenery cap 4,000 -> 60,000 vertices: on the ring-to-dance-floor path 144 -> 134 draws a view, heaviest 402 -> 380, +10% triangles. | No |
+| F-B33 | 3.15.47 | The Event's start no longer rescans every creature's vertices: 434 -> 67 ms headless. | No |
+| P24 | 3.15.48 | The creatures batched together (one pass over all of them): heaviest views at the author's low spots 296 -> 274 draws, +0.6% triangles. | No |
+| F-B36 | 3.15.49 | The mipmap switch 2.6 s after entering VR in slices of at most 0.6 Mpx, 40 ms apart, instead of one stall. | No |
+| P25 | 3.15.50 | Backpacka batched when built (she was built after the batching step): 714 -> 545 draws headless at the author's low spot while she is in view, about 83 fewer a frame on the headset. | No (at most 0.01% of pixels, none in areas) |
+
+**Next CPU candidates** (NOTES 93): `bend` (Etcher's six tentacles, deformed for every move while the townsfolk
+dance) and `gFit` (the ground fit of moving creatures, a vertex scan every other frame while they move).

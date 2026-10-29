@@ -2,7 +2,7 @@
 /**
  * Reproduction harness for NPC "return home" behaviour, built for the Mushroom
  * (entity id "drifter"): the only character whose home is raised (a kiosk desk,
- * standY 1.545) and who has to walk two front waypoints and then hop up.
+ * standY 1.545); since F-B39 he walks up a ramp on the desk's left (no hop).
  *
  * It runs the real game in headless Chromium inside a fake WebXR session (NPCs
  * only move while the game presents), with a
@@ -63,20 +63,21 @@ const observe = ({ id, maxS, standY }) => new Promise((resolve) => {
     // Kiosk keepers (Zollod is cast type "cutebex") spawn on the game's schedule; spawn one now if needed.
     if (!h && D.Mo) { try { D.Mo(id); } catch (e) { return { error: 'spawn failed: ' + (e && e.message) }; } h = D.It.byId[id] || D.It.all.find((e) => e.def && e.def.__type === id); }
     if (!h) return { error: 'no such npc: ' + id + '; ids: ' + Object.keys(D.It.byId).join(',') };
-    return { name: h.def.name, at: h.def.at, via: h.def.via, standY: h.def.pattern && h.def.pattern[1] && h.def.pattern[1].y || 0, bodyR: h.bodyR,
+    const K = D.F.buildings.find((B) => D.F.inHull(B, h.home.x, h.home.z));   // the kiosk his home is in
+    return { kiosk: K ? { x: K.x, z: K.z, c: K.c, s: K.s, home: D.F.local(K, h.home.x, h.home.z) } : null, name: h.def.name, at: h.def.at, via: h.def.via, standY: h.def.pattern && h.def.pattern[1] && h.def.pattern[1].y || 0, bodyR: h.bodyR,
       pos: [h.group.position.x, h.group.position.y, h.group.position.z], player: [D.At.position.x, D.At.position.z], hooks: Object.keys(D) };
   }, NPC);
   if (info.error) { console.log(info.error); process.exit(2); }
   console.log(`${info.name} (${NPC}): home=${JSON.stringify(info.at)} via=${JSON.stringify(info.via)} standY=${info.standY} start=${JSON.stringify(info.pos.map((v) => +v.toFixed(2)))} hooks=${info.hooks.join(',')}`);
 
-  // Kiosk-local frame from home (desk, local (0,.72)) and via[0] (local (0,2)): forward = via[0]-home.
-  const [hx, hz] = info.at, [vx, vz] = info.via[0];
-  const fl = Math.hypot(vx - hx, vz - hz), fx = (vx - hx) / fl, fz = (vz - hz) / fl, rx = fz, rz = -fx;
-  const local = (f, r) => [hx + fx * f + rx * r, hz + fz * f + rz * r];       // f: forward (out the front), r: right
+  // The kiosk's own frame, from his home on the desk: f forward (out of the kiosk's front), r right (the desk's long side;
+  // since F-B39 the desk is against the right wall and his ramp on its left).
+  const K = info.kiosk; if (!K) { console.log('his home is in no building'); process.exit(2); }
+  const local = (f, r) => { const x = K.home[0] + r, z = K.home[1] + f; return [K.x + x * K.c + z * K.s, K.z - x * K.s + z * K.c]; };
 
   const scenarios = [
-    { name: 'inside kiosk, 1.0 m in front of desk (hop only)', npc: local(1.0, 0), player: local(7, 0) },
-    { name: 'at inner waypoint (local 0,2)', npc: local(1.28, 0), player: local(7, 0) },
+    { name: 'in front of the desk, on the ground (1.0 m out)', npc: local(1.0, 0), player: local(7, 0) },
+    { name: 'in front of the desk where the hop used to start (kiosk 0,2)', npc: local(1.28, -0.88), player: local(7, 0) },
     { name: 'just outside the front (2.6 m)', npc: local(2.6, 0), player: local(7, 0) },
     { name: 'front 5 m', npc: local(5, 0), player: local(8, 3) },
     { name: 'front 8 m', npc: local(8, 0), player: local(9, 4) },
@@ -89,7 +90,7 @@ const observe = ({ id, maxS, standY }) => new Promise((resolve) => {
     { name: 'front 5 m, forced stuck re-plan (De safety net)', npc: local(5, 0), player: local(8, 3), forceStuck: true },
     { name: 'front 6 m, PLAYER BLOCKING the doorway for 15 s', npc: local(6, 0), player: local(3.0, 0), unblockAfter: 15 },
     { name: 'inside the back of the kiosk (local 0,-2) with player far: teleport allowed', npc: local(-2.0, 0), player: local(40, 0), far: true },
-    { name: 'on the desk already but at ground level (y=0)', npc: local(0, 0), player: local(7, 0) },
+    { name: 'at home but at ground level (y=0): back up on the desk', npc: local(0, 0), player: local(7, 0) },
     { name: 'interrupted visit: straight nav to home from behind 6 m (drop path)', npc: local(-6, 0), player: local(-9, 3), navHome: true },
     { name: 'interrupted visit: straight nav to home from right side 3 m (drop path)', npc: local(0, 3.6), player: local(6, 4), navHome: true },
   ];

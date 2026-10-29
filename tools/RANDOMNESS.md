@@ -13,7 +13,9 @@ The author's decision list (TASKS T17, 2026-10-29, 3.15.50). Every item is decid
 | Everything recommended to stay random: c5 Sparkakus's tail mist, c6 Mama Gorbo's drops, c7 goo blobs and splats, c8 the pickups' bob and glint, c10 the typewriter tick's pitch, Anomalee's shake in c3, and the appendix's (c) items (goo on the player's view, sound pitch and noise variation, Backpacka's droplets and the finale's reactions, vignette confetti and token trails, the robin's return, the Gem's sparkles) | "whatever you recommended we keep random, keep random" | Stay random; no change |
 | The dance battle's BOW OUT (the player's button to leave a battle early; it worked 70% of the time) | "a random 80% chance of working makes sense for the Bow Out button" | 80% in 3.15.52 (FIXES R6), still random |
 | The dance battle opponent's move (Glyph, Etcher, Montgummery: rock, scissors or paper each round, shown before the player picks) | "For the Dancer's moves: what they pick should always be random" | Stays random; no change |
- Positions are those of 3.15.49's game file; after an edit, `node tools/random_census.js` lists them again.
+
+Positions below are those of 3.15.49's game file (120 sites); since R4 and R5 (3.15.51) the census finds 81. After an
+edit, `node tools/random_census.js` lists them again; `test_seeded.js` (standard tier) guards the seeded items.
 
 This list covers the 120 `Math.random` call sites found by `random_census.js` (`tools/.runs/random_census.json`;
 counts are loading / 60 s in town / 60 s in the planting Event). Positions are the census's `line:col`. Line 7 is the
@@ -41,7 +43,7 @@ I read the code around every site.
    so the first UFO flight (600 s into the game) very likely takes the same heading on every launch. RULES.md 5 says
    the heading stays random. If the author wants that, the UFO has to stop using this generator. This is a question
    for the author, not something to change unasked. (Confirmed at runtime: the UFO's flight and the seeded painters
-   share the one generator object.)
+   share the one generator object.) **Decided:** intended as it is (the author, 2026-10-29; RULES.md 5).
 2. **Seven sites have no visible effect.** They pick a random colour for an emote or a sparkle. Since F-B29, the emote
    code ignores the colour it is given and colours by glyph (`Ut`: `U=(_,D)=>{D=N(_)…}`). See item c11.
 
@@ -109,7 +111,7 @@ approximate (≈), estimated from the nearest census site. Only the first two ne
 | What | ≈ Site | Category |
 | --- | --- | --- |
 | **Dance battle: the opponent's move** (rock, scissors or paper), which sets the counter the player must pick | via 7:4739 at ≈7:92830 | **(e)** |
-| **Dance battle: BOW OUT works 70 % of the time** (otherwise "The beat won't let you go!"); 80 % since 3.15.52 (Decided) | ≈7:93294 | **(e)** |
+| **Dance battle: BOW OUT works 80 % of the time since 3.15.52** (it was 70 %; otherwise "The beat won't let you go!"; Decided) | ≈7:93294 | **(e)** |
 | Generic townsfolk wandering and treks to waypoints | ≈7:64955-66573 | (b) |
 | Visit planning (whether a visit happens, which pair, bubbles or tokens, next gap) | ≈7:671750-672502 | (b) |
 | Spot in the clearing for a creature without a post (`Mo`/`g()`) | ≈7:5331, 7:5363 | probably (b); not sure which creature uses it |

@@ -20,7 +20,7 @@ tools/
   minify_game.js           minifies the game file in place (RULES.md 19); --check
   build_compressed.js      builds index.compressed.html from the game file; --check
   sync_game.py             copies it to index.html (root) and the APK's asset; --check compares
-  experiment.py            diagnostic variants of a copy, for headset A/B tests
+  experiment.py            diagnostic variants of a copy (measurement only, RULES.md 22)
   test_*.js, *.sh          test suite (see tools/README.md)
   RULES.md                 the author's rules: read before any change
   BUILD.md                 this file: how the APK works, building, signing, testing
@@ -28,6 +28,7 @@ tools/
   NOTES.md                 investigation notes, numbered
   TASKS.md / BUGS.md       open tasks and open bugs
   GAME.md / LORE.md / TEST_PLAN.md   game documentation, lore bible, test plan
+  PERF.md / RENDERING.md / ...       see tools/README.md for every doc and tool
   store/icon-512.png       store icon derived from the game art
 ```
 
@@ -64,7 +65,7 @@ What the entry script does on a Quest browser (NOTES 34, 41, 42):
    and parks it (the browser never grants a session on its own for a fresh
    immersive launch);
 2. draws the loading screen into compositor layers: a cube layer for the sky
-   and a quad layer for the title and progress bar, 1.8 x 0.9 m at 4 m, which
+   and a quad layer for the title and progress bar, 1.3 x 0.65 m at 5 m (about 15 degrees, 3.15.21), which
    the browser re-renders every vsync with the current head pose whatever the
    page is doing, so turning the head during the boot never shows a stale frame;
 3. slices the boot (`await __gtY(label)` before each heavy step, each character,
@@ -73,8 +74,9 @@ What the entry script does on a Quest browser (NOTES 34, 41, 42):
 4. hands the session to the game through a facade (the layers shim in the head script):
    the browser forbids `baseLayer` on a session with the `layers` feature, so
    the game renders through an `XRProjectionLayer` behind an object that shows
-   three.js its usual base layer (an MSAA framebuffer resolved into the layer's
-   eye texture each frame); the layer is never swapped: the quality governor
+   three.js its usual base layer (on the classic fallback an MSAA framebuffer resolved into the layer's
+   eye texture each frame; on the multiview path, the release since 3.15.34, the game draws into the layer's
+   texture array directly and nothing is resolved); the layer is never swapped: the quality governor
    changes foveation only, at native render scale (F-B31, since 3.15.43);
 5. never ends the session on an entry failure: the error goes to the loading
    screen with two retries, and page errors go to logcat via `/log`;
@@ -142,23 +144,8 @@ means the store listing can never be updated.
 skip stages already passed after a machine restart). How to run and write tests: `tools/TESTING.md`; one row per
 tool: `tools/README.md`; what each thing is tested by: `tools/TEST_PLAN.md`.
 
-- **Every tier (`--quick` alone):** the shipped copies are the game file (`sync_game.py --check`); the game file is
-  fully minified (`minify_game.js --check`); the compressed version unpacks to it exactly (`build_compressed.js
-  --check`); every experiment still applies (`experiment.py --check`); the loopback server serves the game
-  byte-for-byte (JVM harness); the docs are consistent (`check_docs.py`); dialogue spelling; the tentacle bend is
-  bit-identical; the APK passes the Meta store packaging checks (VRC.Quest.Packaging.1-6).
-- **The standard pass** adds, in headless Chromium with a fake WebXR headset: VR entry (early, late, no grant),
-  runtime play with the layers path, a layer swap, visibility and context loss; multiview (each eye matches the
-  classic path, no mid-frame upload or compile); the Quest 3S uniform budget; warm-up coverage; the game runs
-  alone and its `tex/` is what it paints (`test_standalone.js`); the compressed version works as an ordinal
-  (`test_compressed.js`); no texture made during play (`texture_census.js`); the quality governor on a Quest 3S
-  (foveation only, never a layer swap; the Event locks the lowest level); the game's content (gifts, talk, shyness, the bribe, outfits, battles, the
-  Ancient, the robin, vignettes, the Event, Backpacka); greeting; the wrist HUD and haptics; roaming; the
-  meetings; the jazz drums; audio; far detail and the batcher; world, input, progression, visits, the courier and
-  the return-home scenarios.
-- **The full pass** adds long soaks and every scenario, the z-fight and single-sided checks, optimisation
-  identity, the Ancient check (P21), the performance report and the loading, handover, hitch, scene-cost, Event and sharpness
-  reports. Run it on the final build.
+What each tier runs, stage by stage: `tools/TESTING.md` section 1. The full tier runs after every build (RULES.md
+23), and its result goes into TEST_PLAN.md.
 
 What cannot be tested here: the actual launch on a headset. Sideload and
 confirm that the app goes straight into VR:
@@ -167,6 +154,9 @@ confirm that the app goes straight into VR:
 adb install -r GreeblisTown-release.apk
 adb logcat -s GreeblisServer GreeblisLauncher TwaLauncher TWALauncherActivity
 ```
+
+For a play session, capture the whole log live with `tools/capture_log.sh` (or `tools\capture_log.ps1` on
+Windows); see `tools/HEADSET_DIAG.md`.
 
 ## Store submission checklist
 

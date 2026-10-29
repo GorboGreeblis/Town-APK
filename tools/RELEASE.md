@@ -89,6 +89,14 @@ and look at **Distribution → Builds**:
    You should see `Serving <n> bytes on http://127.0.0.1:17777/` (n is the size of
    `tools/android/app/src/main/assets/index.html`) and
    `Setting Oculus Browser launch mode to immersive`.
+   Multiview (the release path since 3.15.34), with `adb logcat -s GreeblisServer` open: at boot the log says
+   `multiview planned (... OCULUS_multiview true ...)`, and at entry `projection layer live, ..., multiview true`
+   and `multiview live: WxH per eye, msaa 4`. `multiview not used` or `framebuffer incomplete` means the headset
+   fell back to the classic path; send the log. Both eyes must look right: depth, lighting and the 3D effect (look
+   at a lamp, a creature close up, the garden), no flicker in one eye, smooth edges (MSAA).
+   For a play session, capture live with `tools/capture_log.ps1` (Windows) or `tools/capture_log.sh` (macOS,
+   Linux) from before the launch to the end; `adb logcat -d` afterwards keeps only the last minutes
+   (`tools/HEADSET_DIAG.md` section 1).
 
 If it opens a flat browser panel instead of VR, tell me: the fallback is
 Meta's 2D app mode (one manifest change), where the player clicks the panel
@@ -123,13 +131,12 @@ does not come back cleanly in `tools/BUGS.md`.
    - **Controllers down and up** (Input.7, for the note that hands are not
      supported): with Auto Enable Hands on, put the controllers down for ten seconds
      and pick them up; the game waits and continues.
-   - **Two readings for the Event's frame rate** (the author saw 38 fps in it):
-     the FPS standing in the garden before the Event starts (that is the
-     garden's geometry alone), and during the Event the OVR Metrics Tool's GPU
-     and CPU utilisation (the overlay's "GPU %" and "CPU %" lines). Geometry-bound
-     and GPU-bound mean a content change for the author to approve (the Event's
-     point light and night lighting, or lighter flora shading); CPU-bound means
-     more logic trimming (`tools/PERF.md` section 6).
+   - **The Event's frame rate**: the live log answers this now: `perf_log.js` gives a
+     CPU- or GPU-bound verdict per scene from the runtime's `VrApi` lines. The 3.15.47
+     log: CPU-bound (app GPU time 9.3 of a 13.9 ms frame, GPU 62% busy; NOTES 91), so
+     the work is fewer draws and less script per frame (`tools/PERF.md` section 13).
+     (This item asked for two OVR Metrics readings after the author's 38 fps in the
+     Event, before multiview; superseded.)
    The updated privacy page (`tools/store/privacy.html`, section 8 on deletion
    requests) is live at https://greeblistown.neocities.org/ since 2026-10-27
    (VRC.Quest.Privacy.4: done).
@@ -148,19 +155,24 @@ does not come back cleanly in `tools/BUGS.md`.
    ```
    (`tools/BUILD.md` lists the steps it runs.) Every store upload needs a higher `versionCode`; `--bump` raises it
    and `versionName` together. Add the version's row to `tools/VERSIONS.md`.
-5. `tools/run_tests.sh` runs the standard suite (Node and Playwright needed); `--full` before an upload.
+5. `tools/run_tests.sh --full --resume` after every build (RULES.md 23; Node and Playwright needed; "`--full`
+   before an upload" is superseded); the result is recorded in `tools/TEST_PLAN.md` before the work moves on.
 
 ## 5. Upload to the Meta Quest Store
 
-**Upload candidate: 3.15.46 (versionCode 46)**, the root `GreeblisTown-release.apk`
+**Upload candidate: 3.15.52 (versionCode 52)**, the root `GreeblisTown-release.apk`
 (always the latest build). New since 3.15.41 (VERSIONS.md has each build): no texture is made during play (F-B29,
 F-B30, 3.15.42), the Event's pizza batched (P20); native render scale and no layer swaps (F-B31), the Event scale
 removed, the Ancient left out from outside the church (P21), Gooward's translucent parts merged (P22, 3.15.43);
-painted textures seeded so the build is rebuildable from the game file (R1, 3.15.44); the game file minified, the same world bit for bit (R2, 3.15.45). The quick tier and
-`build.sh`'s checks (`test_standalone.js`, `test_compressed.js` among them) pass on it; the standard pass is
-recorded in `tools/TEST_PLAN.md` (Latest results). Its headset pass: no flashes in a
-dance battle, speaking to Nextessa, planting or at the Summoning Pillar; the Event's frame rate in the log
-(`perf_log.js`); the emote colours and Gooward look right. The Alpha
+painted textures seeded so the build is rebuildable from the game file (R1, 3.15.44); the game file minified, the same world bit for bit (R2, 3.15.45). Since then: no texture made
+or first uploaded during play (F-B32, F-B34, F-B35), the Event's start without its hitch (F-B33), the mipmap switch
+in slices (F-B36), Backpacka solid at the pond (F-B37); batching (P23 scenery cap 60,000 vertices, P24 creatures
+together, P25 Backpacka); the B flash mark and long-frame logging (D2); the author's randomness decisions (R4-R6).
+`build.sh`'s checks (`test_standalone.js`, `test_compressed.js` among them) pass on it; its full pass (RULES.md 23)
+is recorded in `tools/TEST_PLAN.md` (Latest results). Its headset pass, logged live (`tools/capture_log.ps1` /
+`.sh`, HEADSET_DIAG.md section 1): the Event's frame rate, with Backpacka in view and from the ring back to the
+dance floor; B pressed right after any flash; the first seconds after entering VR and the Event's first start;
+walking into Backpacka at the pond; the emote colours and Gooward look right; then `node tools/perf_log.js run.txt`. The Alpha
 channel is only you and invited testers, so uploading there first and running that same build
 from the store is a fair way to do that pass.
 
@@ -232,53 +244,22 @@ author, 3.15.35: its XR2+ GPU is close to a Quest 2's, under half a 3S's,
 and the Event already runs 58-65 fps on a 3S). The same two headsets are
 selected in the Developer Dashboard (done by the author, 2026-10-27).
 
-## 5d. Multiview (release path since 3.15.34; was the experiment below)
-
-History: the `multiview` experiment was retired in 3.15.34, when multiview became the release path; there is no
-`multiview` variant in `tools/experiment.py` any more. The same checks now apply to the release APK itself.
-As written for the experiment: `tools/.runs/GreeblisTown-exp-multiview.apk` (same package and version as the
-release; `adb install -r`, reinstall the release afterwards). With logcat open
-(`adb logcat -s GreeblisServer`):
-1. At boot the log says `multiview planned (... OCULUS_multiview true ...)`, and
-   at entry `projection layer live, ..., multiview true` and `multiview live:
-   WxH per eye, msaa 4`. `multiview not used` or `framebuffer incomplete` means
-   the headset fell back to the classic path; send the log.
-2. Both eyes look right: depth, lighting and the 3D effect are as in the
-   release (look at a lamp, a creature close up, the garden); no flicker in
-   one eye; edges as smooth as before (MSAA).
-3. Entering VR is as smooth as before (no stall after the drop-in).
-4. Run through the town and the planting Event, then `node tools/perf_log.js
-   run.txt`; compare with the same run on the release.
-
 ## 6. Every later update
 
-Rule for the VR-entry script (the head script at the top of the game file; FIXES.md, entry edits): it is
-the one path proven on the headset. Until 2026-10-28 any change to how the session is
-requested, parked, drawn into, or handed to the game went out first as an
-experiment APK for a headset test; since then (RULES.md 22) changes go
-straight into the main build and the author tests after the merge, so test
-entry changes headless first (`test_entry.js`; 3.15.11 crashed at launch,
-`tools/BUGS.md` F-B15). Keep logcat open during a headset test:
-`adb logcat -s GreeblisServer GreeblisLauncher cr_VrShellDelegate` shows the
-page's own events and errors (`page: ...`).
+The rules for every update are in `tools/RULES.md`: changes go straight into the main build and the author tests
+after the merge (22; the experiment-first rule 15 is retired); every change is made in the game file and followed by
+a rebuild and a version bump before it is committed, so the root `index.html` and APK are always the latest build
+(1, 11, 12; `tools/build.sh --bump`); creature models are fixed with care and without changing their look (7); each
+build gets the full test pass (23).
 
-Rule for the creature models (the author, 2026-10-27): be careful fixing any
-issue on a creature model; the author is otherwise happy with their designs. A
-fix touches only the offending surfaces and leaves the look unchanged (B20 sank
-the cuff lights by millimetres); anything the author would notice is put to
-them first, with the candidate list from `tools/test_coincident.js`.
-
-Rule for the repository root (the author, 2026-10-27): the one-file game as
-bundled in the APK is kept at the root as `index.html` next to the APK.
-`tools/sync_game.py` copies it from the game file `tools/uncompressed.html` (where every change is made), `--check`
-(every test tier) and `tools/check_apk.sh` check it, and the pre-commit hook in `tools/git-hooks/`
-(`git config core.hooksPath tools/git-hooks`, once per clone) refuses a commit
-in which the two differ, in which the root APK does not contain the current
-asset, in which the game file is not fully minified, or in which
-`tools/index.compressed.html` does not unpack to the game file, so a release commit carries the latest build and the exact game file
-inside it. Rule for the root APK (the author, 2026-10-27): `GreeblisTown-release.apk`
-at the root is always the latest build; every change to the asset is followed by
-a rebuild and a version bump before it is committed.
+The VR-entry script (the head script at the top of the game file; FIXES.md, entry edits) is the one path proven on
+the headset: test entry changes headless first (`test_entry.js`; 3.15.11 crashed at launch, `tools/BUGS.md`
+F-B15). Capture a headset test live (`tools/capture_log.ps1` / `.sh`); `adb logcat -s GreeblisServer
+GreeblisLauncher cr_VrShellDelegate` shows the page's own events and errors (`page: ...`). A creature fix touches
+only the offending surfaces (B20 sank the cuff lights by millimetres); anything the author would notice is put to
+them first, with the candidate list from `tools/test_coincident.js`. The pre-commit hook in `tools/git-hooks/`
+(`git config core.hooksPath tools/git-hooks`, once per clone) refuses a commit whose copies, root APK or compressed
+version are stale, or whose game file is not fully minified.
 
 Same key, same package name, higher `versionCode`, rebuild, run
 `tools/check_apk.sh`, upload to Alpha, test, promote.

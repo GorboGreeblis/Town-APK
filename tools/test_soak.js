@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Stability soak (T14): runs the game in the fake VR session for N minutes with
+// Stability soak (T14; full tier, 10 minutes): runs the game in the fake VR session for N minutes with
 // all systems exercised in a loop (pickups, dialogue, shop, battle, pizza call,
 // visits unparked) and samples heap, renderer counts and errors every 30 s.
 // Fails on page errors, on heap growth over 60% from the 2-minute mark, or on

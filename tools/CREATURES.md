@@ -162,7 +162,8 @@ Right after the build the game merges each model's static parts (`io`, called wi
 find moving): sibling meshes that share every material property except
 colour become one mesh, their colours baked into vertex colours. Parts that move, eyelids, and anything marked
 `userData.keep` stay separate. This is why a character made of a hundred primitives draws in a handful of calls,
-and why the batcher (RENDERING.md) can then merge them further.
+and why the batcher (RENDERING.md) can then merge them further: since P24 (3.15.48) the creatures are batched
+together in one pass.
 
 ## 4. The house style
 
@@ -191,7 +192,8 @@ What the models have in common, as built:
   monitor head, keyboard jaw and "adb" labels; Montgummery's CRT head with "gfxinfo" on screen and scrolling code on
   his body; Hennrick's data screen; Etcher's three back marks (a stroked "B", three stacked parallelograms, two
   diamonds): symbols of the ledgers he can etch on (the author), fitting his line "My skin is a ledger."
-- **Always moving, never in sync.** Every character breathes, sways or bobs with slow sines (mostly 0.7-2.1 rad/s,
+- **Always moving, never in sync** (the idle phases seeded since 3.15.51, R5: still out of step, the same on every
+  launch). Every character breathes, sways or bobs with slow sines (mostly 0.7-2.1 rad/s,
   a few centimetres or a few hundredths of a radian), each part at a different rate and phase, so nothing looks
   frozen and no two move alike. Talking adds a nod, a bounce or a moving mouth (`tkS`); walking adds a stride or a
   hop. Dancers follow the beat (`gcBeatHz`, 104 beats a minute in town, 88 in the Event).
@@ -257,7 +259,9 @@ What the models have in common, as built:
 - **Face**: on the stem, under the cap: shared eyes, angled brown brows, pink cheeks with freckles, a small smile.
 - **Extras**: a six-point sheriff's star; a cowboy hat whose brim and crown are shaped by moving the lathe's vertices
   (sides curled up, a front dent, a centre crease).
-- **Motion**: the stem sways, the cap bobs and nods while he talks. No walk.
+- **Motion**: the stem sways, the cap bobs and nods while he talks. No walk cycle: he glides. He stands on his desk
+  (1.545 m up) and goes up and down by a ramp at its left end (since 3.15.53, the author's design; it was a hop),
+  his height following the ramp (FIXES.md F-B39).
 
 ### King Dino
 - **Body**: his own signed-distance blob (torso, a head nearly as wide, a wide snout, two thighs), pear-shaped.
@@ -318,7 +322,8 @@ What the models have in common, as built:
   filtered; a cyan head, a magenta screen; "adb" labels; re-skinned with the plastic surface by her wrapper.
 - **Face**: the magenta screen (a corner bracket and wifi arcs; static when she glitches; an equaliser while she
   dances); the jaw chomps now and then.
-- **Motion**: a four-legged walk, cables swaying, a glitch every 5-13 s; gazes up at the church when idle.
+- **Motion**: a four-legged walk, cables swaying, a glitch every 5-13 s (its timing and the jaw's chomps seeded since
+  3.15.51, R5; the shake stays random); gazes up at the church when idle.
 
 ### Fortizmo
 - **Body**: a pear body that widens at the bottom, a round head with long upright ears, a trumpet-bell muzzle, arms
@@ -386,7 +391,7 @@ What the models have in common, as built:
 ## 6. Changing or adding a creature
 
 - **Do not change how anyone looks** (the author's rule). A fix to a model must leave its pixels the same:
-  `geom_compare.js` compares built geometry, `test_coincident.js` and `test_zfight.js` catch depth fights between
+  `minify_identity.js BEFORE AFTER` compares the whole built scene bit for bit, `test_coincident.js` and `test_zfight.js` catch depth fights between
   parts (B20-B23 were fixed that way, moving parts by a millimetre or two inside each other).
 - **Keep creature geometry non-indexed**: the ground fit samples every 6th vertex, so indexing a creature's mesh
   would move it (P12 skips creatures; RENDERING.md 4).
@@ -395,11 +400,19 @@ What the models have in common, as built:
 - **Use the shared kit**: `x.*` and `KIT.surf` cache materials, so a new part in an existing look adds no material
   and batches with the rest. A new material created after loading must be warmed (`warm_coverage.js` fails on a lit
   material without its shaders; B27 was the Gem's).
+- **A model built after loading** (as Backpacka is, by her module's pre-warm, after the step that batches the
+  scene) must be handed to the batcher when it is built, or every part draws on its own (P25: 96 parts, about 83
+  draws a frame). Its geometry must not change while it plays, or a batch copy goes stale.
+- **Collision**: the player's movement checks player-only circles (`uo.pc`); Backpacka's at the pond (F-B37) grow
+  as her parts come below head height and never move her. A new body the player must not walk into gets its own,
+  with a test like `test_backpacka.js`.
 - **Faces**: use `KIT.eye` and `KIT.mouth` for the house face; pass the lids to `born` so they blink.
 - **A new screen face or painted texture**: make it while loading and keep it (Montgummery's faces are all made at
   load since F-B30): no texture may be made during play (RULES.md 9; `texture_census.js` fails on one). A canvas
   repainted during play goes through `needsUpdate`; since F-B31 the upload happens in a task after the frame, never
   inside it.
+- **Measure a change**: `creature_census.js` (full-tier report, `.runs/creature_census.json`) gives each character's
+  meshes, batched parts, triangles, materials and textures; compare before and after.
 
 ## 7. The author's answers
 
