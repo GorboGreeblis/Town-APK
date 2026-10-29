@@ -32,7 +32,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
    the way it is (2026-10-29: "The UFO's path is currently fine the way it is. Mark as intended": it draws from the
    game's seeded generator, so its first flight is likely the same on every launch). Seeded, the same on every
    launch (2026-10-29: "1 to 7: seed", FIXES R5): the stars, the clouds, blinks, idle sway phases, Anomalee's glitch
-   timing and jaw, the Event ring's sway. Painted textures are seeded (the same on every launch, FIXES R1 [88]). Any other randomness is the author's
+   timing and jaw, the Event ring's sway. Random by the author's word too (2026-10-29: "whatever you recommended we
+   keep random, keep random"): particles and splats, the pickups' bob and glint, sound pitch variation, Anomalee's
+   glitch shake, the robin's return, the Gem's sparkles (RANDOMNESS.md). Painted textures are seeded (the same on every launch, FIXES R1 [88]). Any other randomness is the author's
    call ("other instances of randomness are questionable"): list it and ask before changing it.
 
 ## How the game looks

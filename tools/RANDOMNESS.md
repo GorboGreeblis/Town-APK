@@ -11,6 +11,7 @@ The author's decision list (TASKS T17, 2026-10-29, 3.15.50). Every item waits fo
 | d3, which way each flint lies | "9. Close out as intended." | Stays random, with the flint spawns; no change |
 | The UFO's flight path (seeded, not random) | "The UFO's path is currently fine the way it is. Mark as intended." | Intended as it is (RULES.md 5); no change |
 | d1 stars, d2 clouds, c1 blinks, c2 idle phases (Nextessa's too), c3 Anomalee's glitch timing (her shake stays random), c4 her jaw, c9 the Event ring's sway | "1 to 7: seed" | Seeded in 3.15.51 (FIXES R5): the same every launch, still varied |
+| Everything recommended to stay random: c5 Sparkakus's tail mist, c6 Mama Gorbo's drops, c7 goo blobs and splats, c8 the pickups' bob and glint, c10 the typewriter tick's pitch, Anomalee's shake in c3, and the appendix's (c) items (goo on the player's view, sound pitch and noise variation, Backpacka's droplets and the finale's reactions, vignette confetti and token trails, the robin's return, the Gem's sparkles) | "whatever you recommended we keep random, keep random" | Stay random; no change |
  Positions are those of 3.15.49's game file; after an edit, `node tools/random_census.js` lists them again.
 
 This list covers the 120 `Math.random` call sites found by `random_census.js` (`tools/.runs/random_census.json`;
