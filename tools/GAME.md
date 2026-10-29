@@ -48,7 +48,7 @@ The HTML is 8 lines since the minification (3.15.45; it was 93 before); most of 
   step: `quality`, `sosScale`; F-B31), target 72 Hz with an adaptive quality controller
   (`targetHz`, `emaAlpha`, `overFrames`, `underFrames`).
 - Pickups: 32 blossoms (regrow 12 s), 40 flint (regrow 12 s; called acorns in the code, flint in the game's own text and the Store).
-- Finale: 180 s, NPC chatter every 3-7 s, `finaleLockMs` 600 s.
+- Finale: 190 s of planting (180 s until 3.15.57, A9), NPC chatter every 3-7 s, `finaleLockMs` 600 s.
 - Pizza: call delay 1.8 s, driver spawn radius 75, gives up after 100 s.
 - Gravity 14.
 
@@ -116,7 +116,8 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   visited least. The Ancient's visits may be picked on 12.5% of tries, 32% while the player is in the Cave, where
   1 try in 10 also considers only the Ancient's visits (A3); the Cave is checked at each try. Sparkakus is only
   picked as a visitor once the player has the Gem or the Stone (F-B42). Mushroom reaches his desk by its ramp
-  (F-B39). A vignette ends at once if a speaker becomes busy or the player talks to one of them; Sparkakus is
+  (F-B39) and leaves it the same way, never hopping; no step of his rises or drops more than 0.3 m, so the desk is
+  solid to him (F-B46). `test_mushroom_desk.js`. A vignette ends at once if a speaker becomes busy or the player talks to one of them; Sparkakus is
   busy whenever he walks to his shelves. `test_visits.js`, `test_content.js`.
 - **The jazz drums.** King Dino's kit plays a swung pattern at 104 beats a minute (a bar of 2.31 s): 8 bars of
   brushes, then time, funk, trades and shout choruses of 8 bars each. Heard (on the dance floor, at the kit, or in
@@ -126,10 +127,16 @@ Read from the code and checked by the tests named; numbers are game seconds and 
 - **Dance battles.** Glyph, Etcher and Montgummery: rock, scissors or paper each round, the dancer's move picked at
   random and shown before the player picks; stamina 10; BOW OUT works at random 80% of the time (otherwise "The
   beat won't let you go!"; 70% until 3.15.52, FIXES R6). `test_progression.js`, `test_content.js`.
+- **Nextessa and the Gem.** While the Gem assembles in the Speech, Nextessa (through the Portal with the pizza) stands
+  and faces the player; she delivers once the Speech is over (F-B45). `test_courier_gem.js`.
+- **Anomalee in the Event.** Without Snacks she plants like everyone else; with them she sets her own open pizza box
+  beside her (the logo on its lid) and eats a slice every 22 s instead of planting, leaving the last two (F-B49).
+  `test_anomalee.js`.
 - **Backpacka at the pond.** While she drinks (her show's 16-40 s) the player cannot walk into her: player-only
   circles round her feet, body, neck and head (F-B37). `test_backpacka.js`.
-- **The Event's start and end (3.15.54).** A mist bank rolls in over 6 s and settles just outside the town fence
-  (A4); the clouds and every Blossom and Flint fade out over 2.5 s (A5); a UFO in flight leaves by its exit path and
+- **The Event's start and end (3.15.54, 3.15.57).** A mist bank rolls in over 15 s and settles just outside the town
+  fence (A4, A9), in a soft grey (80% of the fog colour); everything beyond the fence is misted by where it stands, so
+  walking up to the fence never clears it (A9); the planting lasts 190 s; the clouds and every Blossom and Flint fade out over 2.5 s (A5); a UFO in flight leaves by its exit path and
   none starts (A6). At the end Backpacka flies off into the mist (her show is 88 s, A7), the mist rolls back out and
   everything fades back in. In a second or later Event the garden's flowers shrink away at the start and grow back
   when watered (F-B43). Nothing is shown or hidden at once. `test_event_fade.js`.

@@ -99,10 +99,10 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
   if (vr) await page.addInitScript(fs.readFileSync(path.join(root, 'tools/fakexr.js'), 'utf8'));
   // Frame-hazard watch (every test, both render paths): GPU work that must never happen while an XR frame draws (the
   // flash causes: texture uploads and copies, mipmap builds, pixel reads, blits, framebuffer attachments, renderbuffer
-  // storage; NOTES 67, 80) and shader compiles (hitches). Recorded with the frame and a short stack; close() reports.
+  // storage, geometry buffers made on first sight; NOTES 67, 80, 97) and shader compiles (hitches). Recorded with the frame and a short stack; close() reports.
   if (vr) await page.addInitScript(() => {
     const H = window.__gtFrameHaz = { n: 0, kinds: {}, first: [] };
-    const K = ['texImage2D', 'texSubImage2D', 'texImage3D', 'texSubImage3D', 'texStorage2D', 'texStorage3D', 'compressedTexImage2D', 'copyTexImage2D', 'copyTexSubImage2D', 'generateMipmap', 'readPixels', 'framebufferTexture2D', 'framebufferTextureLayer', 'renderbufferStorage', 'renderbufferStorageMultisample', 'compileShader'];
+    const K = ['texImage2D', 'texSubImage2D', 'texImage3D', 'texSubImage3D', 'texStorage2D', 'texStorage3D', 'compressedTexImage2D', 'copyTexImage2D', 'copyTexSubImage2D', 'generateMipmap', 'readPixels', 'framebufferTexture2D', 'framebufferTextureLayer', 'renderbufferStorage', 'renderbufferStorageMultisample', 'compileShader', 'createBuffer'];   // createBuffer: a geometry drawn for the first time (3.15.57, F-B48)
     for (const C of [window.WebGL2RenderingContext, window.WebGLRenderingContext]) {
       if (!C) continue;
       for (const k of K) {

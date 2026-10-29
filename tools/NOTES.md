@@ -1606,3 +1606,33 @@ beyond the VR-entry fix.
     the census's sequence, `numPointLights` 0 -> 1 (F-B44, fixed in 3.15.55); not reproduced by starting the Event
     with the pizza portal open, so the light was the Bulb's or both. Standalone only: three 4x2 placeholder textures
     by the gallery uploaded in frames when their painting finished after VR entry (B44, open; not in the APK).
+
+97. **The author's 3.15.56 logs and the flashes (F-B48).** Log c8e2109f (a full session): median 72 fps, never under
+    60 (Event median 67.9, minimum 60.4; town 71.8), CPU-bound (GPU 7.4-8.0 ms of 13.9); two Lambert compiles at the
+    Event's starts (`numPointLights` 1 -> 0), from 3.15.56's pinning of only the new lit programs, which let the unlit
+    ones go (fixed: every program pinned). Logs 2bd67b97 (a flash after leaving the Cave with Etcher, both outside)
+    and 8e76b4aa (a flash right after loading, on a pickup): nothing logged near either mark (no compile, no texture,
+    no GPU call inside a frame), but the runtime's lines show hitches of 3-6 missed frames 2-4 s before each mark, and
+    2bd67b97 a 28 s stretch out of the foreground (the system menu) a minute before. Headless replays with every GL
+    call counted per frame: walking from the spawn to the first Blossom made 47 buffers inside XR frames, the Cave's
+    inside about 240, Gooward's first goo 8: three.js uploads a geometry on its first draw, and the loading warm-up
+    drew only the start view (`O.render(C,B)` from the spawn). The earlier flashes were texture uploads inside the
+    frame (F-B26, F-B31); this is the same class, unwatched until now. Every geometry is now drawn once with a plain
+    material into a 1x1 scissor while loading (hidden objects shown for it) and at VR entry: 204 -> 453 on the GPU.
+    The harness's frame-hazard watch now counts `createBuffer`; the menu test found the goo blob and the goo splat on
+    the view (made on first use) and the controller rays (made at entry). A stall of 2.7-2.9 s headless when a visitor
+    walks into the church was the GPU process (the main thread idle in the profile), not seen on the headset (28-35 ms
+    long frames at most there). The flight recorder (D3) dumps the last 10 s on the next mark.
+
+98. **Seams (F-B47).** The author's flicker on the ring houses (a crop of the blue house's gable edge) was neither a
+    depth fight (`test_zfight.js`, `test_coincident.js` and a sub-millimetre jitter render all clean) nor texture
+    aliasing, but T-junctions: the gable triangle is a fan from the middle of its base, so its base edge (two edges
+    meeting at that vertex) and the wall's top edge are rasterised from different end points, and pinholes along the
+    line show what is behind; a zoomed render showed the dotted line. The triangles were also narrower than their
+    roofs (up to 38 cm below the roof plane at the eaves), leaving a tapering sliver of roof underside. `test_seams.js`
+    finds same-plane edge contacts with different end points (19 visible after filtering: surfaces facing the player
+    area, not covered by a third triangle across the line, and a magenta marker 3 mm off the seam seen from at least
+    one standing point in a 6 m grid or the Cave); the fix in each case overlaps the pieces by a centimetre or two
+    with one face set back 1 cm, so there is neither a gap nor a shared plane. Detail-sized contacts (letters, small
+    trim, every contact under 5 cm) are listed, not failed. The remaining jitter flips in a 24-view sweep were edges
+    and fine high-contrast detail (Gooward up close, the gallery floor's paint), not seams or depth fights.

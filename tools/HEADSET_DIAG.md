@@ -166,3 +166,18 @@ draws` lines mean a frame hazard (the flash cause, NOTES 67): send the log.
 Since 3.15.48 (D2): `MARK flash seen` (B on the right controller), `long frame N ms`, and a shader compiled during
 play names the key fields that differ from the closest program of its kind. Since 3.15.49 (F-B36): `mipmaps on: N
 textures re-uploaded between frames` about 3 s after entering VR. Send the log if a compile line appears.
+
+Since 3.15.57 (D3, the author: "let's try to make the logs more verbose"):
+- `geometry warm-up (STEP): A > B geometries on the GPU` while loading (four steps) and at `vr entry`: every geometry
+  is uploaded before the first headset frame (F-B48).
+- `frame N: K geometry buffer(s) made inside the XR frame`: something drawn for the first time inside a frame (a
+  flash cause); there should be none. Send the log if one appears.
+- `ev WHAT OLD > NEW (frame N)`: the event trail, sampled 12 times a second: Blossoms, Flint, Artifacts, the Cave
+  (`cave`), a vignette playing, the Event, the screen (`playing`, `dialogue`, `panel`), the courier's state and the Gem
+  (`gem`).
+- `xr visibility visible | visible-blurred | hidden`: the session's focus (the system menu, the headset taken off).
+- After `MARK flash seen`, the flight recorder's last 10 s: `rec ... slow:` (frames over 20 ms, with their time before
+  the mark), `rec changes:` (programs, textures, geometries and draw calls changing, the head inside a character),
+  `rec events:` (focus changes in the last minute).
+`node tools/perf_log.js run.txt` reads them all: the recorder under each mark, geometry uploads, focus changes, the
+stretches when another process (the system shell) drew instead of the game, and `--trail` prints the event trail.
