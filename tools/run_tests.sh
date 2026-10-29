@@ -90,6 +90,7 @@ if [ "$TIER" != quick ]; then
   run "Mama Gorbo and Gooward's meetings: schedule, spots, goo arcs and hearts, called off by the Event" node "$ROOT/tools/test_meet.js" "$ASSET"
   run "jazz drums: on the beat on both clocks, on time for the drummer, look-ahead, silent far away and under the horn" node "$ROOT/tools/test_jazz.js" "$ASSET"
   run "audio: one context, nothing left playing after rounds of every sound, resumes on focus" node "$ROOT/tools/test_audio.js" "$ASSET"
+  run "Backpacka at the pond: the player cannot walk into her; she is not moved; no circles once she leaves" node "$ROOT/tools/test_backpacka.js" "$ASSET"
   run "far detail and the batcher: one model at a time, swaps at 62/66 m; exact matrices in every batch, every frame" node "$ROOT/tools/test_lod.js" "$ASSET"
   run "world: routes, hulls, pickups, watchdog (${WORLD_S}s)" node "$ROOT/tools/test_world.js" "$ASSET" "$WORLD_S"
   run "input and locomotion (fake controllers)" node "$ROOT/tools/test_input.js" "$ASSET"

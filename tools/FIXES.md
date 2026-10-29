@@ -44,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (57 blocks)
+## Gameplay, performance and other fixes (59 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -497,6 +497,23 @@ says "mipmaps on: N textures re-uploaded between frames"). Also: the comfort vig
 made (it had waited for the first move), and on the classic path the textures changed since the last frame (panel
 text) are uploaded before the frame draws, as multiview already did. The same settings on every texture once done
 (all 195 compared), so the same pixels.
+
+- **P25** (3.15.50; T16; the author: "FPS dropped below 60 fps while Backpacka was present", "Please optimize her model for
+performance"; NOTES 93): Backpacka was never batched. She is built hidden by her module's pre-warm, after the loading
+step that batches everything in the scene, so her 96 parts were drawn one by one for her whole show. Now her builder
+hands her to the batcher as the garden plants already were: 94 of 96 parts in 11 batches. About 83 fewer draws a frame
+while she is in view on the headset (each eye path drew 169 fewer headless: 714 -> 545 at the author's low spot,
+the Event's draws back to what they are before she arrives). Proof: the batcher on/off in the same frame, 28 views
+orbiting her at seven moments of her show: at most 0.01% of pixels differ, none in areas (3.15.49 gives 0.008%: noise).
+Her geometry never changes while she plays (checked over her whole show), so a batch copy of it stays exact.
+
+- **F-B37** (3.15.50; the author: "give Backpacka basic collision so that the user cannot move inside of her model",
+"collision should not impact her drinking from the pond animations", "The lack of collision is only an issue while she
+is drinking from the pond"): while she is down at the pond (her show's 16-40 s) the player is kept out of her by
+circles that only the player's movement checks (`uo.pc`): one round her four feet, two along her body (scaled with
+her, she swells as she drinks), one on each neck segment and her head. Each counts once its part comes below head
+height (1.9 m) and grows as the part comes down, so a landing nudges the player aside instead of a jump. Her pose comes
+from her show's clock alone; the circles never move her or any townsperson. `test_backpacka.js` (standard tier).
 
 ## Multiview (release path since 3.15.34)
 
