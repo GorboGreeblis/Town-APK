@@ -109,6 +109,11 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     Each change still comes with its proof (identical pixels or the measured trade-off) and its record in FIXES.md.
     `experiment.py` stays for diagnostics and measurement only.
 
+23. **Every build is treated as the final build, until the author says otherwise** (2026-10-29: "until I say
+    otherwise: treat this as if it were the final build and do a full test pass"). After each build the full tier runs
+    (`tools/run_tests.sh --full`, 2-2.5 hours; `--resume` after a container restart), and its result is reported and
+    recorded in TEST_PLAN.md before the work moves on.
+
 ## Priorities
 
 - **Performance is the biggest blocker for the Store submission** (2026-10-28: "once all other tasks are completed,
