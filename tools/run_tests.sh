@@ -60,7 +60,8 @@ report() { name=$1; shift; wanted "report: $name" || return 0; KEY=$(key "$@")
   echo; echo "=== report: $name ==="; "$@"; rc=$?
   if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  INFO  $name (see log)"; printf '%s\t%s\n' "$KEY" "report: $name" >> "$STATE"; else SUMMARY="$SUMMARY\n  INFO  $name (probe exit $rc)"; fi; }
 
-echo "Greeblis Town test pass: $TIER${ONLY:+ (only stages matching /$ONLY/)}"; T_ALL=$(date +%s)
+VER=$(sed -n 's/^ *versionName "\([^"]*\)".*/\1/p' "$ROOT/tools/android/app/build.gradle" 2>/dev/null | head -1)
+echo "Greeblis Town test pass: $TIER${ONLY:+ (only stages matching /$ONLY/)}; build ${VER:-unknown}; $(date -u +%Y-%m-%dT%H:%MZ)"; T_ALL=$(date +%s)
 HAZ="$ROOT/tools/.runs/frame_hazards.log"; mkdir -p "$ROOT/tools/.runs"; [ -n "$RESUME" ] || : > "$HAZ"   # every test's frame-hazard watch (lib/harness.js) appends here
 run "the shipped copies (index.html, the APK asset) are the game file tools/uncompressed.html (sync_game.py --check)" python3 -I "$ROOT/tools/sync_game.py" --check
 run "the game file is minified, not compressed (minify_game.js --check, RULES.md 19)" node "$ROOT/tools/minify_game.js" --check
@@ -90,6 +91,7 @@ if [ "$TIER" != quick ]; then
   run "Mama Gorbo and Gooward's meetings: schedule, spots, goo arcs and hearts, called off by the Event" node "$ROOT/tools/test_meet.js" "$ASSET"
   run "jazz drums: on the beat on both clocks, on time for the drummer, look-ahead, silent far away and under the horn" node "$ROOT/tools/test_jazz.js" "$ASSET"
   run "audio: one context, nothing left playing after rounds of every sound, resumes on focus" node "$ROOT/tools/test_audio.js" "$ASSET"
+  run "seeded decoration: the author's seeded items draw from their own streams; two launches build the same stars and clouds (R5)" node "$ROOT/tools/test_seeded.js" "$ASSET"
   run "Backpacka at the pond: the player cannot walk into her; she is not moved; no circles once she leaves" node "$ROOT/tools/test_backpacka.js" "$ASSET"
   run "far detail and the batcher: one model at a time, swaps at 62/66 m; exact matrices in every batch, every frame" node "$ROOT/tools/test_lod.js" "$ASSET"
   run "world: routes, hulls, pickups, watchdog (${WORLD_S}s)" node "$ROOT/tools/test_world.js" "$ASSET" "$WORLD_S"
@@ -132,6 +134,8 @@ else
 fi
 
 echo; echo "=== SUMMARY ($TIER, $(( ($(date +%s) - T_ALL) / 60 )) min) ==="; printf "$SUMMARY\n"
+# the summary also goes to a file, read by `node tools/pass_report.js` with the log (TEST_PLAN.md "Latest results")
+{ echo "=== SUMMARY ($TIER, build ${VER:-unknown}, $(date -u +%Y-%m-%dT%H:%MZ)) ==="; printf "$SUMMARY\n"; } > "$ROOT/tools/.runs/summary_$TIER.txt"
 # GPU work inside XR frames seen by any test (the flash causes; lib/harness.js): a failure of the pass
 if [ -s "$HAZ" ]; then echo "  FAIL  frame hazards (GPU work inside XR frames, the flash causes) seen by $(wc -l < "$HAZ") test run(s):"; sed 's/^/        /' "$HAZ" | cut -c1-400; rc_all=1
 elif [ "$TIER" != quick ]; then echo "  PASS  no GPU work inside XR frames in any test (frame-hazard watch)"; fi

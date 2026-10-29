@@ -40,8 +40,18 @@ Environment switches for the browser tests:
 
 Logs: pipe a pass into `tools/.runs/` (git-ignored), for example
 `nohup sh tools/run_tests.sh --resume >> tools/.runs/std_v41.log 2>&1 &`. Each stage prints its PASS/FAIL/NOTE
-lines; the summary at the end lists every stage. Record a finished pass in TEST_PLAN.md ("Latest results") and
-in the pull request.
+lines; the summary at the end lists every stage (and is kept in `tools/.runs/summary_<tier>.txt`); the first line
+names the tier, the build and the time. Record a finished pass in TEST_PLAN.md ("Latest results") and in the pull
+request: `node tools/pass_report.js tools/.runs/full_X.log --md` writes the paragraph (stages, PASS and FAIL lines,
+every failure, the frame hazards, the verdict); give it every log of a pass that a restart split.
+
+After a pass (RULES.md 23: every build gets the full tier until the author says otherwise):
+- A stage that failed for a reason now fixed: run it again alone with the same tier's settings,
+  `tools/run_tests.sh --full --only='docs consistency'` (the name is matched as a case-insensitive regular
+  expression), and record both runs.
+- A fix to the game is a new build (`build.sh --bump`), and a new build gets its own full pass; `--resume` skips
+  nothing then, since every stage's key includes the asset.
+- A fix to one test or tool only: `--resume` re-runs just the stages whose files changed.
 
 ## 2. When the machine restarts
 
