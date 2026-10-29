@@ -33,7 +33,14 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     const D = window.__dbg, V = D.VIGS, TC = window.__tc, wait = (ms) => new Promise((r) => setTimeout(r, ms)), out = { steps: [] };
     // every shader program made during play, with the step it appeared in (a compile in a frame is a hitch or a flash)
     const progSeen = new Set(D.O.info.programs.map((p) => p.id)); out.newProgs = [];
-    const progCheck = () => { for (const p of D.O.info.programs) if (!progSeen.has(p.id)) { progSeen.add(p.id); out.newProgs.push(TC.step + ': ' + p.name); } };
+    const progAll = new Map(D.O.info.programs.map((p) => [p.id, p]));
+    const progCheck = () => { for (const p of D.O.info.programs) if (!progSeen.has(p.id)) {
+      progSeen.add(p.id); progAll.set(p.id, p);
+      // who draws with it, and how its key differs from the closest program of its kind (D2's method)
+      const users = []; D.C.traverse((o) => { for (const m of (o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [])) { const pr = D.O.properties.get(m); if (pr && (pr.currentProgram === p || pr.program === p)) { const w = o.getWorldPosition(new THREE.Vector3()); users.push(m.type + (m.map ? '+map' : '') + (m.transparent ? ' transparent' : '') + ' at ' + w.x.toFixed(1) + ',' + w.y.toFixed(1) + ',' + w.z.toFixed(1)); } } });
+      const diff = [...progAll.values()].filter((q) => q !== p && q.name === p.name).map((q) => { const a = p.cacheKey.split(','), b = q.cacheKey.split(','), d = []; for (let i = 0; i < Math.max(a.length, b.length); i++) if (a[i] !== b[i]) d.push(i + ':' + b[i] + '->' + a[i]); return d; }).sort((x, y) => x.length - y.length)[0];
+      out.newProgs.push(TC.step + ': ' + p.name + ' [' + (diff ? diff.slice(0, 6).join(' ') : 'no program of its kind') + '] used by ' + (users.slice(0, 3).join('; ') || 'nothing in the scene now'));
+    } };
     const progTimer = setInterval(progCheck, 100);
     const step = (s) => { progCheck(); TC.step = s; out.steps.push(s); };
     const adv = setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250);
@@ -49,7 +56,7 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     step('phone call and Nextessa');
     try { D.ue.call(); await gwait(() => !!D.ue.courier, 45, 90); const n = D.ue.courier; out.courier = !!n; if (n) { near(n); await wait(500); const a = D.xe.actionsFor(n) || []; for (const x of a.slice(0, 2)) { x.run(); await gwait(() => !D.qt.isOpen, 20, 30); } await gwait(() => !D.ue.courier, 60, 120); } } catch (e) { out.courierErr = String(e); }
     step('text exchanges'); out.vigs = 0;
-    try { const m = V.lineUp(); const town = V.all.filter((pk) => pk[0] !== 'SL' && pk[1] !== 'SL'); for (const pk of town.filter((_, i) => i % 7 === 0).slice(0, 8)) { const A = m[pk[0]], B = m[pk[1]]; if (!A || !B) continue; D.xe.lastTarget = null; await gwait(() => !A.busy && !B.busy && !D.qt.isOpen, 30, 60); if (V.play(A, B, true)) { out.vigs++; await gwait(() => !V.playing(), 12, 120); } else (out.vigNo = out.vigNo || []).push(pk[0] + pk[1] + (V.playing() ? ' (one already playing)' : '') + (V.computeInCave() ? ' (player in the Cave)' : '') + (A.busy || B.busy ? ' (busy: ' + (A.busy || B.busy) + ')' : '')); } } catch (e) { out.vigErr = String(e); }
+    try { const m = V.lineUp(); const town = V.all.filter((pk) => pk[0] !== 'SL' && pk[1] !== 'SL'); for (const pk of town.filter((_, i) => i % 7 === 0).slice(0, 8)) { const A = m[pk[0]], B = m[pk[1]]; if (!A || !B) continue; D.xe.lastTarget = null; await gwait(() => !A.busy && !B.busy && !D.qt.isOpen && !V.playing(), 30, 60); if (V.play(A, B, true)) { out.vigs++; await gwait(() => !V.playing(), 12, 120); } else (out.vigNo = out.vigNo || []).push(pk[0] + pk[1] + (V.playing() ? ' (one already playing)' : '') + (V.computeInCave() ? ' (player in the Cave)' : '') + (A.busy || B.busy ? ' (busy: ' + (A.busy || B.busy) + ')' : '')); } } catch (e) { out.vigErr = String(e); }
     // the Speech: Sparkakus with the three Artifacts (the Gem assembled with the glue bottle)
     step('the Speech');
     try { const Kt = D.Kt; Kt.artifacts = 3; Kt.rewards.artifacts = false; if (D.st && D.st.group) { D.At.position.x = D.st.group.position.x + 1.4; D.At.position.z = D.st.group.position.z; } await wait(500); D.LIB.talk(); await gwait(() => Kt.rewards.artifacts, 120, 400); out.speech = !!Kt.rewards.artifacts; await wait(3000); } catch (e) { out.speechErr = String(e); }

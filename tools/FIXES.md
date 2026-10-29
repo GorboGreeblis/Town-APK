@@ -44,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (77 blocks)
+## Gameplay, performance and other fixes (78 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -646,6 +646,14 @@ When no pickup is showing, each instanced draw is now switched off, so the Event
 file updated at all times"; RULES.md 11, 20, 24): the compressed version is `index.compressed.html` at the repository
 root (moved from `tools/`). `sync_game.py` now updates every copy after an edit: `index.html`, the APK's asset, and the
 compressed version (rebuilt); `--check` checks all three.
+
+- **F-B44** (3.15.55; found by the 3.15.54 full pass, frame-hazard watch in `texture_census.js`; NOTES 96): two
+shader programs were compiled inside XR frames during the Event in the census's sequence (shop, battle, Nextessa's
+pizza, the Speech, then the Event): a Lambert material with a map at the garden's centre, its key differing from the
+warmed one only in `numPointLights` (0 -> 1). Loading compiles the scene once with the portal's light on and once
+with the Bulb's, but before the Event's plants and pizza are built for their warm-ups, so those were never compiled
+lit. The pizza warm-up (plants still in the scene) now also compiles with the portal light, with portal and Bulb
+lights together, and with the Bulb's alone.
 
 ## Multiview (release path since 3.15.34)
 
