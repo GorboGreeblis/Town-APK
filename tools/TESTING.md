@@ -67,8 +67,8 @@ Environment switches for the browser tests:
 | `GT_LAYER_DEPTH=0` | The layer brings no depth texture, so multiview draws into the game's own depth buffer as on the headset (P14's depth discard runs). |
 
 Logs: pipe a pass into `tools/.runs/` (git-ignored), for example
-`nohup sh tools/run_tests.sh --full --resume >> tools/.runs/full_3.15.52.log 2>&1 &`. Each stage prints its PASS/FAIL/NOTE
-lines; the summary at the end lists every stage (and is kept in `tools/.runs/summary_<tier>.txt`); the first line
+`nohup sh tools/run_tests.sh --full --resume >> tools/.runs/full_3.15.63.log 2>&1 &`. Each stage prints its PASS/FAIL/NOTE
+lines and, when it ends, one `--- PASS  name (N s)` or `--- FAIL ...` line (`grep '^--- ' log` follows a running pass); the summary at the end lists every stage (and is kept in `tools/.runs/summary_<tier>.txt`); the first line
 names the tier, the build and the time. Record a finished pass in TEST_PLAN.md ("Latest results") and in the pull
 request: `node tools/pass_report.js tools/.runs/full_X.log --md` writes the paragraph (stages, PASS and FAIL lines,
 every failure, the frame hazards, the verdict); give it every log of a pass that a restart split.

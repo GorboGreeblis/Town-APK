@@ -36,7 +36,7 @@ if [ -z "${ANDROID_HOME:-}${ANDROID_SDK_ROOT:-}" ] && [ -f "$ROOT/tools/android/
 STATE="$ROOT/tools/.runs/resume_$TIER.txt"
 BASE=$( { cat "$ASSET"; [ -f "$APK" ] && cat "$APK"; cat "$ROOT"/tools/lib/*.js "$ROOT/tools/fakexr.js"; } 2>/dev/null | sha256sum | cut -c1-16)
 key() { { echo "$BASE"; for f in "$@"; do [ -f "$f" ] && cat "$f"; done; } | sha256sum | cut -c1-16; }
-[ -n "$RESUME" ] && { n=$(wc -l < "$STATE" 2>/dev/null); echo "resuming: ${n:-0} stage results kept in $STATE"; }
+[ -n "$RESUME" ] && { n=$(wc -l 2>/dev/null < "$STATE"); echo "resuming: ${n:-0} stage results kept in $STATE"; }
 
 # Per-tier knobs: seconds of soak, NPC scenarios, world sampling window.
 case $TIER in
@@ -52,7 +52,9 @@ wanted() { [ -z "$ONLY" ] || printf '%s' "$1" | grep -qiE -- "$ONLY"; }
 run() { name=$1; shift; wanted "$name" || return 0; KEY=$(key "$@")
   if done_before "$name"; then SUMMARY="$SUMMARY\n  PASS  $name (earlier run)"; return; fi
   echo; echo "=== $name ==="; t0=$(date +%s); "$@"; rc=$?; dt="$(( $(date +%s) - t0 )) s"
-  if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  PASS  $name ($dt)"; printf '%s\t%s\n' "$KEY" "$name" >> "$STATE"; else SUMMARY="$SUMMARY\n  FAIL  $name (exit $rc, $dt)"; rc_all=1; fi; }
+  if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  PASS  $name ($dt)"; printf '%s\t%s\n' "$KEY" "$name" >> "$STATE"; else SUMMARY="$SUMMARY\n  FAIL  $name (exit $rc, $dt)"; rc_all=1; fi
+  # each stage's result as it ends, so a running pass can be followed (grep '^--- ' the log)
+  [ $rc -eq 0 ] && echo "--- PASS  $name ($dt)" || echo "--- FAIL  $name (exit $rc, $dt)"; }
 skip() { wanted "$1" || return 0; SUMMARY="$SUMMARY\n  SKIP  $1 ($2)"; }
 # Report stages run a probe and keep its output in the log; they never fail the pass.
 report() { name=$1; shift; wanted "report: $name" || return 0; KEY=$(key "$@")
