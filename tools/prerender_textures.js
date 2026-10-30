@@ -12,7 +12,7 @@ const out = path.join(root, 'tools/android/app/src/main/assets/tex');
   const cap = path.join(root, 'tools/.runs/exp_texcapture.html');
   execFileSync('python3', [path.join(root, 'tools/experiment.py'), 'texcapture', path.join(root, 'tools/uncompressed.html'), cap], { stdio: 'inherit' });
   fs.rmSync(out, { recursive: true, force: true }); fs.mkdirSync(out, { recursive: true });   // capture must not load old files
-  const { page, browser, bootS } = await boot({ file: cap, vr: true });
+  const { page, browser, bootS } = await boot({ file: cap, vr: true, standalone: true });   // served alone, as test_standalone.js compares (the mural's semi-transparent edges paint a few values apart otherwise)
   console.log(`booted in ${bootS}s`);
   // Gooward's gallery mural is painted by a worker after the boot (minutes headless): wait for its three strips
   const t0 = Date.now();

@@ -44,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (88 blocks)
+## Gameplay, performance and other fixes (93 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -730,7 +730,9 @@ in every test.
 Event, is missing the Pizza logo from its lid", "ensure that Anomalee has a pizza in their pizza box during the Event
 (Only when Pizza (snacks) has been completed)"): her box is an open one built apart from the others, its lid in plain
 cardboard; the lid now carries the logo on its outside (3.15.57 put it on the inside face; the author: "The pizza logo
-should be on the outside side of the lid", fixed in 3.15.58). She ate a slice every 5 s, so the box was empty 40 s in; she
+should be on the outside side of the lid"; 3.15.58 changed the lid's faces, but the box splitter (P20) replaces any
+six-material box with its own split geometry, so the logo stayed inside; since 3.15.59 the logo is a panel of its own on the
+lid's outer face). She ate a slice every 5 s, so the box was empty 40 s in; she
 now eats one every 22 s and leaves the last two, so there is pizza in it for the whole Event. Without Snacks she plants
 like everyone else and there is no box (as before; `test_anomalee.js` checks both).
 
@@ -745,6 +747,39 @@ of those counts and the head-inside moments of the last 10 s, with their times b
 with frame numbers, every change of Blossoms, Flint, Artifacts, the Cave, a vignette, the Event, the screen (playing,
 dialogue, panel), the courier and the Gem; the XR session's focus changes (the system menu) are logged too; and any
 geometry buffer made inside a headset frame is logged with its frame.
+
+- **F-B51** (3.15.59; the author's full run on 3.15.58, log 7204dc64: one flash, B pressed 1.6 s after Nextessa's second
+visit came into view): the loading warm-up (F-B48) puts every geometry that exists while loading on the GPU, but some
+are made during play: Nextessa and her pizza box on every visit (4 new geometries a visit), the Event's plants (each
+batched as it grows: a new 8,000-25,000-vertex batch), vignette and trade props, the Gem's parts. The log showed 26
+headset frames making buffers (16 the frame before the mark). three.js now asks the game before it lists an object
+to draw: inside a headset frame, an object whose geometry (vertices or indices) was never uploaded is held back for
+that one frame and uploaded in a task right after the frame (as F-B31 does for textures); it appears one frame
+(11-14 ms) later. Each geometry is held at most once. Headless, on the headset's path: Nextessa's visit and the
+Event's first two minutes made 19 and 11 buffers inside frames on 3.15.58, none now (`test_firstdraw.js`, new,
+standard tier). The log now says when something was held ("geometry held for one frame").
+
+- **F-B52** (3.15.59; the author: "Major Bug: Mushroom was observed being stuck on his desk during the Event. He was
+jittering and above the ramp part of his desk"): at the Event's start everyone walks straight to their spot; the
+start skipped Mushroom's way down (his ramp) because it looked for a building holding both him and the ramp's top,
+and his kiosk is not one; walking straight off the desk's side over the ramp, the step down was too big, so he was
+held at the edge (jittering) or, before 3.15.59's step rule, dropped off the side. Now: he takes his ramp whenever
+he starts on it (above ground); each ramp point is reached before the next (15 cm, not 70 cm, which cut the corner
+onto the desk's edge); the Event no longer pulls his height down to the ground (his ramp sets it); when a step is
+refused he slides along the kiosk instead of stopping, and one already off the surface may settle. The kiosk's
+collision lets him walk the whole width of the widened ramp (it only allowed 30 cm either side of its centre).
+`test_mushroom_event.js` (new, standard tier): down the ramp's middle, his height always the kiosk's surface, never
+still, at his spot, home on his desk after.
+
+- **A11** (3.15.59; the author: "let's increase the delay for snap turning slightly, to prevent possible issues"):
+snap turns at least 0.4 s apart (0.3 s since A1). `test_input.js` reads the gap from the game.
+
+- **A12** (3.15.59; the author: "The color of the fog now looks too dark to the eye"): the mist is 90% of the fog
+colour (80% since A9), on the bank beyond the fence and on everything it covers.
+
+- **A13** (3.15.59; the author: "make the ramp up to Mushroom's desk wide enough to fill that side of the kiosk"): the
+ramp, its landing and slats run from the desk to the kiosk's side wall (1.77 m, was 0.91 m); his route runs down its
+middle; the walkable surface and the solid part follow it.
 
 ## Multiview (release path since 3.15.34)
 

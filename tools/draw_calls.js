@@ -4,7 +4,7 @@
 // signature so the calls that only exist because of the batcher's part limit (gcEB.N parts per batch)
 // show up as such.
 //
-//   node tools/draw_calls.js [file] [--event] [--at "x,z;x,z" --yaws 4]
+//   node tools/draw_calls.js [file] [--event] [--at "x,z;x,z" --yaws 4] [--detail]
 // --at: in the Event, stand at these positions (e.g. the ones a headset perf line logged) and look in
 // --yaws directions from each; prints each view's draws and the reasons summed over all of them.
 // With GT_HEADSET_FOV=1 the fake eyes are Quest 3-shaped; with GT_MULTIVIEW=1 each draw serves both eyes.
@@ -12,6 +12,7 @@ const path = require('path');
 const { boot, root } = require('./lib/harness');
 const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : undefined;
 const withEvent = process.argv.includes('--event');
+let heaviest = null;   // with --at: the view with the most draws (for --detail)
 // The batcher's vertex cap for scenery parts: the game batches the scene's other top-level objects with _e(w, 6e4)
 // (P23; it was 4000 before 3.15.47); the creatures' groups have no cap.
 const VCAP = 60000;
@@ -86,12 +87,13 @@ const VCAP = 60000;
       await wait(30000);
       const yaws = +(process.argv.find((a, i) => process.argv[i - 1] === '--yaws') || 4);
       const pts = atArg.split(';').map((p) => p.split(',').map(Number));
-      const sumWhy = {}, sumCls = {}; let n = 0, tot = 0, tris = 0;
+      const sumWhy = {}, sumCls = {}; let n = 0, tot = 0, tris = 0; heaviest = null;
       for (const [x, z] of pts) for (let k = 0; k < yaws; k++) {
         const yaw = k * 2 * Math.PI / yaws;
         await page.evaluate(([x, z, yaw]) => { const D = window.__dbg; D.At.position.x = x; D.At.position.z = z; window.__fakeXR.pose.yaw = yaw; }, [x, z, yaw]);
         await wait(500);
-        const s = summarise(await page.evaluate(() => window.__dcFrame()));
+        const dr = await page.evaluate(() => window.__dcFrame()), s = summarise(dr);
+        if (!heaviest || dr.length > heaviest.d.length) heaviest = { d: dr, label: `(${x}, ${z}) yaw ${Math.round(yaw * 180 / Math.PI)}` };
         n++; tot += s.total; tris += s.tris;
         for (const [k2, c, t] of s.whys) { const w = sumWhy[k2] = sumWhy[k2] || { calls: 0, tris: 0 }; w.calls += c; w.tris += t; }
         for (const [k2, v] of Object.entries(s.byCat)) { const w = sumCls[k2] = sumCls[k2] || { calls: 0, tris: 0 }; w.calls += v.calls; w.tris += v.tris; }
@@ -104,9 +106,10 @@ const VCAP = 60000;
     } else if (started) { await wait(20000); print('the Event, 20 s in', summarise(await page.evaluate(() => window.__dcFrame()))); await wait(40000); print('the Event, 60 s in', summarise(await page.evaluate(() => window.__dcFrame()))); } else console.log('the Event did not start');
   }
   if (process.argv.includes('--detail')) {
-    const d = await page.evaluate(() => window.__dcFrame());
+    // with --at: the heaviest of the views; otherwise the current frame
+    const d = heaviest ? heaviest.d : await page.evaluate(() => window.__dcFrame());
     const rows = {}; for (const x of d.filter((x) => x.why && x.why !== `over ${VCAP} vertices`)) { const k = `${x.why} | ${x.cat} ${x.ent} | top ${x.top} ${x.nm} | ${x.verts}v | ${x.sig}${x.mm ? ' | ' + x.mm : ''}`; rows[k] = (rows[k] || 0) + 1; }
-    console.log('\n== detail (count = draws, both eyes)'); for (const [k, v] of Object.entries(rows).sort((a, b) => b[1] - a[1])) console.log(`  ${String(v).padStart(3)}  ${k}`);
+    console.log('\n== detail (count = draws, both eyes)' + (heaviest ? ', the heaviest view, ' + heaviest.label : '')); for (const [k, v] of Object.entries(rows).sort((a, b) => b[1] - a[1])) console.log(`  ${String(v).padStart(3)}  ${k}`);
   }
   await g.close(); process.exit(0);
 })().catch((e) => { console.error(e); process.exit(1); });
