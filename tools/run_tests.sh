@@ -97,6 +97,8 @@ if [ "$TIER" != quick ]; then
   run "the Event's start and end: mist rolls in and out, clouds and pickups fade, UFO leaves, Backpacka into the mist, flowers in a later Event (A4-A7, F-B43)" node "$ROOT/tools/test_event_fade.js" "$ASSET"
   run "Anomalee in the Event: plants without Snacks, eats from her pizza box with them (F-B49)" node "$ROOT/tools/test_anomalee.js" "$ASSET"
   run "Mama Gorbo's walk over to Gooward goes round the scenery (the gallery's front; F-B53)" node "$ROOT/tools/test_meet_walk.js" "$ASSET"
+  run "No townsfolk stuck: doorway routes only for a real home, visits to and from all four (F-B55)" node "$ROOT/tools/test_stuck.js" "$ASSET"
+  run "No jitter, bumps or floating models through the Event (F-B56, F-B57)" node "$ROOT/tools/test_jitter.js" "$ASSET"
   run "Mushroom in the Event: down his ramp at the start, never stuck or off its side, home on his desk after (F-B52)" node "$ROOT/tools/test_mushroom_event.js" "$ASSET"
   run "first draws: nothing uploaded inside a headset frame when Nextessa comes or the Event's plants grow; each new object held one frame (F-B51)" node "$ROOT/tools/test_firstdraw.js" "$ASSET"
   run "Backpacka at the pond: the player cannot walk into her; she is not moved; no circles once she leaves" node "$ROOT/tools/test_backpacka.js" "$ASSET"

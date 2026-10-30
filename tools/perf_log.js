@@ -64,7 +64,7 @@ for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w
 }
 // Flash marks (B on the right controller, 3.15.48): each with what the log shows in the 3 s before it
 {
-  const ev = []; let e2; const re2 = /m=(\d+)ms (MARK flash seen[^\n]*|long frame \d+ ms[^\n]*|uploaded \d+ texture[^\n]*|multiview: \d+ shader program[^\n]*|multiview: \w+ while a frame draws[^\n]*|frame \d+: \d+ geometry buffer[^\n]*|ev [^\n]*|xr visibility [^\n]*|rec [^\n]*)/g;
+  const ev = []; let e2; const re2 = /m=(\d+)ms (MARK flash seen[^\n]*|long frame \d+ ms[^\n]*|uploaded \d+ texture[^\n]*|multiview: \d+ shader program[^\n]*|multiview: \w+ while a frame draws[^\n]*|frame \d+: \d+ geometry buffer[^\n]*|ev [^\n]*|xr visibility [^\n]*|rec [^\n]*|frame gap \d+ ms[^\n]*|frame \d+ drew \d+ calls[^\n]*|frame \d+: the camera matrix[^\n]*|governor level [^\n]*|geometry held for one frame[^\n]*)/g;
   while ((e2 = re2.exec(text))) ev.push({ ms: +e2[1], what: e2[2].trim() });
   const marks = ev.filter((x) => x.what.startsWith('MARK'));
   if (marks.length) {
@@ -80,6 +80,14 @@ for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w
   // geometry first drawn inside a headset frame (3.15.57, F-B48: should be none)
   const geo = ev.filter((x) => /^frame \d+: \d+ geometry buffer/.test(x.what));
   if (geo.length) console.log(`geometry buffers made inside headset frames (a flash cause, F-B48): ${geo.length} frame(s); first ${(geo[0].ms / 1000).toFixed(1)} s: ${geo[0].what}`);
+  // since 3.15.62 (D5): stalls between frames (with the JS heap: a drop is the garbage collector), frames that drew
+  // almost nothing (a full-screen flash: the clear colour only), an invalid camera, the quality governor's changes
+  const gaps = ev.filter((x) => x.what.startsWith('frame gap'));
+  if (gaps.length) console.log(`frame gaps over 45 ms (frames the headset did not get): ${gaps.length}; longest ${Math.max(...gaps.map((x) => +/gap (\d+)/.exec(x.what)[1]))} ms; with the heap dropping (garbage collection): ${gaps.filter((x) => { const m = /heap ([\d.]+) > ([\d.]+)/.exec(x.what); return m && +m[2] < +m[1] - 1; }).length}`);
+  const empty = ev.filter((x) => / drew \d+ calls|camera matrix/.test(x.what));
+  if (empty.length) console.log(`frames that drew almost nothing or had no valid camera (a full-screen flash): ${empty.length}: ${empty.slice(0, 5).map((x) => (x.ms / 1000).toFixed(1) + ' s ' + x.what).join(' | ')}`);
+  const gov = ev.filter((x) => x.what.startsWith('governor level'));
+  if (gov.length) console.log(`quality governor changes: ${gov.length}: ${gov.slice(0, 8).map((x) => (x.ms / 1000).toFixed(0) + ' s ' + x.what.slice(15)).join(', ')}`);
   // the XR session's focus (the system menu, the headset taken off) as the game saw it, and in the runtime's lines
   const vis = ev.filter((x) => x.what.startsWith('xr visibility'));
   if (vis.length) console.log(`XR focus changes: ${vis.map((x) => `${(x.ms / 1000).toFixed(1)} s ${x.what.slice(14)}`).join(', ')}`);

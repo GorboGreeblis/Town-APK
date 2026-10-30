@@ -44,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (99 blocks)
+## Gameplay, performance and other fixes (111 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -498,22 +498,22 @@ made (it had waited for the first move), and on the classic path the textures ch
 text) are uploaded before the frame draws, as multiview already did. The same settings on every texture once done
 (all 195 compared), so the same pixels.
 
-- **P25** (3.15.50; T16; the author: "FPS dropped below 60 fps while Backpacka was present", "Please optimize her model for
-performance"; NOTES 93): Backpacka was never batched. She is built hidden by her module's pre-warm, after the loading
-step that batches everything in the scene, so her 96 parts were drawn one by one for her whole show. Now her builder
-hands her to the batcher as the garden plants already were: 94 of 96 parts in 11 batches. About 83 fewer draws a frame
-while she is in view on the headset (each eye path drew 169 fewer headless: 714 -> 545 at the author's low spot,
-the Event's draws back to what they are before she arrives). Proof: the batcher on/off in the same frame, 28 views
-orbiting her at seven moments of her show: at most 0.01% of pixels differ, none in areas (3.15.49 gives 0.008%: noise).
-Her geometry never changes while she plays (checked over her whole show), so a batch copy of it stays exact.
+- **P25** (3.15.50; T16; the author: "FPS dropped below 60 fps while Backpacka was present", "Please optimize his model for
+performance"; NOTES 93): Backpacka was never batched. He is built hidden by his module's pre-warm, after the loading
+step that batches everything in the scene, so his 96 parts were drawn one by one for his whole show. Now his builder
+hands him to the batcher as the garden plants already were: 94 of 96 parts in 11 batches. About 83 fewer draws a frame
+while he is in view on the headset (each eye path drew 169 fewer headless: 714 -> 545 at the author's low spot,
+the Event's draws back to what they are before he arrives). Proof: the batcher on/off in the same frame, 28 views
+orbiting him at seven moments of his show: at most 0.01% of pixels differ, none in areas (3.15.49 gives 0.008%: noise).
+His geometry never changes while he plays (checked over his whole show), so a batch copy of it stays exact.
 
 - **F-B37** (3.15.50; the author: "give Backpacka basic collision so that the user cannot move inside of her model",
-"collision should not impact her drinking from the pond animations", "The lack of collision is only an issue while she
-is drinking from the pond"): while she is down at the pond (her show's 16-40 s) the player is kept out of her by
-circles that only the player's movement checks (`uo.pc`): one round her four feet, two along her body (scaled with
-her, she swells as she drinks), one on each neck segment and her head. Each counts once its part comes below head
-height (1.9 m) and grows as the part comes down, so a landing nudges the player aside instead of a jump. Her pose comes
-from her show's clock alone; the circles never move her or any townsperson. `test_backpacka.js` (standard tier).
+"collision should not impact her drinking from the pond animations", "The lack of collision is only an issue while he
+is drinking from the pond"): while he is down at the pond (his show's 16-40 s) the player is kept out of him by
+circles that only the player's movement checks (`uo.pc`): one round his four feet, two along his body (scaled with
+him, he swells as he drinks), one on each neck segment and his head. Each counts once its part comes below head
+height (1.9 m) and grows as the part comes down, so a landing nudges the player aside instead of a jump. His pose comes
+from his show's clock alone; the circles never move him or any townsperson. `test_backpacka.js` (standard tier).
 
 - **R4** (3.15.51; the author, on the randomness decision list: "8. Let's remove this."; RANDOMNESS.md c11, RULES.md 5):
 seven random colour picks that had no effect are gone: the sparkle burst's, the talk emote's, the two at the end of an
@@ -627,9 +627,9 @@ when it starts no longer vanishes on the spot but goes straight into its exit pa
 and is switched off far out, about 250 m).
 
 - **A7** (3.15.54; the author: "Have Backpacka fly into the fog before popping out at the end of the Event, instead of
-having her pop out in the sky", "It's ok to extend Backpacka's outro"): her way out ends low and deep in the mist,
-at (-62, 5, 72), past the fence's north-west corner, instead of 40 m up in open sky; her outro is 4 s longer (her
-show 84 -> 88 s). She crosses the fence about 9 m up at her show's 82 s, is hidden by the mist within a second or so,
+having his pop out in the sky", "It's ok to extend Backpacka's outro"): his way out ends low and deep in the mist,
+at (-62, 5, 72), past the fence's north-west corner, instead of 40 m up in open sky; his outro is 4 s longer (him
+show 84 -> 88 s). He crosses the fence about 9 m up at his show's 82 s, is hidden by the mist within a second or so,
 and is switched off at 88 s inside it. Pictures shown to the author.
 
 - **F-B43** (3.15.54; the author: "If the user starts a subsequent Event: let's have the Garden Flowers shrink out at
@@ -806,13 +806,25 @@ straight line is not clear she follows the park grid's path round the scenery (`
 `test_meet_walk.js` (new, standard tier): her straight line to him through the gallery's circle, three layouts; on
 3.15.59 two of them walked her through it, at the same spots; none now, and every meeting still happens.
 
+- **F-B54** (3.15.62; was B44, "Tiny placeholder textures uploading mid-frame": the author asked to reproduce it or
+close it; three standalone runs were clean and it was closed in 3.15.60, then the frame-hazard watch caught it again in
+`test_cave.js` while the machine was loaded, in the normal served mode): the gallery mural stands in three 4x2 plain
+textures until its painted strips arrive, then swaps them in and disposes of them. The mipmap switch after VR entry
+(F-B36) marks every texture to upload again with mipmaps, a slice at a time between frames; a placeholder marked just
+as its strip replaced it was left needing an upload, made when it was next drawn: inside a frame (a 4x2 upload and a
+mipmap build). The placeholders are now uploaded while loading and never get mipmaps (they are one flat colour), so
+the switch leaves them alone. Timing-dependent: not reproduced solo on either file (three runs each); the mechanism
+is closed rather than the symptom.
+
 - **P28** (3.15.60; the same request; the author: "Tiny visual changes are ok to reach 60 fps. Never below 60 fps is the
 goal"): the frame's biggest CPU item in that view is three.js's matrix walk (every object's world matrix recomputed
 every frame: the scene itself is set to update, so every child is forced), then the batcher's per-part pass over the
 creatures. Characters more than 20 m from the player (not greeting, not in a dialogue) now pose and update their
 matrices every other frame, half of them on even frames and half on odd ones; their movement still runs every frame,
 and the skipped frame's time is carried into the next pose so nothing slows down. Far away they move at 36 poses a
-second instead of 72. `test_jazz.js`, `test_meet.js`, `test_greet.js` and the Event tests pass.
+second instead of 72. `test_jazz.js`, `test_meet.js`, `test_greet.js` and the Event tests pass. **Removed in 3.15.62**
+(F-B56): the skipped frames left the Mushroom's pose (his inner body lifted to his desk height) applied while he was
+far, so he floated above his desk and while walking.
 
 - **A15** (3.15.60; the author: "Compressed should also work in Quest Browser. But also be able to work on ordiscan.com
 or ordinals.com as an ordinal", "In browsers other than Quest: the game should inform the user that this game is
@@ -828,6 +840,80 @@ nothing. `test_compressed.js` (the Ordinals check) adds the sandboxed frame.
 - **A14** (3.15.60; the author: "Please add additional mushrooms to the roof of the Sheriff's kiosk"): five small
 clusters (12 mushrooms) on the two slopes of the red tin roof, in the kiosk's own mushroom style, mostly tan, gold
 and brown against the red; batched with the kiosk.
+
+- **F-B55** (3.15.62; the author: "Fortizmo was also observed getting stuck while trying to move into the bar area",
+"We'll need to fix Fortizmo's pathing", "ensure that the issue that caused Fortizmo to get stuck does not occur with
+other NPCs as well"): four townsfolk have a doorway route home (Fortizmo's bar, the Mushroom's ramp, Gemtoe's gazebo,
+Zollod's kiosk). The route planner, the stuck detector and the post walk added it whenever a townsfolk headed "home";
+during a visit "home" is the visit's waypoint, outside. Setting out to visit Gooward, Fortizmo was routed back in
+through her doorway, and with her home outside she collides with the whole bar as one block, so she pushed against
+the counter until the visit timed out (30-130 s in headless runs of 3.15.60). The doorway route is now used only for
+the townsfolk's real home inside (`gcViaIn`: inside the building of the route's inner end, on the Mushroom's desk, or
+by Gemtoe's gazebo). The stuck detector also missed it (she jiggled, which counts as moving): a townsfolk that wants
+to move and gets no 0.3 m closer to its target in 5 s is now treated as stuck (re-planned, then placed at its target
+as before) and the log says "no progress". `test_stuck.js` (new, standard tier): 12 game minutes of play with visits
+to and from the four forced every 30 s: on 3.15.60 Fortizmo stalled twice at the counter; none now. The bar's opening
+is also wider (A17).
+
+- **F-B56** (3.15.62; the author: "I just launched the game and Mushroom is floating high above his desk", "he is
+floating as he moves to visit someone"): P28 removed (see P28). His inner body is back at its own height (0.046 m).
+
+- **F-B57** (3.15.62; the author: "Mama Gorbo and Gooward jittered as they moved into position, in the Garden, to start
+planting. They should be slightly above the ground and never appear to jitter", Etcher "had minor jitter when moving
+over the rocks around the Garden", then "can we try just making the ground level? Flatten the ground of the Garden and
+lower the ring of rocks into the ground", "make the superfluous Garden rocks and inner rings into ground textures"):
+the Garden's six raised furrow rings, 48 stepping stones and ring of 72 rocks were objects the townsfolk climbed (the
+height follower lifted each one over them, a few cm up and down every step). They are now painted on one overlay
+over the soil (2048 px, painted while loading, seeded so it never changes), and the Garden is flat ground for
+everyone (0.02 m): the follower's rock code is gone. The Event's flowers are planted at 0.015 m (were 0.05: 1.5-3 cm
+above the flat soil), so every stem stands in the ground. Pictures before and after from above, standing and at
+ground level. In the Event at headset field of view (`draw_calls.js --event`, 12 views): 113 to 111 draws and 321k to
+311k triangles a frame on average, 173 to 165 draws and 452k to 414k triangles looking at the Garden from afar, and
+about 120 fewer parts in the batcher's pass.
+
+- **F-B58** (3.15.62; the author: "The goo around Mama Gorbo causes z-fighting while she is standing next to the pond.
+This things should be on different layers"): her goo puddle sat at 0.030 m, the pond's grass rim's height, and her
+three goo drops at 0.045-0.069 m (the pond's soil is at 0.070 m). The puddle and drops now follow the topmost ground
+surface under them (sampled 5 times a second at her centre and 1.5 m round, eased): 1.5 cm above it, the drops 1.2
+cm apart above that (on the park 0.030 m, on the pond's grass and soil 0.085 m; the pond's water at 0.113 m still
+covers their edge).
+
+- **F-B59** (3.15.62; the author: "Gemtoe's tie appears to be floating when she is viewed from the side", then "can the
+feathers that poke through the tie be flattened ... Only those feathers and no others"): the tie hung 0.5 rad forward
+from its knot, its tip about 0.25 m in front of her chest fur. It now hangs at 0.32 rad, along the fur's front, and the
+chest feathers rooted within the tie's width lie flat against her (their random shapes and colours unchanged; every
+other feather as it was). Pictures front, side and three-quarter. Gemtoe floats a little on purpose (the author).
+
+- **F-B60** (3.15.62; the author: "flatten the ground in the area that NPCs stand and move in in the Cave. The rest of the
+Cave should remain as is", "ensure that the entrance to the secret room (the Cave) is flat as well", "I noticed NPCs
+feet slightly in the floor of the Cave", "Can we not lower the floor of the Cave instead?"): the Cave room (floor,
+walls, pebbles, the Ancient) is 4.5 cm lower, its floor 5 mm above the town ground, so the entrance is level and
+visitors' feet meet the floor (were up to 2.4 cm into it). Raised pebbles and rocks within 1.45 m of the visitors'
+walkway (the entrance to the spot before the Ancient) are left out; every other one is as it was.
+
+- **A16** (3.15.62; the author: "Fog still moves in too fast and moves out too fast"): the mist bank takes 30 s to roll in
+and out (was 15 s).
+
+- **A17** (3.15.62; the author: "let's make the opening to Fortizmo's bar wider"): the gap in her counter is 2.2 m (was
+1.4 m).
+
+- **P29** (3.15.62; the author's 54 fps watching the Event from afar): the batcher's per-batch pass (matrices,
+visibility, colours; 1.8 ms a frame headless) skips batches that have not changed for 2 s ("cold") on three frames
+of four; any change seen marks a batch hot again.
+
+- **D5** (3.15.62; the author: "work on hardening our tools to capture issues like the recent ones"): the flight recorder
+logs frame gaps over 45 ms with the heap before and after (a collector pause), frames that draw under a quarter of the
+frame before (an empty or half-drawn frame), a camera matrix that is not finite, and every quality governor level
+change; the B mark's dump lists the gaps. `perf_log.js` reads them; `alloc_probe.js` gains `--after-events`,
+`--vignettes` and `--cave` (the author asked whether vignettes and the Cave cause collector pauses: no; 3 KB/s and
+1.2%, and 7 KB/s and 1.0% of main-thread time, as in normal play); `test_jitter.js` (new) measures the drawn
+position's frame-to-frame jitter and any model float.
+
+- **S1** (3.15.62; the author: "Are there any kind of global safeties we can add to prevent screen flashes in general?"):
+two safeties for any cause. A character the player's head is inside (its body radius, below its height) is hidden for
+that frame, so its inside never fills the view (logged "head inside ... hidden for the frame"). A per-object draw
+hook that throws no longer stops the frame (three.js drew nothing after it, leaving a half-drawn frame): the error is
+logged once per object and the frame is drawn to the end.
 
 ## Multiview (release path since 3.15.34)
 

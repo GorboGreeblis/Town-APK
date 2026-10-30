@@ -54,7 +54,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | --- | --- | --- |
 | Building hulls/parts keep player and NPCs out; workers may enter their own kiosk and stand on their home part | `test_npc_home.js` (NPC side); player side | partial |
 | Zones (`E`: still/portal/scenery/pool/phone/stump) and roam grids (`JGP.roamFree`, `JGP.route` A*) produce walkable routes between any two open cells | `test_world.js` | done |
-| Backpacka at the pond: the player cannot walk into her from any side, she is not moved, no circles after she leaves | `test_backpacka.js` (standard tier; F-B37) | done (3.15.50) |
+| Backpacka at the pond: the player cannot walk into him from any side, he is not moved, no circles after he leaves | `test_backpacka.js` (standard tier; F-B37) | done (3.15.50) |
 | Far-detail LOD swaps at 62/66 m without popping errors; instanced batching (`gcEB`) keeps matrices valid | `test_lod.js` (standard tier): walking out to 84 m and back, exactly one of the two models shows, swaps at 66 m out and 61-62 m in, none inside the band; after every rendered frame of 20 s each batched part has exactly its world matrix, colour, shininess and specular in the array, a dropped part is zeroed, no NaN, no part drawn twice | done (3.15.41) |
 
 ## 5. NPC behaviour
@@ -64,6 +64,8 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Posted NPCs return to their post via waypoints; Mushroom hops onto the desk (`lo.post`) | `test_npc_home.js` (15 placements) | done (results in NOTES.md) |
 | Mushroom never jumps and never enters his desk, also on back-to-back visits with the player in front of it (F-B46) | `test_mushroom_desk.js` (standard tier): every frame, rises over 12 cm and positions inside the desk below its top | 3.15.57: 0 rises, 0 frames inside in 4 visits (3.15.56: 4 rises, 175 frames inside in 6) |
 | Nothing uploaded inside a headset frame when something new appears (F-B51); Mushroom down his ramp in the Event (F-B52) | `test_firstdraw.js`, `test_mushroom_event.js` (standard tier) | 3.15.59: pass (on the game file before the build; the old build fails `test_firstdraw.js`, 19 + 11 buffers) |
+| No townsfolk stuck, in particular going to and from a doorway home on visits (F-B55) | `test_stuck.js` (standard tier) | 3.15.62: pass (3.15.60 fails: Fortizmo stalled twice at her counter) |
+| No jitter, height bumps or floating models, through the Event and after it (F-B56, F-B57) | `test_jitter.js` (standard tier) | 3.15.62: see the build's row |
 | Nextessa waits while the Gem assembles, then delivers (F-B45); Anomalee plants without Snacks and eats from her box with them (F-B49) | `test_courier_gem.js`, `test_anomalee.js` (standard tier) | 3.15.57: pass |
 | Stuck detection and rescue (`De`: re-plan via waypoints, off-screen teleport after 4 stalls) | `test_npc_home.js` forced-stuck and far-player scenarios | done |
 | Away watchdog (`sendHome` after 4 s idle / 20 s moving away from home ground) | `test_world.js` | partial |
@@ -153,7 +155,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | The Event's first start: no texture, framebuffer or pixel work or shader compile inside a frame, no layer swap; every texture in the scene uploaded at its current version (F-B36); the longest frame around it reported | `event_start_check.js` (standard tier; F-B33) | done (3.15.47, NOTES 90) |
 | No GPU work inside an XR frame in any test (texture uploads and copies, mipmaps, pixel reads, renderbuffer storage, shader compiles), both render paths | the harness's frame-hazard watch, every test; `run_tests.sh` fails the pass on any (3.15.48) | done (NOTES 91) |
 | Every texture uploaded while loading (scene, painted, panels, the mural, the glue label) | `texture_census.js` (now with the Speech and the Event to its end) | done (3.15.48, F-B34/F-B35) |
-| The batcher takes scenery parts up to 60,000 vertices (P23), the creatures together (P24) and Backpacka when she is built (P25); batched draws look the same | `opt_identity.js` (batcher on/off; Backpacka orbited at seven moments of her show), `draw_calls.js --event` (counts) | done (3.15.50; batcher check open, BUGS.md B38) |
+| The batcher takes scenery parts up to 60,000 vertices (P23), the creatures together (P24) and Backpacka when he is built (P25); batched draws look the same | `opt_identity.js` (batcher on/off; Backpacka orbited at seven moments of his show), `draw_calls.js --event` (counts) | done (3.15.50; batcher check open, BUGS.md B38) |
 | The mipmap switch 2.6 s after entering VR goes in slices, each texture uploaded right away (F-B36); every texture in the scene on the GPU at its current version | `test_lod.js` and every test (the harness's watch), `event_start_check.js` | done (3.15.49, NOTES 92) |
 | The B button writes "MARK flash seen"; long frames over 28 ms and a mid-play compile's differing key fields are logged (D2) | headset; `perf_log.js` lists them | headset (3.15.48 on) |
 | The author's seeded items (stars, clouds, blinks, idle phases, Anomalee's glitch timing and jaw, the Event ring's sway) draw from their own named streams and repeat across launches (R5); `Math.random` sites (81 since R4/R5) | `test_seeded.js` (standard tier); `random_census.js` (report) | done (3.15.52) |
@@ -181,6 +183,8 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Every experiment variant still applies to the game file | `experiment.py --check` (quick tier) | done |
 
 ## Latest results (newest first, headless harness)
+
+**3.15.62** (`tools/.runs/build_3.15.62.log`; a local 3.15.61 was never pushed): `build.sh`'s checks pass (SYNC CHECK, EXPERIMENT CHECK, APK CHECK, STANDALONE TEST, COMPRESSED TEST; BUILD DONE 3.15.62 (62)). On the game file before the build: `test_stuck.js` (new; fails 3.15.60: Fortizmo stalled twice at her counter), `test_event_fade.js` (mist full within 31 s), `test_firstdraw.js`, `test_mushroom_event.js`, `test_zfight.js`, `warm_coverage.js` pass. `test_jitter.js` (new) ran out of its 25 minutes with the machine loaded; rerun alone next. Pushed for the author's headset run before its full pass, at the author's request.
 
 **3.15.60** (`tools/.runs/build_3.15.60.log`): `build.sh`'s checks pass (SYNC CHECK, EXPERIMENT CHECK, APK CHECK, STANDALONE TEST, COMPRESSED TEST with the preview frame; BUILD DONE 3.15.60 (60)). On the game file before the build: `test_firstdraw.js`, `test_event_fade.js`, `test_meet_walk.js` (fails 3.15.59: 2 of 3 layouts through the gallery), `test_jazz.js`, `test_meet.js`, `test_greet.js`, `test_mushroom_event.js`, `test_anomalee.js`, `test_input.js` pass; `test_roam.js --long` twice (one failed on 3.15.59's code: B45, fixed); `test_standalone.js` three times (B44 not reproduced); `opt_identity.js` (B38: the same 0.021% of scattered edge pixels, none in areas; the rule now allows edge pixels up to 0.05%). Pushed for the author's headset run before its full pass, at the author's request; the full pass and the Ordinals check run on the final build.
 

@@ -558,7 +558,9 @@ What the models show that the code does not explain, as the author answered it (
   wrinkles.
 - **King Dino**: the lit buttons on his sides and the sockets on his back are synthetic parts of his own body.
 - **Mama Gorbo**: the lime tube draped around her front is a goo tube.
-- **Fortizmo**: the four small dots beside his eyes are beauty marks.
+- **Fortizmo**: the four small dots beside her eyes are beauty marks.
+- **Gemtoe**: floats a little above the ground on purpose (author, 2026-10-30).
+- **Backpacka** is a he; **Fortizmo** is a she (author, 2026-10-30).
 - **Etcher**: the three marks on his back (a stroked "B", three stacked parallelograms, two diamonds) are symbols of
   the ledgers he can etch on.
 - **The technology on every character** is a deliberate theme: this is a digital world and they are digital

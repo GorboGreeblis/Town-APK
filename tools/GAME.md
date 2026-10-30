@@ -147,12 +147,12 @@ Read from the code and checked by the tests named; numbers are game seconds and 
 - **Anomalee in the Event.** Without Snacks she plants like everyone else; with them she sets her own open pizza box
   beside her (the logo on its lid) and eats a slice every 22 s instead of planting, leaving the last two (F-B49).
   `test_anomalee.js`.
-- **Backpacka at the pond.** While she drinks (her show's 16-40 s) the player cannot walk into her: player-only
-  circles round her feet, body, neck and head (F-B37). `test_backpacka.js`.
+- **Backpacka at the pond.** While he drinks (his show's 16-40 s) the player cannot walk into him: player-only
+  circles round his feet, body, neck and head (F-B37). `test_backpacka.js`.
 - **The Event's start and end (3.15.54, 3.15.57).** A mist bank rolls in over 15 s and settles just outside the town
   fence (A4, A9), in a soft grey (80% of the fog colour); everything beyond the fence is misted by where it stands, so
   walking up to the fence never clears it (A9); the planting lasts 190 s; the clouds and every Blossom and Flint fade out over 2.5 s (A5); a UFO in flight leaves by its exit path and
-  none starts (A6). At the end Backpacka flies off into the mist (her show is 88 s, A7), the mist rolls back out and
+  none starts (A6). At the end Backpacka flies off into the mist (his show is 88 s, A7), the mist rolls back out and
   everything fades back in. In a second or later Event the garden's flowers shrink away at the start and grow back
   when watered (F-B43). Nothing is shown or hidden at once. `test_event_fade.js`.
 - **Seeded decoration.** The stars, the clouds, blinks, idle phases, Anomalee's glitch timing and jaw and the Event

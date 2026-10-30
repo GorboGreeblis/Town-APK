@@ -81,11 +81,11 @@ const OPTS = [
     // spots a fix publishes (P20: every pizza box and the pie, laid out in the Event), orbited closer
     const spots = (() => { try { return (window.__gtPZ && window.__gtPZ.where()) || []; } catch (e) { return []; } })();
     for (const [x, y, z] of spots) { const c = new T.Vector3(x, y, z); for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.4; view(`pizza at (${x.toFixed(1)}, ${z.toFixed(1)}) angle ${k * 90}`, new T.Vector3(x + Math.cos(a) * 1.3, y + 1.0, z + Math.sin(a) * 1.3), c); } }
-    // Backpacka (P25: batched since 3.15.50), posed by her module at moments of her show, orbited at 5 m
+    // Backpacka (P25: batched since 3.15.50), posed by his module at moments of his show, orbited at 5 m
     if (opt.bp && window.__gtBP && window.__gtBP.preview && D.me && D.me.active) for (const ts of [22, 30, 36, 45, 55, 62, 68]) {
       let R = null; try { R = window.__gtBP.preview(ts); } catch (e) {} if (!R || !R.visible) continue;
       R.updateMatrixWorld(true); const c = new T.Box3().setFromObject(R).getCenter(new T.Vector3());
-      for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.4; view(`Backpacka at ${ts} s of her show, angle ${k * 90}`, new T.Vector3(c.x + Math.cos(a) * 5, c.y + 1.2, c.z + Math.sin(a) * 5), c); }
+      for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.4; view(`Backpacka at ${ts} s of his show, angle ${k * 90}`, new T.Vector3(c.x + Math.cos(a) * 5, c.y + 1.2, c.z + Math.sin(a) * 5), c); }
     }
     O.xr.enabled = xrWas; O.setRenderTarget(rtWas);
     return { label, views, stats, mm: mm.length };
