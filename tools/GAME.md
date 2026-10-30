@@ -1,7 +1,7 @@
 # Greeblis Town, basic game documentation
 
 Everything below was read from the game code (`tools/uncompressed.html`,
-v3.15). Where the code did not make something explicit it is left out rather
+3.15.64). Where the code did not make something explicit it is left out rather
 than guessed. Since 3.15.45 the file is minified (FIXES R2): top-level names
 (`t`, `G`, `It`, `JGP`, `gcEB` and the like) are as quoted, but names local to a
 function were renamed, so routines are described by what they do.
@@ -85,8 +85,11 @@ The HTML is 8 lines since the minification (3.15.45; it was 93 before); most of 
    it to three.js, builds the in-VR UI, creates the audio context and hides
    the gate.
 3. Leaving VR (the session's end handler) restores the 2D camera and shows the gate again.
-4. On non-Quest user agents the gate shows "This game is designed for Meta
-   Quest" and nothing else runs.
+4. On non-Quest user agents the gate shows "This game is designed for the Meta Quest Browser. Please open this
+   file in the Quest Browser on your Meta Quest headset." with the version below it, and nothing else runs (A15,
+   A18).
+5. The version is shown in three places: under the landing text, in the gate's corner (`#gateVer`) and in the VR
+   loading box's bottom right corner. `build.sh` stamps it from `versionName` on every build (step 3b, A18).
 
 The head script and the boot changes that launch straight into VR are part of
 the game file itself since 3.15.43 (FIXES.md, entry edits: 9 blocks).
@@ -113,7 +116,7 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   dancers Etcher, Glyph and Montgummery (on the dance floor) pick a new spot every few seconds with
   `JGP.roamFree`: outside every building, the Garden (15 m from the middle) and the solid zones (scenery, pools,
   the phone, the stump), inside the park, apart from each other. The others keep to their posts, some of which sit
-  beside scenery by design (Fortizmo's). `test_roam.js`.
+  beside scenery by design (Fortizmo's; her bar's opening is 2.2 m, A17). `test_roam.js`.
 - **Greeting.** A walking townsperson the player comes within 3.2 m of stops and turns to face them; after 12 s
   they go on even if the player stays, and stop again only after the player has been more than 6 m away.
   Sparkakus greets with a "!" from 6 m. `test_greet.js`.
@@ -149,11 +152,24 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   `test_anomalee.js`.
 - **Backpacka at the pond.** While he drinks (his show's 16-40 s) the player cannot walk into him: player-only
   circles round his feet, body, neck and head (F-B37). `test_backpacka.js`.
-- **The Event's start and end (3.15.54, 3.15.57).** A mist bank rolls in over 15 s and settles just outside the town
-  fence (A4, A9), in a soft grey (80% of the fog colour); everything beyond the fence is misted by where it stands, so
-  walking up to the fence never clears it (A9); the planting lasts 190 s; the clouds and every Blossom and Flint fade out over 2.5 s (A5); a UFO in flight leaves by its exit path and
-  none starts (A6). At the end Backpacka flies off into the mist (his show is 88 s, A7), the mist rolls back out and
-  everything fades back in. In a second or later Event the garden's flowers shrink away at the start and grow back
+- **Doorway homes.** Four townsfolk have a doorway route home: Fortizmo's bar, the Mushroom's ramp, Gemtoe's gazebo
+  and Zollod's kiosk. The route is used only when they go to their real home inside, never for a visit's waypoint
+  outside (F-B55).
+- **Stuck.** A townsfolk that wants to move and gets no 0.3 m closer to its target in 5 s is stuck: it is re-planned,
+  then placed at its target (as the older stuck rule does). The log says "no progress" (F-B55). `test_stuck.js`.
+- **Ground.** The Garden is flat (0.02 m): its furrow rings, 48 stepping stones and ring of 72 rocks are painted on
+  one seeded overlay over the soil (F-B57; the author: "regardless of anything else we will be keeping the flat
+  version"); the Event's flowers are planted at 0.015 m. The Cave room is 4.5 cm lower than it was, its floor 5 mm
+  above the town ground, so its entrance is level; no raised pebble or rock lies within 1.45 m of the visitors'
+  walkway (F-B60). Mama Gorbo's goo follows the topmost ground under her, 1.5 cm above it (F-B58). Characters are
+  lifted onto raised ground (a kiosk's floor, the pond's edge) by a height follower that samples the ground again
+  once they have moved 5 cm (P30). Gemtoe floats a little on purpose (the author).
+- **The Event's start and end (3.15.54, 3.15.57).** A mist bank rolls in over 30 s (15 s until 3.15.62, A16) and settles just outside
+  the town fence (A4, A9), in a soft grey (90% of the fog colour); everything beyond the fence is misted by where it stands, so
+  walking up to the fence never clears it (A9); the ground is in the mist's colour from 1.5 m beyond the fence, where
+  the mist's first wall stands, so the mist over the fence does not thin as the player comes near (A19); the planting lasts 190 s; the clouds and every Blossom and Flint fade out over 2.5 s (A5); a UFO in flight leaves by its exit path and
+  none starts (A6). At the end Backpacka flies off into the mist (his show is 88 s, A7), the mist rolls back out over
+  30 s and everything fades back in. In a second or later Event the garden's flowers shrink away at the start and grow back
   when watered (F-B43). Nothing is shown or hidden at once. `test_event_fade.js`.
 - **Seeded decoration.** The stars, the clouds, blinks, idle phases, Anomalee's glitch timing and jaw and the Event
   ring's sway are the same on every launch (R5); what stays random is in RULES.md 5 and RANDOMNESS.md.
@@ -163,6 +179,16 @@ Read from the code and checked by the tests named; numbers are game seconds and 
 - **Sound.** One audio context, made on VR entry; every note is an oscillator and a gain that disconnect
   themselves when the note ends. A suspended context (headset off, app in the background) resumes when the
   page is shown, visible or focused again, and on pointer or key input. `test_audio.js`.
+
+## Safeties (what keeps a frame whole)
+
+- **Nothing new uploaded or compiled inside a headset frame.** Textures are made while loading (RULES.md 9) and their
+  uploads are done between frames (F-B31); an object whose geometry was never uploaded (F-B51) or whose first draw
+  would compile a new shader program (S2) is held back for that frame and done right after it, so it appears a
+  frame later. `test_firstdraw.js`, `test_shaderhold.js`.
+- **The head inside a character.** A character the player's head is inside is hidden for that frame, so its inside
+  never fills the view (S1).
+- **A failing draw hook.** A per-object draw hook that throws is logged once and the frame is drawn to the end (S1).
 
 ## Content hooks seen in the code
 

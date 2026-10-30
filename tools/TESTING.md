@@ -10,7 +10,7 @@ how-to. Numbers in brackets are NOTES.md entries.
 tools/run_tests.sh --quick      static checks, no browser                    about 1 minute
 tools/run_tests.sh --smoke      the standard stages but the courier, short    over an hour
 tools/run_tests.sh              the standard pass (default)                   about 1.5-2 hours (95 min on 3.15.45)
-tools/run_tests.sh --full       every scenario, long soaks, graphics, perf    2-2.5 hours (3.15.41); every build (RULES.md 23)
+tools/run_tests.sh --full       every scenario, long soaks, graphics, perf    about 3.5 hours (216 min on 3.15.54, NOTES 96; less since the 3.15.63 tools pass); every build (RULES.md 23)
 ... --resume                    skip the stages that already passed (section 2)
 ... --only=REGEX                run only the stages whose name matches, with the tier's settings
 ```
@@ -22,20 +22,29 @@ Until 2026-10-29 the full tier was for the final build only; superseded by RULES
 the final build until the author says otherwise). The smoke tier is no longer a few minutes: it runs the standard
 stages with shorter soaks.
 
-**What each tier runs** (`run_tests.sh`, in order; this is the one list, kept to match the runner). Every tier:
-the copies are the game file, the game file is minified, the compressed version unpacks to it, every experiment
-applies, the server harness, docs consistency, spell-check, the bend test, the APK check. Every tier but quick: VR
-entry, runtime play, multiview, uniform budget, warm-up coverage, standalone, the compressed version as an ordinal,
-the Event's first start, the texture census, the quality governor, game content, greeting, wrist HUD, roaming
-(`--long` in full), meetings, jazz drums, audio, seeded decoration (`test_seeded.js`), the interaction menu
-(`test_menu.js`), visitors to the Ancient in the Cave (`test_cave.js`), the Event's start and end (`test_event_fade.js`), Anomalee in the Event (`test_anomalee.js`), Backpacka at the pond, far detail and the batcher, world, input, progression (`--long` in full),
-visits, the courier and the courier during the Gem (`test_courier_gem.js`; not in smoke), Mushroom and his desk
-(`test_mushroom_desk.js`; not in smoke), NPC return-home; then the frame-hazard verdict. Smoke shortens play (8 s), world
-(15 s), the NPC scenarios (the first four) and visits (one scenario); standard runs 20 s, 40 s, eight scenarios and
-two visit scenarios; full 120 s, 180 s and every scenario. Full only: the stability soak (`test_soak.js`, 10
-minutes), z-fighting (planar, curved), seams (`test_seams.js`), the single-sided check, optimisation identity, the Ancient check, the
-performance report, and the loading, handover, Event-cost, creature census and sharpness reports. Not in any tier:
-`test_textfit.js` (too slow: a run took over 30 minutes) and the other census and probe reports (README.md marks each as a report).
+**What each tier runs** (`run_tests.sh`, in order; this is the one list, kept to match the runner; `check_docs.py`
+fails when a test the runner runs is missing here). Every tier: the copies are the game file, the game file is
+minified, the compressed version unpacks to it, every experiment applies, the server harness, docs consistency,
+spell-check, the bend test (`test_bend_exact.js`), the APK check. Every tier but quick: VR entry (`test_entry.js`), runtime play
+(`test_play.js`), multiview (`multiview_check.js`), uniform budget, warm-up coverage, standalone, the compressed
+version as an ordinal (`test_compressed.js`), the Event's first start, the texture census, the quality governor (`test_governor.js`),
+game content (`test_content.js`), greeting, wrist HUD (`test_hud.js`), roaming (`test_roam.js`, `--long` in full), meetings (`test_meet.js`), jazz drums
+(`test_jazz.js`), audio,
+seeded decoration (`test_seeded.js`), the interaction menu (`test_menu.js`), visitors to the Ancient in the Cave
+(`test_cave.js`), the Event's start and end (`test_event_fade.js`), Anomalee in the Event (`test_anomalee.js`), Mama
+Gorbo's walk over to Gooward (`test_meet_walk.js`), no townsfolk stuck (`test_stuck.js`), jitter and floating models
+(`test_jitter.js`), the shader hold (`test_shaderhold.js`), Mushroom in the Event (`test_mushroom_event.js`), first
+draws (`test_firstdraw.js`), Backpacka at the pond (`test_backpacka.js`), far detail and the batcher (`test_lod.js`),
+world (`test_world.js`), input (`test_input.js`), progression (`test_progression.js`, `--long` in full), visits
+(`test_visits.js`), the courier (`test_courier.js`) and the courier during the Gem
+(`test_courier_gem.js`; not in smoke), Mushroom and his desk (`test_mushroom_desk.js`; not in smoke), NPC return-home (`test_npc_home.js`);
+then the frame-hazard verdict. Smoke shortens play (8 s), world (15 s), the NPC scenarios (the first four) and visits
+(one scenario); standard runs 20 s, 40 s, eight scenarios and two visit scenarios; full 120 s, 180 s and every
+scenario. Full only: dialogue layout (`test_textfit.js`), the stability soak (`test_soak.js`, 10 minutes),
+z-fighting (planar `test_zfight.js`, curved `test_coincident.js`), seams (`test_seams.js`), the single-sided check
+(`sides_check.js`), optimisation identity (`opt_identity.js`), the Ancient check (`ancient_check.js`), the performance
+report (`perf_report.js`), and the loading, handover, Event-cost, creature census and sharpness reports. Not in any
+tier: the census and probe reports (README.md marks each as a report).
 
 Times are on a 4-core cloud container. Every browser stage runs one headless Chromium with SwiftShader (the GPU
 is software), so the stages run one after another. Do not run a second browser test while a pass runs: the
@@ -56,10 +65,11 @@ Environment switches for the browser tests:
 | `GT_DEVICE=quest3s` / `quest3` / `quest2` | That headset's user agent and GPU limits (`fakexr.js` `DEVICES`); the default user agent is a Quest 3. |
 | `GT_HEADSET_FOV=1` | Quest 3-shaped eyes, for draw counts and culling as on the headset. |
 | `GT_LAYER_DEPTH=0` | The layer brings no depth texture, so multiview draws into the game's own depth buffer as on the headset (P14's depth discard runs). |
+| `GT_GLERR=1` | Every WebGL call checked: the calls that raise an error are printed when the test ends, with the object being drawn (section 4, the WebGL error check). |
 
 Logs: pipe a pass into `tools/.runs/` (git-ignored), for example
-`nohup sh tools/run_tests.sh --full --resume >> tools/.runs/full_3.15.52.log 2>&1 &`. Each stage prints its PASS/FAIL/NOTE
-lines; the summary at the end lists every stage (and is kept in `tools/.runs/summary_<tier>.txt`); the first line
+`nohup sh tools/run_tests.sh --full --resume >> tools/.runs/full_3.15.63.log 2>&1 &`. Each stage prints its PASS/FAIL/NOTE
+lines and, when it ends, one `--- PASS  name (N s)` or `--- FAIL ...` line (`grep '^--- ' log` follows a running pass); the summary at the end lists every stage (and is kept in `tools/.runs/summary_<tier>.txt`); the first line
 names the tier, the build and the time. Record a finished pass in TEST_PLAN.md ("Latest results") and in the pull
 request: `node tools/pass_report.js tools/.runs/full_X.log --md` writes the paragraph (stages, PASS and FAIL lines,
 every failure, the frame hazards, the verdict); give it every log of a pass that a restart split.
@@ -113,10 +123,22 @@ console.log(failures.length ? 'X TEST FAILED' : 'X TEST PASSED'); process.exit(f
 the session and waits for XR frames. Options: `vr` (default true; the game only runs NPCs, pickups and input while
 presenting), `fastSim` (default true: rendering is stubbed so game logic runs fast; set `false` when the test
 needs real frames, the batcher's uniform arrays or the dialogue box's canvas), `noVisits` (default true: the
-random visit scheduler is held off), `initScripts` (functions that run before the game's first line, e.g. to
+random visit scheduler is held off), `renderEvery: N` (with `fastSim: false`: draws one frame in N while the game
+updates every frame; new textures, buffers and shaders still reach the GPU within N frames, so the frame-hazard watch
+and the censuses still see them; not for checks of every drawn frame: pixels, frame times, the governor),
+`fastSim: 'matrices'` (no draw, but the scene's world matrices updated every frame as the draw would: positions as
+drawn, `test_jitter.js`), `initScripts` (functions that run before the game's first line, e.g. to
 wrap a browser API, as `test_audio.js` wraps Web Audio).
 
 **The frame-hazard watch.** Every boot through the harness watches for GPU work inside an XR frame callback (texture uploads and copies, mipmap builds, pixel reads, renderbuffer storage, geometry buffers made the first time something is drawn (3.15.57, F-B48), shader compiles: the flash causes, NOTES 67, 80, 91), on both render paths, whatever the test is about. On multiview every texture operation inside the frame counts; on the classic path only work done while three.js draws (an upload on first sight), and the render wrapper's upload before the first draw counts as the frame's start (F-B36). `close()` prints a WARNING line and appends to `.runs/frame_hazards.log`; `run_tests.sh` lists them in its summary and fails the pass. A test can read the record itself with `g.frameHazards()`.
+
+**The WebGL error check.** The game never reads WebGL's error flag, so the first error raised since boot is still
+pending when a test ends: `close()` reads it once and, if it is set, prints a warning and appends a line to
+`tools/.runs/gl_errors.log`, which fails the pass like the frame hazards (F-B61: a held geometry upload left another
+object drawing with the wrong index buffer, an INVALID_OPERATION on every frame that only `multiview_check.js` read).
+To find the cause, rerun that test with `GT_GLERR=1`: every WebGL call is then followed by a check, and the first 12
+calls that raise an error are printed with their arguments, the stack, the object three.js was drawing (its place,
+material, index count and program) and its geometry's buffers against its indices. Slow; for finding an error only.
 
 **Standalone mode.** `boot({ standalone: true })` serves the game file and nothing else (every other path is a 404, as from any plain web server with the file alone) and returns every request the page made in `requests`; `test_standalone.js` uses it to prove the game needs nothing beside it (RULES.md 2).
 
@@ -165,4 +187,5 @@ can only pass is no test: when it is new, check that it fails on a build or a st
 (the warm-up coverage check fails on 3.15.40 and passes on 3.15.41).
 
 **Add it to the pass.** A `run "<what it checks>" node "$ROOT/tools/test_x.js" "$ASSET"` line in the right tier of
-`run_tests.sh`, a row in README.md, and the TEST_PLAN.md row it covers marked done with the build it passed on.
+`run_tests.sh`, a row in README.md, its name in section 1's tier list (`check_docs.py` fails otherwise), and the
+TEST_PLAN.md row it covers marked done with the build it passed on.

@@ -36,7 +36,7 @@ if [ -z "${ANDROID_HOME:-}${ANDROID_SDK_ROOT:-}" ] && [ -f "$ROOT/tools/android/
 STATE="$ROOT/tools/.runs/resume_$TIER.txt"
 BASE=$( { cat "$ASSET"; [ -f "$APK" ] && cat "$APK"; cat "$ROOT"/tools/lib/*.js "$ROOT/tools/fakexr.js"; } 2>/dev/null | sha256sum | cut -c1-16)
 key() { { echo "$BASE"; for f in "$@"; do [ -f "$f" ] && cat "$f"; done; } | sha256sum | cut -c1-16; }
-[ -n "$RESUME" ] && { n=$(wc -l < "$STATE" 2>/dev/null); echo "resuming: ${n:-0} stage results kept in $STATE"; }
+[ -n "$RESUME" ] && { n=$(wc -l 2>/dev/null < "$STATE"); echo "resuming: ${n:-0} stage results kept in $STATE"; }
 
 # Per-tier knobs: seconds of soak, NPC scenarios, world sampling window.
 case $TIER in
@@ -52,7 +52,9 @@ wanted() { [ -z "$ONLY" ] || printf '%s' "$1" | grep -qiE -- "$ONLY"; }
 run() { name=$1; shift; wanted "$name" || return 0; KEY=$(key "$@")
   if done_before "$name"; then SUMMARY="$SUMMARY\n  PASS  $name (earlier run)"; return; fi
   echo; echo "=== $name ==="; t0=$(date +%s); "$@"; rc=$?; dt="$(( $(date +%s) - t0 )) s"
-  if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  PASS  $name ($dt)"; printf '%s\t%s\n' "$KEY" "$name" >> "$STATE"; else SUMMARY="$SUMMARY\n  FAIL  $name (exit $rc, $dt)"; rc_all=1; fi; }
+  if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  PASS  $name ($dt)"; printf '%s\t%s\n' "$KEY" "$name" >> "$STATE"; else SUMMARY="$SUMMARY\n  FAIL  $name (exit $rc, $dt)"; rc_all=1; fi
+  # each stage's result as it ends, so a running pass can be followed (grep '^--- ' the log)
+  [ $rc -eq 0 ] && echo "--- PASS  $name ($dt)" || echo "--- FAIL  $name (exit $rc, $dt)"; }
 skip() { wanted "$1" || return 0; SUMMARY="$SUMMARY\n  SKIP  $1 ($2)"; }
 # Report stages run a probe and keep its output in the log; they never fail the pass.
 report() { name=$1; shift; wanted "report: $name" || return 0; KEY=$(key "$@")
@@ -63,6 +65,7 @@ report() { name=$1; shift; wanted "report: $name" || return 0; KEY=$(key "$@")
 VER=$(sed -n 's/^ *versionName "\([^"]*\)".*/\1/p' "$ROOT/tools/android/app/build.gradle" 2>/dev/null | head -1)
 echo "Greeblis Town test pass: $TIER${ONLY:+ (only stages matching /$ONLY/)}; build ${VER:-unknown}; $(date -u +%Y-%m-%dT%H:%MZ)"; T_ALL=$(date +%s)
 HAZ="$ROOT/tools/.runs/frame_hazards.log"; mkdir -p "$ROOT/tools/.runs"; [ -n "$RESUME" ] || : > "$HAZ"   # every test's frame-hazard watch (lib/harness.js) appends here
+GLE="$ROOT/tools/.runs/gl_errors.log"; [ -n "$RESUME" ] || : > "$GLE"   # and every test's closing WebGL error check (F-B61)
 run "the shipped copies (index.html, the APK asset) are the game file tools/uncompressed.html (sync_game.py --check)" python3 -I "$ROOT/tools/sync_game.py" --check
 run "the game file is minified, not compressed (minify_game.js --check, RULES.md 19)" node "$ROOT/tools/minify_game.js" --check
 run "the compressed version unpacks to the game file exactly (build_compressed.js --check, RULES.md 20)" node "$ROOT/tools/build_compressed.js" --check
@@ -121,6 +124,7 @@ if [ "$TIER" != quick ]; then
   [ "$TIER" = smoke ] || run "Mushroom and his desk: back-to-back visits with the player in front; never a jump, never inside the desk (F-B46)" node "$ROOT/tools/test_mushroom_desk.js" "$ASSET"
   if [ "$NPC_N" = 0 ]; then run "NPC return-home (Mushroom), all scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S";
   else run "NPC return-home (Mushroom), first $NPC_N scenarios" node "$ROOT/tools/test_npc_home.js" "$ASSET" drifter "$NPC_S" "$NPC_N"; fi
+  if [ "$TIER" = full ]; then run "dialogue layout: every line the game can say fits its dialogue box (no page cut short)" node "$ROOT/tools/test_textfit.js" "$ASSET"; fi
   if [ "$TIER" = full ]; then run "stability soak: 10 min of pickups, dialogue, shop, battle and pizza; no errors, heap, programs and entities bounded" node "$ROOT/tools/test_soak.js" "$ASSET" 10; fi
   if [ "$TIER" = full ]; then
     # Graphical and performance pass (T12/T13): z-fighting (planar and curved) fails the pass;
@@ -149,6 +153,8 @@ echo; echo "=== SUMMARY ($TIER, $(( ($(date +%s) - T_ALL) / 60 )) min) ==="; pri
 # GPU work inside XR frames seen by any test (the flash causes; lib/harness.js): a failure of the pass
 if [ -s "$HAZ" ]; then echo "  FAIL  frame hazards (GPU work inside XR frames, the flash causes) seen by $(wc -l < "$HAZ") test run(s):"; sed 's/^/        /' "$HAZ" | cut -c1-400; rc_all=1
 elif [ "$TIER" != quick ]; then echo "  PASS  no GPU work inside XR frames in any test (frame-hazard watch)"; fi
+if [ -s "$GLE" ]; then echo "  FAIL  WebGL errors raised in $(wc -l < "$GLE") test run(s) (rerun one with GT_GLERR=1 to name the call and object):"; sed 's/^/        /' "$GLE" | cut -c1-300; rc_all=1
+elif [ "$TIER" != quick ]; then echo "  PASS  no WebGL error raised in any test"; fi
 [ $rc_all -eq 0 ] && echo "ALL TESTS PASSED" || echo "SOME TESTS FAILED"
 exit $rc_all
 }

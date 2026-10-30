@@ -11,7 +11,7 @@ const { boot, reporter } = require('./lib/harness');
 const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : undefined;
 (async () => {
   const { expect, note, failures } = reporter();
-  const g = await boot({ file, vr: true, fastSim: false });
+  const g = await boot({ file, vr: true, fastSim: false, renderEvery: 4 });
   const page = g.page;
   await page.waitForTimeout(3000);
   await page.evaluate(() => {

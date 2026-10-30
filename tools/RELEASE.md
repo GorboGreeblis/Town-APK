@@ -160,8 +160,16 @@ does not come back cleanly in `tools/BUGS.md`.
 
 ## 5. Upload to the Meta Quest Store
 
-**Upload candidate: 3.15.52 (versionCode 52)**, the root `GreeblisTown-release.apk`
-(always the latest build). New since 3.15.41 (VERSIONS.md has each build): no texture is made during play (F-B29,
+**Upload candidate: 3.15.64 (versionCode 64)**, the root `GreeblisTown-release.apk`
+(always the latest build; the author: "treat this as the final build until I say otherwise", 2026-10-30). New since
+3.15.52 (VERSIONS.md has each build): the Event's mist bank beyond the fence, rolling in and out over 30 s (A4, A16),
+with the clouds, Blossoms, Flint and the UFO fading out and back (A5-A8) and Backpacka flying into it; the mist no
+longer thins at the fence top as the player comes close (A19); the flash fixes for anything new on screen (F-B48,
+F-B51, F-B54) and the safeties behind them (S1 head-inside guard and draw-hook guard, S2 shader-compile hold); the
+Mushroom's ramp and desk (F-B39, F-B52, F-B56: P28 removed); Fortizmo and every doorway home never stuck (F-B55);
+the flat Garden (F-B57), the Cave floor level with the town (F-B60), Mama Gorbo's goo (F-B58), Gemtoe's tie (A10,
+F-B59); a wider bar opening (A17); the batcher's quiet-batch skip (P27, P29); the version on the landing page and
+the VR loading box (A18); the dead code removed (R8); the full pass's two fixes, F-B61 and F-B62 (3.15.64). Before that, new since 3.15.41 (VERSIONS.md has each build): no texture is made during play (F-B29,
 F-B30, 3.15.42), the Event's pizza batched (P20); native render scale and no layer swaps (F-B31), the Event scale
 removed, the Ancient left out from outside the church (P21), Gooward's translucent parts merged (P22, 3.15.43);
 painted textures seeded so the build is rebuildable from the game file (R1, 3.15.44); the game file minified, the same world bit for bit (R2, 3.15.45). Since then: no texture made
@@ -250,7 +258,8 @@ The rules for every update are in `tools/RULES.md`: changes go straight into the
 after the merge (22; the experiment-first rule 15 is retired); every change is made in the game file and followed by
 a rebuild and a version bump before it is committed, so the root `index.html` and APK are always the latest build
 (1, 11, 12; `tools/build.sh --bump`); creature models are fixed with care and without changing their look (7); each
-build gets the full test pass (23).
+build gets the full test pass (23). The build stamps the version into the landing page, the gate and the VR loading box
+(`build.sh` step 3b), so nothing else needs updating by hand.
 
 The VR-entry script (the head script at the top of the game file; FIXES.md, entry edits) is the one path proven on
 the headset: test entry changes headless first (`test_entry.js`; 3.15.11 crashed at launch, `tools/BUGS.md`

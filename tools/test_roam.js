@@ -3,8 +3,8 @@
 // JGP.roamFree: never inside a building hull, the Garden (15 m around the middle) or a solid zone (scenery, pools, the
 // phone, the stump), always inside the park. The others keep to their posts. Every quarter second this samples where
 // everyone stands and fails on anyone inside a building that is not theirs or outside the park, and on a roamer in a
-// solid zone or the Garden, two roamers standing in each other, and a roamer
-// that never moves.
+// solid zone (standing in it, or walking 1.5 m into it: a walk may cut a zone's edge) or the Garden, two roamers
+// standing in each other, and a roamer that never moves.
 //
 //   node tools/test_roam.js [file] [--long]
 const path = require('path');
@@ -32,7 +32,8 @@ const GAME_S = process.argv.includes('--long') ? 600 : 180;
         const s = st.get(h);
         if (!h.group.visible || h.heldBy || h.carried) continue;
         const p = h.group.position, r0 = h.bodyR || 1; s.samples++;
-        if (s.last) s.path += Math.hypot(p.x - s.last[0], p.z - s.last[1]);
+        const step = s.last ? Math.hypot(p.x - s.last[0], p.z - s.last[1]) : 0;
+        if (s.last) s.path += step;
         s.last = [p.x, p.z];
         const add = (k, why) => { s[k]++; if (s.where.length < 3) s.where.push(why + ' at ' + p.x.toFixed(1) + ',' + p.z.toFixed(1)); };
         const own = h.home && F.buildings.find((B) => F.inHull(B, h.home.x, h.home.z));
@@ -40,8 +41,12 @@ const GAME_S = process.argv.includes('--long') ? 600 : 180;
         s.minR = Math.min(s.minR, Math.hypot(p.x, p.z));
         if (ids.includes(h.id) && Math.hypot(p.x, p.z) < 15 - 0.2) add('garden', 'in the Garden');
         // solid zones are the clearance roamers keep when they pick a spot (roamFree); the others stand at their designed
-        // posts, some beside scenery (Fortizmo's pond edge), so the check is the roamers'
-        if (ids.includes(h.id)) for (const q of solid()) if (Math.hypot(p.x - q.x, p.z - q.z) < q.r - 0.2 && !(h.def.at && Math.hypot(h.def.at[0] - q.x, h.def.at[1] - q.z) < q.r)) add('zone', 'in ' + q.tag);
+        // posts, some beside scenery (Fortizmo's pond edge), so the check is the roamers'. A roamer standing keeps the
+        // whole clearance (0.2 m margin); one walking past may cut its edge (the clearance is generous: the house at
+        // 31,14.5 has a 6.2 m one and Gooward's home is 0.6 m outside it, 3.15.54 and 3.15.64), so a walk counts only
+        // 1.5 m deep, where it would reach the scenery itself
+        const deep = step > 0.05 ? 1.5 : 0.2;
+        if (ids.includes(h.id)) for (const q of solid()) if (Math.hypot(p.x - q.x, p.z - q.z) < q.r - deep && !(h.def.at && Math.hypot(h.def.at[0] - q.x, h.def.at[1] - q.z) < q.r)) add('zone', 'in ' + q.tag + (step > 0.05 ? ' (walking)' : ''));
         if (Math.abs(p.x) > t.parkHalf + 0.5 || p.z < -t.parkHalf - 0.5 || p.z > t.parkSouth + 0.5) add('oob', 'outside the park');
         for (const o of ents) if (o !== h && ids.includes(o.id) && ids.includes(h.id) && o.group.visible && Math.hypot(p.x - o.group.position.x, p.z - o.group.position.z) < 0.5 * (r0 + (o.bodyR || 1))) add('overlap', 'in ' + ((o.def && o.def.name) || o.id));
       }
@@ -54,7 +59,7 @@ const GAME_S = process.argv.includes('--long') ? 600 : 180;
   expect('the roamers and the townsfolk were found', roamers.every((n) => r.list.some((s) => s.name === n)) && r.list.length >= 10, JSON.stringify(r.list.map((s) => s.name)));
   expect(`over ${r.gameS} game seconds none stands inside a building it does not belong to`, bad('hull').length === 0, bad('hull').join(' | '));
   expect('no roamer walks into the Garden', bad('garden').length === 0, bad('garden').join(' | '));
-  expect('no roamer stands inside a solid zone (scenery, pool, the phone, the stump)', bad('zone').length === 0, bad('zone').join(' | '));
+  expect('no roamer stands inside a solid zone (scenery, pool, the phone, the stump), or walks 1.5 m into one', bad('zone').length === 0, bad('zone').join(' | '));
   expect('none leaves the park', bad('oob').length === 0, bad('oob').join(' | '));
   expect('no two roamers stand in each other', bad('overlap').length === 0, bad('overlap').join(' | '));
   const still = r.list.filter((s) => roamers.includes(s.name) && s.samples > 20 && s.path < 1);

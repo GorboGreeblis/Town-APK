@@ -18,7 +18,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
 
 (async () => {
   const { expect, note, failures } = reporter();
-  const g = await boot({ file, vr: true, fastSim: false, noVisits: false });
+  const g = await boot({ file, vr: true, fastSim: false, noVisits: false, renderEvery: 3 });
   await g.page.waitForTimeout(2000);
   const r = await g.page.evaluate(async () => {
     const D = window.__dbg, O = D.O, gl = O.getContext(), Kt = D.Kt, wait = (ms) => new Promise((res) => setTimeout(res, ms));

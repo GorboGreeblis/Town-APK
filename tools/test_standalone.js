@@ -7,7 +7,8 @@
 // game does and keeps a reference to each canvas):
 //   - every request the page makes is listed: it may ask for the optional extras (and get a 404), nothing else, and
 //     nothing from another host;
-//   - it boots, enters VR, draws frames, walks, opens a dialogue and starts the planting Event, with no page error;
+//   - it boots, enters VR, draws frames, walks, opens a dialogue and starts the planting Event, with no page error and
+//     no GPU work inside a headset frame (the frame-hazard watch; F-B62);
 //   - every texture it paints that has a pre-painted copy in assets/tex/ is compared pixel for pixel with that copy,
 //     and every pre-painted copy must have been painted in the session: a stale or wrong tex/ fails (rebuild it with
 //     `node tools/prerender_textures.js`).
@@ -70,6 +71,10 @@ const texDir = path.join(root, 'tools/android/app/src/main/assets/tex');
   expect('without tex/ every texture is painted by the game itself (none taken from files)', play.used === 0, JSON.stringify({ used: play.used }));
   const realErrors = g.errors.filter((e) => !/Failed to load resource: the server responded with a status of 404/.test(e));
   expect('no page errors (the refused optional extras aside)', realErrors.length === 0, realErrors.slice(0, 3).join(' | '));
+  // the standalone-only paths (the gallery mural painted in a worker, every texture painted at boot) must not upload
+  // anything inside a headset frame either: 3.15.60-3.15.63 re-uploaded the mural's disposed placeholders there (F-B62)
+  const hz = await g.frameHazards();
+  expect('no GPU work inside headset frames (frame-hazard watch)', !hz || !hz.n, hz && hz.n ? JSON.stringify(hz.kinds) + ' ' + (hz.first || []).slice(0, 2).map((x) => `${x.k} ${x.size} frame ${x.frame}`).join(' | ') : '');
   note(`pre-painted textures: ${manifest.length} in tex/, ${cmp.same} identical to what the game painted`);
   expect('every pre-painted texture in tex/ is pixel for pixel what the game file paints', cmp.differ.length === 0, cmp.differ.slice(0, 6).join(', '));
   expect('every pre-painted texture in tex/ was painted by the game in this session (none stale)', cmp.missing.length === 0, cmp.missing.slice(0, 6).join(', ') + (cmp.missing.length ? '  (rebuild: node tools/prerender_textures.js)' : ''));

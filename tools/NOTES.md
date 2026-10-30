@@ -99,6 +99,12 @@ beyond the VR-entry fix.
 91. The author's 3.15.47 run: flashes and the CPU-bound Event (3.15.48)
 92. The mipmap switch after entering VR (F-B36, 3.15.49)
 93. Backpacka: the frame-rate drop, his collision, and two side findings (3.15.50)
+94. The author's 3.15.52 run, and the fixes for 3.15.53
+95. The Event's frame rate, 3.15.53 against 3.15.54 (the mist bank and the fades)
+96. The 3.15.54 full pass and what it found
+97. The author's 3.15.56 logs and the flashes (F-B48)
+98. Seams (F-B47)
+99. Stuck, floating and jittering townsfolk, the mist over the fence, and the tests made quick (3.15.61-3.15.63)
 
 ## Must be confirmed on a headset
 
@@ -1636,3 +1642,28 @@ beyond the VR-entry fix.
     with one face set back 1 cm, so there is neither a gap nor a shared plane. Detail-sized contacts (letters, small
     trim, every contact under 5 cm) are listed, not failed. The remaining jitter flips in a 24-view sweep were edges
     and fine high-contrast detail (Gooward up close, the gallery floor's paint), not seams or depth fights.
+
+99. **Stuck, floating and jittering townsfolk, the mist over the fence, and the tests made quick (3.15.61-3.15.63).**
+    *Fortizmo (F-B55).* A forced visit to her (`visitAt`) looked stuck for 40 s at her doorway, but she was waiting
+    for her visitor there, as designed; the real stall came only in natural play (12 game minutes, clock 4 times
+    fast): setting out to visit Gooward, her route went back in through her doorway, because the planner adds a
+    townsfolk's doorway route whenever it heads "home", and a visit's waypoint is "home" for the walk. With that home
+    outside her bar, the collision treats the whole bar as one block, so she pressed against the counter, jiggling a
+    few centimetres, which the stuck detector counted as moving. The bar's opening was never the cause (the walls
+    use a 0.42 m radius against a 1.4 m gap). `test_stuck.js` reproduces it on 3.15.60 twice in 12 minutes.
+    *Mushroom floating (F-B56).* P28 posed far characters every other frame; his inner body is raised to his desk's
+    height by his pose, and on the skipped frames that height stayed while he walked (1.59 m against 0.046 m).
+    *Jitter in the Garden (F-B57).* The height follower lifted every walker over the furrow rings, stepping stones
+    and rocks it crossed: a few centimetres up and down at each, every step. Flattening the Garden removed the
+    cause; painting the shapes kept the look (pictures from above match closely; up close they are flat).
+    *The mist over the fence (A19).* Headless pictures at a 1.7 m eye height did not show the thinning; the mechanism
+    shows in the geometry: from near the fence, the view just over its top meets the first mist wall's clear foot and
+    the grass just past the fence (not yet in the mist's colour), and before-and-after pictures at 2.5 m and 1 m show
+    a pale band there that the fix removes. *The church roof:* the church stands inside the fence, so the ground
+    mist never touches it; approaching it, the view over its roof climbs above the mist bank into the sky, as with
+    any low bank. *Collector pauses:* vignettes (3 KB/s, 1.2%) and going in and out of the Cave (7 KB/s, 1.0%)
+    allocate no more than normal play. *Tests made quick:* `test_textfit.js` waited a second a page and drew every
+    frame (over 30 minutes, never finished); the dialogue box's first advance finishes a page at once, so it takes a
+    minute and now covers 296 lines. Software drawing dominates the slow stages (about 300k triangles an eye, every
+    frame); `renderEvery` draws one frame in N and `fastSim: 'matrices'` none, keeping the game's own update every
+    frame.

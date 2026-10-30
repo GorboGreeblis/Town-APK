@@ -61,16 +61,19 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 
 | Item | How | Coverage |
 | --- | --- | --- |
-| Posted NPCs return to their post via waypoints; Mushroom hops onto the desk (`lo.post`) | `test_npc_home.js` (15 placements) | done (results in NOTES.md) |
+| Posted NPCs return to their post via waypoints; Mushroom walks up his ramp (`lo.post`, F-B39) | `test_npc_home.js` (15 placements) | done (results in NOTES.md) |
 | Mushroom never jumps and never enters his desk, also on back-to-back visits with the player in front of it (F-B46) | `test_mushroom_desk.js` (standard tier): every frame, rises over 12 cm and positions inside the desk below its top | 3.15.57: 0 rises, 0 frames inside in 4 visits (3.15.56: 4 rises, 175 frames inside in 6) |
 | Nothing uploaded inside a headset frame when something new appears (F-B51); Mushroom down his ramp in the Event (F-B52) | `test_firstdraw.js`, `test_mushroom_event.js` (standard tier) | 3.15.59: pass (on the game file before the build; the old build fails `test_firstdraw.js`, 19 + 11 buffers) |
 | No townsfolk stuck, in particular going to and from a doorway home on visits (F-B55) | `test_stuck.js` (standard tier) | 3.15.62: pass (3.15.60 fails: Fortizmo stalled twice at her counter) |
-| No jitter, height bumps or floating models, through the Event and after it (F-B56, F-B57) | `test_jitter.js` (standard tier) | 3.15.62: see the build's row |
+| No jitter, height bumps or floating models, through the Event and after it (F-B56, F-B57) | `test_jitter.js` (standard tier; 3 minutes with the harness's matrices-only mode) | 3.15.63: see the tools pass (TEST_PLAN's 3.15.63 row) |
 | No shader compiled inside a headset frame, also for a material the warm-up missed (S2) | `test_shaderhold.js` (standard tier) | 3.15.63: pass (3.15.60: 4 compiles inside a frame) |
+| The version the game shows matches the build (landing text, gate corner, VR loading box; A18) | `build.sh` step 3b (fails unless it stamps exactly four places) | done (3.15.63) |
+| A character the head is inside is hidden for the frame; a draw hook that throws does not cut the frame short (S1) | none yet | **todo** (T8) |
+| The Garden, the Cave's walkway, Mama Gorbo's goo and Gemtoe's tie look right (F-B57-F-B60) | `shots.js` presets `garden`, `cave`, `gemtoe`; the author's headset run | pictures (3.15.62-3.15.63) |
 | Nextessa waits while the Gem assembles, then delivers (F-B45); Anomalee plants without Snacks and eats from her box with them (F-B49) | `test_courier_gem.js`, `test_anomalee.js` (standard tier) | 3.15.57: pass |
-| Stuck detection and rescue (`De`: re-plan via waypoints, off-screen teleport after 4 stalls) | `test_npc_home.js` forced-stuck and far-player scenarios | done |
+| Stuck detection and rescue (`De`: re-plan via waypoints, off-screen teleport after 4 stalls; no 0.3 m progress in 5 s counts as a stall, F-B55) | `test_npc_home.js` forced-stuck and far-player scenarios; `test_stuck.js` | done |
 | Away watchdog (`sendHome` after 4 s idle / 20 s moving away from home ground) | `test_world.js` | partial |
-| Roamers (Gooward, Hennrick by the Portal, Mama Gorbo, the three dancers) pick free spots, never inside hulls or zones | `test_roam.js` (standard tier; `--long` 10 min): 3 game minutes sampled four times a second, everyone: no foreign building, inside the park; roamers: no solid zone, not in the Garden, never inside each other, all moving | done (3.15.41) |
+| Roamers (Gooward, Hennrick by the Portal, Mama Gorbo, the three dancers) pick free spots, never inside hulls or zones | `test_roam.js` (standard tier; `--long` 10 min): 3 game minutes sampled four times a second, everyone: no foreign building, inside the park; roamers: never standing in a solid zone nor walking 1.5 m into one (a walk may cut its edge, 3.15.64), not in the Garden, never inside each other, all moving | done (3.15.41) |
 | Wander/trek for the townsfolk (the wander routine; `ho` in the unminified 3.15.44 file, git 21596f1), personal space, spreading | `test_roam.js` covers where they stand (buildings, park); kind "creature" is only Zollod, who stays in his kiosk while shy | partial (spreading todo) |
 | Mama+Gorbo meeting schedule (`meetAt`), visits (`visitPlan`), vignettes (`VIGS`) fire and release NPCs (`busy` cleared) | `test_meet.js` (standard tier: two meetings 20-40 s apart, 2.8 m apart facing each other, four goo arcs and four hearts 0.6-0.9 s apart, called off by the Event); `test_visits.js`; `test_content.js` (vignettes) | done (3.15.41) |
 | Greeting/freeze near the player (`greetR` 3.2 m, `proximityFreezeS` 12 s, `greetClear` 6 m): a walking townsperson stops and faces the player, goes on after 12 s, is stopped again after the player was 6 m away; Sparkakus's "!" from 6 m | `test_greet.js` (standard tier) | done |
@@ -79,7 +82,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 
 | Item | How | Coverage |
 | --- | --- | --- |
-| Every talk line, gift line, campfire line renders without overflow and has no spelling errors | `spellcheck_dialogue.py`; `test_textfit.js` (not in a tier: a run on 3.15.52 was stopped unfinished after 30 minutes, TASKS T8) | partial (spelling done; layout test too slow to finish) |
+| Every talk line, gift line, campfire line renders without overflow and has no spelling errors | `spellcheck_dialogue.py`; `test_textfit.js` (full tier; about a minute) | done (3.15.63: 296 lines, 337 pages, all fit) |
 | Talk flow: `Talk to`, cycling lines, `|` page breaks, typewriter speed | `test_progression.js` (every line shown) | partial |
 | Panels (`_t`): shop, campfire/garden event, battle; buttons CLOSE/DONE/LEAVE | `test_progression.js` | partial |
 | HUD counts (blossoms, acorns, artifacts) update; the wrist HUD on the left grip shows the Event checkboxes and every held item, redraws only on change; haptic pulses on a gained Blossom (0.3, 35 ms) and a new friend (0.5, 70 ms) | `test_hud.js` (standard tier; fake controllers record pulses) | done |
@@ -164,7 +167,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | The interaction menu never shows the previous menu's picture (F-B38); the controller rays' shader is made while loading, no shader compiled during play (F-B41) | `test_menu.js` (standard tier, multiview path; fails on 3.15.52) | done (3.15.53) |
 | Mushroom reaches his desk by the ramp from anywhere (F-B39) | `test_npc_home.js` (17 starts), `test_visits.js` | done (3.15.53) |
 | Visitors to the Ancient while the player is in the Cave, back to normal outside (A3); visits never stall on Sparkakus before the Gem (F-B42) | `test_cave.js` (standard tier; fails on 3.15.52) | done (3.15.53) |
-| The Event's start and end never pop anything: mist bank (A4), fades (A5), UFO (A6), Backpacka into the mist (A7), flowers in a later Event (F-B43) | `test_event_fade.js` (standard tier) | done (3.15.54) |
+| The Event's start and end never pop anything: mist bank (A4; in and out over 30 s, A16; full within 31 s), fades (A5), UFO (A6), Backpacka into the mist (A7), flowers in a later Event (F-B43) | `test_event_fade.js` (standard tier) | done (3.15.54) |
 
 ## 10b. Store submission (VRC)
 

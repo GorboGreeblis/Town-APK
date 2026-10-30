@@ -7,6 +7,8 @@
 #   3. the version: if what ships (the asset or tex/) differs from what the root APK holds, the version must go up
 #      (RULES.md 12): --bump raises versionCode by one and versionName's last number to match; without it the build
 #      stops and says so;
+#   3b. the version the game shows (landing text, gate corner, VR loading box) stamped from versionName, the copies
+#      synced again when that changed the game file (FIXES A18);
 #   4. the release APK (Gradle), copied to the root as GreeblisTown-release.apk;
 #   5. the compressed version, index.compressed.html at the root (build_compressed.js; never in the APK, RULES.md 20);
 #   6. the checks: sync_game.py --check, experiment.py --check, check_apk.sh (store rules, the root APK holds the

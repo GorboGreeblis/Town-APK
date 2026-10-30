@@ -3,7 +3,8 @@
 How every character model in the game is constructed and the shared kit they are built from. The design and style
 breakdown (the house style the models share, each character's look, the author's answers about them) is in the Lore
 Bible, LORE.md "Creature design and style" (moved there in 3.15.57, the author's request). Read from the current game file (`tools/uncompressed.html`; the fixes in
-FIXES.md do not change any model's look). Numbers are the code's own (metres, radians, seconds; `sin(2.1t)` means
+FIXES.md do not change any model's look, apart from two the author asked for: Gemtoe's tie, F-B59, where only the
+feathers under it lie flat, and Mama Gorbo's goo, F-B58, which follows the ground under it). Numbers are the code's own (metres, radians, seconds; `sin(2.1t)` means
 a sine of 2.1 radians per second). Anything the code does not state is marked *(inference)*. The author's rule for
 the models (RELEASE.md 6, RULES.md 7): the designs are final; fixes must not change how anyone looks.
 
@@ -189,6 +190,13 @@ together in one pass.
   load since F-B30): no texture may be made during play (RULES.md 9; `texture_census.js` fails on one). A canvas
   repainted during play goes through `needsUpdate`; since F-B31 the upload happens in a task after the frame, never
   inside it.
+- **Every pose, every frame**: each character is posed on every frame it is drawn. P28 (far characters posed every
+  other frame) was removed in 3.15.62 (F-B56): the half-rate pose put the Mushroom's model above his desk.
+- **Parts that sit on the ground** follow the ground under them: Mama Gorbo's goo samples the topmost flat surface
+  (the scene's flat meshes and her own) at five points every 0.2 s and sits 1.5 cm above it (F-B58). A new flat part
+  on the ground does the same or sits at a height no ground surface shares (`test_zfight.js`).
+- **The head inside a model**: a character the player's head is inside is hidden for that frame (S1, the render
+  guard; logged "head inside N character(s)"), so no model needs its own near-clip handling.
 - **Measure a change**: `creature_census.js` (full-tier report, `.runs/creature_census.json`) gives each character's
   meshes, batched parts, triangles, materials and textures; compare before and after.
 

@@ -65,7 +65,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     and a version bump (`versionCode` only goes up) before it is committed (`tools/build.sh --bump`). Enforced:
     `sync_game.py --check` (quick tier, pre-commit hook) fails if `index.html` differs from the game file; the
     pre-commit hook and `check_apk.sh` fail if the root APK does not hold the current game; `test_standalone.js`
-    fails if its pre-painted textures are stale.
+    fails if its pre-painted textures are stale. The version shows on the landing page for other browsers and in the
+    bottom right of the VR loading box (2026-10-30, A18); `build.sh` step 3b stamps it there (4 places) on every
+    build.
 13. **Never commit the signing keystore.**
 14. **Commit often**; living documentation lives in `tools/`.
 15. **(Superseded by rule 22, 2026-10-28.) Changes to the entry script, the layers shim or the multiview path shipped first as an experiment APK**
@@ -76,7 +78,8 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 
 ## Names and devices
 
-17. **Names**: "the Event" is the planting event; "the Speech" is Sparkakus's library finale.
+17. **Names**: "the Event" is the planting event; "the Speech" is Sparkakus's library finale. Fortizmo is she and
+    Backpacka is he (the author, 2026-10-30); LORE.md has every character's.
 18. **Devices**: the author tests on a Quest 3S (its browser reports itself as "Quest 3"). Quest 2, Quest Pro and
     the original Quest are not supported (manifest `quest3|quest3s`).
 
@@ -113,7 +116,7 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 
 23. **Every build is treated as the final build, until the author says otherwise** (2026-10-29: "until I say
     otherwise: treat this as if it were the final build and do a full test pass"). After each build the full tier runs
-    (`tools/run_tests.sh --full`, 2-2.5 hours; `--resume` after a container restart), and its result is reported and
+    (`tools/run_tests.sh --full`, about 3.5 hours; `--resume` after a container restart), and its result is reported and
     recorded in TEST_PLAN.md before the work moves on.
 
 24. **Every copy of the game file is kept updated at all times** (2026-10-29: "keep all copies of the game file
@@ -121,9 +124,16 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     version) and the APK at the root. `sync_game.py` writes all three copies after every edit of the game file
     (the compressed one is rebuilt, about 20 s) and `--check` checks all three; the APK follows with
     `tools/build.sh --bump` before any commit (rule 12; the pre-commit hook refuses a stale one).
+25. **Dead code comes out before the final build, with a full test pass after** (2026-10-30: "Dead code can be
+    removed before the final build ... the game must be fully tested after its removal"): the census
+    found one unused function (`plantShow`, removed in 3.15.63, FIXES R8); the full tier runs on the final build.
 
 ## Priorities
 
+- **Never below 60 fps on a Quest 3S and a Quest 3** (2026-10-30: "Tiny visual changes are ok to reach 60 fps.
+  Never below 60 fps is the goal"); PERF.md 14.
+- **No full-screen flashes, ever** (the author, throughout): every flash found is a must-fix; the safeties S1 and S2
+  (FIXES) back the fixes up.
 - **Performance is the biggest blocker for the Store submission** (2026-10-28: "once all other tasks are completed,
   performance should be our focus"): after the open tasks, work goes to the frame rate (the Event on a Quest 3S).
 
@@ -133,3 +143,5 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 - The Event's own render scale (P16, P17) and P18: removed (2026-10-28) [83].
 - The experiment-first rule (15): retired (2026-10-28, rule 22).
 - The randomness decision list: closed (2026-10-29, RANDOMNESS.md; FIXES R4-R6).
+- The Garden stays flat (2026-10-30: "regardless of anything else we will be keeping the flat version"; F-B57).
+- P28, far characters posed every other frame: removed (2026-10-30, F-B56).

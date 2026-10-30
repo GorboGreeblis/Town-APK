@@ -7,23 +7,31 @@ Living list. Done items move to the bottom with the date. Bugs live in
 
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
-| T16 | **Top priority** (RULES.md "Priorities"; the biggest blocker for the Store submission): the planting Event on the Quest 3S steadily above 60 fps. The 3.15.41 run tied it to draw calls (NOTES 79); the 3.15.47 log shows it CPU-bound (app GPU time 9.3 of 13.9 ms, NOTES 91); P23-P25 cut draws (3.15.47-3.15.50; P23 was the 4,000-vertex scenery cap, now 60,000); next CPU candidates `bend` (Etcher's tentacles) and `gFit` (the moving creatures' ground fit, NOTES 93); next readings from T3 | open, after the other open tasks | `PERF.md` sections 12-13 |
-| T3 | Headset run of the latest build (3.15.52), log captured live (`capture_log.ps1` / `.sh`): the Event's frame rate, especially with Backpacka in view (P25) and from the ring back to the dance floor (P23, P24); no flashes, B pressed right after any (D2); the first seconds after entering VR (F-B36) and the Event's first start (F-B33); Backpacka solid at the pond (F-B37); the seeded sky and blinks (R5); quit cleanly. Earlier runs: 3.15.41 (NOTES 79-81), 3.15.46-3.15.47 (NOTES 90-91) | open, author | `HEADSET_DIAG.md`, `RELEASE.md` sections 3 and 5 |
-| T4 | Store upload: the latest build (3.15.52) to the Alpha channel, then the age group (13+) on its build page, once T16's frame rate holds | open, author | `RELEASE.md` section 5; the listing, IARC rating, privacy page and supported devices are done |
-| T18 | Full pass on 3.15.52 (RULES.md 23), with `--resume` | running | `TESTING.md`, `tools/.runs/full_3.15.52.log`. (Was: the standard pass on 3.15.45, done: `std_v45.log`, every stage but the texture census, F-B32) |
-| T8 | Remaining test-plan rows: the dialogue layout test (`test_textfit.js`: a run on 3.15.52 was stopped unfinished after 30 minutes; shorten its wait per page, then add it to the standard tier), the townsfolk's spreading (`ho`; first check it ever runs, since every townsperson has an idle pattern) | in progress | `tools/TEST_PLAN.md` |
-| T9 | The full pass after every build, with `--resume` (RULES.md 23; was "on the final build", superseded) | ongoing; 3.15.52 is T18; last finished for 3.15.41 (NOTES 77) | `TESTING.md` |
+| T16 | **Top priority** (RULES.md "Priorities"; the biggest blocker for the Store submission; the author: "Never below 60 fps is the goal", "Tiny visual changes are ok to reach 60 fps", and it must hold on the Quest 3 as well as the 3S): the planting Event steadily above 60 fps. The author's 3.15.58 run read 56-59 fps at (-33, -7) (CPU 12-14 ms of 13.9); on 3.15.60 the lowest, watching the Event from afar, was 54 fps. Since: P26, P27, P29, P30, F-B57 (PERF.md section 14; P28 tried and removed, F-B56). Next: the author's reading on 3.15.63; then, if needed, the Quest 3's render scale and the matrix walk | open | `PERF.md` sections 13-14 |
+| T3 | Headset run of the latest build (3.15.64), log captured live (`capture_log.ps1` / `.sh`): the Event's frame rate from afar and from the back of the dance floor; Fortizmo in and out of her bar; the Mushroom on his desk and walking (not floating); Mama Gorbo, Gooward and Etcher in and around the Garden (no jitter); Mama Gorbo's goo by the pond; Gemtoe's tie from the side; the Cave's entrance and walkway; the mist (30 s in and out, close to the fence); the version in the loading box's corner; no flashes, B pressed right after any (D2) | open, author (planned for 2026-10-31) | `HEADSET_DIAG.md`, `RELEASE.md` sections 3 and 5 |
+| T4 | Store upload: the final build to the Alpha channel, then the age group (13+) on its build page, once T16's frame rate holds | open, author | `RELEASE.md` section 5; the listing, IARC rating, privacy page and supported devices are done |
+| T18 | Full pass on the final build (RULES.md 23), with `--resume`, and the Ordinals check on its compressed version (the author: "Please treat this as the final build until I say otherwise") | next | `TESTING.md`; the last finished full pass was 3.15.54 (NOTES 96) |
+| T8 | Remaining test-plan rows: the townsfolk's spreading (`ho`; first check it ever runs, since every townsperson has an idle pattern); a test for S1's head-inside guard and draw-hook safety | open | `tools/TEST_PLAN.md`. Done: the dialogue layout test (3.15.63, full tier, about a minute: 296 lines, 337 pages, all fit) |
+| T9 | The full pass after every build, with `--resume` (RULES.md 23) | ongoing; last finished for 3.15.54 (NOTES 96) | `TESTING.md` |
 | T15 | Keep the docs and tools current with each change | ongoing | `README.md`, `TESTING.md` |
 
-## Resume point (3.15.52: flashes, Event batching, the randomness decisions)
+## Resume point (3.15.64: the final build's full pass)
 
-- **3.15.46-3.15.52** (PRs #23-#28): F-B32-F-B37 (no texture made or first uploaded in a frame, the Event's start,
-  the mipmap switch in slices, Backpacka solid at the pond), P23-P25 (batching), D2 (the B mark, long frames),
-  R3-R6, rules 22 and 23; tools: `event_start_check.js`, `test_backpacka.js`, `test_seeded.js`,
-  `capture_log.ps1`/`.sh`, `pass_report.js`, the harness's frame-hazard watch, `perf_log.js` `VrApi` lines.
-- **Running:** the full pass on 3.15.52 (T18).
-- **Open (author):** T3 (headset run of 3.15.52), T4.
-- **Then:** T16 (PERF.md 13).
+- **3.15.53-3.15.63** (PRs #29-#36): the mist bank and the Event's fades (A4-A9, A16, A19), Backpacka into the mist
+  (A7), the Mushroom's ramp (F-B39, F-B52), flashes (F-B48, F-B51, F-B54; safeties S1, S2), Fortizmo's pathing for
+  every doorway townsfolk (F-B55), the flat Garden (F-B57), the Cave floor (F-B60), Mama Gorbo's goo (F-B58),
+  Gemtoe's tie (F-B59), the version on the loading box (A18), P26-P30, the dead-code census (R8); tools:
+  `test_stuck.js`, `test_jitter.js`, `test_shaderhold.js`, `shots.js`, the harness's `renderEvery` and
+  `fastSim: 'matrices'`, a quick `test_textfit.js` (NOTES 99).
+- **3.15.64**: the full pass on 3.15.63 found two bugs and was stopped for a new build: F-B61 (a held geometry upload
+  left the last object drawn with another geometry's index buffer: WebGL error 1282 every frame; Sparkakus's bulb beam)
+  and F-B62 (standalone: the mural's disposed placeholders re-uploaded inside the first headset frame). Tools: every
+  test now fails the pass on a WebGL error (`GT_GLERR=1` names the call and object), `test_standalone.js` fails on
+  frame hazards, `run_tests.sh` prints each stage's result as it ends (`grep '^--- '`).
+- **Next:** the full pass on 3.15.64 (`tools/.runs/full_3.15.64.log`; fix what it finds, a game fix is a new build and
+  a new pass), then the Ordinals check (T18).
+- **Open (author):** T3 (headset run of 3.15.64), T4.
+- **Then:** T16 from the author's reading.
 
 ## Done
 
@@ -47,3 +55,6 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D16 | Lore Bible open questions answered by the author (2026-10-28): Mama W, the Field Office, the poster and book names, the eras (Hennrick far past, Nextessa far future), the Consortium (Maltoe and Mushroom), the Ancient (not the Originator), Backpacka (unknown), the mayor (Montgummery, near future); two left open on purpose | 2026-10-28 (`tools/LORE.md`) |
 | D17 | Randomness decision list (`RANDOMNESS.md`, former T17): all decided. Removed the no-effect colour picks (R4); seeded the stars, clouds, blinks, idle phases, Anomalee's glitch timing and jaw, the Event ring's sway (R5); BOW OUT 80% (R6); everything else stays random or as it is (flint facing, the UFO's path, particles, sound pitch, the dancers' moves) (3.15.51-3.15.52) | 2026-10-29 |
 | D18 | Flashes and the Event after the 3.15.46 and 3.15.47 runs: F-B32-F-B37, P23-P25, D2, the frame-hazard watch in every test (3.15.46-3.15.50) | 2026-10-29 |
+| D19 | 3.15.53-3.15.60: the mist bank and the Event's fades, Backpacka into the mist, the Mushroom's ramp, flashes (F-B48, F-B51), seams (F-B47), the randomness decisions applied; PRs #29-#33 | 2026-10-30 |
+| D20 | 3.15.62-3.15.63: Fortizmo's pathing (F-B55), the Mushroom floating (F-B56), the flat Garden (F-B57), the goo (F-B58), Gemtoe's tie (F-B59), the Cave floor (F-B60), the mist over the fence (A19), the version on the loading box (A18), flash safeties (S1, S2), P29-P30, the dead-code census (R8); PRs #34-#35 | 2026-10-30 |
+| D21 | Tools pass before the final full pass: the quick dialogue layout test, `renderEvery` and `fastSim: 'matrices'`, `shots.js`, `perf_log.js`'s new lines, the docs check of the tier list (PR #36). (D numbers here are tasks; FIXES.md's D entries are diagnostics, a separate numbering.) | 2026-10-30 |

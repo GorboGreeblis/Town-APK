@@ -255,7 +255,7 @@ editions.") and the Ancient texts.
 - **Backpacka**: Fortizmo practises "a song for the coming of the legendary Backpacka". During the
   planting Event, once the planting has begun and the townsfolk have taken their places, they form a
   ring round the garden and, when the Seeds were brought, Fortizmo plays her horn; then Backpacka comes: a long-necked creature with green wings arrives, lands, drinks at the
-  pond, rises, flies over the garden, spreads its wings and sprays water over it, then leaves (the
+  pond, rises, flies over the garden, spreads his wings and sprays water over it, then leaves (the
   animation's own stages: arrive, down, drink, up, to the garden, splay, spray, gone; about 70 s).
 - **Pizza**: the TELEPHONE calls Nextessa's inter-temporal pizza shop; a courier delivers, even into the
   church where the Ancient lives.
@@ -450,9 +450,10 @@ What the models have in common, as built:
 - **Palette**: reds (`#b8282e` and its shades) with a yellow-orange crest; amber eyes; purple gems with yellow
   sparkles. *(inference: the palette variable is still named `teal`, so the model was once teal.)*
 - **Face**: side-set amber eyes with slit pupils and feathered lids, scaly brows, a beak that opens while he talks.
-- **Motion**: hovers, the head looks about, the wings flap faster when he moves, the sparkles twinkle.
+- **Motion**: hovers (a little above the ground, on purpose: the author, 2026-10-30), the head looks about, the wings flap faster when he moves, the sparkles twinkle.
 - **Tie** (3.15.57, the author: "a neck tie. no shirt, just a tie"): a knot under the bill and a pointed blade down
-  the bib, his gems' purple with gold diagonal stripes.
+  the bib, his gems' purple with gold diagonal stripes. Since 3.15.62 it hangs at 0.32 rad, along the chest fur, and
+  only the feathers under it lie flat (FIXES F-B59; the author: "Only those feathers and no others").
 
 #### Glyph
 - **Body**: a plump upright dragon (8-part blob: torso, belly, chest, head, snout, two haunches, a rump), a thick tail
@@ -535,13 +536,13 @@ What the models have in common, as built:
 
 #### Backpacka
 - **Body**: a horizontal lathe body with seven colour patches, a ten-segment neck, a head with a jaw and tongue, a
-  curled tail, four legs ending in open pipe feet, ten leaf-like wing blades; she flies the whole time.
+  curled tail, four legs ending in open pipe feet, ten leaf-like wing blades; he flies the whole time.
 - **Palette**: tan skin (`#d48e64`) with orange, yellow, ochre and pink patches, green wings, a rainbow.
-- **Motion**: the planting Event's set piece: she flies in, drinks from the pond and swells, flies to the garden,
-  spins while her four feet spray water on the plants, a rainbow fades in, and she flies away low over the north-west
-  fence into the Event's mist bank, where she is switched off (88 s in all; 84 s until 3.15.54, FIXES A7).
-- **Performance and collision** (3.15.50): batched when built (P25: 94 of 96 parts in 11 batches); while she is down at
-  the pond the player cannot walk into her (F-B37: player-only circles round her feet, body, neck and head).
+- **Motion**: the planting Event's set piece: he flies in, drinks from the pond and swells, flies to the garden,
+  spins while his four feet spray water on the plants, a rainbow fades in, and he flies away low over the north-west
+  fence into the Event's mist bank, where he is switched off (88 s in all; 84 s until 3.15.54, FIXES A7).
+- **Performance and collision** (3.15.50): batched when built (P25: 94 of 96 parts in 11 batches); while he is down at
+  the pond the player cannot walk into him (F-B37: player-only circles round his feet, body, neck and head).
 
 #### The player
 - In VR the player sees only their hands: cartoon three-fingered hands (skin `#f4dcc6`) with a white cuff and a
@@ -578,7 +579,7 @@ places clears the hat (emotes at 2.4 m, speech bubbles at 3.1 m). No questions a
 5. **Eras:** Hennrick is from the far past; Nextessa is from the far future. **The Consortium** is run by
    Maltoe and Mushroom.
 6. **The Ancient** is not the Originator.
-7. **Backpacka:** where it comes from, and why Fortizmo composes for it, is not known.
+7. **Backpacka:** where he comes from, and why Fortizmo composes for him, is not known.
 8. **The mayor** under the Sheriff's cap in the painting is Montgummery in the near future.
 
 ## Left open on purpose
