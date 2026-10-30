@@ -34,7 +34,7 @@ const out = path.join(root, 'tools/.runs/shots'); fs.mkdirSync(out, { recursive:
       gl.readPixels(0, 0, N, M, gl.RGBA, gl.UNSIGNED_BYTE, buf);
       const cv = document.createElement('canvas'); cv.width = N; cv.height = M; const cx = cv.getContext('2d'), im = cx.createImageData(N, M);
       for (let y = 0; y < M; y++) im.data.set(buf.subarray((M - 1 - y) * N * 4, (M - y) * N * 4), y * N * 4);
-      cx.putImageData(im, 0, 0); cx.fillStyle = '#000b'; cx.fillRect(0, 0, N, 24); cx.fillStyle = '#fff'; cx.font = '15px sans-serif'; cx.fillText(label, 6, 17);
+      cx.putImageData(im, 0, 0); cx.fillStyle = '#000b'; cx.fillRect(0, 0, N, 24); cx.fillStyle = '#fff'; cx.font = '15px sans-serif'; cx.fillText(label + (D.me.active ? `  [Event, mist ${Math.round(J.mist.p() * 100)}%]` : ''), 6, 17);
       res.push(cv.toDataURL('image/png')); O.setViewport(0, 0, W, H); O.xr.enabled = xr;
     };
     const go = async (x, z) => { D.At.position.set(x, D.At.position.y, z); await wait(600); };
