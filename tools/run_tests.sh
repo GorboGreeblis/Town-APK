@@ -99,6 +99,7 @@ if [ "$TIER" != quick ]; then
   run "Mama Gorbo's walk over to Gooward goes round the scenery (the gallery's front; F-B53)" node "$ROOT/tools/test_meet_walk.js" "$ASSET"
   run "No townsfolk stuck: doorway routes only for a real home, visits to and from all four (F-B55)" node "$ROOT/tools/test_stuck.js" "$ASSET"
   run "No jitter, bumps or floating models through the Event (F-B56, F-B57)" node "$ROOT/tools/test_jitter.js" "$ASSET"
+  run "A never-compiled shader is compiled between frames, never inside one (S2)" node "$ROOT/tools/test_shaderhold.js" "$ASSET"
   run "Mushroom in the Event: down his ramp at the start, never stuck or off its side, home on his desk after (F-B52)" node "$ROOT/tools/test_mushroom_event.js" "$ASSET"
   run "first draws: nothing uploaded inside a headset frame when Nextessa comes or the Event's plants grow; each new object held one frame (F-B51)" node "$ROOT/tools/test_firstdraw.js" "$ASSET"
   run "Backpacka at the pond: the player cannot walk into her; she is not moved; no circles once she leaves" node "$ROOT/tools/test_backpacka.js" "$ASSET"
