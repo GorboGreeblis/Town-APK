@@ -139,7 +139,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 23. **Every build is treated as the final build, until the author says otherwise** (2026-10-29: "until I say
     otherwise: treat this as if it were the final build and do a full test pass"). After each build the full tier runs
     (`tools/run_tests.sh --full`, about 3.5 hours; `--resume` after a container restart), and its result is reported and
-    recorded in TEST_PLAN.md before the work moves on.
+    recorded in TEST_PLAN.md before the work moves on. Restated 2026-10-30 with the version: "let's bump this build to
+    v4.0.0"; "Once this work is done: please treat this as if it were the final build" (4.0.0, versionCode 69;
+    `build.sh --bump` continues from it).
 
 24. **Every copy of the game file is kept updated at all times** (2026-10-29: "keep all copies of the game file
     updated at all times"): `index.html` and the APK's asset (byte copies), `index.compressed.html` (the compressed

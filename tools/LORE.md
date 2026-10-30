@@ -862,7 +862,8 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   spread from three spots in turn, thin pale rings growing to the edge and fading (A21; drawn within 26 m).
 - **Blossoms**: the 32 pickups, each a stem with leaves and a flower of seven red, five orange and three gold petals
   with a soft orange halo.
-- **Clouds** (`gcRnd("clouds")`): fourteen (seven until 3.15.68, A24), each three to five white spheres (3-5.5 m, flattened to 0.62) circling the
+- **Clouds** (`gcRnd("clouds")`): fourteen (seven until 3.15.68, A24), each three to five white spheres (white with a
+  light grey underside, a soft glow against the ground light's green, dimmed at night: A25) (3-5.5 m, flattened to 0.62) circling the
   town 40-95 m out and 50-72 m up, a full circle every 12-26 minutes.
 - **The sky**: a dome 263 m in radius that follows the camera, coloured from the horizon (`#d6e6ef`) to the zenith
   (`#3f86d6`); below the horizon it stays horizon-coloured. A sun disc (`#fff6c8`) with a soft glow sits 58 degrees up
