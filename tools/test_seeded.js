@@ -3,7 +3,7 @@
 //   - the game file still draws each seeded item from its own named stream (`gcRnd("name")`): the stars, the clouds,
 //     the blinkers (and Mama Gorbo's own blink), the five idle sway phases, Anomalee's glitch timing and jaw, and the
 //     Event ring's sway; an edit that brings back Math.random for one of them fails here;
-//   - two launches build the same night sky (all 700 stars) and the same 7 clouds (puffs, sizes, orbit, height, speed),
+//   - two launches build the same night sky (all 700 stars) and the same 14 clouds (puffs, sizes, orbit, height, speed),
 //     and the clouds still differ from each other (seeded, not made uniform);
 //   - no page errors.
 //
@@ -40,7 +40,7 @@ const KEYS = ['stars', 'clouds', 'blinkers', 'mamaBlink', 'anomaleePhase', 'henn
   note(`stars: ${a.stars} / ${b.stars}; clouds: ${a.clouds.length} (${a.clouds.join(' ')})`);
   expect('the night sky has 700 stars', a.stars !== null && b.stars !== null);
   expect('two launches build the same stars', a.stars === b.stars, `${a.stars} vs ${b.stars}`);
-  expect('there are 7 clouds', a.clouds.length === 7 && b.clouds.length === 7, `${a.clouds.length}, ${b.clouds.length}`);
+  expect('there are 14 clouds (7 until 3.15.68)', a.clouds.length === 14 && b.clouds.length === 14, `${a.clouds.length}, ${b.clouds.length}`);
   expect('two launches build the same clouds', a.clouds.join(' ') === b.clouds.join(' '), `${a.clouds.join(' ')} | ${b.clouds.join(' ')}`);
   expect('the clouds still differ from each other (seeded, not uniform)', new Set(a.clouds).size === a.clouds.length, a.clouds.join(' '));
   expect('no page errors', !a.errors.length && !b.errors.length, a.errors.concat(b.errors).join(' | '));

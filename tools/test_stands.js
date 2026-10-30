@@ -89,7 +89,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       }
     }
     out.hiddenWhileDancing = sawDance;
-    const t1 = performance.now(); while (performance.now() - t1 < 60000) { await wait(100); tick(); if (S.list.every((s) => s.f === 1)) break; }
+    // up to 3 minutes: the fader caps each frame's step at 0.1 s, so on a loaded machine (a few frames a second) the
+    // 10 s fade-in takes longer in wall time
+    const t1 = performance.now(); while (performance.now() - t1 < 180000) { await wait(100); tick(); if (S.list.every((s) => s.f === 1)) break; }
     out.endF = Object.fromEntries(S.list.map((s) => [s.name, s.f]));
     out.compiles = H ? (H.kinds.compileShader || 0) - c0 : null;
     out.guardHidden = [...new Set(out.guardHidden)]; out.early = [...new Set(out.early)]; out.lateReturn = [...new Set(out.lateReturn)];
