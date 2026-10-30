@@ -518,3 +518,10 @@ Estimate for the headset (from the author's 3.15.58 reading, CPU 12-14 ms of the
 by the measured savings; the GPU cannot be measured headless): everyday play 72 fps on both; the Event's typical views
 72 on the Quest 3S and 68-72 on the Quest 3; its heaviest view 65-72 on the 3S and 62-70 on the Quest 3 (the same chip,
 about 30% more pixels). None under 60 expected; a headset run (TASKS T3) confirms.
+
+**4.0.1** (A26: the fade groups stay out until the Event ends, nothing comes back as the player nears it; measured
+after a container restart, so compare the draws, which do not depend on the machine): `event_sweep.js` 169 draws a
+view on average (186 in 4.0.0, 216 in 3.15.65), the heaviest view 214 (276, 277); `event_cpu.js` at the south-west
+corner 188 draws (202, 258), at the low spot 31 (38, 39). The near rule had been bringing the corners' kiosks and the
+trees back, and the west kiosks at the low spot. Estimate: everyday play 72 fps on both; the Event's typical views 72
+on the Quest 3S and 70-72 on the Quest 3; its heaviest views 70-72 on the 3S and 66-72 on the Quest 3.
