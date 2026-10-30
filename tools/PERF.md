@@ -1,7 +1,7 @@
 # Performance analysis of the APK build
 
 Started as an analysis (sections 1-6); sections 6-13 record the changes that
-were applied, each listed in FIXES.md (section 14 is the latest: 3.15.53-3.15.63). The render path itself is described in
+were applied, each listed in FIXES.md (section 15 is the latest: 3.15.65 on, P31-P33; section 14 3.15.53-3.15.63). The render path itself is described in
 RENDERING.md. Numbers from the headless harness (software GL) are marked as such: draw calls, triangle counts, program counts
 and JS time are meaningful there, GPU time is not. Headset measurements: the author's 3.15.33-3.15.34 run on a
 Quest 3S (section 10) and the 3.15.41, noswap and deferupload runs (section 13, NOTES 79-81), which showed the frame rate

@@ -1031,6 +1031,31 @@ painted on the water drift round slowly (the texture's own rotation: nothing pai
 ripples are children of the water, so they bob and tilt with it, and are drawn only within 26 m. Pictures before and
 after (`shots.js --preset pond`).
 
+- **F-B65** (3.15.67; the author: "Does the Gazebo have correct collision matching its model in general?"; "The doorway to
+the Gazebo should be open and collision free for anyone to enter and exit"; "It's just the walls of the Gazebo that need
+consistent collision"): the gazebo's posts and railings were only circles in the route planner's list, which the
+player's collision never reads, so the player walked through its walls (and a townsperson pushed off its route could
+too). Its seven railed sides are now walls from post to post (0.24 m thick, the posts at their ends), checked by the
+game's own `F.resolve` for the player and every townsperson alike; the eighth side, its doorway, is open to anyone.
+Gemtoe can be talked to from anywhere round it (his talk range 3.8 -> 4.6 m: the walls hold the player up to 4.0 m
+from him). Proven: walking at the gazebo from eight sides stops at the railing on seven and walks in through the
+doorway; Gemtoe's route home touches no wall and he is home in 11 s; `test_roam.js` fails anyone standing in a railing.
+
+- **S3** (3.15.67; the author: "What happens if NPCs or the player are standing in the areas where kiosks or other
+objects fade back in? The user or NPCs should probably be push out of these areas and prevented from getting stuck.
+Let's add safeties for this"): the fades (P33) are drawn only: every kiosk's collision stays on while it is hidden (the
+player and the townsfolk are pushed out of its walls every frame as always), so no one can walk into one, and a group
+comes back as the player nears it (14 m). As a safety for anyone placed without walking (a scripted spot, a spawn),
+every frame a group fades back in, the player and every townsperson within 16 m of it are pushed out of its kiosk's
+walls by the game's own collision (owners and anyone whose home or visit is inside left where they are) and off the
+gazebo's railings; each push is logged ("fade safety: ... pushed out of ... as it comes back"). `test_stands.js` puts a
+townsperson inside a hidden kiosk and checks they are outside it once it is back.
+
+- **A22** (3.15.67; the author: "Can we make the Event flowers a little more colorful as well?"): the Event's flowers'
+petals and blooms are 40% more saturated and the palest (the mallow's and the milkweed's near-white) take a visible
+tint; stems, leaves, whites and greys as they were (`gcViv`, in their vertex colours at load). Pictures before and
+after (`shots.js --preset garden` with close views).
+
 ## Multiview (release path since 3.15.34)
 
 Edits for the multiview experiment, in order. Three groups:

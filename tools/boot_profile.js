@@ -15,6 +15,8 @@ const fakexr = fs.readFileSync(path.join(__dirname, 'fakexr.js'), 'utf8');
 (async () => {
   let html = fs.readFileSync(file, 'utf8');
   const anchor = 'gcEB.ready=!0;';
+  // the minifier may join the next statement with a comma (3.15.66); the anchor ends a statement of its own there
+  if (!html.includes(anchor) && html.split('gcEB.ready=!0,').length === 2) html = html.replace('gcEB.ready=!0,', anchor);
   if (!html.includes(anchor)) throw new Error('anchor not found (not the game file?)');
   html = html.replace(anchor, anchor + 'window.__readyAt=performance.now();');
   const texDir = path.join(root, 'tools/android/app/src/main/assets/tex');

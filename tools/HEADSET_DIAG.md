@@ -189,6 +189,11 @@ Since 3.15.59-3.15.63 the log also has:
 - `[draw hook] ...` and other bracketed errors (`[entity:ID]`, `[world]`, `[render]`): an error the frame survived;
   each is a bug to report.
 - `no progress: ID D m from its target for 5 s` (F-B55): a townsfolk the stuck detector moved on.
+- `matrix walk: a still group moved, walked every frame from now (GROUP, NODE at X Y Z)` and `... a child added to a
+  still group ...` (P32, 3.15.66): a group marked still at load turned out to move; harmless (it is walked again from
+  then on), but the group should be marked to move (`userData.keep`): send the log.
+- `fade safety: ID pushed out of NAME as it comes back` (S3, 3.15.67): someone stood where a faded kiosk came back and
+  was pushed out; at most 20 lines a session. Send the log with where it happened.
 - The flight recorder's lines (D5): `frame gap N ms before frame F, heap A > B MB` (frames the headset did not get, over
   45 ms; a heap that drops in the gap is a garbage-collector pause), `frame F drew N calls (the frame before: M)` (an
   empty or half-drawn frame: the look of a full-screen flash), `frame F: the camera matrix is not finite`, and

@@ -122,8 +122,8 @@ async function run(scenario, srvUrl, browser) {
   const fatal = errors.filter((e) => !/GPU|WebGL|GL_|SwiftShader|gpu/i.test(e));
   const first = s.calls[0];
   expect('requestSession called exactly once, at page start (before the world was ready)', s.calls.length === 1 && !first.readyFlag);
-  // The release asset asks for local-floor + bounded-floor only (the browser forbids baseLayer
-  // with the layers feature, NOTES 41); the "layers" experiment asset adds "layers".
+  // The release asks for local-floor, bounded-floor and layers (the multiview projection layer, since 3.15.34); a
+  // build without "layers" is checked the old way (the browser forbids baseLayer with the layers feature, NOTES 41).
   const wantLayers = fs.readFileSync(file, 'utf8').includes('"bounded-floor","layers"]})}catch(e){return null}}function park(');
   const wantFeatures = wantLayers ? ['local-floor', 'bounded-floor', 'layers'] : ['local-floor', 'bounded-floor'];
   expect('immersive-vr with ' + wantFeatures.join('/') + (wantLayers ? ' (layers experiment)' : ' (no layers: the browser forbids baseLayer with it)'), !!first && first.mode === 'immersive-vr' &&

@@ -1,7 +1,7 @@
 # Greeblis Town, basic game documentation
 
 Everything below was read from the game code (`tools/uncompressed.html`,
-3.15.64). Where the code did not make something explicit it is left out rather
+3.15.67). Where the code did not make something explicit it is left out rather
 than guessed. Since 3.15.45 the file is minified (FIXES R2): top-level names
 (`t`, `G`, `It`, `JGP`, `gcEB` and the like) are as quoted, but names local to a
 function were renamed, so routines are described by what they do.
@@ -171,6 +171,15 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   none starts (A6). At the end Backpacka flies off into the mist (his show is 88 s, A7), the mist rolls back out over
   30 s and everything fades back in. In a second or later Event the garden's flowers shrink away at the start and grow back
   when watered (F-B43). Nothing is shown or hidden at once. `test_event_fade.js`.
+- **The Event's fade groups (3.15.66, P33; RULES.md 26).** Once the mist is past 15%, each kiosk (every building but the
+  church) and the gazebo fade out over 10 s, each on its own and only once its owner has left home (6 m), and every
+  tree with the robin as one group; all of a group's parts fade together. Any group comes back in 2 s when the player
+  comes within 14 m, and all come back after the Event. The church and Cave, the Ancient, Somlet, the pond (F-B64: the
+  far-scenery fader no longer touches it) and the Garden never fade. Fading is drawn only: collision stays on, and as a
+  group comes back anyone standing in it is pushed out (S3). `test_stands.js`.
+- **The gazebo (3.15.67, F-B65).** Its seven railed sides are solid walls for everyone; its doorway is open to anyone.
+  Gemtoe can be talked to from all round it (talk range 4.6 m).
+- **The Event's flowers** are 15% taller (A20) and more colourful (A22); **the pond's water** ripples (A21).
 - **Seeded decoration.** The stars, the clouds, blinks, idle phases, Anomalee's glitch timing and jaw and the Event
   ring's sway are the same on every launch (R5); what stays random is in RULES.md 5 and RANDOMNESS.md.
   `test_seeded.js`.

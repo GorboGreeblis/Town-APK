@@ -19,6 +19,7 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| F-B65 | The player could walk through the gazebo's railings and posts (their collision was only in the route planner) | 3.15.67: the seven railed sides are solid walls for everyone, the doorway open (FIXES F-B65) | 2026-10-30 |
 | F-B64 | The Event's far-scenery fader (since 3.15.54) faded the pond, which must never fade (found while building P33) | 3.15.66: the fader keeps everything within 6 m of the pond (FIXES F-B64) | 2026-10-30 |
 | F-B63 | A batched object starting to move after 2 s still was drawn up to 3 frames late (P29; full pass on 3.15.64, `opt_identity.js`, Backpacka's show) | 3.15.65: a moved part wakes its batch (FIXES F-B63) | 2026-10-30 |
 | F-B62 | Standalone (root `index.html`, the ordinal): the gallery mural's disposed placeholders re-uploaded inside a headset frame (full pass on 3.15.63, frame-hazard watch) | 3.15.64: disposed textures leave the head script's pending sets (FIXES F-B62) | 2026-10-30 |

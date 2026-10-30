@@ -72,6 +72,10 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
       Church / Cave and Ancient can never fade out. Neither can Somlet or the Pond, or anything in the Garden itself";
       "if we hide the Post Office, we must never hide Somlet"). None of these may be in a fading group or share a
       faded material; `test_stands.js` checks both and that they stay shown.
+    Fading is drawn only: collision stays on while a group is hidden, and as it comes back anyone standing in it is
+    pushed out (FIXES S3). The gazebo's walls (its seven railed sides) are solid for everyone and its doorway is open to
+    anyone (2026-10-30: "The doorway to the Gazebo should be open and collision free for anyone to enter and exit";
+    "It's just the walls of the Gazebo that need consistent collision"; F-B65).
 
 ## Builds and the repository
 

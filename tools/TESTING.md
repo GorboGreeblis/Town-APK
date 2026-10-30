@@ -8,7 +8,7 @@ how-to. Numbers in brackets are NOTES.md entries.
 
 ```
 tools/run_tests.sh --quick      static checks, no browser                    about 1 minute
-tools/run_tests.sh --smoke      the standard stages but the courier, short    over an hour
+tools/run_tests.sh --smoke      the standard stages but the courier and desk, short   over an hour
 tools/run_tests.sh              the standard pass (default)                   about 1.5-2 hours (95 min on 3.15.45)
 tools/run_tests.sh --full       every scenario, long soaks, graphics, perf    about 3.5 hours (216 min on 3.15.54, NOTES 96; less since the 3.15.63 tools pass); every build (RULES.md 23)
 ... --resume                    skip the stages that already passed (section 2)
@@ -44,7 +44,7 @@ scenario. Full only: dialogue layout (`test_textfit.js`), the stability soak (`t
 z-fighting (planar `test_zfight.js`, curved `test_coincident.js`), seams (`test_seams.js`), the single-sided check
 (`sides_check.js`), optimisation identity (`opt_identity.js`), the Ancient check (`ancient_check.js`), the performance
 report (`perf_report.js`), and the loading, handover, Event-cost, creature census and sharpness reports. Not in any
-tier: the census and probe reports (README.md marks each as a report).
+tier: the other census and probe reports (README.md marks each as a report).
 
 Times are on a 4-core cloud container. Every browser stage runs one headless Chromium with SwiftShader (the GPU
 is software), so the stages run one after another. Do not run a second browser test while a pass runs: the
@@ -157,7 +157,7 @@ minifier's choice and can change whenever the file is minified again. The names 
 property names and globals (`window.__gt*`, `gcEB`, `mvInFrame`...) are never renamed. Reach everything else
 through them, never by a local name read from the file (names quoted elsewhere in the docs may be from the
 unminified 3.15.44 file, git 21596f1). A test that needs another top-level name adds it to `HOOK_NAMES` (which
-`RESERVED` includes) before the next minification, and the harness's anchors (`gcEB.ready=!0;`, the `TAGGED`
+`RESERVED` includes) before the next minification, and the harness's anchors (`gcEB.ready=!0;`, or `,` where the minifier joined the next statement, the `TAGGED`
 declarations) must keep matching.
 
 **Drive the game through its own entry points**, the way a player would reach them: the menu's actions

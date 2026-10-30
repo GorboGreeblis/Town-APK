@@ -13,7 +13,8 @@
 //     faded material, and the church, the Ancient, the pond and Somlet are never hidden during the run (the author: they
 //     "can never fade out");
 //   - the robin is in the same item as her tree (the author: "The Robin should always fade out and in with her tree");
-//   - walking up to a hidden stand (10 m) brings it back within 3 s;
+//   - walking up to a hidden stand (10 m) brings it back within 3 s, and a townsperson standing inside it is out of it
+//     once it is back (the fade-in safety);
 //   - no shader compiled inside a headset frame (the frame-hazard watch) and no page errors.
 //
 //   node tools/test_stands.js [file]
@@ -78,7 +79,12 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       // once the stands are hidden, walk up to one (the gallery, or the first hidden) and time its return
       if (sawDance && !nearDone) {
         const s = S.list.find((x) => x.name === 'gallery' && x.f === 0) || S.list.find((x) => x.f === 0);
+        // the fade-in safety: a townsperson (not one who lives there) standing inside the hidden kiosk is out of it once
+        // it is back (the author: "What happens if NPCs or the player are standing in the areas where kiosks ... fade back in?")
+        const intr = s && s.B && D.It.all.find((h) => h.group && h.def && !s.own.includes(h) && !(h.home && D.F.inHull(s.B, h.home.x, h.home.z)) && h.id !== 'p_gemtoe');
+        if (intr) { intr.group.position.set(s.x, 0, s.z); out.intruder = { id: intr.id, inAtStart: D.F.inHull(s.B, s.x, s.z) }; }
         if (s) { const a = performance.now(); const p0 = D.At.position.clone(); D.At.position.set(s.x + (s.x > 0 ? -10 : 10), D.At.position.y, s.z); while (s.f < 1 && performance.now() - a < 8000) await wait(50); out.near = { name: s.name, s: +((performance.now() - a) / 1000).toFixed(1), f: s.f }; D.At.position.copy(p0); }
+        if (intr) { const q = intr.group.position; out.intruder.inAfter = D.F.inHull(s.B, q.x, q.z, -0.05); out.intruder.at = [+q.x.toFixed(1), +q.z.toFixed(1)]; }
         nearDone = true;
       }
     }
@@ -101,6 +107,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('every stand whose owner left is hidden while the Event dances', r.hiddenWhileDancing === true);
   expect('the church and Cave, the Ancient, the pond and Somlet are never hidden during the run', r.guardHidden.length === 0, r.guardHidden.slice(0, 6).join(', '));
   expect('walking up to a hidden stand brings it back within 3 s', r.near && r.near.f === 1 && r.near.s <= 3, JSON.stringify(r.near));
+  expect('a townsperson standing in a hidden kiosk is outside it once the kiosk is back (the fade-in safety)', r.intruder && r.intruder.inAtStart && r.intruder.inAfter === false, JSON.stringify(r.intruder));
   expect('after the Event every stand is back in full', Object.values(r.endF).every((f) => f === 1), JSON.stringify(r.endF));
   expect('no stand is still faded when its owner is back home', r.lateReturn.length === 0, r.lateReturn.join(', '));
   expect('no shader compiled inside a headset frame', r.compiles === 0 || r.compiles === null, String(r.compiles));

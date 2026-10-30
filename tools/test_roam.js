@@ -38,6 +38,8 @@ const GAME_S = process.argv.includes('--long') ? 600 : 180;
         const add = (k, why) => { s[k]++; if (s.where.length < 3) s.where.push(why + ' at ' + p.x.toFixed(1) + ',' + p.z.toFixed(1)); };
         const own = h.home && F.buildings.find((B) => F.inHull(B, h.home.x, h.home.z));
         for (const B of F.buildings) if (B !== own && F.inHull(B, p.x, p.z, -0.1) && !(ids.slice(2).includes(h.id) && onFloor(p.x, p.z))) add('hull', 'in ' + (B.name || B.id || 'a building'));
+        // the gazebo's railings and posts are solid (3.15.67; its doorway open to anyone): no one stands in them
+        if (F.gzSeg) for (const [a, b] of F.gzSeg) { const ex = b[0] - a[0], ez = b[1] - a[1], u = Math.max(0, Math.min(1, ((p.x - a[0]) * ex + (p.z - a[1]) * ez) / (ex * ex + ez * ez))); if (Math.hypot(p.x - a[0] - ex * u, p.z - a[1] - ez * u) < 0.12) { add('hull', 'in the gazebo\'s railing'); break; } }
         s.minR = Math.min(s.minR, Math.hypot(p.x, p.z));
         if (ids.includes(h.id) && Math.hypot(p.x, p.z) < 15 - 0.2) add('garden', 'in the Garden');
         // solid zones are the clearance roamers keep when they pick a spot (roamFree); the others stand at their designed

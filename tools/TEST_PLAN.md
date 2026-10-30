@@ -74,7 +74,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Nextessa waits while the Gem assembles, then delivers (F-B45); Anomalee plants without Snacks and eats from her box with them (F-B49) | `test_courier_gem.js`, `test_anomalee.js` (standard tier) | 3.15.57: pass |
 | Stuck detection and rescue (`De`: re-plan via waypoints, off-screen teleport after 4 stalls; no 0.3 m progress in 5 s counts as a stall, F-B55) | `test_npc_home.js` forced-stuck and far-player scenarios; `test_stuck.js` | done |
 | Away watchdog (`sendHome` after 4 s idle / 20 s moving away from home ground) | `test_world.js` | partial |
-| Roamers (Gooward, Hennrick by the Portal, Mama Gorbo, the three dancers) pick free spots, never inside hulls or zones | `test_roam.js` (standard tier; `--long` 10 min): 3 game minutes sampled four times a second, everyone: no foreign building, inside the park; roamers: never standing in a solid zone nor walking 1.5 m into one (a walk may cut its edge, 3.15.64), not in the Garden, never inside each other, all moving | done (3.15.41) |
+| Roamers (Gooward, Hennrick by the Portal, Mama Gorbo, the three dancers) pick free spots, never inside hulls or zones | `test_roam.js` (standard tier; `--long` 10 min): 3 game minutes sampled four times a second, everyone: no foreign building, not in the gazebo's railings (F-B65), inside the park; roamers: never standing in a solid zone nor walking 1.5 m into one (a walk may cut its edge, 3.15.64), not in the Garden, never inside each other, all moving | done (3.15.41) |
 | Wander/trek for the townsfolk (the wander routine; `ho` in the unminified 3.15.44 file, git 21596f1), personal space, spreading | `test_roam.js` covers where they stand (buildings, park); kind "creature" is only Zollod, who stays in his kiosk while shy | partial (spreading todo) |
 | Mama+Gorbo meeting schedule (`meetAt`), visits (`visitPlan`), vignettes (`VIGS`) fire and release NPCs (`busy` cleared) | `test_meet.js` (standard tier: two meetings 20-40 s apart, 2.8 m apart facing each other, four goo arcs and four hearts 0.6-0.9 s apart, called off by the Event); `test_visits.js`; `test_content.js` (vignettes) | done (3.15.41) |
 | Greeting/freeze near the player (`greetR` 3.2 m, `proximityFreezeS` 12 s, `greetClear` 6 m): a walking townsperson stops and faces the player, goes on after 12 s, is stopped again after the player was 6 m away; Sparkakus's "!" from 6 m | `test_greet.js` (standard tier) | done |
@@ -186,6 +186,11 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | The compressed version works as a Bitcoin ordinal: alone, under the ordinal content policy; LOADING, unpacks, boots, enters VR, no outside requests, no errors, under 390,000 bytes; desktop note | `test_compressed.js` (every tier but quick) | done (3.15.45) |
 | The game file is fully minified; the minified game builds the same world as before | `minify_game.js --check` (quick tier, pre-commit hook); `minify_identity.js` (report, after a minification) | done (3.15.45, NOTES 89) |
 | Every experiment variant still applies to the game file | `experiment.py --check` (quick tier) | done |
+
+| The gazebo's railed sides are solid for everyone, its doorway open; Gemtoe talkable from all round (F-B65) | `test_roam.js` (nobody in a railing), `.runs/gazebo_probe.js` (eight sides: seven stop at the railing, the doorway lets in; Gemtoe home in 11 s) | done (3.15.67) |
+| Anyone standing where a faded kiosk comes back is pushed out (S3) | `test_stands.js` (a townsperson inside a hidden kiosk is outside it once it is back) | done (3.15.67) |
+| The matrix walk skips still groups without a stale frame (P32) | `test_lod.js` (exact swaps), `opt_identity.js`, the log line on any group that moves (`.runs/frz_probe.js`) | done (3.15.66) |
+| The Event's flowers taller and more colourful, the pond's ripples (A20-A22) | `shots.js --preset garden`, `--preset pond` (pictures); `warm_coverage.js` and `test_shaderhold.js` (the ripples' material compiled at load) | done (3.15.66-3.15.67) |
 
 ## Latest results (newest first, headless harness)
 
