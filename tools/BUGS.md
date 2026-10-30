@@ -22,6 +22,8 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| F-B52 | Mushroom stuck and jittering at the edge of his desk over the ramp during the Event (the author, 3.15.58) | 3.15.59: he leaves by his ramp at the Event's start, reaches each ramp point, slides instead of stopping; the whole widened ramp is walkable (FIXES F-B52, `test_mushroom_event.js`) | 2026-10-30 |
+| F-B51 | A flash as Nextessa came into view (the author's full run, 3.15.58, log 7204dc64): geometry made during play uploaded inside headset frames | 3.15.59: an object never uploaded is held back one frame and uploaded between frames (FIXES F-B51, `test_firstdraw.js`) | 2026-10-30 |
 | F-B49 | Anomalee's Event pizza box had no logo on its lid and was empty 40 s in (the author, 3.15.56) | 3.15.57: logo on the open lid; a slice every 22 s, the last two left (FIXES F-B49, `test_anomalee.js`) | 2026-10-29 |
 | F-B48 | Full-screen flashes after leaving the Cave and right after loading on a pickup (the author, 3.15.56 logs 2bd67b97, 8e76b4aa): geometry buffers uploaded inside headset frames the first time things were seen | 3.15.57: every geometry uploaded while loading and at VR entry; harness watch fails buffers made in a frame (FIXES F-B48) | 2026-10-29 |
 | F-B47 | Flicker on the ring houses where the side wall meets the gable triangle, on all houses (the author, 3.15.56): T-junction cracks and a sliver of roof underside | 3.15.57: gables as wide as their roofs, overlapping the walls; the church, mural, counter lip and ramp landing too; `test_seams.js` (FIXES F-B47) | 2026-10-29 |

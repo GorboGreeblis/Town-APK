@@ -5,7 +5,7 @@
  *   - dead-zone: a tiny deflection does not move
  *   - right stick sideways snap-turns the view by t.xr.snapAngle once per
  *     deflection (no repeat while held), and again after re-centering; at most one turn per t.xr.snapGap
- *     (0.3 s): a flick let go inside the gap is dropped, one still held when it ends turns once
+ *     (0.4 s since 3.15.59, A11): a flick let go inside the gap is dropped, one still held when it ends turns once
  *   - trigger (select) and grip (squeeze) events do not throw
  *   - the player cannot walk through a building hull
  *
@@ -82,7 +82,7 @@ const file = process.argv[2];
   expect('re-centre then deflect again turns a second step', Math.abs(Math.abs(norm(y2 - y0)) - 2 * snap) < 0.08, `${(norm(y2 - y0) * 180 / Math.PI).toFixed(1)} deg`);
   await inputs([ctl('left', [0, 0, 0, 0]), ctl('right', [0, 0, 0, 0])]);
   // The gap between snap turns (the author: "a short delay for snap turning, if the user attempts to snap turn too
-  // quickly after previously snap turning"; t.xr.snapGap, 0.3 s): flicks timed in the page, so the runner's latency
+  // quickly after previously snap turning"; t.xr.snapGap, 0.4 s since 3.15.59): flicks timed in the page, so the runner's latency
   // does not blur them. A second flick let go inside the gap is dropped; one still held when the gap ends turns once.
   const gap = await page.evaluate(() => window.__dbg.t.xr.snapGap);
   const flicks = (seq) => page.evaluate(async (seq) => {

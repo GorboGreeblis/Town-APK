@@ -63,6 +63,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | --- | --- | --- |
 | Posted NPCs return to their post via waypoints; Mushroom hops onto the desk (`lo.post`) | `test_npc_home.js` (15 placements) | done (results in NOTES.md) |
 | Mushroom never jumps and never enters his desk, also on back-to-back visits with the player in front of it (F-B46) | `test_mushroom_desk.js` (standard tier): every frame, rises over 12 cm and positions inside the desk below its top | 3.15.57: 0 rises, 0 frames inside in 4 visits (3.15.56: 4 rises, 175 frames inside in 6) |
+| Nothing uploaded inside a headset frame when something new appears (F-B51); Mushroom down his ramp in the Event (F-B52) | `test_firstdraw.js`, `test_mushroom_event.js` (standard tier) | 3.15.59: pass (on the game file before the build; the old build fails `test_firstdraw.js`, 19 + 11 buffers) |
 | Nextessa waits while the Gem assembles, then delivers (F-B45); Anomalee plants without Snacks and eats from her box with them (F-B49) | `test_courier_gem.js`, `test_anomalee.js` (standard tier) | 3.15.57: pass |
 | Stuck detection and rescue (`De`: re-plan via waypoints, off-screen teleport after 4 stalls) | `test_npc_home.js` forced-stuck and far-player scenarios | done |
 | Away watchdog (`sendHome` after 4 s idle / 20 s moving away from home ground) | `test_world.js` | partial |
@@ -180,6 +181,8 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Every experiment variant still applies to the game file | `experiment.py --check` (quick tier) | done |
 
 ## Latest results (newest first, headless harness)
+
+**3.15.59** (`tools/.runs/build_3.15.59.log`): `build.sh`'s checks pass (SYNC CHECK, EXPERIMENT CHECK, APK CHECK, STANDALONE TEST, COMPRESSED TEST; BUILD DONE 3.15.59 (59)). The first try failed the standalone test: the mural's key changed (the minifier renamed a name inside its painter), its new strips were pre-painted with the normal test server and differed from what the game served alone paints in two strips (6,045 and 1,100 values, at most 28/255, semi-transparent edges); `prerender_textures.js` now paints served alone, as the test compares. Before the build, on the game file: `test_firstdraw.js`, `test_mushroom_event.js`, `test_mushroom_desk.js`, `test_npc_home.js`, `test_visits.js` pass (`test_firstdraw.js` fails 3.15.58: 19 + 11 buffers inside frames). The full tier on 3.15.58 (started 2026-10-29 22:33) was stopped at the soak stage when the author's run on 3.15.58 brought new fixes; its full pass is owed by the final build.
 
 **3.15.45** (`tools/.runs/build_v45.log`): `build.sh`'s checks pass (SYNC CHECK, EXPERIMENT CHECK, APK CHECK, STANDALONE TEST, COMPRESSED TEST all PASSED; BUILD DONE 3.15.45 (45)). Quick tier: every stage passes.
 **Standard tier on 3.15.45** (`tools/.runs/std_v45.log`, 95 min): every stage passes except the texture census: a 64x64 canvas and GL texture made during the text exchanges (the glow behind a tossed item), fixed as F-B32 in 3.15.46.

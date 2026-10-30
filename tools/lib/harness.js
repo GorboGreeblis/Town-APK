@@ -90,6 +90,15 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
   const ua = device ? UA.replace('Quest 3', { quest2: 'Quest 2', quest3s: 'Quest 3S', quest3: 'Quest 3' }[device] || 'Quest 3') : UA;
   const ctx = await browser.newContext({ userAgent: ua, viewport: { width: 1280, height: 720 } });
   const page = await ctx.newPage();
+  // GT_COVERAGE=1: record which of the page's functions ran (V8 function coverage), written to tools/.runs/coverage/ on
+  // close; tools/dead_code.js reads them all (the dead code census).
+  let cov = null; const scripts = new Map();
+  if (process.env.GT_COVERAGE) {
+    cov = await ctx.newCDPSession(page);
+    cov.on('Debugger.scriptParsed', (e) => { if (e.url && e.url.startsWith('http://127.0.0.1')) scripts.set(e.scriptId, { url: e.url, startLine: e.startLine, startColumn: e.startColumn, length: e.length, hash: e.hash }); });
+    await cov.send('Debugger.enable'); await cov.send('Profiler.enable');
+    await cov.send('Profiler.startPreciseCoverage', { callCount: false, detailed: false });
+  }
   const errors = [], requests = [];
   page.on('request', (r) => requests.push({ url: r.url(), type: r.resourceType() }));
   page.on('requestfinished', async (r) => { try { const q = requests.find((x) => x.url === r.url() && x.status === undefined); const rs = await r.response(); if (q) q.status = rs ? rs.status() : null; } catch (e) {} });
@@ -170,6 +179,12 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
           fs.mkdirSync(path.join(root, 'tools/.runs'), { recursive: true }); fs.appendFileSync(path.join(root, 'tools/.runs/frame_hazards.log'), new Date().toISOString() + ' ' + line + '\n');
         }
       } catch (e) {}
+      if (cov) try {
+        const { result } = await cov.send('Profiler.takePreciseCoverage');
+        const out = result.filter((r) => scripts.has(r.scriptId)).map((r) => ({ ...scripts.get(r.scriptId), functions: r.functions.map((f) => [f.functionName, f.ranges[0].startOffset, f.ranges[0].endOffset, f.ranges[0].count]) }));
+        const dir = path.join(root, 'tools/.runs/coverage'); fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(path.join(dir, `${path.basename(process.argv[1] || 'x', '.js')}-${Date.now()}.json`), JSON.stringify({ file: path.resolve(file), scripts: out }));
+      } catch (e) { console.log('  NOTE  coverage not written: ' + e.message); }
       await browser.close(); srv.close();
     },
   };
