@@ -10,7 +10,7 @@ how-to. Numbers in brackets are NOTES.md entries.
 tools/run_tests.sh --quick      static checks, no browser                    about 1 minute
 tools/run_tests.sh --smoke      the standard stages but the courier, short    over an hour
 tools/run_tests.sh              the standard pass (default)                   about 1.5-2 hours (95 min on 3.15.45)
-tools/run_tests.sh --full       every scenario, long soaks, graphics, perf    2-2.5 hours (3.15.41); every build (RULES.md 23)
+tools/run_tests.sh --full       every scenario, long soaks, graphics, perf    about 3.5 hours (216 min on 3.15.54, NOTES 96; less since the 3.15.63 tools pass); every build (RULES.md 23)
 ... --resume                    skip the stages that already passed (section 2)
 ... --only=REGEX                run only the stages whose name matches, with the tier's settings
 ```
@@ -122,7 +122,11 @@ console.log(failures.length ? 'X TEST FAILED' : 'X TEST PASSED'); process.exit(f
 the session and waits for XR frames. Options: `vr` (default true; the game only runs NPCs, pickups and input while
 presenting), `fastSim` (default true: rendering is stubbed so game logic runs fast; set `false` when the test
 needs real frames, the batcher's uniform arrays or the dialogue box's canvas), `noVisits` (default true: the
-random visit scheduler is held off), `initScripts` (functions that run before the game's first line, e.g. to
+random visit scheduler is held off), `renderEvery: N` (with `fastSim: false`: draws one frame in N while the game
+updates every frame; new textures, buffers and shaders still reach the GPU within N frames, so the frame-hazard watch
+and the censuses still see them; not for checks of every drawn frame: pixels, frame times, the governor),
+`fastSim: 'matrices'` (no draw, but the scene's world matrices updated every frame as the draw would: positions as
+drawn, `test_jitter.js`), `initScripts` (functions that run before the game's first line, e.g. to
 wrap a browser API, as `test_audio.js` wraps Web Audio).
 
 **The frame-hazard watch.** Every boot through the harness watches for GPU work inside an XR frame callback (texture uploads and copies, mipmap builds, pixel reads, renderbuffer storage, geometry buffers made the first time something is drawn (3.15.57, F-B48), shader compiles: the flash causes, NOTES 67, 80, 91), on both render paths, whatever the test is about. On multiview every texture operation inside the frame counts; on the classic path only work done while three.js draws (an upload on first sight), and the render wrapper's upload before the first draw counts as the frame's start (F-B36). `close()` prints a WARNING line and appends to `.runs/frame_hazards.log`; `run_tests.sh` lists them in its summary and fails the pass. A test can read the record itself with `g.frameHazards()`.
@@ -174,4 +178,5 @@ can only pass is no test: when it is new, check that it fails on a build or a st
 (the warm-up coverage check fails on 3.15.40 and passes on 3.15.41).
 
 **Add it to the pass.** A `run "<what it checks>" node "$ROOT/tools/test_x.js" "$ASSET"` line in the right tier of
-`run_tests.sh`, a row in README.md, and the TEST_PLAN.md row it covers marked done with the build it passed on.
+`run_tests.sh`, a row in README.md, its name in section 1's tier list (`check_docs.py` fails otherwise), and the
+TEST_PLAN.md row it covers marked done with the build it passed on.

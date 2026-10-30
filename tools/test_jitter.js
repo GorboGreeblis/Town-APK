@@ -5,9 +5,10 @@
 // sampled every animation frame through the planting Event's gathering and planting and a minute after it:
 //   - jitter: a character moving faster than 0.2 m/s whose drawn position reverses direction from one frame to the
 //     next (consecutive steps pointing more than 120 degrees apart, both over 1 cm), more than 2% of its moving frames;
-//   - bumps: its drawn height changing more than 4 cm in one frame while it walks;
+//   - bumps: its drawn height changing more than 4 cm in one headset frame (72 a second, measured in game time) while it
+//     walks, other than the Mushroom on his ramp or desk (its surface; test_mushroom_event.js);
 //   - floating or sinking: the bottom of its drawn model more than 25 cm from where it was at the start, relative to its
-//     own position (the model drawn away from the character: Mushroom's model 1.5 m above him on 3.15.60);
+//     own position and the ground follower's lift, outside the Event's dances and planting (the model drawn away from the character: Mushroom's model 1.5 m above him on 3.15.60);
 //   - no page errors.
 //
 //   node tools/test_jitter.js [file]
@@ -39,12 +40,16 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
           if (h > 0.2 / 72) {
             s.moving++;
             if (s.step && h > 0.01 && Math.hypot(s.step[0], s.step[2]) > 0.01 && (d[0] * s.step[0] + d[2] * s.step[2]) / (h * Math.hypot(s.step[0], s.step[2])) < -0.5) s.rev++;
-            if (Math.abs(d[1]) > 0.04 * 72 * dt) { s.bumps++; s.worstBump = Math.max(s.worstBump, Math.abs(d[1])); if ((s.where = s.where || []).length < 6) s.where.push({ at: [+p[0].toFixed(2), +p[1].toFixed(2), +p[2].toFixed(2)], dy: +d[1].toFixed(3), dt: +dt.toFixed(3), t: +D.Re.t.toFixed(1), ev: !!D.me.active, busy: e.busy || null, vis: !!e.visiting || !!e.hosting }); }
+            // on the Mushroom's ramp or desk his height is the ramp's surface (F-B52's test), not a ground pop
+            if (Math.abs(d[1]) > 0.04 * 72 * dt && !(e.def.rampY && p[1] > 0.05)) {
+              s.bumps++; s.worstBump = Math.max(s.worstBump, Math.abs(d[1])); if ((s.where = s.where || []).length < 6) s.where.push({ at: [+p[0].toFixed(2), +p[1].toFixed(2), +p[2].toFixed(2)], dy: +d[1].toFixed(3), dt: +dt.toFixed(3), t: +D.Re.t.toFixed(1), ev: !!D.me.active, busy: e.busy || null, vis: !!e.visiting || !!e.hosting }); }
           }
           s.step = h > 0.001 ? d : s.step;
         }
         s.last = p;
-        if (frames % 12 === 0 && s.b0 !== null) { const b = bottom(e); if (b !== null && Math.abs(b - s.b0) > s.worstFloat) { s.worstFloat = Math.abs(b - s.b0); s.floatAt = { t: +D.Re.t.toFixed(1), ev: !!D.me.active, busy: e.busy || null, at: p.map((v) => +v.toFixed(2)), moving: !!e.moving }; } }
+        // the Event's dances and planting move the model by design
+        if (frames % 12 === 0 && s.b0 !== null && e.busy !== 'finale') {
+          const b = bottom(e); if (b !== null && Math.abs(b - s.b0) > s.worstFloat) { s.worstFloat = Math.abs(b - s.b0); s.floatAt = { t: +D.Re.t.toFixed(1), ev: !!D.me.active, busy: e.busy || null, at: p.map((v) => +v.toFixed(2)), moving: !!e.moving }; } }
       }
       requestAnimationFrame(tick);
     };

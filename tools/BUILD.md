@@ -17,7 +17,7 @@ tools/
     app/src/main/java/.../GameServer.java      loopback HTTP server for the game
     app/src/main/java/.../LauncherActivity.java launches the Quest Browser immersive
   uncompressed.html        THE GAME FILE: the whole game, minified, every change made in it directly
-  build.sh                 rebuilds everything from the game file (minify, copies, tex/, version, APK, compressed)
+  build.sh                 rebuilds everything from the game file (minify, copies, tex/, version, version stamp, APK, compressed)
   minify_game.js           minifies the game file in place (RULES.md 19); --check
   build_compressed.js      builds index.compressed.html from the game file; --check
   sync_game.py             updates every copy: index.html (root), the APK's asset, index.compressed.html; --check
@@ -66,7 +66,7 @@ What the entry script does on a Quest browser (NOTES 34, 41, 42):
    and parks it (the browser never grants a session on its own for a fresh
    immersive launch);
 2. draws the loading screen into compositor layers: a cube layer for the sky
-   and a quad layer for the title and progress bar, 1.3 x 0.65 m at 5 m (about 15 degrees, 3.15.21), which
+   and a quad layer for the title, the progress bar and the version (bottom right, A18), 1.3 x 0.65 m at 5 m (about 15 degrees, 3.15.21), which
    the browser re-renders every vsync with the current head pose whatever the
    page is doing, so turning the head during the boot never shows a stale frame;
 3. slices the boot (`await __gtY(label)` before each heavy step, each character,
@@ -106,7 +106,9 @@ tools/build.sh --bump                   # after editing tools/uncompressed.html:
 
 `tools/build.sh` minifies the game file (a no-op when it already is), copies it to `index.html` (root) and the APK's
 asset, re-paints the pre-painted textures in `assets/tex/`, raises the version by one if what ships changed
-(`--bump`; without it the build stops and says so), builds the release APK, copies it to the root as
+(`--bump`; without it the build stops and says so), stamps that version into the four places the game shows it
+(step 3b: the landing text, the gate's corner twice, the VR loading box; it fails unless it finds exactly four) and
+syncs the copies again, builds the release APK, copies it to the root as
 `GreeblisTown-release.apk`, builds the compressed version `index.compressed.html` at the root (never in the APK), and
 checks the result (`sync_game.py --check`, `experiment.py --check`, `check_apk.sh`, `test_standalone.js`,
 `test_compressed.js`; `--no-test` skips the last two). Painting is seeded (FIXES R1), so an unchanged game
@@ -118,6 +120,7 @@ node tools/minify_game.js               # minify the game file in place (to a fi
 python3 tools/sync_game.py              # copy the game file to index.html (root) and the APK's asset
 node tools/prerender_textures.js        # re-paint assets/tex/ (after a change to a texture painter)
 # raise versionCode and versionName in tools/android/app/build.gradle if what ships changed (RULES.md 12)
+# set the four "vX.Y.Z" strings in the game file to versionName, then run sync_game.py again (step 3b, A18)
 (cd tools/android && ./gradlew assembleRelease)   # -> app/build/outputs/apk/release/app-release.apk (copy it to the root)
 node tools/build_compressed.js          # rebuild index.compressed.html (RULES.md 20; the pre-commit hook refuses a stale one)
 ```

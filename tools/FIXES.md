@@ -10,7 +10,8 @@ Code names: since 3.15.45 the game file is minified (R2). Names at the top level
 so the entries before R2 quote the unminified file (`git show 21596f1:tools/uncompressed.html`).
 IDs: numbers are the entry edits, B or F-B a bug fix (tools/BUGS.md; F-B is the ID BUGS.md gives it once fixed),
 P a performance change (tools/PERF.md), L the license notice, D diagnostics, R a change made to meet one of the
-author's rules (tools/RULES.md), A a change the author asked for (new content or behaviour). NOTES numbers point to tools/NOTES.md.
+author's rules (tools/RULES.md), A a change the author asked for (new content or behaviour), S a
+safety (a guard that backs up the flash fixes: S1, S2). NOTES numbers point to tools/NOTES.md.
 
 ## Entry edits (9 blocks)
 

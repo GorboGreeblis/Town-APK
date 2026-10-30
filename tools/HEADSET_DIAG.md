@@ -10,7 +10,8 @@ Capture the log live, from before the launch to the end of the run (`tools\captu
 `tools/capture_log.sh` elsewhere, do exactly what the commands below do and save UTF-8), and let the reader summarise it. **When you see a
 flash, press B on the right controller** (a short buzz confirms): the log gets "MARK flash seen" with the frame number,
 and `perf_log.js` lists every mark with what the log shows in the 3 s before it (long frames over 28 ms, uploads,
-shader compiles, GPU work inside a frame). By hand:
+shader compiles, GPU work inside a frame, frame gaps, near-empty frames, governor changes, shader and geometry holds,
+the head-inside guard, stuck townsfolk, errors caught in frames). By hand:
 
 ```
 adb logcat -c
@@ -179,5 +180,18 @@ Since 3.15.57 (D3, the author: "let's try to make the logs more verbose"):
 - After `MARK flash seen`, the flight recorder's last 10 s: `rec ... slow:` (frames over 20 ms, with their time before
   the mark), `rec changes:` (programs, textures, geometries and draw calls changing, the head inside a character),
   `rec events:` (focus changes in the last minute).
+Since 3.15.59-3.15.63 the log also has:
+- `geometry held for one frame: N object(s) uploaded between frames` (F-B51): new geometry held back a frame; expected
+  now and then (Nextessa's visits, the Event's plants).
+- `shader held for one frame: N object(s) compiled between frames` (S2): a shader the loading warm-up missed. Not a
+  flash (it was compiled between frames), but a gap in the warm-up: send the log.
+- `head inside N character(s): hidden for the frame` (S1; at most 20 lines a session).
+- `[draw hook] ...` and other bracketed errors (`[entity:ID]`, `[world]`, `[render]`): an error the frame survived;
+  each is a bug to report.
+- `no progress: ID D m from its target for 5 s` (F-B55): a townsfolk the stuck detector moved on.
+- The flight recorder's lines (D5): `frame gap N ms before frame F, heap A > B MB` (frames the headset did not get, over
+  45 ms; a heap that drops in the gap is a garbage-collector pause), `frame F drew N calls (the frame before: M)` (an
+  empty or half-drawn frame: the look of a full-screen flash), `frame F: the camera matrix is not finite`, and
+  `governor level L (foveation X[, emergency])`. The B mark's dump adds `rec gaps:`.
 `node tools/perf_log.js run.txt` reads them all: the recorder under each mark, geometry uploads, focus changes, the
 stretches when another process (the system shell) drew instead of the game, and `--trail` prints the event trail.

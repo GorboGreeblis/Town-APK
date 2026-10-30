@@ -1,12 +1,14 @@
 # Performance analysis of the APK build
 
 Started as an analysis (sections 1-6); sections 6-13 record the changes that
-were applied, each listed in FIXES.md (section 13 is the latest: 3.15.43-3.15.52). The render path itself is described in
+were applied, each listed in FIXES.md (section 14 is the latest: 3.15.53-3.15.63). The render path itself is described in
 RENDERING.md. Numbers from the headless harness (software GL) are marked as such: draw calls, triangle counts, program counts
 and JS time are meaningful there, GPU time is not. Headset measurements: the author's 3.15.33-3.15.34 run on a
 Quest 3S (section 10) and the 3.15.41, noswap and deferupload runs (section 13, NOTES 79-81), which showed the frame rate
 follows draw calls, not pixels, and the 3.15.46 and 3.15.47 runs (NOTES 90-91), whose runtime lines show the Event
-CPU-bound (app GPU time 9.3 of a 13.9 ms frame). The changes since are estimates until the author's 3.15.52 run.
+CPU-bound (app GPU time 9.3 of a 13.9 ms frame). The author's 3.15.58 run on a Quest 3S read 56-59 fps for 12 s at (-33, -7) in the Event (the runtime's CPU frame 12-14 ms of
+13.9, the GPU 71% busy), and on 3.15.60 the lowest reading watching the Event from afar was 54 fps; the changes in
+section 14 are estimates until the author's next run.
 
 **Performance is now the top priority** (RULES.md "Priorities", the author: "once all other tasks are completed,
 performance should be our focus"; the biggest blocker for the Store submission): the planting Event on a Quest 3S,
@@ -451,5 +453,25 @@ limited by draw submission and script on the CPU; triangles cost little while th
 | F-B36 | 3.15.49 | The mipmap switch 2.6 s after entering VR in slices of at most 0.6 Mpx, 40 ms apart, instead of one stall. | No |
 | P25 | 3.15.50 | Backpacka batched when built (he was built after the batching step): 714 -> 545 draws headless at the author's low spot while he is in view, about 83 fewer a frame on the headset. | No (at most 0.01% of pixels, none in areas) |
 
-**Next CPU candidates** (NOTES 93): `bend` (Etcher's six tentacles, deformed for every move while the townsfolk
+**Next CPU candidates** (NOTES 93; see section 14 for what was done since): the matrix walk (the largest CPU item
+watching the Event from afar; P28 tried skipping far characters' poses on alternate frames and was removed: any fix must
+apply every pose every frame), `bend` (Etcher's six tentacles, deformed for every move while the townsfolk
 dance) and `gFit` (the ground fit of moving creatures, a vertex scan every other frame while they move).
+
+## 14. 3.15.53-3.15.63: the Event from afar (the author's 56-59 fps on 3.15.58, 54 fps on 3.15.60)
+
+| Change | Build | What it did | Visible |
+| --- | --- | --- | --- |
+| P26 | 3.15.54 | The pickups' instanced draws switched off while no pickup shows (the Event draws none of them). | No |
+| P27 | 3.15.60 | The Event's plants drawn as their own meshes, not merged into a new batch inside the frame (8,000-25,000 vertices copied and uploaded each time a plant grew). | No |
+| P28 | 3.15.60, **removed 3.15.62** | Far characters (over 20 m) posed every other frame. It left the Mushroom's raised pose applied on skipped frames, so he floated (F-B56). | Removed |
+| P29 | 3.15.62 | The batcher's per-batch pass (matrices, visibility, colours; 1.8 ms a frame headless: scenery 0.9 ms over 790 parts, creatures 0.89 ms over 515) skips batches unchanged for 2 s on three frames of four. | No |
+| F-B57 | 3.15.62 | The Garden flat, its rings, stepping stones and rock ring painted on one overlay: in the Event at headset field of view (`draw_calls.js --event`, 12 views) 113 -> 111 draws and 321k -> 311k triangles on average, 173 -> 165 draws and 452k -> 414k triangles looking at the Garden from afar, about 120 fewer parts in the batcher's pass, and the height follower's rock scan gone. | Yes (the author's request; kept) |
+| P30 | 3.15.63 | The height follower samples the ground (19 lookups) again only after a walker has moved 5 cm (was every frame it moved: about 285 lookups a frame with the Event's walkers). | No |
+
+Estimated together on the headset (headless script time scaled about three times): 1.5-3.5 ms a frame saved in the
+worst view, against the 1.8 ms the 54 fps reading was short of 60 (16.7 ms); P28's removal gives back perhaps 0.5-1 ms
+of its saving. To be confirmed by the author's next run. Collector pauses are not a factor: vignettes allocate 3 KB/s
+(1.2% of main-thread time in the collector) and going in and out of the Cave 7 KB/s (1.0%), as in normal play (D5,
+`alloc_probe.js --vignettes --cave`). For the Quest 3 (the same chip, about 30% more display pixels) the lever left
+is its render scale: drawing the 3S's pixel count there (about 0.88) would match the GPU load measured on the 3S.
