@@ -55,6 +55,24 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     experiments in the release): the projection layer is never swapped; the quality governor changes foveation only
     (F-B31) [83].
 
+26. **The Event's fade groups** (2026-10-30; P33, F-B64; `window.__gcSt` in the game, `test_stands.js`). During the
+    Event, once the mist is up, these fade out slowly and back after it (2026-10-30: "we can hide things as long as we
+    give them time to fade out and then give them time to fade in"; "We don't want to do it too quickly": at least 9 s
+    out). Each group fades as one, every part at the same time and never in parts ("all parts of Kiosks [and] other
+    fading structures, fade out and fade in at the same time, and not in parts"). The grouping stands for future work
+    ("Please note this grouping of all kiosks and all trees for future work"):
+    - **All kiosks**: every building but the church (the post office, the Sheriff's kiosk, Garden Supplies, the gallery,
+      the shop, the juice bar) and **the Gazebo**, which counts as a kiosk "in all regards". Each kiosk is its own item;
+      it waits while its owner is within 6 m of home and comes back when the player walks up to it.
+    - **All trees**: every tree the tree builder places (the park's three and the town's outside the fence), carved
+      out of the world's merged meshes into one group ("let's add all trees to the same group for fading out and in"),
+      with **the Robin**, who always fades out and in with her tree ("The Robin should always fade out and in with her
+      tree"). A new tree made by the builder joins the group by itself (`window.__gcTreeAt`).
+    - **Never fade**: the church and Cave, the Ancient, Somlet, the Pond, and anything in the Garden itself ("The
+      Church / Cave and Ancient can never fade out. Neither can Somlet or the Pond, or anything in the Garden itself";
+      "if we hide the Post Office, we must never hide Somlet"). None of these may be in a fading group or share a
+      faded material; `test_stands.js` checks both and that they stay shown.
+
 ## Builds and the repository
 
 11. **The repository root holds only** `GreeblisTown-release.apk`, `index.html`, `index.compressed.html` and `tools/`

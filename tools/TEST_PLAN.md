@@ -56,6 +56,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Zones (`E`: still/portal/scenery/pool/phone/stump) and roam grids (`JGP.roamFree`, `JGP.route` A*) produce walkable routes between any two open cells | `test_world.js` | done |
 | Backpacka at the pond: the player cannot walk into him from any side, he is not moved, no circles after he leaves | `test_backpacka.js` (standard tier; F-B37) | done (3.15.50) |
 | Far-detail LOD swaps at 62/66 m without popping errors; instanced batching (`gcEB`) keeps matrices valid | `test_lod.js` (standard tier): walking out to 84 m and back, exactly one of the two models shows, swaps at 66 m out and 61-62 m in, none inside the band; after every rendered frame of 20 s each batched part has exactly its world matrix, colour, shininess and specular in the array, a dropped part is zeroed, no NaN, no part drawn twice | done (3.15.41) |
+| During the Event the fade groups (each kiosk and the gazebo; every tree with the robin) fade out over at least 9 s, only once a kiosk's owner has left home, come back when the player walks up and in full after the Event; the church and Cave, the Ancient, Somlet, the pond and the Garden are never faded, never share a faded material and never hide | `test_stands.js` (standard tier) | done (3.15.66) |
 
 ## 5. NPC behaviour
 

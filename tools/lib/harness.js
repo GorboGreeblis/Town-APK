@@ -28,6 +28,9 @@ const UA = 'Mozilla/5.0 (X11; Linux x86_64; Quest 3) AppleWebKit/537.36 (KHTML, 
 function hooked(file) {
   let html = fs.readFileSync(file, 'utf8');
   const anchor = 'gcEB.ready=!0;';
+  // the minifier may join the statement after it with a comma (3.15.66: P32's and P33's set-up follow it); the anchor
+  // ends a statement of its own there, so the comma is a statement break
+  if (!html.includes(anchor) && html.split('gcEB.ready=!0,').length === 2) html = html.replace('gcEB.ready=!0,', anchor);
   if (!html.includes(anchor)) throw new Error('anchor not found in ' + file + ' (not the game file, or the anchor was renamed: see RESERVED in tools/minify_game.js)');
   // `t` (the tuning object) is shadowed inside the boot function, so capture it
   // at top level where gcEB is declared, before the world is built.

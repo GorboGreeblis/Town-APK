@@ -38,7 +38,7 @@ EXPERIMENTS = {
     "nobatch": [("const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[]};",
                  "const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[],off:!0};")],
     # No pickup effects: no sparkle particles, no floating labels, no HUD/label texture churn from pickups.
-    "noeffects": [("gcEB.ready=!0;", "gcEB.ready=!0;Nt.sparkle=()=>{};Ut.at=()=>{};Ut.above=()=>{};")],
+    "noeffects": [("gcEB.ready=!0,", "gcEB.ready=!0,Nt.sparkle=()=>{},Ut.at=()=>{},Ut.above=()=>{},")],
 }
 
 args = [a for a in sys.argv[1:]]
