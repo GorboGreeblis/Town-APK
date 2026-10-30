@@ -5,7 +5,7 @@
  *   const g = await boot({ file, vr: false });   // g.page, g.browser, g.close()
  *
  * Serves a TEMPORARY copy of the game with a debug hook appended right after
- * the world is built (`gcEB.ready=!0;`). The hook exposes closure-scoped game
+ * the world is built (`gcEB.ready=!0;`, or `gcEB.ready=!0,` where the minifier joined the next statement). The hook exposes closure-scoped game
  * objects on window.__dbg: It (entities), JGP, F (buildings), E (zones),
  * lo (patterns), Be/De (navigation + stuck handling), t (tuning), At (player),
  * B (camera), Re (clock), uo (bodies), C (scene), Kt (progress), le/ce
@@ -22,12 +22,15 @@ const root = path.resolve(__dirname, '..', '..');
 // another `F` than the world's collision registry)]
 const TAGGED = [['Ge', 'const Ge={'], ['VIGS', 'const VIGS={}'], ['UI', 'const F={};function W(', 'F']];
 const HOOK_NAMES = ['It', 'JGP', 'F', 'E', 'lo', 'Be', 'De', 't', 'At', 'B', 'Re', 'uo', 'C', 'Kt', 'le', 'ce', 'we', 'Mo', 'G', 'Ut', 'O', 'me', 'bt', 'ue', 'Dbt', '_t', 'qt', 'jt',
-  'ne', 'oe', 'st', 'fe', 'xe', 'yo', 'Nt', 'ke', 'Ge', 'Ho', 'LIB', 'ARTS', 'VIGS', 'BP', 'JAZZ', 'gemTrade', 'shopText', 'battleText', 'Bulb', 'Eo', 'ot', 'E', 'gcEB', 'z', 'te', 'ee'];
+  'ne', 'oe', 'st', 'fe', 'xe', 'yo', 'Nt', 'ke', 'Ge', 'Ho', 'LIB', 'ARTS', 'VIGS', 'gemTrade', 'shopText', 'battleText', 'Bulb', 'Eo', 'ot', 'gcEB', 'z', 'te', 'ee'];
 const UA = 'Mozilla/5.0 (X11; Linux x86_64; Quest 3) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/35.0 Chrome/128.0 VR Safari/537.36';
 
 function hooked(file) {
   let html = fs.readFileSync(file, 'utf8');
   const anchor = 'gcEB.ready=!0;';
+  // the minifier may join the statement after it with a comma (3.15.66: P32's and P33's set-up follow it); the anchor
+  // ends a statement of its own there, so the comma is a statement break
+  if (!html.includes(anchor) && html.split('gcEB.ready=!0,').length === 2) html = html.replace('gcEB.ready=!0,', anchor);
   if (!html.includes(anchor)) throw new Error('anchor not found in ' + file + ' (not the game file, or the anchor was renamed: see RESERVED in tools/minify_game.js)');
   // `t` (the tuning object) is shadowed inside the boot function, so capture it
   // at top level where gcEB is declared, before the world is built.

@@ -1,7 +1,7 @@
 # Performance analysis of the APK build
 
 Started as an analysis (sections 1-6); sections 6-13 record the changes that
-were applied, each listed in FIXES.md (section 14 is the latest: 3.15.53-3.15.63). The render path itself is described in
+were applied, each listed in FIXES.md (section 15 is the latest: 3.15.65 on, P31-P33; section 14 3.15.53-3.15.63). The render path itself is described in
 RENDERING.md. Numbers from the headless harness (software GL) are marked as such: draw calls, triangle counts, program counts
 and JS time are meaningful there, GPU time is not. Headset measurements: the author's 3.15.33-3.15.34 run on a
 Quest 3S (section 10) and the 3.15.41, noswap and deferupload runs (section 13, NOTES 79-81), which showed the frame rate
@@ -488,6 +488,8 @@ more away (scenery batches 88, creature parts 68, other textured 69, other plain
 | Change | Build | What it does | Visible |
 | --- | --- | --- | --- |
 | P31 | 3.15.65 | Culling skips subtrees that draw nothing (1,482 of 2,460 nodes): 1.37 -> 1.26 ms headless. | No (pixel-identical) |
+| P32 | 3.15.66 | The matrix walk returns at the town's still top-level groups (audited 150 nodes a frame; a group that moves is walked every frame from then on). | No |
+| P33 | 3.15.66 | The fade groups (each kiosk and the gazebo; every tree with the robin) fade out over 10 s once the Event's mist is up and back after it (RULES.md 26). | Yes, by the author's design |
 
 Tried and dropped: batching scenery across groups by 16 m cells (265 -> 258 draws: the one-off draws have textures of
 their own); hiding objects under a few pixels across (18 draws at the heaviest view, and they would pop).

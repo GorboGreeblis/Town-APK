@@ -8,7 +8,7 @@ how-to. Numbers in brackets are NOTES.md entries.
 
 ```
 tools/run_tests.sh --quick      static checks, no browser                    about 1 minute
-tools/run_tests.sh --smoke      the standard stages but the courier, short    over an hour
+tools/run_tests.sh --smoke      the standard stages but the courier and desk, short   over an hour
 tools/run_tests.sh              the standard pass (default)                   about 1.5-2 hours (95 min on 3.15.45)
 tools/run_tests.sh --full       every scenario, long soaks, graphics, perf    about 3.5 hours (216 min on 3.15.54, NOTES 96; less since the 3.15.63 tools pass); every build (RULES.md 23)
 ... --resume                    skip the stages that already passed (section 2)
@@ -33,7 +33,7 @@ game content (`test_content.js`), greeting, wrist HUD (`test_hud.js`), roaming (
 seeded decoration (`test_seeded.js`), the interaction menu (`test_menu.js`), visitors to the Ancient in the Cave
 (`test_cave.js`), the Event's start and end (`test_event_fade.js`), Anomalee in the Event (`test_anomalee.js`), Mama
 Gorbo's walk over to Gooward (`test_meet_walk.js`), no townsfolk stuck (`test_stuck.js`), jitter and floating models
-(`test_jitter.js`), the shader hold (`test_shaderhold.js`), Mushroom in the Event (`test_mushroom_event.js`), first
+(`test_jitter.js`), the shader hold (`test_shaderhold.js`), the Event's stands fading (`test_stands.js`), Mushroom in the Event (`test_mushroom_event.js`), first
 draws (`test_firstdraw.js`), Backpacka at the pond (`test_backpacka.js`), far detail and the batcher (`test_lod.js`),
 world (`test_world.js`), input (`test_input.js`), progression (`test_progression.js`, `--long` in full), visits
 (`test_visits.js`), the courier (`test_courier.js`) and the courier during the Gem
@@ -44,7 +44,7 @@ scenario. Full only: dialogue layout (`test_textfit.js`), the stability soak (`t
 z-fighting (planar `test_zfight.js`, curved `test_coincident.js`), seams (`test_seams.js`), the single-sided check
 (`sides_check.js`), optimisation identity (`opt_identity.js`), the Ancient check (`ancient_check.js`), the performance
 report (`perf_report.js`), and the loading, handover, Event-cost, creature census and sharpness reports. Not in any
-tier: the census and probe reports (README.md marks each as a report).
+tier: the other census and probe reports (README.md marks each as a report).
 
 Times are on a 4-core cloud container. Every browser stage runs one headless Chromium with SwiftShader (the GPU
 is software), so the stages run one after another. Do not run a second browser test while a pass runs: the
@@ -157,7 +157,7 @@ minifier's choice and can change whenever the file is minified again. The names 
 property names and globals (`window.__gt*`, `gcEB`, `mvInFrame`...) are never renamed. Reach everything else
 through them, never by a local name read from the file (names quoted elsewhere in the docs may be from the
 unminified 3.15.44 file, git 21596f1). A test that needs another top-level name adds it to `HOOK_NAMES` (which
-`RESERVED` includes) before the next minification, and the harness's anchors (`gcEB.ready=!0;`, the `TAGGED`
+`RESERVED` includes) before the next minification, and the harness's anchors (`gcEB.ready=!0;`, or `,` where the minifier joined the next statement, the `TAGGED`
 declarations) must keep matching.
 
 **Drive the game through its own entry points**, the way a player would reach them: the menu's actions

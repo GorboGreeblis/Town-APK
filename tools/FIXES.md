@@ -995,6 +995,67 @@ the marks are never stale (only the saving waits for the next tick). Lights, spr
 as drawing. Pixel-identical: `opt_identity.js` (switch P31), 40 town and 96 Event views, the same draws and triangles.
 Culling 1.37 -> 1.26 ms a frame headless at the author's low spot (`event_cpu.js`).
 
+- **F-B64** (3.15.66; found while building P33): the Event's safeguard fader (since 3.15.54, the far scenery fading out
+while the Event plays) also faded the pond: its groups sit outside the 26 m the fader keeps, and the pond is one of the
+things that must never fade (the author: "The Pond and Garden must always be unhidden"). The fader now keeps every
+group within 6 m of the pond too. `test_stands.js` checks the pond is never hidden and never in a faded group.
+
+- **P32** (3.15.66; the Event's CPU, PERF.md 15): three.js walks every node's matrix each frame (2,577 nodes at the
+author's low spot), though most of the town never moves. At load every top-level group without a moving part
+(`userData.keep`) is marked still and the walk returns at it; a round-robin audit checks 150 of its nodes a frame and, if
+one has moved, the group is walked every frame from then on (logged: "matrix walk: a still group moved ...", naming the
+group and node); a child added under a still group unmarks it at once. `test_lod.js` (exact far-model swaps) and
+`opt_identity.js` pass.
+
+- **P33** (3.15.66; the author: "What if we temporally hide kiosks during the Event? It shouldn't impact gameplay too
+much to have them fade out and fade in as well"; "Trees and the bird can also be hidden"; "we can hide things as long
+as we give them time to fade out and then give them time to fade in"; "We don't want to do it too quickly"; "count the
+Gazebo as a kiosk as well. In all regards"; "let's add all trees to the same group for fading out and in"; "The Robin
+should always fade out and in with her tree"): once the Event's mist is past 15%, the fade groups (RULES.md 26) fade out
+over 10 s and come back after the Event: each kiosk (every building but the church) and the gazebo on its own, and every
+tree with the robin as one. Every part of a group fades at the same time (its materials' opacity, then hidden), and its
+batches are woken when it hides or shows. A kiosk waits while its owner is within 6 m of home, and any group comes back
+in 2 s when the player walks within 14 m of it. The gazebo and the trees were merged into the world's meshes: at load
+they are carved back out (their triangles, found as connected pieces near each one, moved into groups of their own; the
+trees only in a trunk's brown or a crown's green, so the fence and the robin's perch stay). The tree builder records
+every tree it places (69: the park's three and the town's 66), so a new tree joins the group by itself. Never in a
+group: the church and Cave, the Ancient, Somlet, the pond and anything in the Garden. `test_stands.js` (standard tier).
+
+- **A20** (3.15.66; the author: "Let's make the Event flowers a little taller"): the flowers the townsfolk plant in the
+Event are 15% taller, the same width (their model's scale 3.2 -> 3.68 upward). Pictures before and after (`shots.js
+--preset garden`).
+
+- **A21** (3.15.66; the author: "Add some basic water animations to the Pond"): ripples spread across the pond's water
+from three spots in turn (thin pale rings growing to the water's edge and fading, about 6 s each), and the pale rings
+painted on the water drift round slowly (the texture's own rotation: nothing painted or uploaded during play). The
+ripples are children of the water, so they bob and tilt with it, and are drawn only within 26 m. Pictures before and
+after (`shots.js --preset pond`).
+
+- **F-B65** (3.15.67; the author: "Does the Gazebo have correct collision matching its model in general?"; "The doorway to
+the Gazebo should be open and collision free for anyone to enter and exit"; "It's just the walls of the Gazebo that need
+consistent collision"): the gazebo's posts and railings were only circles in the route planner's list, which the
+player's collision never reads, so the player walked through its walls (and a townsperson pushed off its route could
+too). Its seven railed sides are now walls from post to post (0.24 m thick, the posts at their ends), checked by the
+game's own `F.resolve` for the player and every townsperson alike; the eighth side, its doorway, is open to anyone.
+Gemtoe can be talked to from anywhere round it (his talk range 3.8 -> 4.6 m: the walls hold the player up to 4.0 m
+from him). Proven: walking at the gazebo from eight sides stops at the railing on seven and walks in through the
+doorway; Gemtoe's route home touches no wall and he is home in 11 s; `test_roam.js` fails anyone standing in a railing.
+
+- **S3** (3.15.67; the author: "What happens if NPCs or the player are standing in the areas where kiosks or other
+objects fade back in? The user or NPCs should probably be push out of these areas and prevented from getting stuck.
+Let's add safeties for this"): the fades (P33) are drawn only: every kiosk's collision stays on while it is hidden (the
+player and the townsfolk are pushed out of its walls every frame as always), so no one can walk into one, and a group
+comes back as the player nears it (14 m). As a safety for anyone placed without walking (a scripted spot, a spawn),
+every frame a group fades back in, the player and every townsperson within 16 m of it are pushed out of its kiosk's
+walls by the game's own collision (owners and anyone whose home or visit is inside left where they are) and off the
+gazebo's railings; each push is logged ("fade safety: ... pushed out of ... as it comes back"). `test_stands.js` puts a
+townsperson inside a hidden kiosk and checks they are outside it once it is back.
+
+- **A22** (3.15.67; the author: "Can we make the Event flowers a little more colorful as well?"): the Event's flowers'
+petals and blooms are 40% more saturated and the palest (the mallow's and the milkweed's near-white) take a visible
+tint; stems, leaves, whites and greys as they were (`gcViv`, in their vertex colours at load). Pictures before and
+after (`shots.js --preset garden` with close views).
+
 ## Multiview (release path since 3.15.34)
 
 Edits for the multiview experiment, in order. Three groups:

@@ -574,7 +574,7 @@ places clears the hat (emotes at 2.4 m, speech bubbles at 3.1 m). No questions a
 
 ## Environment design and style
 
-How the world is built and how it looks, read from the current game file (`tools/uncompressed.html`, 3.15.64), as
+How the world is built and how it looks, read from the current game file (`tools/uncompressed.html`, 3.15.67), as
 "Creature design and style" above does for the characters. Numbers are the code's own (metres, radians, seconds;
 colours as hex). Most buildings carry no name, so the building names below are the 3.15.44 builders' code names
 (`git show 21596f1:tools/uncompressed.html`: `STORE`, `FRONTIER`, `HOUSE`, `COURTHOUSE` and so on; minified since
@@ -725,7 +725,7 @@ Outside the fence:
   board with orange and lime slices) on two posts, with a giant orange, lemon and strawberry on top.
 - **The dance floor**: 10 x 32 tiles of 1.2 m (12 x 38.4 m), dark purple (`#24103c` on `#12081f` grout, a lighter
   top-left edge), slightly glossy: a night-club floor set into the daylight park.
-- **Gemtoe's Gazebo**: an octagon 7.6 m across, white posts and rails (open on one side), a plank floor, a green
+- **Gemtoe's Gazebo**: an octagon 7.6 m across, white posts and rails (open on one side: its doorway, open to anyone; the railed sides solid walls since 3.15.67), a plank floor, a green
   shingle roof with a cupola and a gold ball 7.4 m up, the "Gemtoe's Gazebo" board (gold letters on plum, a teal edge)
   and seven stacks of gold coins on the floor.
 - **The TELEPHONE**: an aluminium booth 1 m square and 2.2 m tall with glass on three sides, a payphone (keypad,
@@ -858,7 +858,8 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   about 1,360 small stones in the Cave; the 40 flint pickups (dark faceted stones with a glint).
 - **Mushrooms**: on and round the Sheriff's kiosk, round Mushroom's house and as its roof.
 - **The pond** (`buildPond`): a grass rim 4.9 m round, a soil bank 4.1 m, and water 3.7 m round that bobs (8 mm) and
-  slowly shifts its blue-green (`#3a8aa0`, glossy, with pale rings painted on it).
+  slowly shifts its blue-green (`#3a8aa0`, glossy, with pale rings painted on it that drift slowly round); ripples
+  spread from three spots in turn, thin pale rings growing to the edge and fading (A21; drawn within 26 m).
 - **Blossoms**: the 32 pickups, each a stem with leaves and a flower of seven red, five orange and three gold petals
   with a soft orange halo.
 - **Clouds** (`gcRnd("clouds")`): seven, each three to five white spheres (3-5.5 m, flattened to 0.62) circling the
@@ -893,10 +894,15 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   was "too dark to the eye"). Everything standing beyond the fence is misted by where it stands, not by how far away the
   player is (A9), fully from 1.5 m past the fence, where the first band stands and fades in over its bottom 0.45 m
   (A19), and less with height above 18-30 m. Inside the fence nothing changes: "trees inside the fence and the church
-  inside the fence should not be hidden by fog" (the author, A4).
+  inside the fence should not be hidden by fog" (the author, A4); that is the fog only: the fade groups below
+  fade every tree on purpose.
 - **What else the Event changes**: the clouds and every Blossom and Flint fade out over 2.5 s and back in at the end
   (A5); small objects more than 26 m from the centre are hidden the same way; a UFO in flight leaves by its exit path
-  (A6). Nothing pops in or out (the author, A5: "Nothing should ever appear to pop out or pop in").
+  (A6). Nothing pops in or out (the author, A5: "Nothing should ever appear to pop out or pop in"). The pond is never
+  among them (F-B64).
+- **The fade groups** (P33, RULES.md 26): once the mist is up, each kiosk and the gazebo, and every tree with the robin,
+  fade out over 10 s and back after the Event (or in 2 s when the player comes within 14 m); never the church and
+  Cave, the Ancient, Somlet, the pond or the Garden.
 
 ### Special places
 
@@ -918,7 +924,8 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
 
 - The townsfolk take places on three rings round the pillar (3.5 m for four of them, 7.5 m for six, 11.5 m for the
   rest), off the stepping-stone paths. Each plants a flower at 0.015 m: five kinds of wild plant built leaf by leaf
-  (their parts are named after thistle, mallow, chicory and others), scaled up 3.2 times. In a later Event the old
+  (their parts are named after thistle, mallow, chicory and others), scaled up 3.2 times and 3.68 upward (15%
+  taller, A20), their petals and blooms 40% more saturated than drawn and the palest tinted (A22). In a later Event the old
   flowers shrink away and grow back when watered (F-B43).
 - Pizza boxes stand in eight stacks round the Garden; Anomalee eats from her own open box (F-B49).
 - Fortizmo plays her horn; King Dino's drums slow to 88 beats a minute; Backpacka drinks at the pond, sprays the

@@ -160,7 +160,7 @@ does not come back cleanly in `tools/BUGS.md`.
 
 ## 5. Upload to the Meta Quest Store
 
-**Upload candidate: 3.15.64 (versionCode 64)**, the root `GreeblisTown-release.apk`
+**Upload candidate: 3.15.67 (versionCode 67)**, the root `GreeblisTown-release.apk`
 (always the latest build; the author: "treat this as the final build until I say otherwise", 2026-10-30). New since
 3.15.52 (VERSIONS.md has each build): the Event's mist bank beyond the fence, rolling in and out over 30 s (A4, A16),
 with the clouds, Blossoms, Flint and the UFO fading out and back (A5-A8) and Backpacka flying into it; the mist no
@@ -169,7 +169,7 @@ F-B51, F-B54) and the safeties behind them (S1 head-inside guard and draw-hook g
 Mushroom's ramp and desk (F-B39, F-B52, F-B56: P28 removed); Fortizmo and every doorway home never stuck (F-B55);
 the flat Garden (F-B57), the Cave floor level with the town (F-B60), Mama Gorbo's goo (F-B58), Gemtoe's tie (A10,
 F-B59); a wider bar opening (A17); the batcher's quiet-batch skip (P27, P29); the version on the landing page and
-the VR loading box (A18); the dead code removed (R8); the full pass's two fixes, F-B61 and F-B62 (3.15.64). Before that, new since 3.15.41 (VERSIONS.md has each build): no texture is made during play (F-B29,
+the VR loading box (A18); the dead code removed (R8); the full pass's two fixes, F-B61 and F-B62 (3.15.64); F-B63 and P31 (3.15.65); the Event's fade groups (P33: each kiosk and the gazebo, and every tree with the robin, fade out and back; RULES.md 26), the still-group matrix walk (P32), the pond never faded (F-B64), taller Event flowers and the pond's ripples (A20, A21; 3.15.66); the gazebo's walls solid with its doorway open (F-B65), the fade-in safety (S3) and more colourful Event flowers (A22; 3.15.67). Before that, new since 3.15.41 (VERSIONS.md has each build): no texture is made during play (F-B29,
 F-B30, 3.15.42), the Event's pizza batched (P20); native render scale and no layer swaps (F-B31), the Event scale
 removed, the Ancient left out from outside the church (P21), Gooward's translucent parts merged (P22, 3.15.43);
 painted textures seeded so the build is rebuildable from the game file (R1, 3.15.44); the game file minified, the same world bit for bit (R2, 3.15.45). Since then: no texture made

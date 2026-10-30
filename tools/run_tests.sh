@@ -1,10 +1,10 @@
 #!/bin/sh
 # Greeblis Town test passes. Three tiers share the same scripts:
 #
-#   tools/run_tests.sh --smoke     the standard stages but the courier, with shorter soaks (over an hour)
+#   tools/run_tests.sh --smoke     the standard stages but the courier ones and the Mushroom's desk, shorter soaks (over an hour)
 #   tools/run_tests.sh             standard pass (default), about 1.5-2 hours on a 4-core machine (95 min on 3.15.45)
 #   tools/run_tests.sh --full      FULL pass: every scenario, long soak times.
-#                                  Every build, until the author says otherwise (RULES.md 23; 2-2.5 hours on 3.15.41).
+#                                  Every build, until the author says otherwise (RULES.md 23; about 3.5 hours, TESTING.md).
 #   tools/run_tests.sh --quick     static checks only, no browser (about a minute)
 #   ... --only=REGEX               (with any tier) run only the stages whose name matches (case-insensitive), with
 #                                  that tier's settings, e.g. to re-run one failed stage as the tier runs it
@@ -103,6 +103,7 @@ if [ "$TIER" != quick ]; then
   run "No townsfolk stuck: doorway routes only for a real home, visits to and from all four (F-B55)" node "$ROOT/tools/test_stuck.js" "$ASSET"
   run "No jitter, bumps or floating models through the Event (F-B56, F-B57)" node "$ROOT/tools/test_jitter.js" "$ASSET"
   run "A never-compiled shader is compiled between frames, never inside one (S2)" node "$ROOT/tools/test_shaderhold.js" "$ASSET"
+  run "The Event's stands fade out and back slowly, never while their owners are home; the church, the Ancient, the pond, Somlet and the Garden never fade (P33)" node "$ROOT/tools/test_stands.js" "$ASSET"
   run "Mushroom in the Event: down his ramp at the start, never stuck or off its side, home on his desk after (F-B52)" node "$ROOT/tools/test_mushroom_event.js" "$ASSET"
   run "first draws: nothing uploaded inside a headset frame when Nextessa comes or the Event's plants grow; each new object held one frame (F-B51)" node "$ROOT/tools/test_firstdraw.js" "$ASSET"
   run "Backpacka at the pond: the player cannot walk into her; she is not moved; no circles once she leaves" node "$ROOT/tools/test_backpacka.js" "$ASSET"

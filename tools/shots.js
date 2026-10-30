@@ -7,7 +7,10 @@
 // presets: garden (from above, standing, ground level; flowers set out as the Event plants them), cave (the visitors'
 //   walkway, the visit spot, the entrance from both sides, with a visitor placed), gemtoe (front, side, close on the tie,
 //   three-quarter, feet), mist (the Event's mist at full: four sides of the fence from 4 m and 1 m, seated and standing),
-//   church (the Event's mist at full: approaching the church roof from six distances).
+//   church (the Event's mist at full: approaching the church roof from six distances), park (the whole park from above
+//   and its four corners, in play and in the Event with the fade groups in full and hidden), pond (the water at four
+//   moments 1.5 s apart, from 7 m and 3 m), stands (the Event's stands
+//   fading, P33: three views from the Garden's edge at 100, 60, 30 and 0%).
 // --event starts the planting Event and waits for its mist to be full before the free views.
 const fs = require('fs');
 const path = require('path');
@@ -60,6 +63,25 @@ const out = path.join(root, 'tools/.runs/shots'); fs.mkdirSync(out, { recursive:
         await mistFull();
         const sides = [['east', (d) => [37.6 - d, -8], [1, 0]], ['west', (d) => [-37.6 + d, -8], [-1, 0]], ['north', (d) => [-12, 49.6 - d], [0, 1]], ['south', (d) => [12, -37.6 + d], [0, -1]]];
         for (const [nm, P, dir] of sides) for (const eh of [1.1, 1.7]) for (const d of [4, 1]) { const [x, z] = P(d); await go(x, z); shoot(`${nm} fence, ${d} m away, eye ${eh} m, up 8 deg`, [x, eh, z], [x + 30 * dir[0], eh + 30 * Math.tan(8 * Math.PI / 180), z + 30 * dir[1]]); }
+      } else if (p === 'stands') {
+        // P33: the stands fading during the Event, from the Garden's edge (each view: full, 60%, 30%, hidden)
+        await mistFull(); const S = window.__gcSt;
+        for (const [nm, e, t] of [['the Sheriff\'s kiosk and the post office', [0, 1.6, -14], [25, 2, -24]], ['the juice bar and the shop', [-14, 1.6, 0], [-30, 2, -12]], ['the gallery and Garden Supplies', [14, 1.6, 14], [29, 2, 24]]]) {
+          await go(e[0], e[2]);
+          for (const f of [1, 0.6, 0.3, 0]) { if (S) S.set(f); shoot(`${nm}: stands at ${Math.round(f * 100)}%`, e, t); }
+          if (S) S.set(1);
+        }
+      } else if (p === 'park') {
+        // the whole park: from above and from the four corners inside the fence, in play, then in the Event (mist full)
+        // with the fade groups (all kiosks and the gazebo; all trees with the robin) in full and hidden
+        const S = window.__gcSt, V = [['from above, south', [0, 38, -36], [0, 0, 8]], ['from above, north-east', [30, 30, 44], [-2, 0, -2]], ['south-west corner', [-34, 1.7, -34], [0, 1, 6]], ['south-east corner', [34, 1.7, -34], [0, 1, 6]], ['north-east corner', [34, 1.7, 46], [0, 1, 4]], ['north-west corner', [-34, 1.7, 46], [0, 1, 4]]];
+        for (const [nm, e, t] of V) { await go(e[0], e[2]); shoot(`Park ${nm}`, e, t); }
+        await mistFull();
+        for (const [nm, e, t] of V) { await go(e[0], e[2]); for (const f of [1, 0]) { if (S) S.set(f); shoot(`Park ${nm}: fade groups ${f ? 'in full' : 'hidden'}`, e, t); } if (S) S.set(1); }
+      } else if (p === 'pond') {
+        // the pond's water (ripples spread from three spots, the painted rings drift): one view at four moments
+        await go(22.6, -2.6);
+        for (let k = 0; k < 4; k++) { shoot(`Pond, 7 m, t+${(k * 1.5).toFixed(1)} s`, [23.6, 1.6, -2.6], [29.6, 0, -2.6]); shoot(`Pond close, 3 m, t+${(k * 1.5).toFixed(1)} s`, [27, 1.5, 0], [29.6, 0.1, -2.6]); await wait(1500); }
       } else if (p === 'church') {
         await mistFull();
         for (const z of [-30, -15, 0, 10, 18, 24]) { await go(3, z); shoot(`church roof from z ${z} (the church spans z 25.6-48.6), eye 1.7 m`, [3, 1.7, z], [0, 8, 34]); }

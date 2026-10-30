@@ -27,7 +27,6 @@ const OPTS = [
   // index reproduces the original arrays bit for bit, in the same triangle order).
   { name: 'P12 indexed scenery', expr: 'window.__idIdx(v)', present: '!!window.__idIdx && window.__idIdx.count() > 0' },
   { name: 'P8 multi-material merge', expr: 'window.__gtMM && window.__gtMM.set(v)', present: '!!window.__gtMM' },
-  { name: 'P10 matrix cache', expr: 'window.__gtMx && window.__gtMx.set(v)', present: '!!window.__gtMx' },
   // P31 skips culling of subtrees that draw nothing (only batched parts and groups); off: no subtree is skipped
   { name: 'P31 culling skips subtrees that draw nothing', expr: '(v ? window.gcND() : (window.__dbg.O.gcNDv = -5))', present: 'typeof window.gcND === "function"' },
   // P20 splits each stacked pizza box (one mesh, two materials) into its five card faces and its printed top, so the

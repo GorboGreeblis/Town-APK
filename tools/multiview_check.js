@@ -24,7 +24,7 @@ const outDir = path.join(root, 'tools/.runs/multiview');
   const g = await boot({ file, vr: true, fastSim: false });
   const page = g.page;
   // three.js's program parameter names, in key order, read from the asset (to name the field a mid-play compile differs in)
-  const pn = (require('fs').readFileSync(file, 'utf8').match(/f=\[("multiview","precision",[^\]]*)\]/) || [])[1];
+  const pn = (require('fs').readFileSync(file, 'utf8').match(/[\w$]=\[("multiview","precision",[^\]]*)\]/) || [])[1];
   if (pn) await page.evaluate((a) => { window.__gtParamNames = a; }, JSON.parse('[' + pn + ']'));
   await page.waitForTimeout(2000);
   const live = await page.evaluate(() => ({ plan: window.__gtXR.mvPlan, active: window.__gtXR.mvActive }));
