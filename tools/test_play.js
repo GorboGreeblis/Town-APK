@@ -234,8 +234,10 @@ async function scenario(name, srvUrl, browser) {
   const names = which === 'all' ? ['2d', 'vr', 'vr-nofloor'] : [which];
   let failed = 0;
   for (const n of names) {
+    const t0 = Date.now();
     try { failed += (await scenario(n, url, browser)).length; }
     catch (e) { console.log(`  FAIL  [${n}] ${e.message.split('\n')[0]}`); failed++; }
+    console.log(`[${n}] scenario took ${Math.round((Date.now() - t0) / 1000)} s in all`);   // where a slow pass's time goes
   }
   await browser.close(); srv.close();
   console.log(failed ? `PLAY TEST FAILED (${failed})` : 'PLAY TEST PASSED');
