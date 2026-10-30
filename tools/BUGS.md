@@ -19,6 +19,8 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| F-B62 | Standalone (root `index.html`, the ordinal): the gallery mural's disposed placeholders re-uploaded inside a headset frame (full pass on 3.15.63, frame-hazard watch) | 3.15.64: disposed textures leave the head script's pending sets (FIXES F-B62) | 2026-10-30 |
+| F-B61 | WebGL error 1282 on every frame after a held geometry upload: the last object drawn kept another geometry's index buffer (Sparkakus's bulb beam in the Speech; full pass on 3.15.63, `multiview_check.js`) | 3.15.64: the between-frame upload unbinds the vertex array object first (FIXES F-B61) | 2026-10-30 |
 | F-B41 (B39) | Shader programs compiled during play on the headset (the Event's start, the controller rays at VR entry) | 3.15.53 (FIXES F-B41): both made while loading. Confirmed on the headset: the author's full run on 3.15.58 (log 7204dc64, 13 minutes, the Event from its start) logged no program compiled during play (the game logs each one, D2) | 2026-10-30 |
 | A19 | The mist over the fence thinned as the player came near during the Event (the author, 3.15.60 and earlier) | 3.15.63: the mist wall's foot fade shortened and the ground in the mist's colour from the wall's foot (FIXES A19) | 2026-10-30 |
 | F-B60 | NPCs' feet slightly into the Cave's floor; pebbles and rocks on the visitors' walkway; a 5 cm step at the Cave's entrance (the author, 3.15.60) | 3.15.62: the Cave room lowered 4.5 cm (its floor level with the town ground), raised pebbles kept off the walkway (FIXES F-B60) | 2026-10-30 |

@@ -45,7 +45,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (116 blocks)
+## Gameplay, performance and other fixes (118 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -956,6 +956,28 @@ fades over its bottom 0.45 m and the ground is fully in the mist's colour from 1
 stands), so its foot meets ground of its own colour. Pictures at 16, 6, 2.5 and 1 m from the fence, level and looking
 up, before and after; headless the thinning was not visible at a 1.7 m eye height. The church roof shows no such
 thing: close to the church the view over its roof meets the sky above the mist bank, as with any low bank.
+
+- **F-B61** (3.15.64; found by the full pass on 3.15.63, `multiview_check.js`: "no GL error" failed with error 1282 at
+every view, and multiview no longer matched the classic path at the town centre): F-B51's between-frame geometry upload
+(`gcObjUpdate`) uploaded a new geometry's index buffer with a plain `bindBuffer(ELEMENT_ARRAY_BUFFER)`. In WebGL 2 that
+binding is stored in whichever vertex array object is bound, and three.js leaves the last one drawn bound after a frame;
+it caches each object's vertex array object and does not bind its index buffer again. So the last object drawn before a
+held upload kept another geometry's index buffer for good, and every later draw of it failed (INVALID_OPERATION: its
+indices ran past the 108-index buffer it was now given). Found with the new `GT_GLERR=1` harness mode: Sparkakus's
+light-bulb beam (the Speech; drawn last, at draw order 6) stopped drawing after the Gem's pieces were uploaded between
+frames. On the headset any object could be hit the same way: drawn with the wrong triangles or not at all. The upload
+now unbinds the vertex array object first (three.js's own `bindingStates.reset()`), so it can change no object's
+binding. Since 3.15.59 (F-B51). Headless: `multiview_check.js` passes again (no GL error; every view bit-identical
+between multiview and the classic path); every test now also fails the pass on any WebGL error (`lib/harness.js`).
+
+- **F-B62** (3.15.64; found by the full pass on 3.15.63, the frame-hazard watch in `test_standalone.js`): run on its own
+(the root `index.html`, the compressed version as an ordinal), the game paints the gallery mural in a worker; each
+finished piece replaces its placeholder (F-B54), which is disposed. The head script keeps every texture marked for an
+upload before VR in a set, and uploads that set before the first headset frame draws; the disposed placeholders were
+still in it, so three 4x2 textures (with mipmaps) were made again, inside a headset frame, and never drawn. A texture
+now leaves the head script's pending sets when it is disposed (its `dispose` event). Since 3.15.60 (F-B54); the APK was
+not affected (its mural comes from `tex/`). Headless: `test_standalone.js` (now failing on any frame hazard itself)
+passes with none.
 
 ## Multiview (release path since 3.15.34)
 

@@ -1,7 +1,7 @@
 # Greeblis Town, basic game documentation
 
 Everything below was read from the game code (`tools/uncompressed.html`,
-3.15.63). Where the code did not make something explicit it is left out rather
+3.15.64). Where the code did not make something explicit it is left out rather
 than guessed. Since 3.15.45 the file is minified (FIXES R2): top-level names
 (`t`, `G`, `It`, `JGP`, `gcEB` and the like) are as quoted, but names local to a
 function were renamed, so routines are described by what they do.

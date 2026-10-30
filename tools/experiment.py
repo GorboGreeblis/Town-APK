@@ -33,7 +33,7 @@ EXPERIMENTS = {
     # No multiview (NOTES 65, 67): the release draws both eyes in one pass (multiview, headset-
     # confirmed in 3.15.33's experiment); this variant plans it off, so the game takes the classic
     # path (each eye drawn separately), to measure or diagnose the multiview path against it.
-    "nomultiview": [('a=!(!f||l&&!c&&!s),n="webgl2 "+i', 'a=!1,n="experiment nomultiview; webgl2 "+i')],
+    "nomultiview": [('n=!(!f||l&&!c&&!s),a="webgl2 "+i', 'n=!1,a="experiment nomultiview; webgl2 "+i')],
     # Draw every mesh individually: no gcEB batches, no custom vertex shader.
     "nobatch": [("const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[]};",
                  "const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[],off:!0};")],
