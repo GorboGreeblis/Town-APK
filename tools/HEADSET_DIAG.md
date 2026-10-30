@@ -173,8 +173,8 @@ Since 3.15.57 (D3, the author: "let's try to make the logs more verbose"):
 - `frame N: K geometry buffer(s) made inside the XR frame`: something drawn for the first time inside a frame (a
   flash cause); there should be none. Send the log if one appears.
 - `ev WHAT OLD > NEW (frame N)`: the event trail, sampled 12 times a second: Blossoms, Flint, Artifacts, the Cave
-  (`cave`), a vignette playing, the Event, the screen (`playing`, `dialogue`, `panel`), the courier's state and the Gem
-  (`gem`).
+  (`cave`), a vignette playing, the Event, the screen (`playing`, `dialogue`, `panel`), the courier's state, the Gem
+  (`gem`) and the snap turns (`snap`, a count; since 3.15.60, so a flash can be matched with the turn before it).
 - `xr visibility visible | visible-blurred | hidden`: the session's focus (the system menu, the headset taken off).
 - After `MARK flash seen`, the flight recorder's last 10 s: `rec ... slow:` (frames over 20 ms, with their time before
   the mark), `rec changes:` (programs, textures, geometries and draw calls changing, the head inside a character),

@@ -17,7 +17,7 @@ const args = process.argv.slice(2);
 const file = path.resolve(args.find((a) => !a.startsWith('--') && !/^\d+$/.test(a)) || path.join(root, 'tools/uncompressed.html'));
 const minI = args.indexOf('--min'), MIN = minI >= 0 ? +args[minI + 1] : 200, ALL = args.includes('--all');
 const dir = path.join(root, 'tools/.runs/coverage');
-const body = hooked(file);
+const body = String(hooked(file));
 const lines = body.split('\n'), lineStart = [0]; for (const l of lines) lineStart.push(lineStart[lineStart.length - 1] + l.length + 1);
 const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith('.json')) : [];
 if (!files.length) { console.log('no coverage recorded: run tests with GT_COVERAGE=1 first'); process.exit(1); }
