@@ -499,3 +499,22 @@ heaviest (the south-west corner). With the park's six stands (not the church), i
 (the author's proposal): 174 on average (-19%), 216 at the heaviest (-23%); the saving grows with distance (7-48 draws a
 view at 10 m, 36-64 at 40 m). Next: fade them out and back during the Event (P33), and the matrix walk's still groups
 (P32).
+
+**4.0.0 against 3.15.65** (quiet machine, multiview, headset field of view; the Event with the mist full):
+
+| Measure | 3.15.65 | 4.0.0 |
+| --- | --- | --- |
+| `event_sweep.js`, 29 views from 10 to 40 m | 216 draws, 11.0 ms render | 186 draws (-14%), 9.4 ms (-15%) |
+| `event_cpu.js` at the south-west corner (-28.3, -28.3), the heaviest | 258 draws, 16.0 ms busy a frame | 202 draws (-22%), 14.2 ms |
+| `event_cpu.js` at the author's low spot (-33, -7), a light view (three runs each) | 39 draws, 9.5-10.1 ms busy | 38-39 draws, 10.5-11.2 ms |
+| `.runs/frame_parts.js` at the low spot: three.js's render / the batcher's pass a frame | 5.36 / 1.36 ms | 5.32 / 1.47 ms |
+
+The light view's difference is the batcher's pass over eight more batches (131: the seven new clouds, the carved trees
+and gazebo; 0.11 ms) and the fade groups' update (0.02 ms); the profiler's busy figure moved more than that between
+runs. The heaviest views keep most of their draws when the player stands within 14 m of a park tree (every tree
+returns with it: one group) or a kiosk.
+
+Estimate for the headset (from the author's 3.15.58 reading, CPU 12-14 ms of the 13.9 ms frame at the low spot, scaled
+by the measured savings; the GPU cannot be measured headless): everyday play 72 fps on both; the Event's typical views
+72 on the Quest 3S and 68-72 on the Quest 3; its heaviest view 65-72 on the 3S and 62-70 on the Quest 3 (the same chip,
+about 30% more pixels). None under 60 expected; a headset run (TASKS T3) confirms.

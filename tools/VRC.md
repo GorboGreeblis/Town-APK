@@ -1,4 +1,4 @@
-# VRC check: GREEBLIS TOWN against the Meta Horizon Store requirements (first written for 3.15.25; kept current, 4.0.0)
+# VRC check: GREEBLIS TOWN against the Meta Horizon Store requirements (first written for 3.15.25; kept current, 4.0.1)
 
 Cross-checked on 2026-10-27 against an independent, CC0 test guide the author supplied ("Meta Quest Virtual Reality Checks (VRCs)", v1.0, 2026-10-27, 80 test cases; not affiliated with Meta). It lists the same 80 checks as this file; the rows below follow its wording where it is more specific (Packaging.4: a declared network security configuration, asserted by `check_apk.sh`; Performance.4: the boss-battle exception).
 
@@ -31,7 +31,7 @@ stored on the headset (the game has no save: no localStorage, IndexedDB or cooki
 | Packaging.2 signed with APK Signature Scheme v2 | R | PASS | `check_apk.sh` verifies v2 with apksigner; the certificate is the one every upload must keep (RELEASE.md section 1) |
 | Packaging.3 no unsupported Android features | R | PASS | only `android.hardware.vr.headtracking` (required) and `android.hardware.screen.landscape` (implied); no camera, telephony, location, Bluetooth |
 | Packaging.4 supported SDK versions | R | PASS | minSdk 29, targetSdk 32, compileSdk 34 (`tools/android/app/build.gradle`), inside Meta's 29-34 / 32-34 ranges |
-| Packaging.5 APK under 1 GB | R | PASS | 26.1 MB (4.0.0; 15.3 MB in 3.15.45, before the pre-painted gallery mural of 3.15.48), no OBB |
+| Packaging.5 APK under 1 GB | R | PASS | 26.1 MB (4.0.1; 15.3 MB in 3.15.45, before the pre-painted gallery mural of 3.15.48), no OBB |
 | Packaging.6 64-bit binaries | R | PASS | no native libraries at all (pure Java plus HTML); nothing 32-bit to reject |
 
 ## Performance

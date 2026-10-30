@@ -8,7 +8,7 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
 | T16 | **Top priority** (RULES.md "Priorities"; the biggest blocker for the Store submission; the author: "Never below 60 fps is the goal", "Tiny visual changes are ok to reach 60 fps", and it must hold on the Quest 3 as well as the 3S): the planting Event steadily above 60 fps. The author's 3.15.58 run read 56-59 fps at (-33, -7) (CPU 12-14 ms of 13.9); on 3.15.60 the lowest, watching the Event from afar, was 54 fps. Since: P26, P27, P29, P30, F-B57 (PERF.md section 14; P28 tried and removed, F-B56). Next: the author's reading on 3.15.63; then, if needed, the Quest 3's render scale and the matrix walk | open | `PERF.md` sections 13-14 |
-| T3 | Headset run of the latest build (4.0.0), log captured live (`capture_log.ps1` / `.sh`): the Event's frame rate from afar and from the back of the dance floor; Fortizmo in and out of her bar; the Mushroom on his desk and walking (not floating); Mama Gorbo, Gooward and Etcher in and around the Garden (no jitter); Mama Gorbo's goo by the pond; Gemtoe's tie from the side; the Cave's entrance and walkway; the mist (30 s in and out, close to the fence); the version in the loading box's corner; no flashes, B pressed right after any (D2) | open, author (planned for 2026-10-31) | `HEADSET_DIAG.md`, `RELEASE.md` sections 3 and 5 |
+| T3 | Headset run of the latest build (4.0.1), log captured live (`capture_log.ps1` / `.sh`): the Event's frame rate from afar and from the back of the dance floor; Fortizmo in and out of her bar; the Mushroom on his desk and walking (not floating); Mama Gorbo, Gooward and Etcher in and around the Garden (no jitter); Mama Gorbo's goo by the pond; Gemtoe's tie from the side; the Cave's entrance and walkway; the mist (30 s in and out, close to the fence); the version in the loading box's corner; no flashes, B pressed right after any (D2) | open, author (planned for 2026-10-31) | `HEADSET_DIAG.md`, `RELEASE.md` sections 3 and 5 |
 | T4 | Store upload: the final build to the Alpha channel, then the age group (13+) on its build page, once T16's frame rate holds | open, author | `RELEASE.md` section 5; the listing, IARC rating, privacy page and supported devices are done |
 | T18 | Full pass on the final build (RULES.md 23), with `--resume`, and the Ordinals check on its compressed version (the author: "Please treat this as the final build until I say otherwise") | next | `TESTING.md`; the last finished full pass was 3.15.54 (NOTES 96) |
 | T8 | Remaining test-plan rows | done 3.15.68 | The townsfolk's spreading (`ho`): every townsperson has an idle pattern, so it runs only while one walks home (`goHome`, set by the navigator `Be`, which also sets `wanderAt` 120 s on): it is the walk-home mover, tested by `test_stuck.js` and the gazebo probe (Gemtoe home in 11 s); its spread-out branch runs only if a walk home takes over 2 minutes (a fallback). S1's safeties: `test_safeties.js`. |
@@ -38,7 +38,8 @@ Living list. Done items move to the bottom with the date. Bugs live in
 - **3.15.68**: the pond's stones flat (A23), fourteen clouds (A24), the recovery safeties (S4, S5) with
   `test_recover.js`, `test_safeties.js` (S1), `test_gazebo.js` (F-B65); P32 never marks a moving group.
 - **4.0.0**: the clouds whitened (A25).
-- **Open (author):** T3 (headset run of 4.0.0), T4.
+- **4.0.1**: the fade groups stay out until the Event ends (A26).
+- **Open (author):** T3 (headset run of 4.0.1), T4.
 - **Then:** T16 from the author's reading.
 
 ## Done

@@ -6,15 +6,16 @@
 // while the Event plays. One Event, the player standing at the Garden's edge, sampled every 100 ms:
 //   - the faded set is the six stands, Gemtoe's gazebo (a kiosk in all regards, the author) and every tree (the park's three
 //     big ones, the robin's among them, and the town's trees outside the fence; one unit), never the church;
-//   - no stand starts fading while its owner (a townsperson whose home is inside it) is within 6 m of home;
+//   - no stand starts fading while its owner (a townsperson whose home is inside it) is within 6 m of home; once out, it
+//     stays out until the Event ends;
 //   - a fade out takes at least 9 s (not quickly); every stand whose owner left is hidden while the Event dances;
-//   - after the Event every stand is back in full, and none is still faded when its owner is back home;
+//   - after the Event every stand is back in full, and none fades out again on its way back;
 //   - the church and Cave, the Ancient, the pond, Somlet and anything in the Garden are never in a faded group or share a
 //     faded material, and the church, the Ancient, the pond and Somlet are never hidden during the run (the author: they
 //     "can never fade out");
 //   - the robin is in the same item as her tree (the author: "The Robin should always fade out and in with her tree");
-//   - walking up to a hidden stand (10 m) brings it back within 3 s, and a townsperson standing inside it is out of it
-//     once it is back (the fade-in safety);
+//   - walking up to a hidden stand leaves it hidden (nothing comes back until the Event ends; the author, 2026-10-30),
+//     and a townsperson put inside it is out of it once it is back after the Event (the fade-in safety);
 //   - no shader compiled inside a headset frame (the frame-hazard watch) and no page errors.
 //
 //   node tools/test_stands.js [file]
@@ -68,7 +69,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
         const k = st.get(s);
         if (s.f < 1 && k.start === null) { k.start = t; if (s.own.some((h) => home(h) < 6)) out.early.push(s.name); }
         if (s.f === 0 && k.zero === null && k.start !== null) { k.zero = t; out.fadeOut[s.name] = +(t - k.start).toFixed(1); }
-        if (!D.me.active && s.f < 1 && s.own.some((h) => home(h) < 0.5)) out.lateReturn.push(s.name);
+        // after the Event every stand only comes back (never fades out again)
+        if (!D.me.active && k.lastF !== undefined && s.f < k.lastF) out.lateReturn.push(s.name);
+        k.lastF = D.me.active ? undefined : s.f;
       }
       for (const o of guard) if (!shown(o)) out.guardHidden.push(`#${C.children.indexOf(top(o))} ${o.type}`);
     };
@@ -82,9 +85,10 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
         // the fade-in safety: a townsperson (not one who lives there) standing inside the hidden kiosk is out of it once
         // it is back (the author: "What happens if NPCs or the player are standing in the areas where kiosks ... fade back in?")
         const intr = s && s.B && D.It.all.find((h) => h.group && h.def && !s.own.includes(h) && !(h.home && D.F.inHull(s.B, h.home.x, h.home.z)) && h.id !== 'p_gemtoe');
-        if (intr) { intr.group.position.set(s.x, 0, s.z); out.intruder = { id: intr.id, inAtStart: D.F.inHull(s.B, s.x, s.z) }; }
-        if (s) { const a = performance.now(); const p0 = D.At.position.clone(); D.At.position.set(s.x + (s.x > 0 ? -10 : 10), D.At.position.y, s.z); while (s.f < 1 && performance.now() - a < 8000) await wait(50); out.near = { name: s.name, s: +((performance.now() - a) / 1000).toFixed(1), f: s.f }; D.At.position.copy(p0); }
-        if (intr) { const q = intr.group.position; out.intruder.inAfter = D.F.inHull(s.B, q.x, q.z, -0.05); out.intruder.at = [+q.x.toFixed(1), +q.z.toFixed(1)]; }
+        if (intr) { intr.group.position.set(s.x, 0, s.z); out.intruder = { id: intr.id, inAtStart: D.F.inHull(s.B, s.x, s.z), kiosk: s }; }
+        // walking up to a hidden stand leaves it hidden (the author: "Just keep everything faded out until things fade
+        // back in. I don't care if there is invisible collision")
+        if (s) { const p0 = D.At.position.clone(); D.At.position.set(s.x + (s.x > 0 ? -6 : 6), D.At.position.y, s.z); await wait(5000); out.near = { name: s.name, f: s.f }; D.At.position.copy(p0); }
         nearDone = true;
       }
     }
@@ -93,6 +97,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     // 10 s fade-in takes longer in wall time
     const t1 = performance.now(); while (performance.now() - t1 < 180000) { await wait(100); tick(); if (S.list.every((s) => s.f === 1)) break; }
     out.endF = Object.fromEntries(S.list.map((s) => [s.name, s.f]));
+    if (out.intruder) { const k = out.intruder.kiosk, h = D.It.byId[out.intruder.id], q = h.group.position; out.intruder.inAfter = D.F.inHull(k.B, q.x, q.z, -0.05); out.intruder.at = [+q.x.toFixed(1), +q.z.toFixed(1)]; delete out.intruder.kiosk; }
     out.compiles = H ? (H.kinds.compileShader || 0) - c0 : null;
     out.guardHidden = [...new Set(out.guardHidden)]; out.early = [...new Set(out.early)]; out.lateReturn = [...new Set(out.lateReturn)];
     return out;
@@ -108,10 +113,10 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('a fade out takes at least 9 s', Object.keys(r.fadeOut).length >= 3 && Object.values(r.fadeOut).every((s) => s >= 9), JSON.stringify(r.fadeOut));
   expect('every stand whose owner left is hidden while the Event dances', r.hiddenWhileDancing === true);
   expect('the church and Cave, the Ancient, the pond and Somlet are never hidden during the run', r.guardHidden.length === 0, r.guardHidden.slice(0, 6).join(', '));
-  expect('walking up to a hidden stand brings it back within 3 s', r.near && r.near.f === 1 && r.near.s <= 3, JSON.stringify(r.near));
-  expect('a townsperson standing in a hidden kiosk is outside it once the kiosk is back (the fade-in safety)', r.intruder && r.intruder.inAtStart && r.intruder.inAfter === false, JSON.stringify(r.intruder));
+  expect('walking up to a hidden stand (6 m) leaves it hidden until the Event ends', r.near && r.near.f === 0, JSON.stringify(r.near));
+  expect('a townsperson put in a hidden kiosk is outside it once the kiosk is back after the Event (the fade-in safety)', r.intruder && r.intruder.inAtStart && r.intruder.inAfter === false, JSON.stringify(r.intruder));
   expect('after the Event every stand is back in full', Object.values(r.endF).every((f) => f === 1), JSON.stringify(r.endF));
-  expect('no stand is still faded when its owner is back home', r.lateReturn.length === 0, r.lateReturn.join(', '));
+  expect('after the Event no stand fades out again (each only comes back)', r.lateReturn.length === 0, r.lateReturn.join(', '));
   expect('no shader compiled inside a headset frame', r.compiles === 0 || r.compiles === null, String(r.compiles));
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   console.log(failures.length ? `STANDS TEST FAILED (${failures.length})` : 'STANDS TEST PASSED'); process.exit(failures.length ? 1 : 0);

@@ -902,7 +902,7 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   (A6). Nothing pops in or out (the author, A5: "Nothing should ever appear to pop out or pop in"). The pond is never
   among them (F-B64).
 - **The fade groups** (P33, RULES.md 26): once the mist is up, each kiosk and the gazebo, and every tree with the robin,
-  fade out over 10 s and back after the Event (or in 2 s when the player comes within 14 m); never the church and
+  fade out over 10 s and stay out until the Event ends, then fade back over 10 s; never the church and
   Cave, the Ancient, Somlet, the pond or the Garden.
 
 ### Special places
