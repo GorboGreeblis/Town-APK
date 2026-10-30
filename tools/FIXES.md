@@ -45,7 +45,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (118 blocks)
+## Gameplay, performance and other fixes (120 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -978,6 +978,22 @@ still in it, so three 4x2 textures (with mipmaps) were made again, inside a head
 now leaves the head script's pending sets when it is disposed (its `dispose` event). Since 3.15.60 (F-B54); the APK was
 not affected (its mural comes from `tex/`). Headless: `test_standalone.js` (now failing on any frame hazard itself)
 passes with none.
+
+- **F-B63** (3.15.65; found by the full pass on 3.15.64, `opt_identity.js`: Backpacka 22 s into his show drew differently
+batched and unbatched, 7.6% of the view): P29 lets a batch unchanged for 2 s be checked on one frame in four, so an
+object that starts moving after standing still was drawn up to three frames late (a small hitch at the start of a
+movement). A batched object now points at its batch, and three.js wakes the batch whenever it recomputes that object's
+world matrix (`updateMatrixWorld`, `updateWorldMatrix`): a quiet batch is skipped only while none of its parts has moved.
+`opt_identity.js` (batcher) passes again; with P29's skip off it passed too (the cause confirmed). Since 3.15.62.
+
+- **P31** (3.15.65; the author: "further performance optimization during the Event is the highest priority"): three.js's
+culling walk (`projectObject`) visits every one of the scene's 2,460 nodes each frame, though 1,482 of them sit in
+subtrees that draw nothing on their own (batched parts and plain groups). Once a second (the batcher's 60-frame tick,
+before culling) the game marks those subtrees with the current round's number and culling returns at a marked node; a
+layer change anywhere (a part leaving or joining a batch) or a child added under a marked subtree starts a new round, so
+the marks are never stale (only the saving waits for the next tick). Lights, sprites, lines, points and LODs always count
+as drawing. Pixel-identical: `opt_identity.js` (switch P31), 40 town and 96 Event views, the same draws and triangles.
+Culling 1.37 -> 1.26 ms a frame headless at the author's low spot (`event_cpu.js`).
 
 ## Multiview (release path since 3.15.34)
 

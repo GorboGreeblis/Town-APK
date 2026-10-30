@@ -19,6 +19,7 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| F-B63 | A batched object starting to move after 2 s still was drawn up to 3 frames late (P29; full pass on 3.15.64, `opt_identity.js`, Backpacka's show) | 3.15.65: a moved part wakes its batch (FIXES F-B63) | 2026-10-30 |
 | F-B62 | Standalone (root `index.html`, the ordinal): the gallery mural's disposed placeholders re-uploaded inside a headset frame (full pass on 3.15.63, frame-hazard watch) | 3.15.64: disposed textures leave the head script's pending sets (FIXES F-B62) | 2026-10-30 |
 | F-B61 | WebGL error 1282 on every frame after a held geometry upload: the last object drawn kept another geometry's index buffer (Sparkakus's bulb beam in the Speech; full pass on 3.15.63, `multiview_check.js`) | 3.15.64: the between-frame upload unbinds the vertex array object first (FIXES F-B61) | 2026-10-30 |
 | F-B41 (B39) | Shader programs compiled during play on the headset (the Event's start, the controller rays at VR entry) | 3.15.53 (FIXES F-B41): both made while loading. Confirmed on the headset: the author's full run on 3.15.58 (log 7204dc64, 13 minutes, the Event from its start) logged no program compiled during play (the game logs each one, D2) | 2026-10-30 |

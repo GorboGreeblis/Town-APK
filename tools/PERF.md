@@ -475,3 +475,25 @@ of its saving. To be confirmed by the author's next run. Collector pauses are no
 (1.2% of main-thread time in the collector) and going in and out of the Cave 7 KB/s (1.0%), as in normal play (D5,
 `alloc_probe.js --vignettes --cave`). For the Quest 3 (the same chip, about 30% more display pixels) the lever left
 is its render scale: drawing the 3S's pixel count there (about 0.88) would match the GPU load measured on the 3S.
+
+## 15. 3.15.65 on: the Event's CPU, measured (the author: "We need to keep the game at a 60 fps minimum", on the Quest 3 too)
+
+`event_cpu.js` at the author's low spot (-33, -7) facing the Event (248 draws), headless: three.js's render is about 75%
+of the main thread's busy time, of which drawing the list (`Ct`: per draw, program and uniform setup, about 31 us a draw
+headless) is about 50%; the matrix walk about 16% (2,577 nodes a frame; the ground fit `kt` forces 11 creature subtrees,
+885 nodes); culling about 10%; the batcher's pass about 9%; the game's update about 7.5%. No single hot spot is left
+inside the per-draw path, so the draw count is the lever: at the heaviest view 265 objects are drawn, nearly all 25 m or
+more away (scenery batches 88, creature parts 68, other textured 69, other plain 40).
+
+| Change | Build | What it does | Visible |
+| --- | --- | --- | --- |
+| P31 | 3.15.65 | Culling skips subtrees that draw nothing (1,482 of 2,460 nodes): 1.37 -> 1.26 ms headless. | No (pixel-identical) |
+
+Tried and dropped: batching scenery across groups by 16 m cells (265 -> 258 draws: the one-off draws have textures of
+their own); hiding objects under a few pixels across (18 draws at the heaviest view, and they would pop).
+
+`event_sweep.js` (29 views from 10 to 40 m in 8 directions, facing the Garden): 214 draws on average, 280 at the
+heaviest (the south-west corner). With the park's six stands (not the church), its three big trees and the robin hidden
+(the author's proposal): 174 on average (-19%), 216 at the heaviest (-23%); the saving grows with distance (7-48 draws a
+view at 10 m, 36-64 at 40 m). Next: fade them out and back during the Event (P33), and the matrix walk's still groups
+(P32).
