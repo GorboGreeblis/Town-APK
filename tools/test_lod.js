@@ -25,9 +25,11 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     const D = window.__dbg, O = D.O, EB = D.gcEB, wait = (ms) => new Promise((res) => setTimeout(res, ms));
     const out = { meshes: EB.list.length, parts: 0, frames: 0, on: 0, off: 0, badRows: 0, badZero: 0, nonFinite: 0, twice: 0, examples: [] };
     if (!EB.list.length) return out;
-    const r0 = O.render;
+    // check after real draws only: under the harness's renderEvery the batcher fills its arrays only when a frame is
+    // drawn (3.15.64's full pass failed this on the skipped calls), so this check draws every frame for its 20 s
+    const r0 = O.render, rr = O.__realRender || r0;
     O.render = function () {
-      const res = r0.apply(this, arguments);
+      const res = rr.apply(this, arguments);
       out.frames++;
       for (const E of EB.list) {
         const R = E.R && (E.R.value || E.R);
@@ -44,7 +46,7 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
               const w2 = [sh, sp ? sp.r : 0, sp ? sp.g : 0, sp ? sp.b : 0];
               for (let i = 0; i < 4; i++) if (Math.abs(R[M + 15 + i] - w2[i]) > 1e-5 * Math.max(1, Math.abs(w2[i]))) bad = true;
             }
-            if (bad) { out.badRows++; if (out.examples.length < 3) out.examples.push((p.o.name || p.o.type) + ' rows differ'); }
+            if (bad) { out.badRows++; if (out.examples.length < 3) out.examples.push((p.o.name || p.o.type || 'a part') + ' rows differ at ' + p.o.getWorldPosition(new window.THREE.Vector3()).toArray().map((v) => v.toFixed(1)).join(',')); }
             if (p.o.layers.mask !== (1 << 31)) { out.twice++; if (out.examples.length < 3) out.examples.push((p.o.name || p.o.type) + ' batched but on layer mask ' + p.o.layers.mask); }
           } else {
             out.off++;
