@@ -32,7 +32,7 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
 const LONG = process.argv.includes('--long');
 
 (async () => {
-  const g = await boot({ file, vr: true, fastSim: false });
+  const g = await boot({ file, vr: true, fastSim: false, renderEvery: 4 });
   const { page } = g;
   const { failures, expect, note } = reporter();
   await page.waitForTimeout(1500);

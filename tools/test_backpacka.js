@@ -16,7 +16,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
 
 (async () => {
   const { expect, note, failures } = reporter();
-  const g = await boot({ file, vr: true, fastSim: false });
+  const g = await boot({ file, vr: true, fastSim: false, renderEvery: 3 });
   const page = g.page;
   const inputs = (list) => page.evaluate((l) => window.__fakeXR.setInputs(l), list);
   const ctl = (hand, axes) => ({ handedness: hand, axes, buttons: [{}, {}, {}, {}, {}, {}, {}] });

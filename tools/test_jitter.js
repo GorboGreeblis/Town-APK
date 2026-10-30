@@ -1,7 +1,7 @@
 // Jitter, floating and sinking (standard tier; the author: "Mama Gorbo and Gooward jittered as they moved into position,
 // in the Garden, to start planting. They should be slightly above the ground and never appear to jitter", "Etcher had
 // minor jitter when moving over the rocks around the Garden", "Mushroom is floating high above his desk"; 3.15.60,
-// FIXES F-B56, F-B57). Drawing on: every character's drawn model (its world matrices, as the headset draws them, rendering on),
+// FIXES F-B56, F-B57). Every character's drawn model (its world matrices as the draw computes them; the harness's matrices-only mode skips the raster),
 // sampled every animation frame through the planting Event's gathering and planting and a minute after it:
 //   - jitter: a character moving faster than 0.2 m/s whose drawn position reverses direction from one frame to the
 //     next (consecutive steps pointing more than 120 degrees apart, both over 1 cm), more than 2% of its moving frames;
@@ -17,7 +17,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
 
 (async () => {
   const { expect, note, failures } = reporter();
-  const g = await boot({ file, vr: true, fastSim: false });
+  const g = await boot({ file, vr: true, fastSim: 'matrices' });
   await g.page.waitForTimeout(1500);
   const r = await g.page.evaluate(async () => {
     const D = window.__dbg, T = window.THREE, wait = (ms) => new Promise((res) => setTimeout(res, ms));

@@ -64,7 +64,7 @@ for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w
 }
 // Flash marks (B on the right controller, 3.15.48): each with what the log shows in the 3 s before it
 {
-  const ev = []; let e2; const re2 = /m=(\d+)ms (MARK flash seen[^\n]*|long frame \d+ ms[^\n]*|uploaded \d+ texture[^\n]*|multiview: \d+ shader program[^\n]*|multiview: \w+ while a frame draws[^\n]*|frame \d+: \d+ geometry buffer[^\n]*|ev [^\n]*|xr visibility [^\n]*|rec [^\n]*|frame gap \d+ ms[^\n]*|frame \d+ drew \d+ calls[^\n]*|frame \d+: the camera matrix[^\n]*|governor level [^\n]*|geometry held for one frame[^\n]*)/g;
+  const ev = []; let e2; const re2 = /m=(\d+)ms (MARK flash seen[^\n]*|long frame \d+ ms[^\n]*|uploaded \d+ texture[^\n]*|multiview: \d+ shader program[^\n]*|multiview: \w+ while a frame draws[^\n]*|frame \d+: \d+ geometry buffer[^\n]*|ev [^\n]*|xr visibility [^\n]*|rec [^\n]*|frame gap \d+ ms[^\n]*|frame \d+ drew \d+ calls[^\n]*|frame \d+: the camera matrix[^\n]*|governor level [^\n]*|geometry held for one frame[^\n]*|shader held for one frame[^\n]*|no progress: [^\n]*|head inside [^\n]*|\[draw hook\][^\n]*|\[entity:[^\n]*|\[world\][^\n]*|\[render\][^\n]*)/g;
   while ((e2 = re2.exec(text))) ev.push({ ms: +e2[1], what: e2[2].trim() });
   const marks = ev.filter((x) => x.what.startsWith('MARK'));
   if (marks.length) {
@@ -86,6 +86,11 @@ for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w
   if (gaps.length) console.log(`frame gaps over 45 ms (frames the headset did not get): ${gaps.length}; longest ${Math.max(...gaps.map((x) => +/gap (\d+)/.exec(x.what)[1]))} ms; with the heap dropping (garbage collection): ${gaps.filter((x) => { const m = /heap ([\d.]+) > ([\d.]+)/.exec(x.what); return m && +m[2] < +m[1] - 1; }).length}`);
   const empty = ev.filter((x) => / drew \d+ calls|camera matrix/.test(x.what));
   if (empty.length) console.log(`frames that drew almost nothing or had no valid camera (a full-screen flash): ${empty.length}: ${empty.slice(0, 5).map((x) => (x.ms / 1000).toFixed(1) + ' s ' + x.what).join(' | ')}`);
+  // the 3.15.62-63 safeties at work: a shader compiled between frames (S2), the head inside a character (S1), a
+  // townsfolk making no progress towards its target (F-B55), and errors the frame survived (S1's draw hooks)
+  for (const [re, label] of [[/^shader held/, 'shaders held for one frame and compiled between frames (S2; a warm-up gap: report it)'], [/^head inside/, 'frames with the head inside a character, hidden for the frame (S1)'], [/^no progress/, 'townsfolk stuck and moved on by the stuck detector (F-B55)'], [/^\[(draw hook|entity:|world|render)/, 'errors caught during frames (the frame went on; each is a bug to fix)']]) {
+    const hit = ev.filter((x) => re.test(x.what)); if (hit.length) console.log(`${label}: ${hit.length}: ${hit.slice(0, 4).map((x) => (x.ms / 1000).toFixed(1) + ' s ' + x.what.slice(0, 90)).join(' | ')}`);
+  }
   const gov = ev.filter((x) => x.what.startsWith('governor level'));
   if (gov.length) console.log(`quality governor changes: ${gov.length}: ${gov.slice(0, 8).map((x) => (x.ms / 1000).toFixed(0) + ' s ' + x.what.slice(15)).join(', ')}`);
   // the XR session's focus (the system menu, the headset taken off) as the game saw it, and in the runtime's lines

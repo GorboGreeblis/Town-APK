@@ -77,11 +77,17 @@ function serve(body, standalone) {
  *   at 0.1 s, so with drawing the simulation runs at about a quarter of real
  *   time; without it the loop runs at full rate and timings are realistic.
  *   Screenshots are blank in this mode; use fastSim: false for visual checks.
+ *   fastSim: 'matrices' skips the draw but still updates the scene's world matrices each frame, as the draw
+ *   would (positions as drawn, e.g. test_jitter.js), at nearly the speed of fastSim: true.
+ *   renderEvery: N (with fastSim: false) draws one frame in N and skips the others' draw call: the game's own
+ *   update still runs every frame, new textures, buffers and shaders still reach the GPU within N frames (so
+ *   the frame-hazard watch and the censuses still see them), and the simulation runs several times faster.
+ *   Not for checks of every drawn frame (pixels, frame times, the governor).
  *   onBeforeGrant(page, ctx): awaited right before the simulated grant (probes).
  *   noVisits: true (default) parks the random visit scheduler; test_visits forces
  *   its own pairs through JGP.visitAt, which still works.
  */
-async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/index.html'), vr = true, fastSim = true, noVisits = true, timeoutMs = 300000, onBeforeGrant = null, initScripts = [], standalone = false } = {}) {
+async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/index.html'), vr = true, fastSim = true, noVisits = true, renderEvery = 1, timeoutMs = 300000, onBeforeGrant = null, initScripts = [], standalone = false } = {}) {
   const srv = await serve(hooked(path.resolve(file)), standalone);
   const url = `http://127.0.0.1:${srv.address().port}/`;
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--autoplay-policy=no-user-gesture-required'] });
@@ -158,7 +164,9 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
     await page.evaluate(() => window.__fakeXR.fire());
     await page.waitForFunction(() => window.__fakeXR.frames > 5, null, { timeout: 60000 });
     presentS = (Date.now() - t0) / 1000;
-    if (fastSim) await page.evaluate(() => { const O = window.__dbg.O; O.__realRender = O.render; O.render = () => {}; });
+    if (fastSim === 'matrices') await page.evaluate(() => { const O = window.__dbg.O; O.__realRender = O.render; O.render = (sc) => { if (sc && sc.isScene && sc.autoUpdate !== false && sc.matrixWorldAutoUpdate !== false) sc.updateMatrixWorld(); }; });
+    else if (fastSim) await page.evaluate(() => { const O = window.__dbg.O; O.__realRender = O.render; O.render = () => {}; });
+    else if (renderEvery > 1) await page.evaluate((N) => { const O = window.__dbg.O, R = O.render; let k = 0; O.__realRender = R; O.render = function () { if (++k % N === 0) return R.apply(this, arguments); }; }, renderEvery);
     // Hold the random visit scheduler so NPCs under test are not whisked away
     // to visit someone (tests that need visits force a pair with JGP.visitAt).
     if (noVisits) await page.evaluate(() => { const D = window.__dbg; D.JGP.visitAt(D.Re.t + 1e6); });

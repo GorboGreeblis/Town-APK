@@ -22,20 +22,29 @@ Until 2026-10-29 the full tier was for the final build only; superseded by RULES
 the final build until the author says otherwise). The smoke tier is no longer a few minutes: it runs the standard
 stages with shorter soaks.
 
-**What each tier runs** (`run_tests.sh`, in order; this is the one list, kept to match the runner). Every tier:
-the copies are the game file, the game file is minified, the compressed version unpacks to it, every experiment
-applies, the server harness, docs consistency, spell-check, the bend test, the APK check. Every tier but quick: VR
-entry, runtime play, multiview, uniform budget, warm-up coverage, standalone, the compressed version as an ordinal,
-the Event's first start, the texture census, the quality governor, game content, greeting, wrist HUD, roaming
-(`--long` in full), meetings, jazz drums, audio, seeded decoration (`test_seeded.js`), the interaction menu
-(`test_menu.js`), visitors to the Ancient in the Cave (`test_cave.js`), the Event's start and end (`test_event_fade.js`), Anomalee in the Event (`test_anomalee.js`), Backpacka at the pond, far detail and the batcher, world, input, progression (`--long` in full),
-visits, the courier and the courier during the Gem (`test_courier_gem.js`; not in smoke), Mushroom and his desk
-(`test_mushroom_desk.js`; not in smoke), NPC return-home; then the frame-hazard verdict. Smoke shortens play (8 s), world
-(15 s), the NPC scenarios (the first four) and visits (one scenario); standard runs 20 s, 40 s, eight scenarios and
-two visit scenarios; full 120 s, 180 s and every scenario. Full only: the stability soak (`test_soak.js`, 10
-minutes), z-fighting (planar, curved), seams (`test_seams.js`), the single-sided check, optimisation identity, the Ancient check, the
-performance report, and the loading, handover, Event-cost, creature census and sharpness reports. Not in any tier:
-`test_textfit.js` (too slow: a run took over 30 minutes) and the other census and probe reports (README.md marks each as a report).
+**What each tier runs** (`run_tests.sh`, in order; this is the one list, kept to match the runner; `check_docs.py`
+fails when a test the runner runs is missing here). Every tier: the copies are the game file, the game file is
+minified, the compressed version unpacks to it, every experiment applies, the server harness, docs consistency,
+spell-check, the bend test (`test_bend_exact.js`), the APK check. Every tier but quick: VR entry (`test_entry.js`), runtime play
+(`test_play.js`), multiview (`multiview_check.js`), uniform budget, warm-up coverage, standalone, the compressed
+version as an ordinal (`test_compressed.js`), the Event's first start, the texture census, the quality governor (`test_governor.js`),
+game content (`test_content.js`), greeting, wrist HUD (`test_hud.js`), roaming (`test_roam.js`, `--long` in full), meetings (`test_meet.js`), jazz drums
+(`test_jazz.js`), audio,
+seeded decoration (`test_seeded.js`), the interaction menu (`test_menu.js`), visitors to the Ancient in the Cave
+(`test_cave.js`), the Event's start and end (`test_event_fade.js`), Anomalee in the Event (`test_anomalee.js`), Mama
+Gorbo's walk over to Gooward (`test_meet_walk.js`), no townsfolk stuck (`test_stuck.js`), jitter and floating models
+(`test_jitter.js`), the shader hold (`test_shaderhold.js`), Mushroom in the Event (`test_mushroom_event.js`), first
+draws (`test_firstdraw.js`), Backpacka at the pond (`test_backpacka.js`), far detail and the batcher (`test_lod.js`),
+world (`test_world.js`), input (`test_input.js`), progression (`test_progression.js`, `--long` in full), visits
+(`test_visits.js`), the courier (`test_courier.js`) and the courier during the Gem
+(`test_courier_gem.js`; not in smoke), Mushroom and his desk (`test_mushroom_desk.js`; not in smoke), NPC return-home (`test_npc_home.js`);
+then the frame-hazard verdict. Smoke shortens play (8 s), world (15 s), the NPC scenarios (the first four) and visits
+(one scenario); standard runs 20 s, 40 s, eight scenarios and two visit scenarios; full 120 s, 180 s and every
+scenario. Full only: dialogue layout (`test_textfit.js`), the stability soak (`test_soak.js`, 10 minutes),
+z-fighting (planar `test_zfight.js`, curved `test_coincident.js`), seams (`test_seams.js`), the single-sided check
+(`sides_check.js`), optimisation identity (`opt_identity.js`), the Ancient check (`ancient_check.js`), the performance
+report (`perf_report.js`), and the loading, handover, Event-cost, creature census and sharpness reports. Not in any
+tier: the census and probe reports (README.md marks each as a report).
 
 Times are on a 4-core cloud container. Every browser stage runs one headless Chromium with SwiftShader (the GPU
 is software), so the stages run one after another. Do not run a second browser test while a pass runs: the

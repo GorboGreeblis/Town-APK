@@ -10,7 +10,7 @@ const { boot, reporter } = require('./lib/harness');
 const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : undefined;
 (async () => {
   const { expect, note, failures } = reporter();
-  const g = await boot({ file, vr: true, fastSim: false });
+  const g = await boot({ file, vr: true, fastSim: false, renderEvery: 3 });
   const page = g.page;
   await page.evaluate(() => { window.__fakeXR.poses = true; window.__fakeXR.inputs = [{ handedness: 'left' }, { handedness: 'right' }]; });
   await page.waitForTimeout(1500);

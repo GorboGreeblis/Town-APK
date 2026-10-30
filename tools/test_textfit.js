@@ -1,5 +1,6 @@
-// Dialogue layout (not in a tier: too slow; each page is given up to a second to type out, and a run on 3.15.52
-// was stopped unfinished after 30 minutes): every line the game can say fits its dialogue box. The box wraps a page at 920 px
+// Dialogue layout (full tier; the box's first advance on a page finishes its typing at once, so each page is read two
+// frames after it, with rendering stubbed: a few minutes where waiting out the typing took over 30): every line the game
+// can say fits its dialogue box. The box wraps a page at 920 px
 // and shrinks the font from 56 px down to its floor before it gives up and cuts the page short with "…"; a cut page
 // loses words. This collects every dialogue-like string the game holds (each townsperson's talk and gift lines and the
 // rest of their definition, the Library's, the shop's and the battles' texts, every place's lines), shows each through
@@ -12,7 +13,7 @@ const { boot, reporter } = require('./lib/harness');
 const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : undefined;
 (async () => {
   const { expect, note, failures } = reporter();
-  const g = await boot({ file, vr: true, fastSim: false });
+  const g = await boot({ file, vr: true });
   const page = g.page;
   await page.waitForTimeout(2000);
   const r = await page.evaluate(async () => {
@@ -28,7 +29,7 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
       for (const k of Object.keys(o)) { let v; try { v = o[k]; } catch (e) { continue; } walk(v, from + '.' + k, depth + 1); }
     };
     for (const h of D.It.all) if (h.def) walk(h.def, (h.def.name || h.id));
-    for (const [n, o] of [['LIB', D.LIB], ['shopText', D.shopText], ['battleText', D.battleText], ['gemTrade', D.gemTrade]]) if (o) walk(o, n);
+    for (const [n, o] of [['LIB', D.LIB], ['shopText', D.shopText], ['battleText', D.battleText], ['gemTrade', D.gemTrade], ['VIGS', D.VIGS], ['ARTS', D.ARTS], ['Bulb', D.Bulb]]) { if (!o) out.errors.push('text source missing: ' + n); else walk(o, n); }
     for (const q of (D.z && D.z.list) || []) walk(q, 'zone ' + (q.id || q.tag || '?'));
     out.texts = texts.length;
     // what the dialogue box draws
@@ -42,20 +43,20 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
         drawn = [];
         box.open('TEST', '#ffffff', s);
         for (let k = 0; k < pages.length; k++) {
-          // let the page type out in full, then read what was drawn for it
-          for (let i = 0; i < 40 && box.isOpen; i++) { await wait(25); }
+          // finish the page's typing at once (the box's first advance does), then read what was drawn for it
+          await wait(40); if (box.isOpen) box.advance(); await wait(60);
           const pg = pages[k];
           for (const [t, font] of drawn) {
             const px = +((font.match(/(\d+)px/) || [])[1] || 0);
             if (t.endsWith('…') && !pg.includes('…') && !s.includes('…')) out.cut.push({ from, page: pg.slice(0, 120), drew: t.slice(-40), px });
             if (px) out.sizes[px] = (out.sizes[px] || 0) + 1;
           }
-          const sizes = drawn.map(([, f]) => +((f.match(/(\d+)px/) || [])[1] || 0)).filter((x) => x >= 20);
+          // the page's own text only (not the speaker's name or the box's hints)
+          const flat = pg.replace(/\s+/g, ' '), sizes = drawn.filter(([t]) => { const b = String(t).replace(/…$/, '').trim(); return b.length > 1 && flat.includes(b); }).map(([, f]) => +((f.match(/(\d+)px/) || [])[1] || 0)).filter((x) => x >= 20);
           const min = sizes.length ? Math.min(...sizes) : 0;
           if (min && min <= 36) out.small.push({ from, px: min, chars: pg.length, page: pg.slice(0, 60) });
           out.pages++;
           drawn = [];
-          if (box.isOpen) box.advance();
           if (box.isOpen) box.advance();
         }
         let n = 0; while (box.isOpen && n++ < 20) { box.advance(); await wait(20); }
