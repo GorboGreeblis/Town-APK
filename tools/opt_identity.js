@@ -9,13 +9,14 @@
 // plots), and the same after the planting Event has laid out its thirteen plots, with an orbit of every
 // pizza box and the pie (P20).
 //
-//   node tools/opt_identity.js [file] [--save] [--no-event]
+//   node tools/opt_identity.js [file] [--save] [--no-event] [--only NAME]    (--only: just the switches whose name contains NAME)
 const path = require('path');
 const fs = require('fs');
 const { boot, reporter, root } = require('./lib/harness');
 const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : undefined;
 const save = process.argv.includes('--save');
 const noEvent = process.argv.includes('--no-event');
+const only = (() => { const i = process.argv.indexOf('--only'); return i > 0 ? process.argv[i + 1].toLowerCase() : null; })();   // check only the switches whose name contains this
 const outDir = path.join(root, 'tools/.runs/opt_identity');
 // name, the page expression that switches it (v = true/false), and which views matter most.
 const OPTS = [
@@ -27,6 +28,8 @@ const OPTS = [
   { name: 'P12 indexed scenery', expr: 'window.__idIdx(v)', present: '!!window.__idIdx && window.__idIdx.count() > 0' },
   { name: 'P8 multi-material merge', expr: 'window.__gtMM && window.__gtMM.set(v)', present: '!!window.__gtMM' },
   { name: 'P10 matrix cache', expr: 'window.__gtMx && window.__gtMx.set(v)', present: '!!window.__gtMx' },
+  // P31 skips culling of subtrees that draw nothing (only batched parts and groups); off: no subtree is skipped
+  { name: 'P31 culling skips subtrees that draw nothing', expr: '(v ? window.gcND() : (window.__dbg.O.gcNDv = -5))', present: 'typeof window.gcND === "function"' },
   // P20 splits each stacked pizza box (one mesh, two materials) into its five card faces and its printed top, so the
   // batcher can take them; the switch puts the original boxes back. Views orbit every box and the pie (`spots`).
   // P21 leaves the Ancient out of renders from at least 0.5 m outside the church; the town grid and the orbits include
@@ -92,7 +95,7 @@ const OPTS = [
   }, { label, opt, save });
   const results = [];
   const check = async (phase) => {
-    for (const opt of OPTS) {
+    for (const opt of OPTS.filter((o) => !only || o.name.toLowerCase().includes(only))) {
       const present = await page.evaluate((e) => { try { return eval(e); } catch (x) { return false; } }, opt.present);
       if (!present) { note(`${phase}: ${opt.name} not in this build, skipped`); continue; }
       const r = await run(phase, opt); results.push({ opt: opt.name, ...r });
