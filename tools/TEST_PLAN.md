@@ -66,6 +66,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Nothing uploaded inside a headset frame when something new appears (F-B51); Mushroom down his ramp in the Event (F-B52) | `test_firstdraw.js`, `test_mushroom_event.js` (standard tier) | 3.15.59: pass (on the game file before the build; the old build fails `test_firstdraw.js`, 19 + 11 buffers) |
 | No townsfolk stuck, in particular going to and from a doorway home on visits (F-B55) | `test_stuck.js` (standard tier) | 3.15.62: pass (3.15.60 fails: Fortizmo stalled twice at her counter) |
 | No jitter, height bumps or floating models, through the Event and after it (F-B56, F-B57) | `test_jitter.js` (standard tier) | 3.15.62: see the build's row |
+| No shader compiled inside a headset frame, also for a material the warm-up missed (S2) | `test_shaderhold.js` (standard tier) | 3.15.63: pass (3.15.60: 4 compiles inside a frame) |
 | Nextessa waits while the Gem assembles, then delivers (F-B45); Anomalee plants without Snacks and eats from her box with them (F-B49) | `test_courier_gem.js`, `test_anomalee.js` (standard tier) | 3.15.57: pass |
 | Stuck detection and rescue (`De`: re-plan via waypoints, off-screen teleport after 4 stalls) | `test_npc_home.js` forced-stuck and far-player scenarios | done |
 | Away watchdog (`sendHome` after 4 s idle / 20 s moving away from home ground) | `test_world.js` | partial |
@@ -183,6 +184,8 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Every experiment variant still applies to the game file | `experiment.py --check` (quick tier) | done |
 
 ## Latest results (newest first, headless harness)
+
+**3.15.63** (`tools/.runs/build_3.15.63.log`): `build.sh`'s checks pass (SYNC CHECK, EXPERIMENT CHECK, APK CHECK, STANDALONE TEST, COMPRESSED TEST; the new step 3b: "the game shows v3.15.63"; BUILD DONE 3.15.63 (63)). On the game file before the build: `test_shaderhold.js` (new; fails 3.15.60: 4 compiles inside a frame). Mist pictures before and after A19 at 16, 6, 2.5 and 1 m from the fence. Pushed for the author's headset run; the full pass and the Ordinals check follow on the final build.
 
 **3.15.62** (`tools/.runs/build_3.15.62.log`; a local 3.15.61 was never pushed): `build.sh`'s checks pass (SYNC CHECK, EXPERIMENT CHECK, APK CHECK, STANDALONE TEST, COMPRESSED TEST; BUILD DONE 3.15.62 (62)). On the game file before the build: `test_stuck.js` (new; fails 3.15.60: Fortizmo stalled twice at her counter), `test_event_fade.js` (mist full within 31 s), `test_firstdraw.js`, `test_mushroom_event.js`, `test_zfight.js`, `warm_coverage.js` pass. `test_jitter.js` (new) ran out of its 25 minutes with the machine loaded; rerun alone next. Pushed for the author's headset run before its full pass, at the author's request.
 

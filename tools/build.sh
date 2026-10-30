@@ -51,6 +51,20 @@ if [ -n "$changed" ] && [ "$code" = "$apkcode" ]; then
 elif [ -n "$changed" ]; then echo "what ships changed ($changed); version $name ($code), the root APK has ${apkcode:-none}"
 else echo "nothing that ships changed; version $name ($code)"; fi
 
+echo "== 3b. version shown in the game"
+# The non-Quest landing text, the Quest gate's corner (twice) and the VR loading box show the version: stamped here
+# from versionName, so they always match the build; the copies are synced again when that changed the game file.
+python3 -I - "$ROOT/tools/uncompressed.html" "$name" <<'PY' || exit 1
+import re, sys
+p, v = sys.argv[1], sys.argv[2]
+s = open(p, encoding='utf-8').read()
+t, n = re.subn(r'v\d+\.\d+(?:\.\d+)?(?=")', 'v' + v, s)
+if n != 4: sys.exit('VERSION STAMP FAILED: expected the version in 4 places of the game file, found %d' % n)
+if t != s: open(p, 'w', encoding='utf-8').write(t)
+print('the game shows v' + v)
+PY
+cmp -s "$ROOT/tools/uncompressed.html" "$ASSETS/index.html" || python3 -I "$ROOT/tools/sync_game.py"
+
 echo "== 4. release APK"
 OUT="$ROOT/tools/android/app/build/outputs/apk/release/app-release.apk"; LOG="$ROOT/tools/.runs/build_gradle.log"
 mkdir -p "$ROOT/tools/.runs"; rm -f "$OUT"

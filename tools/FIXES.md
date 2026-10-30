@@ -44,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (111 blocks)
+## Gameplay, performance and other fixes (116 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -869,7 +869,7 @@ everyone (0.02 m): the follower's rock code is gone. The Event's flowers are pla
 above the flat soil), so every stem stands in the ground. Pictures before and after from above, standing and at
 ground level. In the Event at headset field of view (`draw_calls.js --event`, 12 views): 113 to 111 draws and 321k to
 311k triangles a frame on average, 173 to 165 draws and 452k to 414k triangles looking at the Garden from afar, and
-about 120 fewer parts in the batcher's pass.
+about 120 fewer parts in the batcher's pass. The author, 2026-10-30: "regardless of anything else we will be keeping the flat version".
 
 - **F-B58** (3.15.62; the author: "The goo around Mama Gorbo causes z-fighting while she is standing next to the pond.
 This things should be on different layers"): her goo puddle sat at 0.030 m, the pond's grass rim's height, and her
@@ -914,6 +914,47 @@ two safeties for any cause. A character the player's head is inside (its body ra
 that frame, so its inside never fills the view (logged "head inside ... hidden for the frame"). A per-object draw
 hook that throws no longer stops the frame (three.js drew nothing after it, leaving a half-drawn frame): the error is
 logged once per object and the frame is drawn to the end.
+
+- **S2** (3.15.63; S1's third safety): every shader is compiled while loading (`warm_coverage.js`), but as a safety for
+one missed, an object whose first draw would compile a new shader program inside a headset frame is held back for that
+frame and its program compiled right after it (as new geometry is, F-B51); it appears one frame later. Only a new
+program holds an object: a new material that shares an existing program (the usual case) is drawn at once. The log
+says "shader held for one frame". `test_shaderhold.js` (new, standard tier): two never-used material kinds added in
+front of the player in VR; 3.15.60 compiles 4 shaders inside a frame, none now.
+
+- **P30** (3.15.63; the author's 54 fps watching the Event from afar): the height follower samples the ground under a
+townsfolk (19 lookups) again only once it has moved 5 cm since the last sample (it did on every frame it moved at all:
+about 285 lookups a frame with the Event's walkers).
+
+- **R8** (3.15.63; the author: "analyze the game file for any remaining dead code ... Dead code can be removed before the
+final build ... the game must be fully tested after its removal"): `dead_code.js` over 33 recorded sessions (every
+standard test plus played sessions in VR and in the browser): in the game script 180 functions never ran (81.5 KB,
+10.9%), almost all of it paths the sessions cannot reach but a player can: the mural painter (73 KB; index.html and
+the ordinal paint it where the APK loads it pre-painted), leaving VR, a lost GL context, a shader that fails to link
+(the batcher's fallback), errors, the browser gate, the B mark's dump, the roam escape, mirrored parts in a merge, the
+optimisation switches `opt_identity.js` uses, and the test hooks the harness serves. One was unreferenced anywhere and is
+removed (`JGP.plantShow`, superseded by the Event's own planting). In three.js 404 functions never ran (52 KB): render
+targets, cube and depth textures, other materials' uniforms; the headset's layers and multiview paths reach some of
+them, which headless coverage cannot vouch for, so three.js is left as it is.
+
+- **A18** (3.15.63; the author: "For the landing screen on non-Meta Quest browsers, please be sure to update the version
+number to the latest. And also add the version number somewhere on the VR loading screen as well, ideally in the box
+with the title and loading bar, I like the bottom right corner of that box"): the landing text and the gate's corner
+said "v3.15"; they now show the build's full version, and the VR loading box shows it in its bottom right corner
+(small, light grey). `build.sh` stamps the version from `versionName` into all four places (step 3b; it fails if it
+does not find exactly four) and syncs the copies again when that changed the game file, so they always match the
+build.
+
+- **A19** (3.15.63; the author: "The issue with the fog disappearing from the top of the fence as I approach is still
+occurring during the Event", "check if the mist on the fence issue also occurs with the roof of the church"): the
+mist's first wall stands 1.5 m beyond the fence and faded to nothing over its bottom 1.8 m (to meet the ground
+softly); the ground beyond the fence reached the mist's colour only 3 m out. From afar the view just over the fence
+top meets the wall high up (mist); close to the fence it meets the wall's clear foot and the grass just past the fence,
+so the mist over the fence thinned as the player came near (low eye heights and close approaches most). The wall now
+fades over its bottom 0.45 m and the ground is fully in the mist's colour from 1.5 m beyond the fence (where the wall
+stands), so its foot meets ground of its own colour. Pictures at 16, 6, 2.5 and 1 m from the fence, level and looking
+up, before and after; headless the thinning was not visible at a 1.7 m eye height. The church roof shows no such
+thing: close to the church the view over its roof meets the sky above the mist bank, as with any low bank.
 
 ## Multiview (release path since 3.15.34)
 
