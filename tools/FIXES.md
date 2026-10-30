@@ -1088,6 +1088,12 @@ and logged) or whose position is no longer a number is reset: its errand cleared
 fail every frame is reset and walks on without errors; one whose position was made not a number is home within a
 second (the game's own guard got there first; S5 stands behind it).
 
+- **A25** (4.0.0; the author: "Please whiten the clouds"): seen from below the clouds were olive green (their white
+took the green of the hemisphere light's ground colour). They now have a soft glow of their own, tinted against that
+green (`#9e8cb8` over a `#b3b3b3` base), so they read white with a light grey underside; the glow follows the night
+tint (`gcNight`: full by day, 15% at night), so they do not shine in the dark. Pictures before and after (the sky in
+four directions).
+
 ## Multiview (release path since 3.15.34)
 
 Edits for the multiview experiment, in order. Three groups:
