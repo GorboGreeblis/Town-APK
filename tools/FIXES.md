@@ -1094,6 +1094,15 @@ green (`#9e8cb8` over a `#b3b3b3` base), so they read white with a light grey un
 tint (`gcNight`: full by day, 15% at night), so they do not shine in the dark. Pictures before and after (the sky in
 four directions).
 
+- **A26** (4.0.1; the author: "Just keep everything faded out until things fade back in. I don't care if there is
+invisible collision"): P33's fade groups no longer come back when the player comes within 14 m (a rule Claude had
+added, not asked for; with the trees one group, nearing any of the park's three big trees brought all 69 back). A
+kiosk still waits for its owner to leave home before it fades out, but once out it stays out until the Event ends,
+even if the owner walks home; everything then fades back over 10 s. Collision stays on throughout (invisible walls
+while hidden, by the author's word), and S3 still pushes anyone standing in a group out as it comes back.
+`test_stands.js`: walking up to a hidden kiosk leaves it hidden; after the Event nothing fades out again on its way
+back; a townsperson put in a hidden kiosk is outside it once it is back.
+
 ## Multiview (release path since 3.15.34)
 
 Edits for the multiview experiment, in order. Three groups:

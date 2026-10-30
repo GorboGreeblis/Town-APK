@@ -63,7 +63,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     ("Please note this grouping of all kiosks and all trees for future work"):
     - **All kiosks**: every building but the church (the post office, the Sheriff's kiosk, Garden Supplies, the gallery,
       the shop, the juice bar) and **the Gazebo**, which counts as a kiosk "in all regards". Each kiosk is its own item;
-      it waits while its owner is within 6 m of home and comes back when the player walks up to it.
+      it waits while its owner is within 6 m of home before it fades out. Once out, nothing comes back until the Event
+      ends, however near the player comes (2026-10-30: "Just keep everything faded out until things fade back in. I
+      don't care if there is invisible collision"; the earlier come-back-when-near rule was Claude's, not asked for).
     - **All trees**: every tree the tree builder places (the park's three and the town's outside the fence), carved
       out of the world's merged meshes into one group ("let's add all trees to the same group for fading out and in"),
       with **the Robin**, who always fades out and in with her tree ("The Robin should always fade out and in with her

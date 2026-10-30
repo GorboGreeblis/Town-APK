@@ -173,8 +173,8 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   when watered (F-B43). Nothing is shown or hidden at once. `test_event_fade.js`.
 - **The Event's fade groups (3.15.66, P33; RULES.md 26).** Once the mist is past 15%, each kiosk (every building but the
   church) and the gazebo fade out over 10 s, each on its own and only once its owner has left home (6 m), and every
-  tree with the robin as one group; all of a group's parts fade together. Any group comes back in 2 s when the player
-  comes within 14 m, and all come back after the Event. The church and Cave, the Ancient, Somlet, the pond (F-B64: the
+  tree with the robin as one group; all of a group's parts fade together. Once out, a group stays out until the Event
+  ends, however near the player comes (A26), and all come back after it over 10 s. The church and Cave, the Ancient, Somlet, the pond (F-B64: the
   far-scenery fader no longer touches it) and the Garden never fade. Fading is drawn only: collision stays on, and as a
   group comes back anyone standing in it is pushed out (S3). `test_stands.js`.
 - **The gazebo (3.15.67, F-B65).** Its seven railed sides are solid walls for everyone; its doorway is open to anyone.
