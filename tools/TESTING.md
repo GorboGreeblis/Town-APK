@@ -65,6 +65,7 @@ Environment switches for the browser tests:
 | `GT_DEVICE=quest3s` / `quest3` / `quest2` | That headset's user agent and GPU limits (`fakexr.js` `DEVICES`); the default user agent is a Quest 3. |
 | `GT_HEADSET_FOV=1` | Quest 3-shaped eyes, for draw counts and culling as on the headset. |
 | `GT_LAYER_DEPTH=0` | The layer brings no depth texture, so multiview draws into the game's own depth buffer as on the headset (P14's depth discard runs). |
+| `GT_GLERR=1` | Every WebGL call checked: the calls that raise an error are printed when the test ends, with the object being drawn (section 4, the WebGL error check). |
 
 Logs: pipe a pass into `tools/.runs/` (git-ignored), for example
 `nohup sh tools/run_tests.sh --full --resume >> tools/.runs/full_3.15.63.log 2>&1 &`. Each stage prints its PASS/FAIL/NOTE
@@ -130,6 +131,14 @@ drawn, `test_jitter.js`), `initScripts` (functions that run before the game's fi
 wrap a browser API, as `test_audio.js` wraps Web Audio).
 
 **The frame-hazard watch.** Every boot through the harness watches for GPU work inside an XR frame callback (texture uploads and copies, mipmap builds, pixel reads, renderbuffer storage, geometry buffers made the first time something is drawn (3.15.57, F-B48), shader compiles: the flash causes, NOTES 67, 80, 91), on both render paths, whatever the test is about. On multiview every texture operation inside the frame counts; on the classic path only work done while three.js draws (an upload on first sight), and the render wrapper's upload before the first draw counts as the frame's start (F-B36). `close()` prints a WARNING line and appends to `.runs/frame_hazards.log`; `run_tests.sh` lists them in its summary and fails the pass. A test can read the record itself with `g.frameHazards()`.
+
+**The WebGL error check.** The game never reads WebGL's error flag, so the first error raised since boot is still
+pending when a test ends: `close()` reads it once and, if it is set, prints a warning and appends a line to
+`tools/.runs/gl_errors.log`, which fails the pass like the frame hazards (F-B61: a held geometry upload left another
+object drawing with the wrong index buffer, an INVALID_OPERATION on every frame that only `multiview_check.js` read).
+To find the cause, rerun that test with `GT_GLERR=1`: every WebGL call is then followed by a check, and the first 12
+calls that raise an error are printed with their arguments, the stack, the object three.js was drawing (its place,
+material, index count and program) and its geometry's buffers against its indices. Slow; for finding an error only.
 
 **Standalone mode.** `boot({ standalone: true })` serves the game file and nothing else (every other path is a 404, as from any plain web server with the file alone) and returns every request the page made in `requests`; `test_standalone.js` uses it to prove the game needs nothing beside it (RULES.md 2).
 

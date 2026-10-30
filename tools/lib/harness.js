@@ -151,6 +151,25 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
   // GT_LAYER_DEPTH=0: the layer brings no depth texture, so multiview renders into the game's own depth buffer as on
   // the headset and its end-of-frame depth discard (P14) runs.
   if (vr && process.env.GT_LAYER_DEPTH === '0') await page.addInitScript(() => { window.__fakeXR.layerDepth = false; });
+  // GT_GLERR=1: every WebGL call is followed by a getError, and the first 12 calls that raise an error are kept with
+  // their arguments and stack; close() prints them. getError itself still reports the error as before (the first one
+  // since it was last read), so a test's own "no GL error" checks are unchanged. Slow: for finding a GL error only.
+  if (process.env.GT_GLERR) await page.addInitScript(() => {
+    const P = WebGL2RenderingContext.prototype, ge = P.getError; let pending = 0; window.__gtGlErrs = [];
+    for (const k of Object.getOwnPropertyNames(P)) {
+      const d = Object.getOwnPropertyDescriptor(P, k); if (!d || typeof d.value !== 'function' || k === 'getError') continue;
+      const f = d.value;
+      P[k] = function () {
+        const r = f.apply(this, arguments), e = ge.call(this);
+        if (e) {
+          if (!pending) pending = e;
+          if (window.__gtGlErrs.length < 12) window.__gtGlErrs.push({ call: k, error: e, xr: window.__gtXR ? { inFrame: !!window.__gtXR.xrFrameOpen, multiview: !!window.__gtXR.mvActive, frames: window.__fakeXR ? window.__fakeXR.frames : null } : null, at: +(performance.now() / 1000).toFixed(2), object: window.__gtGlCur || null, detail: window.__gtGlDetail ? window.__gtGlDetail() : null, args: Array.from(arguments).slice(0, 5).map((a) => (typeof a === 'number' ? a : a && a.constructor ? a.constructor.name : String(a))), stack: new Error().stack.split('\n').slice(2, 9).map((l) => l.trim().replace(/\(?https?:\/\/[^/]+\//, '(').slice(0, 120)).join(' < ') });
+        }
+        return r;
+      };
+    }
+    P.getError = function () { const e = ge.call(this) || pending; pending = 0; return e; };
+  });
   for (const sc of initScripts) await page.addInitScript(sc);   // a test's own probes, before the game's first line
   const t0 = Date.now();
   await page.goto(url, { waitUntil: 'load', timeout: timeoutMs });
@@ -158,6 +177,19 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
   // The boot is sliced (3.15.7+): the world-ready flag comes before the shader
   // slices, warm-up and the game loop start. Wait for the loop (Re.t advances).
   await page.waitForFunction(() => window.__gtXR && window.__gtXR.booted === true, null, { timeout: 180000 }).catch(() => {});
+  // GT_GLERR: name the object three.js is drawing, so an error raised by a draw says which object (name, parents,
+  // material, index count, place and the start of its program's key; the key starts with three.js's multiview flag)
+  if (process.env.GT_GLERR) await page.evaluate(() => {
+    const O = window.__dbg && window.__dbg.O; if (!O) return; const rb = O.renderBufferDirect;
+    O.renderBufferDirect = function (cam, scene, geo, mat, obj) {
+      let p = obj, n = []; while (p && n.length < 5) { n.push(p.name || p.type); p = p.parent; }
+      const pr = O.properties.get(mat).currentProgram;
+      window.__gtGlCur = `${n.join(' < ')} [${mat.type}${mat.name ? ' ' + mat.name : ''}, ${geo.index ? geo.index.count + ' indices' : (geo.attributes.position || {}).count + ' vertices'}, at ${obj.getWorldPosition(new window.THREE.Vector3()).toArray().map((v) => v.toFixed(1)).join(',')}, program ${pr ? `${pr.name || ''} key ${String(pr.cacheKey || '').slice(0, 40)}` : 'none'}]`;
+      // on an error: the geometry's buffers against its indices (an index past a buffer's end is INVALID_OPERATION)
+      window.__gtGlDetail = () => { let mx = -1; if (geo.index) for (const i of geo.index.array) mx = Math.max(mx, i); let q = obj, ch = []; while (q && ch.length < 6) { ch.push(q.type + (Object.keys(q.userData || {}).length ? JSON.stringify(Object.keys(q.userData).slice(0, 6)) : '')); q = q.parent; } return { maxIndex: mx, attrs: Object.entries(geo.attributes).map(([k, a]) => `${k} ${a.count}x${a.itemSize} v${a.version}`).join(', '), drawRange: [geo.drawRange.start, geo.drawRange.count], vertexColors: !!mat.vertexColors, chain: ch.join(' < '), id: obj.id, isMesh: !!obj.isMesh, renderOrder: obj.renderOrder, mat: { transparent: mat.transparent, depthTest: mat.depthTest, side: mat.side, opacity: mat.opacity, color: mat.color && mat.color.getHexString(), map: mat.map ? { image: mat.map.image ? `${mat.map.image.constructor.name} ${mat.map.image.width}x${mat.map.image.height}` : null, rt: !!mat.map.isRenderTargetTexture, version: mat.map.version, uuid: mat.map.uuid.slice(0, 8) } : null } }; };
+      try { return rb.apply(this, arguments); } finally { window.__gtGlCur = null; window.__gtGlDetail = null; }
+    };
+  });
   let presentS = null;
   if (vr) {
     if (onBeforeGrant) await onBeforeGrant(page, ctx);   // e.g. start a profiler just before the handover
@@ -186,6 +218,21 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
           console.log('  WARNING  frame hazard (flash cause): ' + line);
           fs.mkdirSync(path.join(root, 'tools/.runs'), { recursive: true }); fs.appendFileSync(path.join(root, 'tools/.runs/frame_hazards.log'), new Date().toISOString() + ' ' + line + '\n');
         }
+      } catch (e) {}
+      // any WebGL error raised since boot (the game never reads errors, so the first one is still pending here; a lost
+      // context's own code aside); collected by run_tests.sh, which fails the pass on any. Rerun with GT_GLERR=1 to see
+      // which call and object raised it (F-B61 was found this way).
+      try {
+        const e = await page.evaluate(() => { const O = window.__dbg && window.__dbg.O; const gl = O && O.getContext(); const e = gl && !gl.isContextLost() ? gl.getError() : 0; return e === 0x9242 ? 0 : e; });   // CONTEXT_LOST_WEBGL: a test that loses the context on purpose
+        if (e) {
+          const line = `${path.basename(process.argv[1] || '?')}: WebGL error ${e} (0x${e.toString(16)}) raised during the run (rerun with GT_GLERR=1 to name the call and object)`;
+          console.log('  WARNING  GL error: ' + line);
+          fs.mkdirSync(path.join(root, 'tools/.runs'), { recursive: true }); fs.appendFileSync(path.join(root, 'tools/.runs/gl_errors.log'), new Date().toISOString() + ' ' + line + '\n');
+        }
+      } catch (e) {}
+      if (process.env.GT_GLERR) try {
+        const errs = await page.evaluate(() => window.__gtGlErrs || []);
+        console.log(`  NOTE  GT_GLERR: ${errs.length} WebGL call(s) raised an error` + errs.map((x) => `\n        ${x.call}(${x.args.join(', ')}) -> ${x.error} at ${x.at} s ${JSON.stringify(x.xr)}${x.object ? ' drawing ' + x.object : ''}${x.detail ? ' ' + JSON.stringify(x.detail) : ''} @ ${x.stack}`).join(''));
       } catch (e) {}
       if (cov) try {
         const { result } = await cov.send('Profiler.takePreciseCoverage');
