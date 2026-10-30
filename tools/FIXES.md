@@ -1005,7 +1005,9 @@ author's low spot), though most of the town never moves. At load every top-level
 (`userData.keep`) is marked still and the walk returns at it; a round-robin audit checks 150 of its nodes a frame and, if
 one has moved, the group is walked every frame from then on (logged: "matrix walk: a still group moved ...", naming the
 group and node); a child added under a still group unmarks it at once. `test_lod.js` (exact far-model swaps) and
-`opt_identity.js` pass.
+`opt_identity.js` pass. 3.15.68: a group with a node the game moves every frame (the clouds, the robin, the bandstand: 20
+groups) is never marked; until then the audit unmarked them within five frames of loading, so the log line now means a
+real surprise (`.runs/frz_names.js`: none unmarked over a run).
 
 - **P33** (3.15.66; the author: "What if we temporally hide kiosks during the Event? It shouldn't impact gameplay too
 much to have them fade out and fade in as well"; "Trees and the bird can also be hidden"; "we can hide things as long
@@ -1039,7 +1041,7 @@ too). Its seven railed sides are now walls from post to post (0.24 m thick, the 
 game's own `F.resolve` for the player and every townsperson alike; the eighth side, its doorway, is open to anyone.
 Gemtoe can be talked to from anywhere round it (his talk range 3.8 -> 4.6 m: the walls hold the player up to 4.0 m
 from him). Proven: walking at the gazebo from eight sides stops at the railing on seven and walks in through the
-doorway; Gemtoe's route home touches no wall and he is home in 11 s; `test_roam.js` fails anyone standing in a railing.
+doorway; Gemtoe's route home touches no wall and he is home in 11 s (`test_gazebo.js`, standard tier since 3.15.68); `test_roam.js` fails anyone standing in a railing.
 
 - **S3** (3.15.67; the author: "What happens if NPCs or the player are standing in the areas where kiosks or other
 objects fade back in? The user or NPCs should probably be push out of these areas and prevented from getting stuck.
@@ -1055,6 +1057,36 @@ townsperson inside a hidden kiosk and checks they are outside it once it is back
 petals and blooms are 40% more saturated and the palest (the mallow's and the milkweed's near-white) take a visible
 tint; stems, leaves, whites and greys as they were (`gcViv`, in their vertex colours at load). Pictures before and
 after (`shots.js --preset garden` with close views).
+
+- **A23** (3.15.68; the author: "These rocks around the Pond: Can we do the same as the rocks around the Garden? And just
+make them into flat textures on the ground?"): the pond's 20 stones (dodecahedra on its bank) are painted flat instead,
+as the Garden's were (F-B57): one ring lying on the soil bank and the grass rim (1024 px, painted while loading and
+seeded, so it never changes), each stone where it stood, its size, turn and grey, with a soft shadow, a lit top, faint
+facets and speckles; the water's edge covers their inner part as it did the stones'. The stones' draws from the seeded
+stream are kept in the same order, so nothing built after them changes. Pictures before and after (7 m, 3 m, from
+above, at the bank).
+
+- **A24** (3.15.68; the author: "Add more clouds to the sky. Event fade out and fade in must also apply to these"):
+fourteen clouds instead of seven, built the same way (three to five white puffs circling 40-95 m out, 50-72 m up); the
+first seven are as they were (drawn first from the same seeded stream), the new seven differ from them and from each
+other. The Event's far-scenery fader fades every one of them out at the start and back at the end, as it did the
+seven. `test_event_fade.js` now checks every cloud (none shows while the mist is full, all back in full after each
+Event, none pops); `test_seeded.js` checks the 14 are the same on every launch. Pictures before and after (the sky in
+four directions).
+
+- **S4** (3.15.68; the stability pass, the author: "For stability: We want the game to be able to recover from any
+major issue"): the batcher's pass runs inside the render each frame (and with it P31's marks and P32's audit); an error
+there that came every frame would have lost every frame, leaving a frozen view. It is now caught, and a part of the
+frame that keeps failing (the batcher's pass or the render, three times within 3 s) is stepped down: first the
+still-group and draw-nothing marks off (P32, P31), then batching off with every object drawn on its own (slower, but
+everything shows). Each step is logged ("recovery: ... kept failing; step N: ..."). `test_recover.js` breaks a batch
+in a running game: stepped down twice within 0.2 s, frames keep drawing (72 draws a frame), no further errors.
+
+- **S5** (3.15.68; the stability pass): a townsperson whose update fails 30 times in a row (each error is already caught
+and logged) or whose position is no longer a number is reset: its errand cleared and put back home, logged
+("recovery: ID put back home (...)"), so it can never stay frozen or vanish. `test_recover.js`: a townsperson made to
+fail every frame is reset and walks on without errors; one whose position was made not a number is home within a
+second (the game's own guard got there first; S5 stands behind it).
 
 ## Multiview (release path since 3.15.34)
 

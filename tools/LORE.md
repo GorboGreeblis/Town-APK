@@ -854,7 +854,7 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
 - **Grass and flowers**: the park's tufts and tiny flowers (above); beds of five-petal flowers in pink, yellow, purple,
   cyan and red in front of the courthouse; daffodil planters (the family-tree shop, the blue house); beds of red and
   orange Blossoms at the florist's.
-- **Rocks and pebbles**: 20 stones round the pond (dodecahedra in three greys); the Garden's painted stones and rocks;
+- **Rocks and pebbles**: 20 stones round the pond, painted flat on its bank in three greys (A23; dodecahedra until 3.15.67); the Garden's painted stones and rocks;
   about 1,360 small stones in the Cave; the 40 flint pickups (dark faceted stones with a glint).
 - **Mushrooms**: on and round the Sheriff's kiosk, round Mushroom's house and as its roof.
 - **The pond** (`buildPond`): a grass rim 4.9 m round, a soil bank 4.1 m, and water 3.7 m round that bobs (8 mm) and
@@ -862,7 +862,7 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   spread from three spots in turn, thin pale rings growing to the edge and fading (A21; drawn within 26 m).
 - **Blossoms**: the 32 pickups, each a stem with leaves and a flower of seven red, five orange and three gold petals
   with a soft orange halo.
-- **Clouds** (`gcRnd("clouds")`): seven, each three to five white spheres (3-5.5 m, flattened to 0.62) circling the
+- **Clouds** (`gcRnd("clouds")`): fourteen (seven until 3.15.68, A24), each three to five white spheres (3-5.5 m, flattened to 0.62) circling the
   town 40-95 m out and 50-72 m up, a full circle every 12-26 minutes.
 - **The sky**: a dome 263 m in radius that follows the camera, coloured from the horizon (`#d6e6ef`) to the zenith
   (`#3f86d6`); below the horizon it stays horizon-coloured. A sun disc (`#fff6c8`) with a soft glow sits 58 degrees up

@@ -4,7 +4,8 @@
 //   - the mist bank beyond the fence (A4) rolls in to full within 31 s of the start (30 s since 3.15.62, A16) and back
 //     out to nothing after the end; the scene's mist (everything beyond the fence fogged by where it stands, A9)
 //     follows the bank's own strength and is exactly 0 after the Event;
-//   - the clouds and every Blossom and Flint (A5) fade out at the start and in at the end: an object is hidden only
+//   - the clouds (all 14, every one checked) and every Blossom and Flint (A5) fade out at the start and in at the end:
+//     none shows in the middle of the Event, all are back in full after; an object is hidden only
 //     once its opacity is down to 0, and comes back at 0;
 //   - a UFO already flying when the Event starts (A6) leaves by its normal exit path: it is hidden only far out
 //     (over 150 m), and no new one starts during the Event;
@@ -31,13 +32,13 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const pk = []; C.traverse((o) => { if (o.userData && o.userData.taken === false && 'regrowAt' in o.userData) pk.push(o); });
     const fence = (x, z) => Math.max(-37.6 - x, x - 37.6, -37.6 - z, z - 49.6);   // how far beyond the fence (m)
     const pops = [], ev = [];
-    let frames = 0, prevCv = clouds[0].visible, prevCo = cm.opacity, prevUv = ufo && ufo.visible, prevUd = 0, prevBp = false, ufoDuring = 0;
+    let frames = 0, cloudVis = clouds.map((c) => c.visible), cloudsHiddenMid = 0, prevCv = clouds[0].visible, prevCo = cm.opacity, prevUv = ufo && ufo.visible, prevUd = 0, prevBp = false, ufoDuring = 0;
     const pv = new Map(pk.map((p) => [p, [p.visible, 1]]));
     const tick = () => {
       frames++;
       const cv = clouds[0].visible, co = cm.opacity;
-      if (prevCv && !cv && prevCo > 0.02) pops.push('cloud hidden at opacity ' + prevCo.toFixed(2));
-      if (!prevCv && cv && co > 0.1) pops.push('cloud shown at opacity ' + co.toFixed(2));
+      // every cloud (14 since 3.15.68): hidden only once faded out, shown at 0
+      clouds.forEach((c, i) => { const m = c.children[0].material; if (cloudVis[i] && !c.visible && prevCo > 0.02) pops.push('cloud ' + i + ' hidden at opacity ' + prevCo.toFixed(2)); if (!cloudVis[i] && c.visible && m.opacity > 0.1) pops.push('cloud ' + i + ' shown at opacity ' + m.opacity.toFixed(2)); cloudVis[i] = c.visible; });
       prevCv = cv; prevCo = co;
       for (const p of pk) { const f = p.userData.gcF === undefined ? 1 : p.userData.gcF, [v0, f0] = pv.get(p); if (!p.userData.taken) { if (v0 && !p.visible && f0 > 0.02 && D.me.active) pops.push('pickup hidden at ' + f0.toFixed(2)); if (!v0 && p.visible && f > 0.1) pops.push('pickup shown at ' + f.toFixed(2)); } pv.set(p, [p.visible, f]); }
       if (ufo) { const d = Math.hypot(ufo.position.x, ufo.position.z); if (prevUv && !ufo.visible && prevUd < 150) pops.push('UFO hidden ' + prevUd.toFixed(0) + ' m out'); if (!prevUv && ufo.visible && D.me.active) ufoDuring++; prevUv = ufo.visible; prevUd = d; }
@@ -54,12 +55,14 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       while (D.me.active && performance.now() - t0 < 400000) {
         await wait(100); const t = (performance.now() - t0) / 1000;
         if (t < 31.2) e.mist7 = J.mist.p();
+        // mid-Event (the clouds fade back in at its end while the mist is still full, then the mist rolls out)
+        if (J.mist.p() >= 0.99 && t > 35 && t < 120 && D.me.active) e.cloudsShownAtFull = Math.max(e.cloudsShownAtFull || 0, clouds.filter((c) => c.visible).length);
         { const k = J.mist.p(), want = k * k * (3 - 2 * k); e.fogOff = Math.max(e.fogOff, Math.abs((C.fog.gcMist || 0) - want)); }
         if (n === 2 && e.shrunk === null && t > 1.5) e.shrunk = Math.max(...J.garden.plants.map((p) => p.g.scale.x));
         if (n === 2 && J.garden.plants.length && J.garden.plants.every((p) => p.grow >= 1 && !p.gcSh) && t > 3) e.grownBack = true;
       }
       const t1 = performance.now(); while (performance.now() - t1 < 33000) await wait(100);
-      e.endMist = J.mist.p(); e.endFog = C.fog.gcMist || 0; e.endClouds = cm.opacity; e.endPickups = pk.filter((p) => !p.userData.taken && p.visible && (p.userData.gcF === undefined || p.userData.gcF >= 1)).length;
+      e.endMist = J.mist.p(); e.endFog = C.fog.gcMist || 0; e.endClouds = cm.opacity; e.endCloudsShown = clouds.filter((c) => c.visible && c.children[0].material.opacity >= 0.999).length; e.endPickups = pk.filter((p) => !p.userData.taken && p.visible && (p.userData.gcF === undefined || p.userData.gcF >= 1)).length;
       out.push(e);
     }
     window.__evRun = false;
@@ -72,6 +75,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('the mist is at full within 31 s of the start (30 s since 3.15.62, A16)', a.mist7 >= 0.99 && b.mist7 >= 0.99, `${a.mist7}, ${b.mist7}`);
   expect('the scene\'s mist follows the bank (within 0.02) and is 0 after the Event', [a, b].every((e) => e.fogOff < 0.02 && e.endFog === 0), JSON.stringify([a, b].map((e) => [e.fogOff, e.endFog])));
   expect('nothing pops: clouds, Blossoms, Flint and the UFO are hidden only once faded out and shown at 0', r.nPops === 0, r.pops.join(' | '));
+  expect(`every cloud (${r.clouds}) is hidden in the middle of the Event (mist full) and back in full after each Event`, r.clouds >= 14 && [a, b].every((e) => (e.cloudsShownAtFull || 0) === 0 && e.endCloudsShown === r.clouds), JSON.stringify([a, b].map((e) => [e.cloudsShownAtFull, e.endCloudsShown])));
   expect('no UFO appears during the Event', r.ufoDuring === 0, String(r.ufoDuring));
   expect('after each Event the mist is gone and the clouds and pickups are back in full', [a, b].every((e) => e.endMist === 0 && e.endClouds >= 0.999 && e.endPickups === r.nPickups), JSON.stringify(r.out));
   expect('Backpacka is switched off only inside the mist (10 m or more beyond the fence, mist at full)', r.bp.length >= 1 && r.bp.every((x) => x.bpOff >= 10 && x.mist >= 0.99), JSON.stringify(r.bp));

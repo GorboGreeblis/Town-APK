@@ -33,7 +33,7 @@ game content (`test_content.js`), greeting, wrist HUD (`test_hud.js`), roaming (
 seeded decoration (`test_seeded.js`), the interaction menu (`test_menu.js`), visitors to the Ancient in the Cave
 (`test_cave.js`), the Event's start and end (`test_event_fade.js`), Anomalee in the Event (`test_anomalee.js`), Mama
 Gorbo's walk over to Gooward (`test_meet_walk.js`), no townsfolk stuck (`test_stuck.js`), jitter and floating models
-(`test_jitter.js`), the shader hold (`test_shaderhold.js`), the Event's stands fading (`test_stands.js`), Mushroom in the Event (`test_mushroom_event.js`), first
+(`test_jitter.js`), the shader hold (`test_shaderhold.js`), the Event's stands fading (`test_stands.js`), recovery from injected faults (`test_recover.js`), the flash safeties (`test_safeties.js`), the gazebo's walls and doorway (`test_gazebo.js`), Mushroom in the Event (`test_mushroom_event.js`), first
 draws (`test_firstdraw.js`), Backpacka at the pond (`test_backpacka.js`), far detail and the batcher (`test_lod.js`),
 world (`test_world.js`), input (`test_input.js`), progression (`test_progression.js`, `--long` in full), visits
 (`test_visits.js`), the courier (`test_courier.js`) and the courier during the Gem
