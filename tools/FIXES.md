@@ -44,7 +44,7 @@ see tools/lib/boot_map.js for the map).
 
 - **8** (3 edits): Yields inside the spawn loops (one creature per slice).
 
-## Gameplay, performance and other fixes (93 blocks)
+## Gameplay, performance and other fixes (99 blocks)
 
 - **B24** (1 edit): (VRC.Quest.Input.4, focus-aware): while the system UI has focus the XR session is "visible-
 blurred"; the game already keeps rendering and skips its update (no input), but three.js stops
@@ -780,6 +780,54 @@ colour (80% since A9), on the bank beyond the fence and on everything it covers.
 - **A13** (3.15.59; the author: "make the ramp up to Mushroom's desk wide enough to fill that side of the kiosk"): the
 ramp, its landing and slats run from the desk to the kiosk's side wall (1.77 m, was 0.91 m); his route runs down its
 middle; the walkable surface and the solid part follow it.
+
+- **P27** (3.15.60; the author: "The FPS still dropped below 60 fps when I moved to the back of the dance floor and
+watched everyone during the Event. It is only slightly below 60 fps so let's try whatever little fixes we can"; their
+run on 3.15.58: 56-59 fps for 12 s at (-33, -7), the runtime's CPU frame 12-14 ms of 13.9, the GPU 71% busy): each
+plant the Event grows was handed to the batcher, which merged its two models (near and far, one shown at a time) into
+a new one-plant batch of 8,000-25,000 vertices inside the frame: a full copy and vertex dedupe, a new geometry to
+upload and two more parts in the batcher's pass every frame after, for no fewer draws (one plant, one draw either
+way). The plants are now drawn as their own meshes: the same draws, no merge, nothing new to upload (the models are
+shared per kind and made while loading, F-B41). Nothing on screen there is small enough to skip unseen: every one
+of the 265 draws in the heaviest view spans two headset pixels or more (measured).
+
+- **D4** (3.15.60; the author saw a flash after snap turning on 3.15.58, unmarked: "The B press was before that
+flash"): the event trail also counts the snap turns (`ev snap N > N+1 (frame F)`), so a flash can be matched with the
+turn before it. In that run's log every first draw inside a headset frame after the mark (the menu panel, the Event's
+start and plants, vignettes) is one F-B51 now holds to between frames.
+
+- **F-B53** (3.15.60; the author: "Mama Gorbo walking through scenery by the gallery", seen once; was B45, caught once in
+`test_roam.js` at (25.2-25.9, 13-14.6)): the two meet near Gooward, who roams within 12 m of his gallery. When they are
+more than 16 m apart she first walks over to a spot beside him; that spot was checked where it ends, but the walk
+followed the building router only, which steers round buildings and collision circles, not the scenery's clearance
+(the gallery's 6.2 m circle, the easels in front of it). From across the park her line could run between the easels.
+Every other roam and meeting walk already checks its path (`roamWalk`); the walk-over now does too, and when the
+straight line is not clear she follows the park grid's path round the scenery (`JGP.route`, as the courier does).
+`test_meet_walk.js` (new, standard tier): her straight line to him through the gallery's circle, three layouts; on
+3.15.59 two of them walked her through it, at the same spots; none now, and every meeting still happens.
+
+- **P28** (3.15.60; the same request; the author: "Tiny visual changes are ok to reach 60 fps. Never below 60 fps is the
+goal"): the frame's biggest CPU item in that view is three.js's matrix walk (every object's world matrix recomputed
+every frame: the scene itself is set to update, so every child is forced), then the batcher's per-part pass over the
+creatures. Characters more than 20 m from the player (not greeting, not in a dialogue) now pose and update their
+matrices every other frame, half of them on even frames and half on odd ones; their movement still runs every frame,
+and the skipped frame's time is carried into the next pose so nothing slows down. Far away they move at 36 poses a
+second instead of 72. `test_jazz.js`, `test_meet.js`, `test_greet.js` and the Event tests pass.
+
+- **A15** (3.15.60; the author: "Compressed should also work in Quest Browser. But also be able to work on ordiscan.com
+or ordinals.com as an ordinal", "In browsers other than Quest: the game should inform the user that this game is
+designed for Quest Browser and the file should be opened there"): outside the Quest Browser both the game file and the
+compressed page now say "This game is designed for the Meta Quest Browser. Please open this file in the Quest Browser
+on your Meta Quest headset." An explorer shows an HTML inscription in a sandboxed frame (ord's `/preview/<id>`:
+scripts only, no storage, VR not allowed) as well as on its own page (`/content/<id>`, where it plays): in such a frame
+the game still unpacks and boots, and when VR is refused it says "VR can't start inside this preview. Open this
+inscription's full page in the Quest Browser to play." (it said "VR could not start (SecurityError). Click or press A
+to try again.", which can never work there). The game keeps nothing in storage, so the frame's missing storage changes
+nothing. `test_compressed.js` (the Ordinals check) adds the sandboxed frame.
+
+- **A14** (3.15.60; the author: "Please add additional mushrooms to the roof of the Sheriff's kiosk"): five small
+clusters (12 mushrooms) on the two slopes of the red tin roof, in the kiosk's own mushroom style, mostly tan, gold
+and brown against the red; batched with the kiosk.
 
 ## Multiview (release path since 3.15.34)
 

@@ -97,7 +97,7 @@ for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w
     }
   }
   const trail = ev.filter((x) => x.what.startsWith('ev '));
-  if (trail.length) console.log(`event trail: ${trail.length} changes logged (pickups, Cave, vignettes, Event, screens, courier, Gem); pass --trail to print them`);
+  if (trail.length) console.log(`event trail: ${trail.length} changes logged (pickups, Cave, vignettes, Event, screens, courier, Gem, snap turns); pass --trail to print them`);
   if (process.argv.includes('--trail')) for (const x of trail) console.log(`  ${(x.ms / 1000).toFixed(1)} s ${x.what.slice(3)}`);
   {
     const longs = ev.filter((x) => x.what.startsWith('long frame'));

@@ -7,7 +7,7 @@
 // <script type="b"> holds the compressed game as text, and the loader script unpacks it with a context-mixing model
 // (sixteen hashed contexts of the bytes before, a match model and three mixers, refined by two adaptive probability
 // maps) driving a binary arithmetic decoder, counting "LOADING nn%", then document.write()s the game. Outside a Quest
-// browser it shows a "designed for Meta Quest" note instead. Only the decoder ever existed in the repository; the
+// browser it shows a "designed for the Meta Quest Browser" note instead. Only the decoder ever existed in the repository; the
 // encoder here is that same decoder's text with the arithmetic coder turned around (the bit is read from the game
 // instead of decided from the stream, and the coder's settled bytes are written instead of read), so the two cannot
 // drift apart: every build is unpacked again here and compared with the game file byte for byte.

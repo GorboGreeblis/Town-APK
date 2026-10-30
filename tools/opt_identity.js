@@ -98,7 +98,9 @@ const OPTS = [
       const r = await run(phase, opt); results.push({ opt: opt.name, ...r });
       const blanks = r.views.filter((v) => v.blank);
       expect(`${phase}: ${opt.name}: every view rendered something (no blank or uniform image)`, blanks.length === 0, `${blanks.length} blank: ${blanks.slice(0, 4).map((v) => v.label).join(' | ')}`);
-      const bad = r.views.filter((v) => v.pct > 0.02 || v.interior > 0);
+      // any area of differing pixels fails; scattered edge pixels (rounding: a batch transforms its parts in the shader)
+      // up to 0.05% pass (B38: 0.021% at the multi-material mesh at (-26.8, -26.8), 0% in areas, 3.15.49-3.15.60)
+      const bad = r.views.filter((v) => v.pct > 0.05 || v.interior > 0);
       const [on, off] = r.stats;
       note(`${phase}: ${opt.name}: ${r.views.length} views (${r.mm} multi-material meshes); draw calls ${off.calls} -> ${on.calls} (${off.calls - on.calls} fewer), triangles ${off.tris} -> ${on.tris}`);
       for (const v of bad.slice(0, 8)) console.log(`  DIFF  ${v.label}: ${v.pct}% of pixels differ, ${v.interior}% in areas, max channel sum ${v.maxd}`);

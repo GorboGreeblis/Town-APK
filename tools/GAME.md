@@ -22,6 +22,21 @@ two optional local requests, both falling back silently: `tex/manifest.json`
 (the APK's pre-painted textures, used instead of painting when present) and
 `/log` (the APK server's log) (NOTES 88).
 
+## The three forms it ships in
+
+- **The APK** (`GreeblisTown-release.apk`): the game file plus its pre-painted textures (`tex/`, the same pixels the
+  game paints itself, loaded instead of painted for a faster start), served by the APK's local server.
+- **`index.html`** at the root: the game file alone, for long-term archiving (the author). It launches on its own in a
+  Quest browser and is fully playable: every texture painted by the game, every sound synthesised, nothing fetched
+  (`test_standalone.js` on every build: the textures match `tex/` pixel for pixel).
+- **`index.compressed.html`** at the root: the same file packed for a Bitcoin ordinal (the author: "if I decide to go
+  that route again"). It unpacks to `index.html` byte for byte and runs under the content policy ordinals.com serves
+  inscriptions with (`test_compressed.js` on every build).
+
+Browsers other than the Quest's are told the game is designed for the Meta Quest Browser and to open the file there
+(the user-agent gate, RULES.md 18). In an explorer's sandboxed preview frame, where VR is not allowed, the game says to
+open the inscription's full page in the Quest Browser (A15).
+
 ## File layout
 
 The HTML is 8 lines since the minification (3.15.45; it was 93 before); most of them are very long script blocks.
