@@ -449,7 +449,7 @@ limited by draw submission and script on the CPU; triangles cost little while th
 | F-B33 | 3.15.47 | The Event's start no longer rescans every creature's vertices: 434 -> 67 ms headless. | No |
 | P24 | 3.15.48 | The creatures batched together (one pass over all of them): heaviest views at the author's low spots 296 -> 274 draws, +0.6% triangles. | No |
 | F-B36 | 3.15.49 | The mipmap switch 2.6 s after entering VR in slices of at most 0.6 Mpx, 40 ms apart, instead of one stall. | No |
-| P25 | 3.15.50 | Backpacka batched when built (she was built after the batching step): 714 -> 545 draws headless at the author's low spot while she is in view, about 83 fewer a frame on the headset. | No (at most 0.01% of pixels, none in areas) |
+| P25 | 3.15.50 | Backpacka batched when built (he was built after the batching step): 714 -> 545 draws headless at the author's low spot while he is in view, about 83 fewer a frame on the headset. | No (at most 0.01% of pixels, none in areas) |
 
 **Next CPU candidates** (NOTES 93): `bend` (Etcher's six tentacles, deformed for every move while the townsfolk
 dance) and `gFit` (the ground fit of moving creatures, a vertex scan every other frame while they move).

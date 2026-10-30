@@ -4,7 +4,12 @@
 // the town standing, walking, and the planting Event; reports bytes per second by allocating function
 // with a source excerpt, and the collector's share of main-thread time (CPU profiler).
 //
-//   node tools/alloc_probe.js [file]
+//   node tools/alloc_probe.js [file] [--after-events] [--vignettes] [--cave]
+// --after-events: play two Events to their end first (the author's flash came only after the Events, log 2d18deee),
+// then measure the town standing and walking. --vignettes: also measure 60 s with visits forced every 8 s (their
+// vignettes playing; the author: "check if vignettes also cause garbage collection issues").
+// --cave: also measure 40 s of the player going into the Cave (the inside of the church) and out again every 4 s
+// (the author: "does entering and exiting the Cave cause any garbage collection issues?").
 const path = require('path');
 const fs = require('fs');
 const { boot, root } = require('./lib/harness');
@@ -38,10 +43,19 @@ const excerpt = (l, c) => (lines[l] || '').slice(Math.max(0, c - 20), c + 60).re
     for (const t of top) console.log(`  ${String(t.kbs).padStart(8)} KB/s  ${t.fn}   ${t.src}`);
   };
   await wait(1500);
-  await measure('town, standing');
+  const after = process.argv.includes('--after-events');
+  if (after) {
+    for (let n = 0; n < 2; n++) await page.evaluate(async () => { const D = window.__dbg, Kt = D.Kt; const wait = (ms) => new Promise((r) => setTimeout(r, ms)); const adv = setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250); Kt.rewards.stone = Kt.rewards.seeds = Kt.rewards.snacks = true; D.oe.open(); await wait(400); const yes = ((D._t.state && D._t.state.items) || []).find((i) => i.label === 'Yes'); if (yes) yes.onClick(); let t0 = performance.now(); while (!D.me.active && performance.now() - t0 < 20000) await wait(50); t0 = performance.now(); while (D.me.active && performance.now() - t0 < 900000) await wait(500); await wait(20000); clearInterval(adv); });
+    console.log('(two Events played to their end)');
+  }
+  await measure('town, standing' + (after ? ', after two Events' : ''));
   await measure('town, walking', () => page.evaluate(() => window.__fakeXR.setInputs([{ handedness: 'left', axes: [0, 0, 0, -1], buttons: [{}, {}, {}, {}, {}, {}, {}] }, { handedness: 'right', axes: [0, 0, 0, 0], buttons: [{}, {}, {}, {}, {}, {}, {}] }])));
   await page.evaluate(() => window.__fakeXR.setInputs([]));
-  await measure('the planting Event (from 10 s in)', async () => { await page.evaluate(async () => { const D = window.__dbg, Kt = D.Kt; const wait = (ms) => new Promise((r) => setTimeout(r, ms)); Kt.rewards.stone = Kt.rewards.seeds = Kt.rewards.snacks = true; D.oe.open(); await wait(200); const yes = (D._t.state && D._t.state.items || []).find((i) => i.label === 'Yes'); if (yes) yes.onClick(); const t0 = performance.now(); while (!D.me.active && performance.now() - t0 < 10000) await wait(200); await wait(10000); }); }, 30000);
+  if (process.argv.includes('--vignettes')) await measure('visits and their vignettes (one called every 8 s)', async () => { await page.evaluate(() => { const D = window.__dbg; window.__vigT = setInterval(() => { try { const B = D.F.buildings, b = B[Math.floor(Math.random() * B.length)]; D.At.position.set(b.x + 3, D.At.position.y, b.z + 3); D.JGP.visitAt(D.Re.t); } catch (e) {} }, 8000); window.__vigA = setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 300); }); await wait(9000); }, 60000);
+  await page.evaluate(() => { clearInterval(window.__vigT); clearInterval(window.__vigA); });
+  if (process.argv.includes('--cave')) await measure('in and out of the Cave (every 4 s)', async () => { await page.evaluate(() => { const D = window.__dbg, c = D.F.buildings.find((B) => B.name === 'church'), out = D.JGP.slug.visit(1).out; let k = 0; window.__caveT = setInterval(() => { try { k++ % 2 ? D.At.position.set(out[0], D.At.position.y, out[1] + 3) : D.At.position.set(c.x, D.At.position.y, c.z); } catch (e) {} }, 4000); }); await wait(4500); }, 40000);
+  await page.evaluate(() => clearInterval(window.__caveT));
+  if (!after) await measure('the planting Event (from 10 s in)', async () => { await page.evaluate(async () => { const D = window.__dbg, Kt = D.Kt; const wait = (ms) => new Promise((r) => setTimeout(r, ms)); Kt.rewards.stone = Kt.rewards.seeds = Kt.rewards.snacks = true; D.oe.open(); await wait(200); const yes = (D._t.state && D._t.state.items || []).find((i) => i.label === 'Yes'); if (yes) yes.onClick(); const t0 = performance.now(); while (!D.me.active && performance.now() - t0 < 10000) await wait(200); await wait(10000); }); }, 30000);
   if (g.errors.length) console.log('page errors: ' + g.errors.join(' | '));
   await g.close(); process.exit(0);
 })().catch((e) => { console.error(e); process.exit(1); });

@@ -1,13 +1,13 @@
-// Backpacka (standard tier): while she is down at the pond in the planting Event (her show's 16-40 s), the player cannot walk
-// into her (the author: "give Backpacka basic collision so that the user cannot move inside of her model"; "The lack of
-// collision is only an issue while she is drinking from the pond"; "collision should not impact her drinking from the pond
-// animations"). Her module lists circles for the player only (`__gtBP.col()`): one round her feet, two along her body and one
-// on each neck segment and her head, each counting once that part comes below head height and growing as it comes down.
+// Backpacka (standard tier): while he is down at the pond in the planting Event (his show's 16-40 s), the player cannot walk
+// into him (the author: "give Backpacka basic collision so that the user cannot move inside of her model"; "The lack of
+// collision is only an issue while he is drinking from the pond"; "collision should not impact his drinking from the pond
+// animations"). His module lists circles for the player only (`__gtBP.col()`): one round his feet, two along his body and one
+// on each neck segment and his head, each counting once that part comes below head height and growing as it comes down.
 //
-// The Event is started, then her show is moved to 17 s (she is landing). Once she is down, her show is set to 26 s (drinking)
-// before each walk and the player is walked into her with the left stick from four sides for 2.5 s each; checked every 50 ms: the player's body (0.6 m) never overlaps a circle
-// by more than one frame's step, the walk was stopped (the player ends outside her), and she does not move (her place comes
-// from her show alone). After she lifts off (show past 40 s) there are no circles. Also: no page errors.
+// The Event is started, then his show is moved to 17 s (he is landing). Once he is down, his show is set to 26 s (drinking)
+// before each walk and the player is walked into him with the left stick from four sides for 2.5 s each; checked every 50 ms: the player's body (0.6 m) never overlaps a circle
+// by more than one frame's step, the walk was stopped (the player ends outside him), and he does not move (his place comes
+// from his show alone). After he lifts off (show past 40 s) there are no circles. Also: no page errors.
 //
 //   node tools/test_backpacka.js [file]
 const path = require('path');
@@ -28,12 +28,12 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const t0 = performance.now(); while (!D.me.active && performance.now() - t0 < 15000) await wait(50);
     if (!D.me.active || !BP || !BP.col) return false;
     await wait(1500); BP.start(D.Re.t - 17);
-    // down: the circle round her feet at its full size (it grows while she lands)
+    // down: the circle round his feet at its full size (it grows while he lands)
     const t1 = performance.now(); let last = 0;
     while (performance.now() - t1 < 30000) { const c = BP.col(); if (c.length > 3 && c[0].r > 0.5 && Math.abs(c[0].r - last) < 0.01) break; last = c.length ? c[0].r : 0; await wait(500); }
     return BP.col().length > 3;
   });
-  expect('the Event starts and Backpacka lands at the pond (her circles appear)', started);
+  expect('the Event starts and Backpacka lands at the pond (his circles appear)', started);
   const where = () => page.evaluate(() => {
     const D = window.__dbg, BP = window.__gtBP, p = D.At.position, R = BP.preview ? null : null;
     let over = 0; for (const c of BP.col()) over = Math.max(over, c.r + D.t.player.bodyR - Math.hypot(p.x - c.x, p.z - c.z));
@@ -60,13 +60,13 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       const endD = Math.hypot(w.x - setup.cx, w.z - setup.cz);
       sides.push({ a, worst: +worst.toFixed(3), endD: +endD.toFixed(2), R: +setup.R.toFixed(2), rootMove: +rootMove.toFixed(3), n: w.n });
     }
-    note('walks into Backpacka (heading, deepest overlap with a circle in m, end distance from her middle, her extent, how far she moved): ' + sides.map((s) => `${s.a}: ${s.worst} / ${s.endD} of ${s.R} / ${s.rootMove}`).join(', '));
-    expect('the player never walks into her: overlap with her circles at most one frame\'s step (0.07 m) from every side', sides.every((s) => s.worst <= 0.07), JSON.stringify(sides));
-    expect('she was down at the pond for every walk (circles present)', sides.every((s) => s.n > 3), JSON.stringify(sides.map((s) => s.n)));
-    expect('every walk was stopped at her edge (the player ends outside her extent)', sides.every((s) => s.endD >= s.R + 0.5), JSON.stringify(sides.map((s) => [s.endD, s.R])));
-    expect('she is not moved by the player (her place comes from her show alone)', sides.every((s) => s.rootMove < 0.01), JSON.stringify(sides.map((s) => s.rootMove)));
+    note('walks into Backpacka (heading, deepest overlap with a circle in m, end distance from his middle, his extent, how far he moved): ' + sides.map((s) => `${s.a}: ${s.worst} / ${s.endD} of ${s.R} / ${s.rootMove}`).join(', '));
+    expect('the player never walks into him: overlap with his circles at most one frame\'s step (0.07 m) from every side', sides.every((s) => s.worst <= 0.07), JSON.stringify(sides));
+    expect('he was down at the pond for every walk (circles present)', sides.every((s) => s.n > 3), JSON.stringify(sides.map((s) => s.n)));
+    expect('every walk was stopped at his edge (the player ends outside his extent)', sides.every((s) => s.endD >= s.R + 0.5), JSON.stringify(sides.map((s) => [s.endD, s.R])));
+    expect('he is not moved by the player (his place comes from his show alone)', sides.every((s) => s.rootMove < 0.01), JSON.stringify(sides.map((s) => s.rootMove)));
     const after = await page.evaluate(async () => { const D = window.__dbg, BP = window.__gtBP; BP.start(D.Re.t - 44); await new Promise((r) => setTimeout(r, 1500)); return BP.col().length; });
-    expect('no circles once she has lifted off (only the pond needs them)', after === 0, String(after));
+    expect('no circles once he has lifted off (only the pond needs them)', after === 0, String(after));
   }
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   await g.close();

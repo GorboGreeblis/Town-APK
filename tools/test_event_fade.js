@@ -1,7 +1,7 @@
 // The Event's start and end never pop anything (standard tier; the author: "everything hidden must fade out at the
 // start of the Event and then fade in at the end of the Event. Nothing should ever appear to pop out or pop in";
 // FIXES A4-A8). Two Events are played back to back (fast simulation), every animation frame sampled:
-//   - the mist bank beyond the fence (A4) rolls in to full within 16 s of the start (15 s since 3.15.57, A9) and back
+//   - the mist bank beyond the fence (A4) rolls in to full within 31 s of the start (30 s since 3.15.62, A16) and back
 //     out to nothing after the end; the scene's mist (everything beyond the fence fogged by where it stands, A9)
 //     follows the bank's own strength and is exactly 0 after the Event;
 //   - the clouds and every Blossom and Flint (A5) fade out at the start and in at the end: an object is hidden only
@@ -53,12 +53,12 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       const t0 = performance.now();
       while (D.me.active && performance.now() - t0 < 400000) {
         await wait(100); const t = (performance.now() - t0) / 1000;
-        if (t < 16.2) e.mist7 = J.mist.p();
+        if (t < 31.2) e.mist7 = J.mist.p();
         { const k = J.mist.p(), want = k * k * (3 - 2 * k); e.fogOff = Math.max(e.fogOff, Math.abs((C.fog.gcMist || 0) - want)); }
         if (n === 2 && e.shrunk === null && t > 1.5) e.shrunk = Math.max(...J.garden.plants.map((p) => p.g.scale.x));
         if (n === 2 && J.garden.plants.length && J.garden.plants.every((p) => p.grow >= 1 && !p.gcSh) && t > 3) e.grownBack = true;
       }
-      const t1 = performance.now(); while (performance.now() - t1 < 18000) await wait(100);
+      const t1 = performance.now(); while (performance.now() - t1 < 33000) await wait(100);
       e.endMist = J.mist.p(); e.endFog = C.fog.gcMist || 0; e.endClouds = cm.opacity; e.endPickups = pk.filter((p) => !p.userData.taken && p.visible && (p.userData.gcF === undefined || p.userData.gcF >= 1)).length;
       out.push(e);
     }
@@ -69,7 +69,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   note(`${r.frames} frames sampled; ${r.clouds} clouds, ${r.nPickups} pickups; ` + JSON.stringify(r.out) + '; Backpacka switched off: ' + JSON.stringify(r.bp));
   const [a, b] = r.out;
   expect('both Events started', a.started && b.started);
-  expect('the mist is at full within 16 s of the start', a.mist7 >= 0.99 && b.mist7 >= 0.99, `${a.mist7}, ${b.mist7}`);
+  expect('the mist is at full within 31 s of the start (30 s since 3.15.62, A16)', a.mist7 >= 0.99 && b.mist7 >= 0.99, `${a.mist7}, ${b.mist7}`);
   expect('the scene\'s mist follows the bank (within 0.02) and is 0 after the Event', [a, b].every((e) => e.fogOff < 0.02 && e.endFog === 0), JSON.stringify([a, b].map((e) => [e.fogOff, e.endFog])));
   expect('nothing pops: clouds, Blossoms, Flint and the UFO are hidden only once faded out and shown at 0', r.nPops === 0, r.pops.join(' | '));
   expect('no UFO appears during the Event', r.ufoDuring === 0, String(r.ufoDuring));

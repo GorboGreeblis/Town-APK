@@ -178,11 +178,11 @@ together in one pass.
 - **Use the shared kit**: `x.*` and `KIT.surf` cache materials, so a new part in an existing look adds no material
   and batches with the rest. A new material created after loading must be warmed (`warm_coverage.js` fails on a lit
   material without its shaders; B27 was the Gem's).
-- **A model built after loading** (as Backpacka is, by her module's pre-warm, after the step that batches the
+- **A model built after loading** (as Backpacka is, by his module's pre-warm, after the step that batches the
   scene) must be handed to the batcher when it is built, or every part draws on its own (P25: 96 parts, about 83
   draws a frame). Its geometry must not change while it plays, or a batch copy goes stale.
 - **Collision**: the player's movement checks player-only circles (`uo.pc`); Backpacka's at the pond (F-B37) grow
-  as her parts come below head height and never move her. A new body the player must not walk into gets its own,
+  as his parts come below head height and never move him. A new body the player must not walk into gets its own,
   with a test like `test_backpacka.js`.
 - **Faces**: use `KIT.eye` and `KIT.mouth` for the house face; pass the lids to `born` so they blink.
 - **A new screen face or painted texture**: make it while loading and keep it (Montgummery's faces are all made at
