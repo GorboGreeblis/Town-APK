@@ -532,7 +532,8 @@ What the models have in common, as built:
   periods (17-37 s), the head looking about, the stalks retracting every 11 s; when it talks the head and stalks lift.
 
 #### The robin
-- A plump songbird (about .45 m) on a bark branch: rusty breast, dark back and head, white throat with streaks, a
+- A plump songbird (about .45 m) on a bark branch of the big tree beside the church (since 4.0.3, A30), facing the
+  park: rusty breast, dark back and head, white throat with streaks, a
   yellow bill, white eye-rings and brows, three tail feathers. All matte clay, no textures. It breathes, looks about,
   flicks its tail every 9 s, and when picked flies up, hides for 10-18 s and returns.
 
@@ -670,7 +671,8 @@ Garden at the origin. Inside it:
 - **What fills the gaps.** 1,750 grass tufts (nine blades each, in four greens: `#5f9a32`, `#6faa3a`, `#4f8a2a`,
   `#7ab842`), every sixth with a tiny white or yellow five-petal flower, scattered by the seeded generator anywhere in
   the park except the Garden (15.8 m), the walks, the dance floor, inside buildings and within 3.4 m of the key
-  spots; three big park trees (31, -33.5; -17, -34, where the robin perches; -16, 37).
+  spots; two big park trees (31, -33.5; -16, 37, beside the church, where the robin perches; a third at -17, -34,
+  the robin's until 4.0.3, was removed at the author's word, A30).
 - **The fence.** Black iron railings 1.04 m high round the whole park, with no gate: square pickets 7 cm wide every
   0.32 m on two rails (0.18 and 0.9 m up), a post every 3.2 m with a pyramid cap, and brick pillars (`#9a4a36`, 1.3 m,
   stone caps, iron balls) at the four corners and the middle of the north side. Beyond 18-28 m the modelled pickets

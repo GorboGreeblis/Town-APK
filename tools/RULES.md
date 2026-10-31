@@ -78,7 +78,8 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
       faded material; `test_stands.js` checks both and that they stay shown.
     - **Characters never fade**: no townsperson, and not Sparkakus, built inside the Library ("Sparkakus really should
       be the same as all other NPCs"; F-B68), is ever part of a fading group; a group holding one is split round
-      them. Lights never fade either (the shaders' light count must not change during play).
+      them. Lights never fade either (the shaders' light count must not change during play), nor anything whose
+      showing the game itself switches (the portal's blue effect; F-B71).
     Fading is drawn only: collision stays on while a group is hidden, and as it comes back anyone standing in it is
     pushed out (FIXES S3). The gazebo's walls (its seven railed sides) are solid for everyone and its doorway is open to
     anyone (2026-10-30: "The doorway to the Gazebo should be open and collision free for anyone to enter and exit";
