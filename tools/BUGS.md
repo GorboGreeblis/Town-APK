@@ -19,6 +19,7 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| S12 | Flash clean-up (the author): Nextessa and her pizza box were built on each order and disposed when she left | 4.0.5: made at load and reused (FIXES S12; `test_courier.js`) | 2026-10-31 |
 | S11 | Flash clean-up (the author): text scenes made a sprite and material per line and let them go at the end | 4.0.4: bubbles pooled; every text scene checked on the headset's path (`test_vig_flash.js`); GPU work during play listed (`play_census.js`) (FIXES S11) | 2026-10-31 |
 | S10 | Flashes around pickups (the author): the hidden HUD was still redrawn and uploaded after every pickup | 4.0.4: the HUD is redrawn only while open (FIXES S10) | 2026-10-31 |
 | A36 | Mama Gorbo's new cap clipped into her big eye disk in the pictures (the author) | 4.0.4, before release: worn pushed back, 8.4 cm clear; `test_cap.js` (FIXES A36) | 2026-10-31 |

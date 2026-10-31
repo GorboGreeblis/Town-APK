@@ -201,6 +201,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | The HUD only on Y while looking at the left-hand watch; closed by Y or looking away (A35) | `test_watch.js` (standard tier) | done (4.0.4) |
 | Mama Gorbo's cap never clips her eye disks; it rests on her head (A36) | `test_cap.js` (standard tier); pictures: `shots.js --preset mama` (front, side, three-quarter, back, above, and from a standing player's eyes) | done (4.0.4) |
 | Backpacka's water (the drip from his mouth, the jets, the drops, the rainbow) seen against the Event's mist (F-B74) | `test_bp_water.js` (standard tier; pictures) | done (4.0.4) |
+| Nextessa and her pizza box made at load and reused; nothing built or disposed during her visits (S12) | `test_courier.js` (standard tier) | done (4.0.5) |
 | The cardinal on the second park tree: named, flies off when picked like the robin, fades with the park's trees (A37, A38) | `test_content.js` (the robin and cardinal checks), `test_stands.js` / `test_noseeds.js` (the group "the park's trees and birds"); pictures: `shots.js --preset birds` | done (4.0.4) |
 | No HUD redraw (texture upload) while the HUD is closed; opened, it is never shown with an old picture (S10) | `test_watch.js` (standard tier) | done (4.0.4) |
 | Speech bubbles clear both speakers in every text scene, drawn over everything (F-B77) | `test_bubble_clear.js` (standard tier) | done (4.0.4) |

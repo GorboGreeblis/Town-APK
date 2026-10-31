@@ -115,6 +115,7 @@ if [ "$TIER" != quick ]; then
   run "the watch and the HUD: the HUD hidden by default; Y while looking at the left-hand watch opens it, Y again or looking away closes it (A35)" node "$ROOT/tools/test_watch.js" "$ASSET"
   run "Mama Gorbo's cap: clear of both eye disks by 3 cm or more, its rim on her head (A36)" node "$ROOT/tools/test_cap.js" "$ASSET"
   run "Backpacka's water shows against the mist: the drip from his mouth at the pond and in flight, the jets, drops and rainbow over the Garden, each with a mist wall behind (F-B74)" node "$ROOT/tools/test_bp_water.js" "$ASSET"
+  run "Nextessa's visits build nothing: two pizza orders bring the same Nextessa and box, no GL buffer made or deleted (S12)" node "$ROOT/tools/test_courier.js" "$ASSET"
   run "speech bubbles clear both speakers in every text scene, drawn over everything (F-B77)" node "$ROOT/tools/test_bubble_clear.js" "$ASSET"
   run "text scenes cause no flash: every pair played in VR on the headset's render path, the player walking round: no GPU work in a frame, no shader made, bubbles never filling the view (S9, S11)" node "$ROOT/tools/test_vig_flash.js" "$ASSET"
   run "Mushroom in the Event: down his ramp at the start, never stuck or off its side, home on his desk after (F-B52)" node "$ROOT/tools/test_mushroom_event.js" "$ASSET"

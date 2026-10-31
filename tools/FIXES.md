@@ -1332,6 +1332,15 @@ the new picture is in place, so it is never shown out of date. Each pickup is no
 trail ("pick blossom", "pick flint"), so a log shows how long before a flash the last pickup came. `test_watch.js`:
 pickups while closed redraw nothing; opening redraws once and never shows an old picture.
 
+- **S12** (4.0.5; S11 continued, the author: "let's try to clean things up to be less likely to cause these sorts of
+issues in the future"): Nextessa was built on every pizza order (her model made, merged and batched, then her pizza box
+made) and thrown away when she left, so each visit made and uploaded new geometry and disposed it again (the play
+census: 40 buffers made and 26 deleted in a busy session, most of them hers). Now she and her box are made and uploaded
+while loading; an order brings the same Nextessa and the same box back, her leaving puts them away (nothing disposed),
+and the delivered box is kept for the next order. She is not drawn through the draw batcher (one character, a few draws
+while she visits), so no batch is built or dropped for her. `test_courier.js` (standard tier, new): two orders, each
+delivered; the second brings the same model and box; no GL buffer made or deleted during either visit.
+
 - **A39** (4.0.4; the author: "Please limit Gooward's goo barrage (after giving a Blossom) by making Gooward
 non-interactable until the goo barrage is over"): a Blossom given to Gooward starts his barrage (eight volleys over
 2.7 s, each splatting on the view 0.95 s after it is thrown, the last at about 3.65 s). For 4 s from the gift he is left
