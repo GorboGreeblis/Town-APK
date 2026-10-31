@@ -62,7 +62,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     fading structures, fade out and fade in at the same time, and not in parts"). The grouping stands for future work
     ("Please note this grouping of all kiosks and all trees for future work"):
     - **All kiosks**: every building but the church (the post office, the Sheriff's kiosk, Garden Supplies, the gallery,
-      the shop, the juice bar) and **the Gazebo**, which counts as a kiosk "in all regards". Each kiosk is its own item;
+      the shop, the juice bar), **the Gazebo**, which counts as a kiosk "in all regards", and **the Phone Booth** and
+      **the Portal** (2026-10-30: "The Phone Booth and the Portal should both be treated as kiosks"; A27). Each kiosk is
+      its own item;
       it waits while its owner is within 6 m of home before it fades out. Once out, nothing comes back until the Event
       ends, however near the player comes (2026-10-30: "Just keep everything faded out until things fade back in. I
       don't care if there is invisible collision"; the earlier come-back-when-near rule was Claude's, not asked for).
@@ -74,6 +76,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
       Church / Cave and Ancient can never fade out. Neither can Somlet or the Pond, or anything in the Garden itself";
       "if we hide the Post Office, we must never hide Somlet"). None of these may be in a fading group or share a
       faded material; `test_stands.js` checks both and that they stay shown.
+    - **Characters never fade**: no townsperson, and not Sparkakus, built inside the Library ("Sparkakus really should
+      be the same as all other NPCs"; F-B68), is ever part of a fading group; a group holding one is split round
+      them. Lights never fade either (the shaders' light count must not change during play).
     Fading is drawn only: collision stays on while a group is hidden, and as it comes back anyone standing in it is
     pushed out (FIXES S3). The gazebo's walls (its seven railed sides) are solid for everyone and its doorway is open to
     anyone (2026-10-30: "The doorway to the Gazebo should be open and collision free for anyone to enter and exit";

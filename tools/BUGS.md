@@ -19,6 +19,12 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| F-B70 | P31's wrapper on `Layers` methods threw for methods the bundled three.js lacks (`enableAll`, `disableAll`; never called by the game; found measuring F-B69) | 4.0.2: only existing methods are wrapped (FIXES F-B70) | 2026-10-30 |
+| F-B69 | Gemtoe's tie still floated, seen from the side (the author, 4.0.1): 13-17 cm in front of the chest | 4.0.2: set back to the neck and curved along the chest, 0.6-1.4 cm off it (FIXES F-B69) | 2026-10-30 |
+| F-B68 | Sparkakus hidden with the Library during the Event, only his tail's effect showing (the author, 4.0.1) | 4.0.2: characters and lights are never in a fade group (FIXES F-B68) | 2026-10-30 |
+| F-B67 | The mist on top of the fence still vanished as the player neared it (the author, 4.0.1) | 4.0.2: the fog full 0.25 m past the fence, the first mist wall 0.3 m beyond it (FIXES F-B67) | 2026-10-30 |
+| F-B66 | Mushroom jumped through his kiosk's side wall leaving for a visit, the player at his ramp's foot (the author, 4.0.1; must fix) | 4.0.2: owners stay owners while leaving (their starting home), and anyone pushed out of a hull leaves by the side they came from (FIXES F-B66) | 2026-10-30 |
+| S6 | A full-screen flash 2.3 s into the second Event as the flowers shrank, the player among them (the author's log a5afcdd5) | 4.0.2: a Garden plant or pickup holding the player's head is not drawn that frame (FIXES S6) | 2026-10-30 |
 | F-B65 | The player could walk through the gazebo's railings and posts (their collision was only in the route planner) | 3.15.67: the seven railed sides are solid walls for everyone, the doorway open (FIXES F-B65) | 2026-10-30 |
 | F-B64 | The Event's far-scenery fader (since 3.15.54) faded the pond, which must never fade (found while building P33) | 3.15.66: the fader keeps everything within 6 m of the pond (FIXES F-B64) | 2026-10-30 |
 | F-B63 | A batched object starting to move after 2 s still was drawn up to 3 frames late (P29; full pass on 3.15.64, `opt_identity.js`, Backpacka's show) | 3.15.65: a moved part wakes its batch (FIXES F-B63) | 2026-10-30 |

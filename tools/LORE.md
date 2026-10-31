@@ -926,8 +926,10 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
 - The townsfolk take places on three rings round the pillar (3.5 m for four of them, 7.5 m for six, 11.5 m for the
   rest), off the stepping-stone paths. Each plants a flower at 0.015 m: five kinds of wild plant built leaf by leaf
   (their parts are named after thistle, mallow, chicory and others), scaled up 3.2 times and 3.68 upward (15%
-  taller, A20), their petals and blooms 40% more saturated than drawn and the palest tinted (A22). In a later Event the old
-  flowers shrink away and grow back when watered (F-B43).
+  taller, A20), each with more open blooms of its own kind (A28: the thistle 5 more heads, the mayweed 8 more daisies,
+  the chicory 4 more flowers, the milkweed two more umbels, the mallow three more flowers). Every plant's flowers take a
+  random colour of its own, drawn anew each Event (A29); the stems, leaves, buds and the mayweed's yellow centres keep
+  theirs. In a later Event the old flowers shrink away, take their new colour and grow back when watered (F-B43).
 - Pizza boxes stand in eight stacks round the Garden; Anomalee eats from her own open box (F-B49).
 - Fortizmo plays her horn; King Dino's drums slow to 88 beats a minute; Backpacka drinks at the pond, sprays the
   Garden and leaves low over the north-west fence into the mist (A7); the mist bank closes round the town.

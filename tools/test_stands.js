@@ -4,12 +4,14 @@
 // give them time to fade out and then give them time to fade in", "We don't want to do it too quickly"). The park's
 // stands (every building but the church) and the robin fade out during the Event and back after it, to save their draws
 // while the Event plays. One Event, the player standing at the Garden's edge, sampled every 100 ms:
-//   - the faded set is the six stands, Gemtoe's gazebo (a kiosk in all regards, the author) and every tree (the park's three
+//   - the faded set is the six stands, Gemtoe's gazebo (a kiosk in all regards, the author), the phone booth and the portal (kiosks too, the author) and every tree (the park's three
 //     big ones, the robin's among them, and the town's trees outside the fence; one unit), never the church;
 //   - no stand starts fading while its owner (a townsperson whose home is inside it) is within 6 m of home; once out, it
 //     stays out until the Event ends;
 //   - a fade out takes at least 9 s (not quickly); every stand whose owner left is hidden while the Event dances;
 //   - after the Event every stand is back in full, and none fades out again on its way back;
+//   - no character is in a faded group (every townsperson, and Sparkakus, built inside his library: "the same as all
+//     other NPCs"), and Sparkakus is shown while the Event dances;
 //   - the church and Cave, the Ancient, the pond, Somlet and anything in the Garden are never in a faded group or share a
 //     faded material, and the church, the Ancient, the pond and Somlet are never hidden during the run (the author: they
 //     "can never fade out");
@@ -53,6 +55,11 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const out = { robinWithTree, treeN, names: S.list.map((s) => s.name), owners: Object.fromEntries(S.list.map((s) => [s.name, s.own.map((h) => h.id)])), guardN: guard.length, guardHidden: [], fadedGuard: [], early: [], fadeOut: {}, hiddenWhileDancing: [], lateReturn: [], endF: {}, near: null };
     const mats = new Set(); for (const s of S.list) for (const [m] of s.mats) mats.add(m);
     const faded = new Set(); for (const s of S.list) for (const g0 of s.gs) g0.traverse((x) => faded.add(x));
+    // every character is like every other NPC (the author: "Sparkakus really should be the same as all other NPCs"):
+    // no townsperson and no marked character (Sparkakus, built inside his library) is in a faded group
+    const chars = []; C.traverse((x) => { if ((x.userData && x.userData.gcChar) || D.It.all.some((h) => h.group === x)) chars.push(x); });
+    out.charsFaded = chars.filter((x) => { for (let p = x; p; p = p.parent) if (faded.has(p)) return true; return false; }).map((x) => (D.It.all.find((h) => h.group === x) || { id: 'Sparkakus' }).id);
+    out.charN = chars.length; const spark = chars.find((x) => x.userData && x.userData.gcChar);
     out.inFaded = []; [...guard, ...garden].forEach((o) => { let hit = false; o.traverse((x) => { if (faded.has(x)) hit = true; }); for (let p = o; p; p = p.parent) if (faded.has(p)) hit = true; if (hit) out.inFaded.push(`#${C.children.indexOf(top(o))}`); });
     [...guard, ...garden].forEach((o) => o.traverse((x) => { const ms = x.material ? (Array.isArray(x.material) ? x.material : [x.material]) : []; for (const m of ms) if (mats.has(m)) out.fadedGuard.push(`#${C.children.indexOf(top(x))} ${x.type} ${m.type}`); }));
     const H = window.__gtFrameHaz, c0 = H ? H.kinds.compileShader || 0 : 0;
@@ -75,10 +82,10 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       }
       for (const o of guard) if (!shown(o)) out.guardHidden.push(`#${C.children.indexOf(top(o))} ${o.type}`);
     };
-    while (D.me.active && performance.now() - t0 < 400000) {
+    while (D.me.active && performance.now() - t0 < 600000) {
       await wait(100); tick();
       const el = (performance.now() - t0) / 1000;
-      if (!sawDance && el > 60 && S.list.filter((s) => s.own.every((h) => home(h) > 6)).every((s) => s.f === 0)) sawDance = true;
+      if (!sawDance && el > 60 && S.list.filter((s) => s.own.every((h) => home(h) > 6)).every((s) => s.f === 0)) { sawDance = true; out.sparkShown = spark ? shown(spark) : null; }
       // once the stands are hidden, walk up to one (the gallery, or the first hidden) and time its return
       if (sawDance && !nearDone) {
         const s = S.list.find((x) => x.name === 'gallery' && x.f === 0) || S.list.find((x) => x.f === 0);
@@ -92,7 +99,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
         nearDone = true;
       }
     }
-    out.hiddenWhileDancing = sawDance;
+    out.hiddenWhileDancing = sawDance; out.eventEnded = !D.me.active; out.eventS = Math.round((performance.now() - t0) / 1000);
     // up to 3 minutes: the fader caps each frame's step at 0.1 s, so on a loaded machine (a few frames a second) the
     // 10 s fade-in takes longer in wall time
     const t1 = performance.now(); while (performance.now() - t1 < 180000) { await wait(100); tick(); if (S.list.every((s) => s.f === 1)) break; }
@@ -104,9 +111,12 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   });
   await g.close();
   if (r.none) { expect('the stand fader exists (P33)', false); process.exit(1); }
-  note(JSON.stringify({ names: r.names, owners: r.owners, fadeOut: r.fadeOut, near: r.near, endF: r.endF, guard: r.guardN }));
-  expect('the faded set is the six stands, the gazebo, and all the trees with the robin; never the church', ['post', 'sheriff', 'garden', 'gallery', 'shop', 'juice', 'gazebo', 'trees and the robin'].every((n) => r.names.includes(n)) && !r.names.includes('church'), r.names.join(', '));
+  note(JSON.stringify({ names: r.names, owners: r.owners, fadeOut: r.fadeOut, near: r.near, endF: r.endF, guard: r.guardN, eventEnded: r.eventEnded, eventS: r.eventS }));
+  expect('the Event ended (within 10 minutes)', r.eventEnded === true, `${r.eventS} s`);
+  expect('the faded set is the six stands, the gazebo, the phone booth, the portal, and all the trees with the robin; never the church', ['post', 'sheriff', 'garden', 'gallery', 'shop', 'juice', 'gazebo', 'phone booth', 'portal', 'trees and the robin'].every((n) => r.names.includes(n)) && !r.names.includes('church'), r.names.join(', '));
   expect('the robin and every tree (the park\'s and the town\'s) are one fade item', r.robinWithTree && r.treeN >= 60, `robin with tree ${r.robinWithTree}, ${r.treeN} trees`);
+  expect('no character (every townsperson, and Sparkakus in his library) is in a faded group', r.charN >= 12 && r.charsFaded.length === 0, r.charsFaded.join(', '));
+  expect('Sparkakus is shown while the Event dances (his library hidden)', r.sparkShown === true, String(r.sparkShown));
   expect('nothing that must stay (the church and Cave, the Ancient, the pond, Somlet, the Garden) is in or holds a faded group', r.inFaded.length === 0, r.inFaded.slice(0, 6).join(', '));
   expect('nothing that must stay shares a faded material', r.fadedGuard.length === 0, r.fadedGuard.slice(0, 6).join(', '));
   expect('no stand starts fading while its owner is within 6 m of home', r.early.length === 0, r.early.join(', '));
