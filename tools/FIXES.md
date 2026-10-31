@@ -1342,7 +1342,9 @@ between frames). Every token is now built once while loading, drawn by the geome
 way out of the gazebo, her stuck rescue (a townsperson blocked eight times while seen, four while unseen, is moved to
 its target with a sparkle) moved her straight onto that point, which is where the player stood: a 1.55 m jump into the
 player. The rescue now never moves a townsperson to a spot within its body plus 0.6 m of the player; it keeps waiting
-(and tries again) until the player moves.
+(and tries again) until the player moves. Not a regression: 4.0.2 does the same (a 1.58 m jump after 36 s of game time,
+measured); its earlier passes ran on a loaded machine, where less game time passed in the test's 60 s and the rescue
+never came.
 
 - **S13** (4.0.5; found re-checking `test_recover.js`): when the recovery safety turns the draw batcher off (S4 step 2),
 it hands every batched object back to be drawn on its own from each batch's list of members; a batch whose list was
