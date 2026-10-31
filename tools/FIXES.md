@@ -1351,7 +1351,11 @@ census: 40 buffers made and 26 deleted in a busy session, most of them hers). No
 while loading; an order brings the same Nextessa and the same box back, her leaving puts them away (nothing disposed),
 and the delivered box is kept for the next order. She is not drawn through the draw batcher (one character, a few draws
 while she visits), so no batch is built or dropped for her. `test_courier.js` (standard tier, new): two orders, each
-delivered; the second brings the same model and box; no GL buffer made or deleted during either visit.
+delivered; the second brings the same model and box; no GL buffer deleted during either visit and none made inside a
+frame (three small ones, two quads and a 205-vertex piece, are uploaded between frames by the geometry hold on her
+first draw). Also: a few batches of load-time warm-up objects (the Event's pizza boxes round the Garden) were dropped
+by the batcher in the first minute of play, once their objects had left the scene; they are now dropped at the end of
+loading.
   Also: the draw batcher dropped a batch whose objects had left the scene (after 10 checks) by disposing its geometry
   and material inside the frame being drawn (the play census: 21 buffers deleted inside headset frames during text
   exchanges). The disposal now happens just after the frame.
