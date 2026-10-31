@@ -1332,6 +1332,22 @@ the new picture is in place, so it is never shown out of date. Each pickup is no
 trail ("pick blossom", "pick flint"), so a log shows how long before a flash the last pickup came. `test_watch.js`:
 pickups while closed redraw nothing; opening redraws once and never shows an old picture.
 
+- **P34** (4.0.11; T20: every Event's start cost one long frame, about 42 ms, in the author's headset logs 8d838908 and
+5dc2b257): the press on "Yes" ran the whole start in that frame, 44 ms of it headless: the ring where the townsfolk
+stand to watch (a search over radii with every character's footprint cells, 19 ms) and every character's foot points
+(the lowest points of each mesh, read from up to 3,000 vertices a mesh, 21 ms). The ring depends only on who takes part
+and the singer's fixed angle, so it is worked out while loading and remembered (by the participants in order: an
+Event with the same townsfolk reuses it; any other set is worked out then, as before); the foot points depend only on
+each mesh's shape, so they are read while loading (the cache they were already kept in), and the pose-dependent part
+still runs at the start, as before. The start now takes 18 ms headless (3 ms of it Mama Gorbo's goo, whose shape
+changes). A first try spread the footprints over the following frames instead; it was dropped, since it would read
+them in a walking pose, not the standing one.
+
+- **S16** (4.0.11; T19, S12 continued): the Gem's stand (the cylinder, its collar, the ring and the orange top Sparkakus
+assembles it on, the census's "the Speech") was built and uploaded the first time the Gem was assembled; the stand's
+shapes are now made and uploaded with the Gem's pieces while loading, and its ring is one shared shape (it was a new
+geometry each time).
+
 - **A43** (4.0.10; the author: "Add an additional package to the mail pile behind the Post Office kiosk. This package
 should have a 'To Ormstown' label"): a fifth parcel, in the others' style and size, on the back of the pile (between
 the stacks, clear of them so the whole label shows), addressed "To Ormstown". Its label is painted while loading like the
