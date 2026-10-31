@@ -59,7 +59,7 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | D9 | Event performance: P14, P16-P18 (3.15.36-3.15.40; P16-P18 removed in 3.15.43); B27 (3.15.35, 3.15.39); closed by the author, reopened as T16 | 2026-10-27 |
 | D10 | Content, governor, HUD, greeting and warm-up coverage tests; P19 (3.15.41); standard and full tiers pass | 2026-10-28 |
 | D11 | Former T2 (safe release build), T5-T7, T11-T14 (performance and stability passes, the graphical pass, the soak): done across 3.15.11-3.15.41, recorded in TEST_PLAN.md and PERF.md | 2026-10-28 |
-| D13 | T16, the frame rate (top priority): the author, 2026-10-31: "The FPS now fully passes the bar, in headset" (4.0.7-4.0.9; PERF.md sections 13-14) | 2026-10-31 |
+| D22 | T16, the frame rate (top priority): the author, 2026-10-31: "The FPS now fully passes the bar, in headset" (4.0.7-4.0.9; PERF.md sections 13-14) | 2026-10-31 |
 | D12 | The flashes after the 3.15.41 headset run: textures made during play (F-B29, F-B30, `texture_census.js`) and the Event's pizza batched (P20) (3.15.42) | 2026-10-28 |
 | D13 | No layer swaps and no uploads inside a frame (F-B31), the Event scale removed (P16-P18), P21, P22, the occlusion census (nothing to remove); one game file edited directly (3.15.43) | 2026-10-28 |
 | D14 | The game rebuildable from the game file: painted textures seeded (R1), `test_standalone.js`, `build.sh`; `RULES.md` (3.15.44) | 2026-10-28 |
