@@ -105,6 +105,7 @@ beyond the VR-entry fix.
 97. The author's 3.15.56 logs and the flashes (F-B48)
 98. Seams (F-B47)
 99. Stuck, floating and jittering townsfolk, the mist over the fence, and the tests made quick (3.15.61-3.15.63)
+100. The Ordinals check on 4.0.9 (2026-10-31)
 
 ## Must be confirmed on a headset
 
@@ -1667,3 +1668,29 @@ beyond the VR-entry fix.
     minute and now covers 296 lines. Software drawing dominates the slow stages (about 300k triangles an eye, every
     frame); `renderEvery` draws one frame in N and `fastSim: 'matrices'` none, keeping the game's own update every
     frame.
+
+100. **The Ordinals check on 4.0.9 (2026-10-31; T18's Ordinals part; the author: "Please do the ordinals check now. And
+    log the results").** The file checked: `index.compressed.html` of 4.0.9 (285,914 bytes, sha256 f6522b592988fac1...,
+    commit fb0eee0). All passed:
+    - **Size**: 285,914 bytes, under the 390,000 an inscription must stay within.
+    - **Exact**: it unpacks to the game file (`index.html`, 4.0.9) byte for byte (`build_compressed.js --check`).
+    - **ordinals.com and ordiscan.com, the inscription's own page** (`/content/<id>`): `test_compressed.js` serves the file
+      alone (every other path a 404) with the content policy both sites send. Confirmed against the live sites and
+      ord's source: ordiscan.com's `/content/` answers with `default-src 'self' 'unsafe-eval' 'unsafe-inline' data:
+      blob:` (read live), and ord (the server ordinals.com runs) sends the same (`src/subcommand/server.rs`). ordinals.com
+      itself answered this container with Cloudflare's bot check (403), so its headers were read from ord's source. With
+      a Quest Browser's user agent the page shows "LOADING" counting up to 99%, unpacks, boots (59-68 s headless), enters
+      VR through the fake headset and draws frames (105-110), with no page error and no request to another host.
+    - **ord's stricter policy** (`--csp-origin`, where `'self'` becomes `https://ordinals.com/content/`, `/blockheight`,
+      `/blockhash`, `/blocktime`, `/r/`): the same checks, all passed (the game fetches nothing it needs; its optional
+      extras, the pre-painted textures' list and the log, are refused and it paints and goes on without them).
+    - **The explorer's preview** (ord shows an inscription on its page in `<iframe sandbox=allow-scripts
+      src=/preview/<id>>`, confirmed in ord's source): in such a frame it unpacks and boots with no page error, and, VR
+      being refused there, says "VR can't start inside this preview. Open this inscription's full page in the Quest
+      Browser to play."
+    - **Other browsers**: with a desktop browser's user agent it says the game is designed for the Meta Quest Browser and
+      to open the file there (v4.0.9 shown), and unpacks nothing.
+    - **Not checkable from here**: the real Quest Browser on the headset (the fake headset stands in for it; the
+      standalone `index.html`, the same game, is the author's to open in the Quest Browser), and an actual inscription.
+    Logs: `tools/.runs/ordinals_409.log` and `ordinals_409_strict.log` (not kept in git).
+

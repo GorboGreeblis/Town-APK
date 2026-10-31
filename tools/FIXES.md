@@ -1332,6 +1332,25 @@ the new picture is in place, so it is never shown out of date. Each pickup is no
 trail ("pick blossom", "pick flint"), so a log shows how long before a flash the last pickup came. `test_watch.js`:
 pickups while closed redraw nothing; opening redraws once and never shows an old picture.
 
+- **A42** (4.0.9; the author: "Please ensure that pizza boxes on the ground fade out at the end of the Event. Pizza
+boxes currently pop out instead"): the Event's pizza boxes (the stacks round the ring of watchers and Anomalee's open
+box) were removed the frame the Event ended. They now fade out over 1.6 s first. They draw with their own copies of the
+box materials, made while loading, so nothing else fades with them (Nextessa's box, the boxes elsewhere), and their
+see-through form is compiled while loading (no shader compiled during the fade); their draw batches fade with them.
+A new Event during the fade finishes it at once. `test_pizza_fade.js` (standard tier, new).
+  Also (S15 follow-up): the geometry hold's log measured each held object's distance from the camera's position inside
+  the player's rig, not its world position, so on the headset every distance read as the distance from the town's
+  centre (log 5dc2b257: "2 objects ... r22.23m at 1.1m" at each Event's start, which are these pizza boxes' two draw
+  batches appearing, 17 m out, not something at the eyes); it now measures from the eyes and names a held draw batch
+  and how many objects it holds.
+
+- **A41** (4.0.8; the author: "Move the HUD to be placed on top of the watch face when opened. Ensure that the HUD
+has a solid background to be fully readable. The user should be able to read it like looking at their watch after it's
+opened"): opened, the HUD now lies on the watch face itself, in the face's plane 4 mm above it, centred over it, 8 cm
+wide (it was a 15 cm panel held above the controller grip), reading the same way as the face's own text (upright seen
+from the wrist side); its panel is fully opaque (it was 85%). Pictures from the face, both sides and both ends of the
+hand. `test_watch.js` checks where it lies, its size and its opacity.
+
 - **S15** (4.0.7; the author's log 8d838908: three flashes marked, one 2.4 s after leaving the Cave as a text scene
 started, one 2.6 s after leaving the Cave during an Event, one 2.0 s after starting an Event; "nothing came close to my
 face when the flashes occurred ... ever"; "if the log is not capturing the information you need, please update the

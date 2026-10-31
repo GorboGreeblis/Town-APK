@@ -104,7 +104,9 @@ git config core.hooksPath tools/git-hooks   # once per clone: refuses a commit w
 tools/build.sh --bump                   # after editing tools/uncompressed.html: everything, from the game file alone
 ```
 
-`tools/build.sh` minifies the game file (a no-op when it already is), copies it to `index.html` (root) and the APK's
+`tools/build.sh` minifies the game file (a no-op when it already is; when minifying changes it, `minify_identity.js`
+proves the minified file builds exactly the same world as the edited one, object for object and bit for bit, or the
+build stops), copies it to `index.html` (root) and the APK's
 asset, re-paints the pre-painted textures in `assets/tex/`, raises the version by one if what ships changed
 (`--bump`; without it the build stops and says so), stamps that version into the four places the game shows it
 (step 3b: the landing text, the gate's corner twice, the VR loading box; it fails unless it finds exactly four) and
