@@ -19,6 +19,7 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| A42 | The Event's pizza boxes popped out at its end | 4.0.9: they fade out over 1.6 s (FIXES A42) | 2026-10-31 |
 | S15 | Flashes the record could not explain (log 8d838908: after leaving the Cave twice, after starting an Event) | 4.0.7: light record of the drawn picture, XR frame health, no drawing without a head pose, a mark that no longer stalls; cause still open until the next headset log (FIXES S15) | 2026-10-31 |
 | F-B81 | The watch face clipped into the back of the hand at the cuff | 4.0.7: thinner, shorter case set toward the fingers (FIXES F-B81) | 2026-10-31 |
 | F-B80 | Mama Gorbo's head came through her cap's crown and brim | 4.0.7: cap refitted against her real head (FIXES F-B80) | 2026-10-31 |

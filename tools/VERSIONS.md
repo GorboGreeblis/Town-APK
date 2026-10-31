@@ -6,6 +6,7 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 
 | Version | versionCode | What changed | Headset |
 | --- | --- | --- | --- |
+| 4.0.9 | 78 | **A42** the Event's pizza boxes fade out at its end (were removed at once). The geometry hold's log measures from the eyes (it measured from the rig's origin on the headset) and names held draw batches. | pending |
 | 4.0.8 | 77 | **A41** the HUD opens on the watch face itself (in its plane, centred, 8 cm wide) with a fully opaque panel, reading like the watch. Carries 4.0.7's flash record (S15) for the next headset log. | pending |
 | 4.0.7 | 76 | The author's asks on 4.0.6 and the flash log 8d838908. **S15** the flash record: the drawn picture's brightness every frame (read back only at the mark, `rec light`), XR frame health (frames with no head pose are no longer drawn), state changes, head jumps and turns, and the geometry hold's objects in the trail; the mark no longer stalls a frame. **F-B80** Mama Gorbo's cap refitted so her head never comes through it. **F-B81** the watch clear of the hand. **A40** the Cardinal faces the Robin. | pending |
 | 4.0.6 | 75 | Flash clean-up continued (the author's headset test of 4.0.4 still to come). **S14** every Gree-mail token, and every Garden plant shape, built and uploaded while loading, not the first time it is used. | pending |

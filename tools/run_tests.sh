@@ -115,6 +115,7 @@ if [ "$TIER" != quick ]; then
   run "the watch and the HUD: the HUD hidden by default; Y while looking at the left-hand watch opens it, Y again or looking away closes it; opened, it lies on the watch face, opaque (A35, A41)" node "$ROOT/tools/test_watch.js" "$ASSET"
   run "Mama Gorbo's cap: her head never through the crown or brim, both eye disks 3 cm clear, its rim on her head (A36, F-B80)" node "$ROOT/tools/test_cap.js" "$ASSET"
   run "the flash record: no drawing without a head pose, tracking logged, the light record catches a staged one-frame flash at no frame cost, the mark never stalls, held geometry named (S15)" node "$ROOT/tools/test_flashlog.js" "$ASSET"
+  run "the Event's pizza boxes fade out at its end with their own materials, no shader compiled (A42)" node "$ROOT/tools/test_pizza_fade.js" "$ASSET"
   run "Backpacka's water shows against the mist: the drip from his mouth at the pond and in flight, the jets, drops and rainbow over the Garden, each with a mist wall behind (F-B74)" node "$ROOT/tools/test_bp_water.js" "$ASSET"
   run "Nextessa's visits build nothing: two pizza orders bring the same Nextessa and box, no GL buffer made or deleted (S12)" node "$ROOT/tools/test_courier.js" "$ASSET"
   run "speech bubbles clear both speakers in every text scene, drawn over everything (F-B77)" node "$ROOT/tools/test_bubble_clear.js" "$ASSET"
