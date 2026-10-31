@@ -15,7 +15,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
 
 (async () => {
   const { expect, note, failures } = reporter();
-  const g = await boot({ file, vr: true, fastSim: true });
+  const g = await boot({ file, vr: true, fastSim: false });   // drawn for real: GPU buffers are made when a geometry is first drawn
   const errors = []; g.page.on('pageerror', (e) => errors.push(e.message)); g.page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text().split('\n')[0]); });
   const r = await g.page.evaluate(async () => {
     const D = window.__dbg, wait = (ms) => new Promise((res) => setTimeout(res, ms)), gl = D.O.getContext();

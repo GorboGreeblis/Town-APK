@@ -1332,6 +1332,18 @@ the new picture is in place, so it is never shown out of date. Each pickup is no
 trail ("pick blossom", "pick flint"), so a log shows how long before a flash the last pickup came. `test_watch.js`:
 pickups while closed redraw nothing; opening redraws once and never shows an old picture.
 
+- **S13** (4.0.5; found re-checking `test_recover.js`): when the recovery safety turns the draw batcher off (S4 step 2),
+it hands every batched object back to be drawn on its own from each batch's list of members; a batch whose list was
+damaged (the test's injected fault) left its members on the batcher's hidden layer, drawn by nothing. The step now
+also sweeps the scene and returns anything still on that layer. (`test_recover.js`'s draws-per-frame check now allows
+for multiview, which draws both eyes in one call: 35 there, 70 on the classic path.)
+
+- **F-B78** (4.0.5; found by `test_bubble_clear.js` on 4.0.4): a speech bubble cleared the two speakers' heads but not
+a third townsperson standing under it; with Mama Gorbo's taller cap (A36) Fortizmo and Zollod's bubble cut 8 cm into
+her. A bubble now rises above every townsperson within its span (2.2 m plus their body), not only the speakers.
+`test_vig_flash.js` now counts only bubbles the renderer drew in a frame (one out of view is not drawn, and a bubble is
+sized as it is drawn), and retries a scene whose speaker is busy for a moment.
+
 - **S12** (4.0.5; S11 continued, the author: "let's try to clean things up to be less likely to cause these sorts of
 issues in the future"): Nextessa was built on every pizza order (her model made, merged and batched, then her pizza box
 made) and thrown away when she left, so each visit made and uploaded new geometry and disposed it again (the play
@@ -1340,6 +1352,9 @@ while loading; an order brings the same Nextessa and the same box back, her leav
 and the delivered box is kept for the next order. She is not drawn through the draw batcher (one character, a few draws
 while she visits), so no batch is built or dropped for her. `test_courier.js` (standard tier, new): two orders, each
 delivered; the second brings the same model and box; no GL buffer made or deleted during either visit.
+  Also: the draw batcher dropped a batch whose objects had left the scene (after 10 checks) by disposing its geometry
+  and material inside the frame being drawn (the play census: 21 buffers deleted inside headset frames during text
+  exchanges). The disposal now happens just after the frame.
 
 - **A39** (4.0.4; the author: "Please limit Gooward's goo barrage (after giving a Blossom) by making Gooward
 non-interactable until the goo barrage is over"): a Blossom given to Gooward starts his barrage (eight volleys over

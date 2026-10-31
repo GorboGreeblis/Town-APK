@@ -19,6 +19,8 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| S13 | Recovery: turning the batcher off left a damaged batch's members hidden | 4.0.5: the scene is swept for anything left on the batcher's layer (FIXES S13) | 2026-10-31 |
+| F-B78 | A speech bubble cut into a third townsperson under it (Fortizmo and Zollod's over Mama Gorbo, 8 cm, with her new cap) | 4.0.5: bubbles rise above every townsperson under their span (FIXES F-B78) | 2026-10-31 |
 | S12 | Flash clean-up (the author): Nextessa and her pizza box were built on each order and disposed when she left | 4.0.5: made at load and reused (FIXES S12; `test_courier.js`) | 2026-10-31 |
 | S11 | Flash clean-up (the author): text scenes made a sprite and material per line and let them go at the end | 4.0.4: bubbles pooled; every text scene checked on the headset's path (`test_vig_flash.js`); GPU work during play listed (`play_census.js`) (FIXES S11) | 2026-10-31 |
 | S10 | Flashes around pickups (the author): the hidden HUD was still redrawn and uploaded after every pickup | 4.0.4: the HUD is redrawn only while open (FIXES S10) | 2026-10-31 |
