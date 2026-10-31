@@ -1332,6 +1332,51 @@ the new picture is in place, so it is never shown out of date. Each pickup is no
 trail ("pick blossom", "pick flint"), so a log shows how long before a flash the last pickup came. `test_watch.js`:
 pickups while closed redraw nothing; opening redraws once and never shows an old picture.
 
+- **S15** (4.0.7; the author's log 8d838908: three flashes marked, one 2.4 s after leaving the Cave as a text scene
+started, one 2.6 s after leaving the Cave during an Event, one 2.0 s after starting an Event; "nothing came close to my
+face when the flashes occurred ... ever"; "if the log is not capturing the information you need, please update the
+logging methods so that it does"; "put in place safeties to prevent further flashes"; "tears should also not be
+occurring in any visible way"): at none of the three marks did the record see anything it watched (no shader, texture
+or geometry change, no GPU work inside a frame, no frame gap, nothing near the eyes); the headset's own counters (stale
+frames, tears) are as high elsewhere in the run as at the marks. So the record could not tell whether the flash was in
+the picture the game drew or added after it, by the headset. Added:
+  - **Light record**: every frame the GPU copies an 8x8 average of the left eye's picture, as the game drew it, into a
+    ring of the last 512 frames (about 7 s), with no readback during play (a per-frame pixel read cost most of the frame
+    rate headless and would stall the headset). The mark reads it back (asynchronously) and logs `rec light`: the
+    brightness in 1/8 s steps over the last 5 s, the biggest one-frame change, and every one-frame spike or dip (with
+    the frame number). A spike there means the game drew the flash; none means it came after the game.
+  - **XR frame health**: a frame with no head pose is no longer drawn (it drew into the last frame's picture, which the
+    headset may still be showing) and is logged, as is lost and regained tracking, a frame the game did not draw and
+    one drawn twice; the mark sums them (`rec xr frames`).
+  - The mark's trail now carries every state change (Cave, scenes, Event, screens, snap turns) and the record logs head
+    jumps over 30 cm, turns over 20 degrees in a frame and sky or fog jumps; the geometry hold names what it held (the
+    object, its colour, its size and its distance from the eyes); a failing mark dump logs its error instead of
+    ending silently (it had: `THREE.Sphere` is not in the bundled three.js).
+  - The mark itself no longer stalls a frame: its near-eyes scan (60-80 ms on the headset) runs in 3 ms slices
+    between frames, and its light readback is asynchronous.
+  - A text scene's confetti and thrown tokens are not drawn within 35 cm of the eyes (a cheap guard; the author has
+    never seen anything near their face, so it is not the cause).
+  Tears: the headset's compositor counts them (25 in this run, none at the marks); the game cannot switch them off, but
+  stalls and missed frames make them likelier, and the mark's stall (up to 79 ms) is gone. `test_flashlog.js`
+  (standard tier, new) checks the lot, both render paths.
+
+- **F-B80** (4.0.7; the author: "Mama Gorbo's hat is too imbedded in her head. Around the brim: you can see that her
+head clips through the hat"): measured against her real head (19,669 vertices of her body, drips and goo tube, not the
+shape function they were built from), 605 vertices came through the crown (up to 6.4 cm) and 62 through the brim. A
+search over the cap's height, size, crown height, tilt and depth for no vertex through it with both eye disks at least
+3 cm clear chose: 10 cm higher, 5 cm further back, 1.9x wide with a crown 1.5x taller, tilted back 0.5 rad. No head
+vertex comes through, the eyes are 20 cm clear and the rim sits on her head (at most 8.6 cm off it, at the back of her
+egg-shaped head). `test_cap.js` now measures all of this against the real head.
+
+- **F-B81** (4.0.7; the author: "The new watch face clips too much into the hand model"): the watch sat 2 mm into the
+back of the hand at the cuff; its case is now thinner and shorter (33 x 7 x 29 mm) and set 2 mm up and 3 cm toward
+the fingers, the face on top of it; pictures from the face, the fingers' side, the cuff's side and both low sides show
+it clear of the hand and the cuff and still readable. `test_watch.js` passes.
+
+- **A40** (4.0.7; the author: "Please flip the Cardinal to be facing the opposite direction (towards the Robin)"): the
+Cardinal is turned round on its branch (its beak toward the Robin: 0.94 in line, was -0.94). `test_content.js` checks
+it, before either bird flies.
+
 - **S14** (4.0.6; S11 continued; found by `test_vig_flash.js`, which now lists every geometry drawn for the first time
 during its hour of play): the Gree-mail tokens the townsfolk send each other in their scenes (Hennrick's cube, King
 Dino's crown, Fortizmo's note, Mama Gorbo's goo, the cards, tiles, gems, letters and the rest) share one geometry per

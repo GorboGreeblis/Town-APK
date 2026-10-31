@@ -84,8 +84,9 @@
   class Frame {
     constructor(session) { this.session = session; this.predictedDisplayTime = performance.now(); }
     getViewerPose() {
+      if (S.noPose > 0) { S.noPose--; return null; }   // tracking lost for a frame (test_flashlog.js)
       const v = [new View('left', this.session), new View('right', this.session)];
-      return { views: v, transform: new RigidTransform({ x: 0, y: this.session.floorSpace ? S.pose.y : 0, z: 0 }), emulatedPosition: false };
+      return { views: v, transform: new RigidTransform({ x: 0, y: this.session.floorSpace ? S.pose.y : 0, z: 0 }), emulatedPosition: !!S.emulated };
     }
     // Controller poses are null unless a test turns them on (window.__fakeXR.poses = true): three.js shows a
     // controller's ray and grip groups only while their spaces have poses, and the input test steers the rays

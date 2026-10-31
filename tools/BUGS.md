@@ -19,6 +19,9 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| S15 | Flashes the record could not explain (log 8d838908: after leaving the Cave twice, after starting an Event) | 4.0.7: light record of the drawn picture, XR frame health, no drawing without a head pose, a mark that no longer stalls; cause still open until the next headset log (FIXES S15) | 2026-10-31 |
+| F-B81 | The watch face clipped into the back of the hand at the cuff | 4.0.7: thinner, shorter case set toward the fingers (FIXES F-B81) | 2026-10-31 |
+| F-B80 | Mama Gorbo's head came through her cap's crown and brim | 4.0.7: cap refitted against her real head (FIXES F-B80) | 2026-10-31 |
 | S14 | Flash clean-up: each token's shape was uploaded the first time it was sent, during play | 4.0.6: every token is built and uploaded while loading (FIXES S14) | 2026-10-31 |
 | F-B79 | Gemtoe's stuck rescue moved her onto the player standing in the gazebo's way out (a 1.55 m jump) | 4.0.5: the rescue never moves a townsperson onto the player (FIXES F-B79) | 2026-10-31 |
 | S13 | Recovery: turning the batcher off left a damaged batch's members hidden | 4.0.5: the scene is swept for anything left on the batcher's layer (FIXES S13) | 2026-10-31 |

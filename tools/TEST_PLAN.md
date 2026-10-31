@@ -199,7 +199,8 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | No speech bubble over about 50 degrees of the view or within 1.2 m of the eyes (S9) | `test_bubble_eye.js` (standard tier) | done (4.0.4) |
 | Mushroom's hat clear of his head (F-B76) | `shots.js` views of his head (pictures) | done (4.0.4) |
 | The HUD only on Y while looking at the left-hand watch; closed by Y or looking away (A35) | `test_watch.js` (standard tier) | done (4.0.4) |
-| Mama Gorbo's cap never clips her eye disks; it rests on her head (A36) | `test_cap.js` (standard tier); pictures: `shots.js --preset mama` (front, side, three-quarter, back, above, and from a standing player's eyes) | done (4.0.4) |
+| Mama Gorbo's cap never clips her eye disks; it rests on her head (A36) | `test_cap.js` (standard tier); pictures: `shots.js --preset mama` (front, side, three-quarter, back, above, and from a standing player's eyes) | done (4.0.4; head through the cap checked since 4.0.7, F-B80) |
+| The flash record: the drawn picture's brightness every frame, XR frame health, no drawing without a head pose, a mark that never stalls (S15) | `test_flashlog.js` (standard tier) | done (4.0.7) |
 | Backpacka's water (the drip from his mouth, the jets, the drops, the rainbow) seen against the Event's mist (F-B74) | `test_bp_water.js` (standard tier; pictures) | done (4.0.4) |
 | Nextessa and her pizza box made at load and reused; nothing built or disposed during her visits (S12) | `test_courier.js` (standard tier) | done (4.0.5) |
 | The cardinal on the second park tree: named, flies off when picked like the robin, fades with the park's trees (A37, A38) | `test_content.js` (the robin and cardinal checks), `test_stands.js` / `test_noseeds.js` (the group "the park's trees and birds"); pictures: `shots.js --preset birds` | done (4.0.4) |
