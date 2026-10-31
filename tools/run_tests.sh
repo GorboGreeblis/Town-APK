@@ -105,7 +105,7 @@ if [ "$TIER" != quick ]; then
   run "A never-compiled shader is compiled between frames, never inside one (S2)" node "$ROOT/tools/test_shaderhold.js" "$ASSET"
   run "The Event's stands fade out and back slowly, never while their owners are home; the church, the Ancient, the pond, Somlet and the Garden never fade (P33)" node "$ROOT/tools/test_stands.js" "$ASSET"
   run "recovery: a townsperson that keeps failing or loses its position is reset, a failing batcher pass is stepped down and frames keep drawing (S4, S5)" node "$ROOT/tools/test_recover.js" "$ASSET"
-  run "the flash safeties: the head inside a character hides it for the frame only; a throwing draw hook does not stop the frame (S1)" node "$ROOT/tools/test_safeties.js" "$ASSET"
+  run "the flash safeties: the head inside a character hides it for the frame only; a throwing draw hook does not stop the frame (S1); the head guard compiles no shader when it first shows (B47)" node "$ROOT/tools/test_safeties.js" "$ASSET"
   run "the gazebo: its seven railed sides stop the player, its doorway open to anyone; Gemtoe talkable from outside and home through the doorway (F-B65)" node "$ROOT/tools/test_gazebo.js" "$ASSET"
   run "owners leave home by their way out, never through a wall: every kiosk owner and Gemtoe sent on a visit with the player in the way, no jump over 0.5 m (F-B66)" node "$ROOT/tools/test_owner_exit.js" "$ASSET"
   run "the Garden's flowers: each plant a random colour of its own, new each Event, changed only while shrunk away; nothing compiled in a frame (A29)" node "$ROOT/tools/test_flower_tint.js" "$ASSET"
