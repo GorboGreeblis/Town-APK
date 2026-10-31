@@ -1337,6 +1337,9 @@ during its hour of play): the Gree-mail tokens the townsfolk send each other in 
 Dino's crown, Fortizmo's note, Mama Gorbo's goo, the cards, tiles, gems, letters and the rest) share one geometry per
 shape, but each shape was uploaded the first time anyone sent that token, during play (about 20 uploads in an hour,
 between frames). Every token is now built once while loading, drawn by the geometry warm-up and put away.
+  Also: the Garden plants' warm-up compiled their programs but never uploaded their shapes, so each plant's full and
+  low-detail shapes (two of them 15,400 and 18,500 vertices) were uploaded when first drawn in the Event (the play
+  census, which now names each first-drawn shape's owner and place). They are now uploaded while loading too.
 
 - **F-B79** (4.0.5; found by `test_owner_exit.js`, repeatable): with the player standing on the first point of Gemtoe's
 way out of the gazebo, her stuck rescue (a townsperson blocked eight times while seen, four while unseen, is moved to
