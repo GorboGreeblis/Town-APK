@@ -203,6 +203,43 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   never fills the view (S1).
 - **A failing draw hook.** A per-object draw hook that throws is logged once and the frame is drawn to the end (S1).
 
+## Every element of the game, where it is described and what tests it
+
+The index of the game's elements (the author: "Fully build out the documentation to cover all game elements"). The
+story, characters and looks are in `LORE.md` (section named); the fixes in `FIXES.md`; tests in `README.md`.
+
+| Element | What it is | Described in | Tested by |
+| --- | --- | --- | --- |
+| The park and the town | A cartoon town round Greeblis Park, inside a picket fence; the mist beyond it in the Event | LORE "The world", "Environment design and style" | `test_world.js`, `test_seams.js`, `test_zfight.js`, `test_coincident.js`; `shots.js --preset park` |
+| The Garden and the Summoning Pillar | The park's centre; the Pillar ("Use the Summoning Pillar") starts the Event with the Summoning Stone | LORE "The world", "Events" | `test_content.js` (zones), `test_noseeds.js`, `test_stands.js` |
+| The kiosks | Post Office, Sheriff's kiosk, Garden Supplies, Gooward's Gallery, Juice Bar, First Bank (with Gemtoe's Gazebo); the Phone Booth and the Portal count as kiosks | LORE "The world" | `test_npc_home.js`, `test_owner_exit.js`, `test_gazebo.js`, `test_stands.js` |
+| The Post Office's mail pile | Behind the kiosk: letters, sacks and five parcels ("To Montreal", "To Cobourg", "To Bangkok", "To Ormstown", one blank) | LORE "The world"; FIXES A43 | pictures only (`shots.js` free views; FIXES A43) |
+| The church and the Cave | The Ancient's home; the Cave's walkway and visit spot; visitors come to the Ancient | LORE "The Ancient" | `test_cave.js`, `test_visits.js`; `shots.js --preset cave` |
+| The Library | Sparkakus's kiosk, its books (OVERCOMING SHYNESS), the Speech | LORE "The Library's books" | `test_content.js`, `test_progression.js` |
+| The pond | A flat water texture, its stones on the ground | LORE "Environment design and style"; FIXES A33 | `shots.js --preset pond` |
+| The Portal and the TELEPHONE | Pizza is ordered by phone through the Portal, once the Sheriff takes a Blossom | LORE "The world" | `test_progression.js`, `test_courier.js` |
+| The park's trees and birds | The robin and the cardinal (facing the robin) on the two big trees; picked, they fly off | LORE "The robin", "The cardinal" | `test_content.js`; `shots.js --preset birds` |
+| The billboard and the WANTED posters | King Dino's jazz billboard; the alien and GLOOPERNAUGHT posters | LORE "The world" | `test_textfit.js` (painted text), pictures |
+| The townsfolk | Hennrick, Mushroom, Anomalee, King Dino, Gooward, Zollod, Somlet, Fortizmo, Etcher, Gemtoe, Glyph, Montgummery, Mama Gorbo, Sparkakus, the Ancient | LORE "Cast", "Character by character" | `test_roam.js`, `test_stuck.js`, `test_jitter.js`, `test_greet.js`, `test_cap.js` (Mama Gorbo's cap) |
+| Nextessa | The pizza courier from the far future: arrives, waits for the Gem, delivers | LORE "Nextessa" | `test_courier.js`, `test_courier_gem.js` |
+| Backpacka | The flying creature of the Event: drinks from the pond, waters the Garden, flies into the mist | LORE "Backpacka" | `test_backpacka.js`, `test_bp_water.js` |
+| Pickups | 32 Blossoms and 40 flint in the park, regrowing in 12 s | LORE "Currency, items and rewards" | `test_world.js` |
+| Rewards and items | Artifacts (dance-battle wins), the Gem, the Summoning Stone, Seeds, Snacks, the shyness book, outfits | LORE "Currency, items and rewards", "Quests and their lines" | `test_progression.js`, `test_courier_gem.js` |
+| Talking and gifts | Menus (`Talk to ...`, `Give a blossom`), dialogue pages, greetings | LORE "Quests and their lines", "Gifts and gardening lines" | `test_progression.js`, `test_menu.js`, `test_textfit.js`, `test_greet.js` |
+| Dance battles | Etcher, Glyph and Montgummery; rock, scissors, paper; King Dino on drums | LORE "Events" | `test_content.js` |
+| Text scenes and token scenes | Two townsfolk meet: speech bubbles, or thrown tokens (one choreography ends in a confetti burst) | LORE "Vignettes" | `test_vig_flash.js`, `test_bubble_clear.js`, `test_bubble_eye.js` |
+| Mama Gorbo and Gooward's meeting | Hearts and a goo barrage; Gooward not interactable during it | LORE "Events"; FIXES A39 | `test_meet.js`, `test_meet_walk.js`, `test_goo_eye.js` |
+| King Dino's jazz | The jazz session | LORE "Events" | `test_jazz.js` |
+| The Speech | Sparkakus assembles the Gem from the three Artifacts | LORE "The Ancient", "Events" | `test_courier_gem.js`, `test_progression.js` |
+| The Event (planting) | Started at the Pillar: the town gathers in a ring, the mist rolls in, kiosks and trees fade, flowers are planted and grow, Backpacka waters them, pizza boxes are out (with Snacks) and fade at the end | LORE "Events"; GAME "Town life" | `test_stands.js`, `test_event_fade.js`, `test_flower_tint.js`, `test_pizza_fade.js`, `test_noseeds.js`, `test_mushroom_event.js`, `test_anomalee.js` |
+| The player | Walk, snap turn, the pick ray, the menus; the left-hand watch whose HUD opens on its face (Y while looking at it) | GAME "Controls"; FIXES A35, A41 | `test_input.js`, `test_menu.js`, `test_watch.js`, `test_hud.js` |
+| View safeties | The head guard (the view dims at a wall), the head inside a character, held uploads and shader compiles, eye guards (goo, bubbles, confetti) | GAME "Safeties"; FIXES S1-S15, F-B82 | `test_safeties.js`, `test_shaderhold.js`, `test_firstdraw.js`, `test_goo_eye.js`, `test_bubble_eye.js` |
+| The flash record | The B mark logs the last seconds: state changes, GPU work, the drawn picture's brightness, XR frame health | FIXES D2, S15; `HEADSET_DIAG.md` | `test_flashlog.js` |
+| Sound | Every sound synthesised; positional hearing radii | GAME "Content hooks" | `test_audio.js` |
+| Frame rate and quality | The governor (render scale, foveation), multiview, batching | `PERF.md`, `RENDERING.md` | `test_governor.js`, `test_lod.js`; report tools in `README.md` |
+| Stability | Recovery from faults, long play | GAME "Safeties"; FIXES S3-S5, S13 | `test_recover.js`, `test_soak.js` |
+| The three forms | The APK, `index.html` (archive), `index.compressed.html` (ordinal) | GAME "The three forms it ships in"; NOTES 100 | `test_entry.js`, `test_standalone.js`, `test_compressed.js` |
+
 ## Content hooks seen in the code
 
 - Dialogue trees keyed `p_etcher`, `p_gemtoe`, `p_glyph`, `p_mamagorbo`, with
