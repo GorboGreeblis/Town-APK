@@ -19,6 +19,7 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| F-B71 | The portal's blue effect no longer showed when a pizza was ordered (the author, 4.0.2): the fade group's set-up gave its materials copies (A27, F-B68) | 4.0.3: only materials a mesh outside the group uses are copied; the effect stays out of the fade (FIXES F-B71) | 2026-10-31 |
 | F-B70 | P31's wrapper on `Layers` methods threw for methods the bundled three.js lacks (`enableAll`, `disableAll`; never called by the game; found measuring F-B69) | 4.0.2: only existing methods are wrapped (FIXES F-B70) | 2026-10-30 |
 | F-B69 | Gemtoe's tie still floated, seen from the side (the author, 4.0.1): 13-17 cm in front of the chest | 4.0.2: set back to the neck and curved along the chest, 0.6-1.4 cm off it (FIXES F-B69) | 2026-10-30 |
 | F-B68 | Sparkakus hidden with the Library during the Event, only his tail's effect showing (the author, 4.0.1) | 4.0.2: characters and lights are never in a fade group (FIXES F-B68) | 2026-10-30 |

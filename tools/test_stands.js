@@ -18,6 +18,7 @@
 //   - the robin is in the same item as her tree (the author: "The Robin should always fade out and in with her tree");
 //   - walking up to a hidden stand leaves it hidden (nothing comes back until the Event ends; the author, 2026-10-30),
 //     and a townsperson put inside it is out of it once it is back after the Event (the fade-in safety);
+//   - the portal's blue effect still shows when the portal opens (F-B71);
 //   - no shader compiled inside a headset frame (the frame-hazard watch) and no page errors.
 //
 //   node tools/test_stands.js [file]
@@ -62,6 +63,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     out.charN = chars.length; const spark = chars.find((x) => x.userData && x.userData.gcChar);
     out.inFaded = []; [...guard, ...garden].forEach((o) => { let hit = false; o.traverse((x) => { if (faded.has(x)) hit = true; }); for (let p = o; p; p = p.parent) if (faded.has(p)) hit = true; if (hit) out.inFaded.push(`#${C.children.indexOf(top(o))}`); });
     [...guard, ...garden].forEach((o) => o.traverse((x) => { const ms = x.material ? (Array.isArray(x.material) ? x.material : [x.material]) : []; for (const m of ms) if (mats.has(m)) out.fadedGuard.push(`#${C.children.indexOf(top(x))} ${x.type} ${m.type}`); }));
+    // the portal's blue effect still opens (the pizza order; F-B71: its materials had been copied by the group's set-up)
+    { const ot = D.ot; ot.activate(); await wait(2000); const fx = []; ot.g.traverse((o) => { if (o.isMesh && o.material && o.material.transparent && o.material.map) fx.push(o.material.opacity); }); out.portalFx = fx.map((v) => +v.toFixed(2)); ot.close(); await wait(1000); }
     const H = window.__gtFrameHaz, c0 = H ? H.kinds.compileShader || 0 : 0;
     D.At.position.set(0, D.At.position.y, -17);   // the Garden's south edge: every stand over 14 m away
     const Kt = D.Kt; Kt.rewards.stone = Kt.rewards.seeds = Kt.rewards.snacks = true; D.oe.open(); await wait(400);
@@ -115,6 +118,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('the Event ended (within 10 minutes)', r.eventEnded === true, `${r.eventS} s`);
   expect('the faded set is the six stands, the gazebo, the phone booth, the portal, and all the trees with the robin; never the church', ['post', 'sheriff', 'garden', 'gallery', 'shop', 'juice', 'gazebo', 'phone booth', 'portal', 'trees and the robin'].every((n) => r.names.includes(n)) && !r.names.includes('church'), r.names.join(', '));
   expect('the robin and every tree (the park\'s and the town\'s) are one fade item', r.robinWithTree && r.treeN >= 60, `robin with tree ${r.robinWithTree}, ${r.treeN} trees`);
+  expect('the portal\'s blue effect shows when it opens (F-B71)', r.portalFx && r.portalFx.length >= 2 && r.portalFx.every((v) => v > 0.2), JSON.stringify(r.portalFx));
   expect('no character (every townsperson, and Sparkakus in his library) is in a faded group', r.charN >= 12 && r.charsFaded.length === 0, r.charsFaded.join(', '));
   expect('Sparkakus is shown while the Event dances (his library hidden)', r.sparkShown === true, String(r.sparkShown));
   expect('nothing that must stay (the church and Cave, the Ancient, the pond, Somlet, the Garden) is in or holds a faded group', r.inFaded.length === 0, r.inFaded.slice(0, 6).join(', '));

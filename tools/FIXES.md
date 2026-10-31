@@ -1172,6 +1172,21 @@ three-quarter and front (`shots.js --preset gemtoe`).
 does not have (`enableAll`, `disableAll`), so calling either threw. The game never calls them; the wrapper now wraps
 only the methods that exist.
 
+- **A30** (4.0.3; the author: "Move the Robin to the tree next to the Church. And then remove the tree that the Robin is
+on now"): the robin and her branch now sit on the big park tree beside the church (-16, 37), facing into the park;
+her old tree (-17, -34, by the shop) is gone, with its spot in the route planner's list and in the fade group's
+points. The robin still fades with the trees (RULES.md 26). The park's three big trees drew nothing from the seeded
+stream, so nothing else changes. Pictures: the robin on her new branch, the church with its tree, the old spot.
+
+- **F-B71** (4.0.3; the author: "The blue portal effect is no longer appearing after I order a pizza"): a fade group
+holding something that never fades (the portal's light; Sparkakus in the Library) is split into its parts round it
+(F-B68), and the set-up then judged every material in those parts shared with something outside the group (it compared
+against the group's top object, no longer in the group), so it gave each part a copy. The portal's update fades in the
+original materials of its effect while the effect drew with the copies, left at 0: the effect never showed. A material
+is now copied only when a mesh outside the group's own parts uses it (the shop 23 -> 19 faded materials, the gazebo
+10 -> 5, the portal 6 -> 2), and the portal's effect, whose showing the game controls, is never in its fade group (like
+its light). `test_stands.js`: the portal's effect reaches its full opacity when it opens (0.93; 4.0.2: 0).
+
 ## Multiview (release path since 3.15.34)
 
 Edits for the multiview experiment, in order. Three groups:
