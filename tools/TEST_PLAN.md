@@ -191,7 +191,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | An owner leaving home never jumps through their kiosk's wall, with the player in the way (F-B66; "make sure the issue with Mushroom never occurs with anyone else") | `test_owner_exit.js` (standard tier: every kiosk owner and Gemtoe) | done (4.0.2) |
 | Characters (Sparkakus too) and lights are never in a fade group; the phone booth and the portal fade as kiosks (F-B68, A27) | `test_stands.js` | done (4.0.2) |
 | A pickup holding the player's head is not drawn that frame; a Garden plant stays drawn (S6, revised in 4.0.4) | `test_safeties.js` | done (4.0.4) |
-| The fence's top in the mist from afar and up close (F-B67); Gemtoe's tie on his chest (F-B69); more blooms on every Garden flower (A28) | `shots.js --preset mist`, `--preset gemtoe`, `--preset garden` (pictures); `.runs/tie_gap.js` (the tie's gap, knot to tip) | done (4.0.2) |
+| The fence's top in the mist from afar and up close (F-B67); Gemtoe's tie on her chest (F-B69); more blooms on every Garden flower (A28) | `shots.js --preset mist`, `--preset gemtoe`, `--preset garden` (pictures); `.runs/tie_gap.js` (the tie's gap, knot to tip) | done (4.0.2) |
 | Every Garden plant's flowers a random colour of its own, new each Event, changed only while shrunk away (A29) | `test_flower_tint.js` (standard tier) | done (4.0.2) |
 | An Event without Seeds fades no kiosk and not the park's tree; only the town's trees (F-B72) | `test_noseeds.js` (standard tier) | done (4.0.4) |
 | The fence's pickets stay in front of the mist from afar (F-B73); Backpacka's water seen against the mist (F-B74) | `shots.js --event` with fence and Backpacka views (pictures) | done (4.0.4) |

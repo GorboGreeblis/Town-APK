@@ -696,7 +696,7 @@ only the fence, a metre of ground and the mist (pictures by the church at 30, 20
 `test_event_fade.js` checks the 15 s timing and that the scene's mist follows the bank and is 0 after the Event.
 
 - **A10** (3.15.57; the author: "Please give Gemtoe a neck tie. no shirt, just a tie"; pictures shown, then "a little
-too high", lowered): a tie on his bib, a knot under the bill and a pointed blade following the chest, in his gems'
+too high", lowered): a tie on her bib, a knot under the bill and a pointed blade following the chest, in her gems'
 purple with gold stripes (a canvas texture painted while loading).
 
 - **F-B47** (3.15.57; the author: "examine the houses in the outside ring: On the sides of the houses, where the wall
@@ -1039,9 +1039,9 @@ consistent collision"): the gazebo's posts and railings were only circles in the
 player's collision never reads, so the player walked through its walls (and a townsperson pushed off its route could
 too). Its seven railed sides are now walls from post to post (0.24 m thick, the posts at their ends), checked by the
 game's own `F.resolve` for the player and every townsperson alike; the eighth side, its doorway, is open to anyone.
-Gemtoe can be talked to from anywhere round it (his talk range 3.8 -> 4.6 m: the walls hold the player up to 4.0 m
-from him). Proven: walking at the gazebo from eight sides stops at the railing on seven and walks in through the
-doorway; Gemtoe's route home touches no wall and he is home in 11 s (`test_gazebo.js`, standard tier since 3.15.68); `test_roam.js` fails anyone standing in a railing.
+Gemtoe can be talked to from anywhere round it (her talk range 3.8 -> 4.6 m: the walls hold the player up to 4.0 m
+from her). Proven: walking at the gazebo from eight sides stops at the railing on seven and walks in through the
+doorway; Gemtoe's route home touches no wall and she is home in 11 s (`test_gazebo.js`, standard tier since 3.15.68); `test_roam.js` fails anyone standing in a railing.
 
 - **S3** (3.15.67; the author: "What happens if NPCs or the player are standing in the areas where kiosks or other
 objects fade back in? The user or NPCs should probably be push out of these areas and prevented from getting stuck.
@@ -1333,8 +1333,8 @@ trail ("pick blossom", "pick flint"), so a log shows how long before a flash the
 pickups while closed redraw nothing; opening redraws once and never shows an old picture.
 
 - **F-B79** (4.0.5; found by `test_owner_exit.js`, repeatable): with the player standing on the first point of Gemtoe's
-way out of the gazebo, his stuck rescue (a townsperson blocked eight times while seen, four while unseen, is moved to
-its target with a sparkle) moved him straight onto that point, which is where the player stood: a 1.55 m jump into the
+way out of the gazebo, her stuck rescue (a townsperson blocked eight times while seen, four while unseen, is moved to
+its target with a sparkle) moved her straight onto that point, which is where the player stood: a 1.55 m jump into the
 player. The rescue now never moves a townsperson to a spot within its body plus 0.6 m of the player; it keeps waiting
 (and tries again) until the player moves.
 
