@@ -199,6 +199,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | No speech bubble over about 50 degrees of the view or within 1.2 m of the eyes (S9) | `test_bubble_eye.js` (standard tier) | done (4.0.4) |
 | Mushroom's hat clear of his head (F-B76) | `shots.js` views of his head (pictures) | done (4.0.4) |
 | The HUD only on Y while looking at the left-hand watch; closed by Y or looking away (A35) | `test_watch.js` (standard tier) | done (4.0.4) |
+| Opened, the HUD lies on the watch face, centred, 8 cm wide, fully opaque (A41) | `test_watch.js` (standard tier) | done (4.0.8) |
 | Mama Gorbo's cap never clips her eye disks; it rests on her head (A36) | `test_cap.js` (standard tier); pictures: `shots.js --preset mama` (front, side, three-quarter, back, above, and from a standing player's eyes) | done (4.0.4; head through the cap checked since 4.0.7, F-B80) |
 | The flash record: the drawn picture's brightness every frame, XR frame health, no drawing without a head pose, a mark that never stalls (S15) | `test_flashlog.js` (standard tier) | done (4.0.7) |
 | Backpacka's water (the drip from his mouth, the jets, the drops, the rainbow) seen against the Event's mist (F-B74) | `test_bp_water.js` (standard tier; pictures) | done (4.0.4) |

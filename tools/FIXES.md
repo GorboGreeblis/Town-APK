@@ -1332,6 +1332,13 @@ the new picture is in place, so it is never shown out of date. Each pickup is no
 trail ("pick blossom", "pick flint"), so a log shows how long before a flash the last pickup came. `test_watch.js`:
 pickups while closed redraw nothing; opening redraws once and never shows an old picture.
 
+- **A41** (4.0.8; the author: "Move the HUD to be placed on top of the watch face when opened. Ensure that the HUD
+has a solid background to be fully readable. The user should be able to read it like looking at their watch after it's
+opened"): opened, the HUD now lies on the watch face itself, in the face's plane 4 mm above it, centred over it, 8 cm
+wide (it was a 15 cm panel held above the controller grip), reading the same way as the face's own text (upright seen
+from the wrist side); its panel is fully opaque (it was 85%). Pictures from the face, both sides and both ends of the
+hand. `test_watch.js` checks where it lies, its size and its opacity.
+
 - **S15** (4.0.7; the author's log 8d838908: three flashes marked, one 2.4 s after leaving the Cave as a text scene
 started, one 2.6 s after leaving the Cave during an Event, one 2.0 s after starting an Event; "nothing came close to my
 face when the flashes occurred ... ever"; "if the log is not capturing the information you need, please update the
