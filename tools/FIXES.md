@@ -1332,6 +1332,12 @@ the new picture is in place, so it is never shown out of date. Each pickup is no
 trail ("pick blossom", "pick flint"), so a log shows how long before a flash the last pickup came. `test_watch.js`:
 pickups while closed redraw nothing; opening redraws once and never shows an old picture.
 
+- **F-B79** (4.0.5; found by `test_owner_exit.js`, repeatable): with the player standing on the first point of Gemtoe's
+way out of the gazebo, his stuck rescue (a townsperson blocked eight times while seen, four while unseen, is moved to
+its target with a sparkle) moved him straight onto that point, which is where the player stood: a 1.55 m jump into the
+player. The rescue now never moves a townsperson to a spot within its body plus 0.6 m of the player; it keeps waiting
+(and tries again) until the player moves.
+
 - **S13** (4.0.5; found re-checking `test_recover.js`): when the recovery safety turns the draw batcher off (S4 step 2),
 it hands every batched object back to be drawn on its own from each batch's list of members; a batch whose list was
 damaged (the test's injected fault) left its members on the batcher's hidden layer, drawn by nothing. The step now
