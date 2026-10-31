@@ -15,12 +15,12 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 | --- | --- | --- | --- | --- |
 | B49 | Gooward floats or sinks 0.50 m and Mama Gorbo 0.33 m against their character, outside the Event, about two minutes in (`test_jitter.js`: "every model stays within 25 cm of where it is drawn relative to the character") | Gooward and Mama Gorbo, the park | `node tools/test_jitter.js index.html`: fails the same way on 4.0.10 as released (not from T19/T20's changes) | open; next in the author's order after T19 and T20 |
 | B50 | `test_stands.js`: the Event does not end within 10 minutes (605 s), so the portal and stands checks after it fail too | the planting Event, headless | `node tools/test_stands.js index.html`: fails the same way on 4.0.10 as released; the author's headset logs show Events ending in about 2-2.5 minutes, so the test (or the headless run) is the likelier cause | open; after B49 |
-| B51 | `test_cave.js`: "the player was in the Cave, then out of it" and "in the Cave, a draw below 0.1 makes a visit to the Ancient" (Hennrick's visit to Mushroom recorded instead) fail | the Cave, headless | `node tools/test_cave.js index.html`: fails the same way on 4.0.11 as released and on 4.0.12 | open; after B49 and B50 |
 
 ## Fixed
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| B51 | `test_cave.js` failed "in the Cave, then out of it" and the visit to the Ancient (also on 4.0.11 as released) | The test, not the game (the author: "It's possible your fail is the tool?"): it stood the player at the church's origin, no longer open floor, so collision pushed them out of the church before the check; it now stands them at the end of the visitors' walkway. All four checks pass on 4.0.12 | 2026-10-31 |
 | B47 | A shader compiled during play the first time the head guard (the view dimming at a wall) showed | 4.0.10: compiled at VR entry (FIXES F-B82) | 2026-10-31 |
 | B46 | Flashes (full-screen, one or two frames; last three in log 8d838908 on 4.0.6, after leaving the Cave and after starting an Event) | Fixed by the author's call, 2026-10-31, after none on 4.0.7 (log 5dc2b257): the safeties S1-S15 and the flash record (S15) stay in; reopen if one comes back, and press B right after it (the mark logs `rec light` and `rec xr frames`) | 2026-10-31 |
 | B48 | Compositor tears and stale frames counted by the headset (19-25 tears a run), never lined up with a flash | Closed by the author, 2026-10-31: the headset's own compositor, not visible in play; the frame rate passes the bar (T16 done) | 2026-10-31 |
