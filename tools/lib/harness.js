@@ -127,7 +127,7 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
         const f = C.prototype[k]; if (typeof f !== 'function' || f.__gtHaz) continue;
         const w = function () {
           const X = window.__fakeXR;
-          if (X && X.inFrame && !/^(framebufferTexture2D|framebufferTextureLayer|blitFramebuffer)$/.test(k)) {   // the layer's own per-frame attach and the classic path's end-of-frame resolve are normal
+          if (X && X.inFrame && !(window.__gtXR && window.__gtXR.lumBusy) && !/^(framebufferTexture2D|framebufferTextureLayer|blitFramebuffer)$/.test(k)) {   // the light probe's few-pixel read after the frame's drawing (the flash hunt) is not a hazard   // the layer's own per-frame attach and the classic path's end-of-frame resolve are normal
             const st = (new Error()).stack.split('\n').slice(2, 9).map((l) => l.trim()).join(' < ');
             // multiview (the headset's path): every texture operation inside the frame is a hazard (F-B31 defers them all to
             // after the frame); the classic path uploads changed textures at the frame's start, before drawing, so there

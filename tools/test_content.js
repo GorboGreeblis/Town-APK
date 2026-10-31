@@ -15,7 +15,7 @@
  *   outfits    the three outfits: too little flint, buying (worn at once), taking off and putting on again
  *   battles    each dancer's battle panel: its title and stamina bar ("Robot steps left", ...), King Dino on drums
  *   ancient    the Ancient's talk line
- *   robin      the robin flies off when picked; so does the cardinal on the second park tree (A38)
+ *   robin      the robin flies off when picked; so does the cardinal on the second park tree (A38), which faces the robin (A40)
  *   pizza      the courier ordered after the bribe comes through the glowing Portal and delivers (on its own when it
  *              reaches the player, else when claimed): the line and the Snacks
  *   vignettes  the two-line exchanges: speech bubbles or Gree-mail tokens, counted and ended; the Ancient's only inside
@@ -212,6 +212,11 @@ const LONG = process.argv.includes('--long');
   expect('battles: King Dino on drums', bat.every((b) => b.sub === 'KING DINO on drums.'), JSON.stringify(bat.map((b) => b.sub)));
 
   // ---- the robin
+  // the cardinal faces the robin (A40; the author: "Please flip the Cardinal to be facing the opposite direction (towards
+  // the Robin)"): its beak (head forward of its body) points, in the ground plane, toward the robin; measured before
+  // either flies off
+  const face = await page.evaluate(() => { const J = window.__dbg.JGP, T = THREE; if (!J.cardinal || !J.robin) return { none: true }; J.cardinal.bird.updateMatrixWorld(true); const h = J.cardinal.head.getWorldPosition(new T.Vector3()), fw = h.clone().sub(J.cardinal.bird.getWorldPosition(new T.Vector3())).setY(0).normalize(), to = J.robin.bird.getWorldPosition(new T.Vector3()).sub(h).setY(0).normalize(); return { dot: +fw.dot(to).toFixed(2) }; });
+  expect('cardinal: faces the robin (its beak toward the robin\'s tree)', !face.none && face.dot > 0.7, JSON.stringify(face));
   const robin = await page.evaluate(async () => { const H = window.__h, D = window.__dbg, z = H.zone('robin'); const b = window.__dbg.JGP.robin.bird; const p0 = b.getWorldPosition(new THREE.Vector3()); z.run(); await H.wait(1500); const p1 = b.getWorldPosition(new THREE.Vector3()); return { moved: +p0.distanceTo(p1).toFixed(2) }; });
   expect('robin: picking the robin makes it fly off', robin.moved > 0.3, JSON.stringify(robin));
   // the cardinal (A38) on the second park tree: the robin's behaviour, its own name
