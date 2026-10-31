@@ -1332,6 +1332,14 @@ the new picture is in place, so it is never shown out of date. Each pickup is no
 trail ("pick blossom", "pick flint"), so a log shows how long before a flash the last pickup came. `test_watch.js`:
 pickups while closed redraw nothing; opening redraws once and never shows an old picture.
 
+- **S17** (4.0.12; T19, S12 continued; found by the play census on 4.0.11, 26 buffers made during play, all between
+frames): the Ancient's own body (15 shapes, the largest 3,243 vertices) was uploaded the first time the player came near
+the church. The geometry warm-up draws every object once while loading, but the Ancient's draw wrapper hides his body
+whenever the camera is outside the church (so he is never seen through its walls), and it did so during the warm-up's
+draw too. The warm-up now switches that hiding off for its own draw. It also renews the renderer's "draws nothing" marks
+first (a subtree of meshes parked in a draw batch is marked so and skipped, so the warm-up could miss parked sources).
+All 15 are now on the GPU before the first frame.
+
 - **P34** (4.0.11; T20: every Event's start cost one long frame, about 42 ms, in the author's headset logs 8d838908 and
 5dc2b257): the press on "Yes" ran the whole start in that frame, 44 ms of it headless: the ring where the townsfolk
 stand to watch (a search over radii with every character's footprint cells, 19 ms) and every character's foot points

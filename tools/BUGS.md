@@ -15,6 +15,7 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 | --- | --- | --- | --- | --- |
 | B49 | Gooward floats or sinks 0.50 m and Mama Gorbo 0.33 m against their character, outside the Event, about two minutes in (`test_jitter.js`: "every model stays within 25 cm of where it is drawn relative to the character") | Gooward and Mama Gorbo, the park | `node tools/test_jitter.js index.html`: fails the same way on 4.0.10 as released (not from T19/T20's changes) | open; next in the author's order after T19 and T20 |
 | B50 | `test_stands.js`: the Event does not end within 10 minutes (605 s), so the portal and stands checks after it fail too | the planting Event, headless | `node tools/test_stands.js index.html`: fails the same way on 4.0.10 as released; the author's headset logs show Events ending in about 2-2.5 minutes, so the test (or the headless run) is the likelier cause | open; after B49 |
+| B51 | `test_cave.js`: "the player was in the Cave, then out of it" and "in the Cave, a draw below 0.1 makes a visit to the Ancient" (Hennrick's visit to Mushroom recorded instead) fail | the Cave, headless | `node tools/test_cave.js index.html`: fails the same way on 4.0.11 as released and on 4.0.12 | open; after B49 and B50 |
 
 ## Fixed
 
