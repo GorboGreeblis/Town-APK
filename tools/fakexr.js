@@ -11,6 +11,7 @@
  *   sessions                  every session created (last one is current)
  *   pose.y / pose.yaw         head height (m) and yaw (rad) used for views
  *   setInputs([{handedness, axes:[x,y,x2,y2], buttons:[{pressed,value}]}])
+ *   leftPose                  {position, orientation, matrix}: hold the left controller there (with poses on)
  *                             fake controllers (gamepad-like), [] for none
  *   frames                    XR animation frames delivered so far
  *   supportLocalFloor         set false to make `local-floor` reject
@@ -92,6 +93,8 @@
     getPose(space) {
       if (!S.poses || !space || (space.type !== 'ray' && space.type !== 'grip')) return null;
       const right = this.session._sources.findIndex((src) => src && (src.targetRaySpace === space || src.gripSpace === space)) !== 0;
+      // a test may hold the left hand at a pose of its own (window.__fakeXR.leftPose = {position, orientation, matrix})
+      if (!right && S.leftPose) return { transform: new RigidTransform(S.leftPose.position, S.leftPose.orientation, new Float32Array(S.leftPose.matrix)), emulatedPosition: false };
       return { transform: new RigidTransform({ x: right ? 0.2 : -0.2, y: 1.2, z: -0.3 }), emulatedPosition: false };
     }
     getJointPose() { return null; }

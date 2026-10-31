@@ -104,6 +104,10 @@ the game file itself since 3.15.43 (FIXES.md, entry edits: 9 blocks).
 - Grip (`squeeze`): secondary action; both also wake the audio engine.
 - Controller button 4 (on either hand) and button 5 (right) are bound to
   UI actions (gamepad button indices 4 and 5 in the per-frame input loop).
+- Left Y (button 5 on the left): the inventory HUD (A35). The left hand wears a watch whose face reads "PRESS Y TO
+  OPEN"; Y while looking at the watch (its face within 0.8 m, turned toward the eyes, within about 35 degrees of the
+  view's centre) opens the HUD; Y again, or looking away for a third of a second, closes it. With the HUD closed and
+  the watch not looked at, Y brings the open panel or dialogue back in front, as before.
 
 ## Town life (what runs on its own)
 

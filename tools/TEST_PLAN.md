@@ -190,9 +190,23 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | The gazebo's railed sides are solid for everyone, its doorway open; Gemtoe talkable from all round (F-B65) | `test_gazebo.js` (standard tier: eight sides, seven stop at the railing, the doorway lets in; Gemtoe talkable and home in 11 s), `test_roam.js` (nobody in a railing) | done (3.15.67) |
 | An owner leaving home never jumps through their kiosk's wall, with the player in the way (F-B66; "make sure the issue with Mushroom never occurs with anyone else") | `test_owner_exit.js` (standard tier: every kiosk owner and Gemtoe) | done (4.0.2) |
 | Characters (Sparkakus too) and lights are never in a fade group; the phone booth and the portal fade as kiosks (F-B68, A27) | `test_stands.js` | done (4.0.2) |
-| A Garden plant or pickup holding the player's head is not drawn that frame (S6) | `test_safeties.js` | done (4.0.2) |
+| A pickup holding the player's head is not drawn that frame; a Garden plant stays drawn (S6, revised in 4.0.4) | `test_safeties.js` | done (4.0.4) |
 | The fence's top in the mist from afar and up close (F-B67); Gemtoe's tie on his chest (F-B69); more blooms on every Garden flower (A28) | `shots.js --preset mist`, `--preset gemtoe`, `--preset garden` (pictures); `.runs/tie_gap.js` (the tie's gap, knot to tip) | done (4.0.2) |
 | Every Garden plant's flowers a random colour of its own, new each Event, changed only while shrunk away (A29) | `test_flower_tint.js` (standard tier) | done (4.0.2) |
+| An Event without Seeds fades no kiosk and not the park's tree; only the town's trees (F-B72) | `test_noseeds.js` (standard tier) | done (4.0.4) |
+| The fence's pickets stay in front of the mist from afar (F-B73); Backpacka's water seen against the mist (F-B74) | `shots.js --event` with fence and Backpacka views (pictures) | done (4.0.4) |
+| No goo blob drawn within 0.7 m of the eyes (Mama Gorbo and Gooward's meeting; S8) | `test_goo_eye.js` (standard tier) | done (4.0.4) |
+| No speech bubble over about 50 degrees of the view or within 1.2 m of the eyes (S9) | `test_bubble_eye.js` (standard tier) | done (4.0.4) |
+| Mushroom's hat clear of his head (F-B76) | `shots.js` views of his head (pictures) | done (4.0.4) |
+| The HUD only on Y while looking at the left-hand watch; closed by Y or looking away (A35) | `test_watch.js` (standard tier) | done (4.0.4) |
+| Mama Gorbo's cap never clips her eye disks; it rests on her head (A36) | `test_cap.js` (standard tier); pictures: `shots.js --preset mama` (front, side, three-quarter, back, above, and from a standing player's eyes) | done (4.0.4) |
+| Backpacka's water (the drip from his mouth, the jets, the drops, the rainbow) seen against the Event's mist (F-B74) | `test_bp_water.js` (standard tier; pictures) | done (4.0.4) |
+| The cardinal on the second park tree: named, flies off when picked like the robin, fades with the park's trees (A37, A38) | `test_content.js` (the robin and cardinal checks), `test_stands.js` / `test_noseeds.js` (the group "the park's trees and birds"); pictures: `shots.js --preset birds` | done (4.0.4) |
+| No HUD redraw (texture upload) while the HUD is closed; opened, it is never shown with an old picture (S10) | `test_watch.js` (standard tier) | done (4.0.4) |
+| Speech bubbles clear both speakers in every text scene, drawn over everything (F-B77) | `test_bubble_clear.js` (standard tier) | done (4.0.4) |
+| Text scenes cause no flash: every pair, the player moving, on the headset's render path (S9, S11) | `test_vig_flash.js` (standard tier, GT_MULTIVIEW=1) | done (4.0.4) |
+| Gooward cannot be interacted with until his goo barrage is over (A39) | `test_content.js` (gifts) | done (4.0.4) |
+| GPU work during play: every buffer, program and texture made or deleted, and every geometry first drawn or disposed, by its source (S11) | `play_census.js` (report) | done (4.0.4) |
 | Anyone standing where a faded kiosk comes back is pushed out (S3) | `test_stands.js` (a townsperson inside a hidden kiosk is outside it once it is back) | done (3.15.67) |
 | The game recovers from a major issue: a townsperson failing every frame or losing its position is reset; a render-path pass failing every frame is stepped down and frames keep drawing (S4, S5) | `test_recover.js` (standard tier; faults injected) | done (3.15.68) |
 | S1's safeties: the head inside a character hides it for the frame only; a throwing per-object draw hook does not stop the frame and is logged once | `test_safeties.js` (standard tier) | done (3.15.68) |

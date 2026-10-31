@@ -1172,6 +1172,189 @@ three-quarter and front (`shots.js --preset gemtoe`).
 does not have (`enableAll`, `disableAll`), so calling either threw. The game never calls them; the wrapper now wraps
 only the methods that exist.
 
+- **F-B72** (4.0.4; the author: "If the user starts the Event without having completed 'Seeds', kiosks should NOT fade
+out. This causes multiple issues for NPCs who stay in their kiosk areas. This goes for all kiosks: Portal, Phone Booth,
+etc."; "Only the tree in the park should NOT fade out during the 'no Seeds' Event"): in an Event started without Seeds
+(`bt.seeds`, set from the Seeds reward as the Event starts) no kiosk fades (the six stands, the gazebo, the phone booth,
+the portal), nor the park's tree with the robin; only the town's trees outside the fence fade. To allow this the trees
+are carved into two groups while loading: the park's tree (inside the fence) with the robin, and the town's trees. In
+an Event with Seeds both fade together, as before. The Event's far-scenery fader (everything over 26 m from the middle
+not marked to stay) was also hiding the carved gazebo and the park's tree in every Event, beside their fade groups;
+they are now marked to stay, so only their fade groups move them. `test_noseeds.js` (standard tier, new).
+
+- **A31** (4.0.4; the author: "Please remove the tree, that is in the park, behind the Sheriff's kiosk / Post Office
+kiosk"): the big park tree at (31, -33.5) is gone (and its spot in the route planner's list). The park's one big tree
+is now the robin's, beside the church.
+
+- **A32** (4.0.4; the author: "Please remove the particle effect coming from Sparkakus' tail"): Sparkakus' 90 glowing
+specks (pink turning cyan, rising from his tail) are no longer added or updated.
+
+- **F-B73** (4.0.4; the author's video: "The fence issue is still occurring"; "I want the fence issue ... fixed for sure
+this time"): the fence is drawn in two forms: up close its real rails and pickets (fading out between 18 and 28 m; they
+write depth), and further off one flat panel with the pickets drawn on it (fading in; it writes no depth). The Event's
+mist walls stand just beyond the fence and were drawn after both (render order 5): behind the near form they were held
+back by its depth, but over the far panel they painted freely, so beyond about 20 m the pickets and rails vanished into
+the mist while the solid posts stayed, and walking up brought the real pickets back ("the mist on top of the fence
+vanishes as the player approaches"; A19 and F-B67 had worked on the mist itself). The mist walls stand behind everything
+in the park, so they are now drawn first of all see-through things (render order 5 -> -3; only the sun's glow and the
+stars, at -9, come before them): both fence forms, and anything else see-through in the park, are drawn over the mist.
+(Drawing only the far panel after the mist, tried first, left the 18-28 m stretch pale: the half-faded near pickets
+were blended with the sky before the mist was drawn.) Pictures in the Event from 25, 15 and 8 m, at an angle, from 30 m
+to the north and 35 m to a corner, before and after.
+
+- **F-B74** (4.0.4; the author: "When viewed against the fog / mist: The user cannot see Backpacka's water jets ...
+Please also check the water dripping from his mouth"): the jets and the water drops (the drip from his mouth and the
+splashes) write no depth and were drawn before the mist walls, which painted over them wherever a wall stood behind;
+the rainbow too. With the mist walls drawn first (F-B73) all three are drawn over the mist. `test_bp_water.js` (standard tier,
+new; the author: "Have the water effects of Backpacka been fully tested against the fog / mist?"; "he also has water drip
+out of his mouth"): the mist full, his show set to five moments (drinking and lifting off at the pond and flying to the
+Garden, the drip from his mouth; spraying the Garden, the jets, drops and rainbow), each seen from eye-height viewpoints
+with a mist wall straight behind the water, drawn with and without the water and the mist: against the mist the water
+shows at least 85% of what it shows without it, and stands out from it.
+
+- **A33** (4.0.4; the author: "Please remove the animation and glowing from the Pond. Please add a basic water texture in
+the place of animation and glowing instead"): the pond's water no longer pulses, bobs, tilts or turns, its three ripple
+rings are gone (A21 removed), and the pale rim gradient that made it glow is replaced: a plain water texture painted once
+while loading from its own seeded stream (deep teal in the middle, lighter at the rim, 150 short wave streaks, a few
+small glints), low shine. Nothing changes on it during play.
+
+- **F-B75** (4.0.4; the author: "The far sides of the Pond change shape when the user approaches it"): the stones painted
+round the pond lie 4 mm above its soil and were drawn with a slope-scaled depth offset (`polygonOffsetFactor` -2). Seen
+across the pond at a low angle that offset grows large, so the stone ring was drawn over the water's far edge and the
+pond looked a different shape until the player came close. The ring now uses a constant offset only (factor 0, units
+-2), enough for its 4 mm.
+
+- **S7** (4.0.4; the author's log 6155900f, two full-screen flashes; "I want the flashes issue fixed for the next
+build"; "It is possible that there is a pattern around pickups and flashes"): no GPU work happens inside a frame around
+pickups (`.runs/pickup_haz.js`: 24 pickups in headset-shaped frames, the wrist HUD redrawn for each, their regrow: no
+texture upload, buffer or shader compile in any frame), so the remaining pickup-to-screen paths are made safe. (1) The
+wrist HUD (a dark 15 cm panel that shows only when it faces the eyes) redrew the moment it came into view after a
+change, its new texture swapping in as the player raised the wrist to look; now a change waits 0.5 s (the author: "What
+if we add a slight delay before the HUD updates") and is drawn whether or not the HUD shows, so its texture is uploaded
+between frames before it is looked at. (2) The Garden's plants fade out, dithered, wherever a fragment is within
+0.3-0.5 m of the eye (a leaf can no longer fill the view), in place of S6's hiding the whole plant. (3) The flight
+recorder keeps the head's path and, on a flash mark, lists every object that came within 0.35 m of the eyes in the last
+3 s ("rec near eyes"), and logs the wrist HUD showing, hiding and redrawing ("ev hud", "ev hudDraw"). The author's
+second log (b3255baf, seven marks, on 4.0.3) again shows no texture, shader or geometry change in any frame.
+
+- **S8** (4.0.4; the author: "I've been able to repro the flash many times while moving and picking up pickups while
+watching Mama Gorbo and Gooward doing their pairing vignette"; "Flashes are happening when he and Mama Gorbo are having
+a vignette while the user watches and moves around"): when the two meet they throw goo at each other, four throws of
+three blobs (spheres up to 0.2 m across), each arcing up to about 1.7 m above where it was thrown, so the blobs cross
+2.6-2.9 m up, the height of the player's eyes, with up to half a metre of random drift sideways. Watching close by and
+moving about, a blob could cross the eyes from the side, filling the view with goo colour for a frame or two, gone
+before it could be seen for what it was. Measured on 4.0.3 with the player among them: blobs drawn as close as 0.37 m
+to the eyes (88 frames). Now a goo blob is hidden once within 0.7 m of the eyes (it flies on and lands as before;
+logged "goo blob hidden near the eyes", up to 20 a session, so a headset log shows it). `test_goo_eye.js` (standard
+tier, new): their meeting with the player walking among them: blobs seen in flight, none drawn within 0.7 m of the
+eyes, no GPU work in any frame. Gooward's goo at the face when given a Blossom (designed, with goo splats on the view)
+is kept: its blobs are hidden the same way before they reach the face.
+
+- **S9** (4.0.4; the author: "What about the text vignettes? I notice it with text vignettes while moving around, is
+there something there that's being rebuilt every time?"): in a text scene each line's speech bubble is redrawn (a
+pooled canvas texture repainted and uploaded between frames, and a new sprite each line; nothing compiled or uploaded
+inside a frame, by the frame-hazard watch). The bubble itself was the hazard: a camera-facing panel 4.4 m wide and up
+to 2.7 m tall, mostly cream white, 1.1 m above the speaker's head, fading in over 0.25 s. As close as the speaker's body
+lets the player come it spanned 70.6 degrees of the view (about 70% of it), wider still from nearer, so a line
+starting near the player, or walking past a speaker, whited out most of the view. Now a bubble is scaled with its
+distance so it never spans more than about 50 degrees (full size beyond 4.7 m), and fades out within 1.2 m of the
+eyes. `test_bubble_eye.js` (standard tier, new): Mama Gorbo and Gooward's text scene with the player walking up to and
+past the speaker: no bubble over 55 degrees (70.6 on 4.0.3, 50.7 now), none within 1.2 m, no GPU work in a frame.
+
+- **F-B76** (4.0.4; the author: "Mushroom's hat slightly clips into his head"): his cap's top lay above the inner part
+of the hat's brim (by up to 4 cm under it, 2 mm through its top beside the crown). The hat is raised 5 cm (0.60 ->
+0.65 on his head): the brim's underside clears the cap by 7-10 mm from the crown to its edge, the crown's foot still
+inside the brim. Pictures before and after (side, front, close).
+
+- **A35** (4.0.4; the author: "Hide the HUD. Add a watch to the Left hand model. On the watch face, write 'press Y to
+open'. Have the HUD only appear when the user presses Y while looking at the watch. And then have it close when the user
+looks away from the watch or presses Y again"): the inventory HUD (which showed whenever its panel faced the eyes) is
+hidden until asked for. The left hand wears a watch on its wrist: a dark strap round the wrist, a small case, and a 4
+by 3.4 cm face reading "PRESS / Y / TO OPEN" (painted once when the panels are built and uploaded then; nothing is made
+during play). Looking at the watch (its face within 0.8 m, turned toward the eyes, within about 35 degrees of the
+view's centre) and pressing Y opens the HUD above the hand as before; Y again closes it, and so does looking away from
+the watch for a third of a second. Y pressed with the HUD closed and the watch not looked at still brings the open
+panel or dialogue back in front. `test_watch.js` (standard tier, new; `fakexr.js` can now hold the left controller at a
+given pose): the watch on the left hand only; the HUD hidden by default and on Y without looking; opened by Y while
+looking, closed by Y and by looking away; no GPU work in a frame.
+
+- **F-B77** (4.0.4; the author: "during a text vignette between the Ancient and Mama Gorbo: The Ancient's text box was
+partly unreadable because it was clipping into Mama Gorbo's body ... test all other text vignettes"): a bubble was
+centred 1.1 m above its speaker's nominal height, but bubbles are up to 2.7 m tall, so a bubble's lower edge could sit
+below a taller partner's head (or a character's real top, above its nominal height), and a body standing in front of
+it hid part of it. Now each bubble's lower edge stays at least 0.3 m above the higher of the two speakers' real tops
+(measured once from their models), never lower than before, and bubbles are drawn over everything (so a body before
+one never hides it). `test_bubble_clear.js` (standard tier, new): all 101 pairs with a text scene played with the second
+beside the first: on 4.0.3 two cut into a character (Hennrick and Zollod's over Gooward by 0.10 m, Gemtoe and
+Hennrick's over Gemtoe by 0.29 m), now none; every bubble drawn over everything. (Sparkakus's scenes end before a
+bubble shows, tied to his library; the same on 4.0.3.)
+
+- **A34** (4.0.4; the author: "Please remove the comfort vignette altogether"; "I feel like this comfort vignettes is a
+leftover that doesn't really work anyway"): the darkening ring drawn in front of the eyes while the left stick moved
+the player is no longer added to the camera or shown. It was a 1.76 m panel 0.32 m before the eyes, clear out to 45%
+of its radius; each eye sees about +-50 degrees, which reaches only about 43% of it, so only the corners of the view
+ever darkened (at most about 15%), while a full-view see-through layer was drawn every frame the player moved. (The
+"ev vignette" lines in the headset logs are the townsfolk's scenes, VIGS, not this ring.)
+
+- **S6, revised** (4.0.4; the author: "Flowers in the Garden disappear when the user walks into them. This should not
+occur"): a Garden plant holding the player's head is drawn as usual; S6 now hides only pickups holding the head.
+
+- **A36** (4.0.4; the author: "Please add a yellow baseball cap with the teal 'Mistergummery's' M logo on to Mama
+Gorbo's head"; then "Mama Gorbo's hat looks much much too small" and "it is clipping into her eye disk, this is a bug, it
+should never do that"): a yellow cap (a half-ellipsoid crown, a half-disc brim, a button on top) with a teal M (two
+arches, dark teal under light teal, painted once while loading) on the crown's front. Her big porthole eye covers the
+upper front of her head up to about 2.65 m, so a cap of this size cannot sit level without cutting into it: it is worn
+pushed back, 1.75 times the first cap's size (crown 1.75 m across), set 0.3 m back and tilted 23 degrees, its brim
+showing above the eye. Set level at this size (the pictures the author saw) it cut 3.5 cm into the eye disk
+(measured); now 8.4 cm clear.
+`test_cap.js` (standard tier, new; the game hands the cap and both eye groups to tests): every point of both eye disks
+at least 3 cm clear of the crown and brim, the cap's rim on her head. Pictures: `shots.js --preset mama` (new; front,
+side, three-quarter, back, above, and from a standing player's eyes).
+
+- **A37** (4.0.4; the author: "Please add another tree to the right of the tree with the Robin on it"): a second big
+park tree at (-24.5, 34.5), 1.15 times the base size, to the right of the robin's tree seen from the Garden. It is part
+of the park's fade group (renamed "the park's trees and birds"), so it stays in an Event without Seeds (F-B72).
+
+- **A38** (4.0.4; the author's photos of a cardinal: "Please create another bird model based on this bird. And then add
+it to a branch on the new tree. It should have the same behavior as the other bird"): a male cardinal on a branch of
+the new tree, facing into the park. Built by the robin's own builder (the same body, wings, tail and head shapes, the
+same idle breathing, head turns, tail flicks and wing settles, a few seconds out of step with the robin), with a
+cardinal's colours and shapes: red all over (darker red-brown back, wings and tail), a tall swept-back crest, a black
+mask and bib round a thick orange-red beak, no eye rings and no white tail tips. Picking it ("Cardinal") makes it fly
+off and come back, as the robin does; it fades with the park's trees (RULES.md 26). `test_content.js`: the cardinal is
+named, on the new tree and flies off when picked. Pictures: `shots.js --preset birds` (new).
+
+- **S10** (4.0.4; the author: "They did happen around the time that I picked up pickups"; "Would the new watch HUD also
+not be a part of the fix for this?"): with A35 the HUD is hidden until opened, but it was still redrawn after every
+pickup, and each redraw uploads its 256-pixel panel to the GPU. Now the HUD is redrawn only while it is open: walking
+about and picking things up uploads nothing. Opened with a change waiting, it is redrawn at once and stays hidden until
+the new picture is in place, so it is never shown out of date. Each pickup is now an event in the flight recorder's
+trail ("pick blossom", "pick flint"), so a log shows how long before a flash the last pickup came. `test_watch.js`:
+pickups while closed redraw nothing; opening redraws once and never shows an old picture.
+
+- **A39** (4.0.4; the author: "Please limit Gooward's goo barrage (after giving a Blossom) by making Gooward
+non-interactable until the goo barrage is over"): a Blossom given to Gooward starts his barrage (eight volleys over
+2.7 s, each splatting on the view 0.95 s after it is thrown, the last at about 3.65 s). For 4 s from the gift he is left
+out of the interaction scan: no prompt shows for him and the buttons do nothing, so a second Blossom (or a talk) cannot
+start another barrage over the first. `test_content.js`: with the player beside him throughout, he is never the target
+until the barrage is over, then is again.
+
+- **S11** (4.0.4; the author: "Did you fully check that text vignettes could not cause any flashes"; "Even if we can't
+find the direct cause of the flashes: let's try to clean things up to be less likely to cause these sorts of issues in
+the future, In general"): a clean-up pass on GPU work during play.
+  - Text scenes: each line's bubble took a new sprite and material, all let go when the scene ended (a material let go
+    can take its shader with it, to be compiled again the next time). Bubbles now come from a pool of eight made while
+    loading and go back to it; nothing is made or let go during a scene. The bubble's picture is still painted for each
+    line into a canvas made while loading, and uploaded between headset frames (F-B31), never inside one.
+  - `test_vig_flash.js` (standard tier, new, on the headset's render path): every pair with a text scene played in VR
+    while the player walks round the speakers: no GPU work inside a headset frame, no shader made, no texture or
+    geometry left behind, no bubble over 55 degrees of the view or within 1.2 m of the eyes.
+  - `play_census.js` (report, new): the texture census's busy session (pickups, the shop, everyone spoken to, a dance
+    battle, Nextessa, text exchanges, the Speech, the Event) with every GL buffer, program and texture made or deleted
+    during play listed by the game code that asked, and every geometry first drawn or disposed by its object. On the
+    build before this pass: no program, texture or canvas made during play; 40 buffers made and 26 deleted (Nextessa's
+    visit, the Speech and the Event).
+
 - **A30** (4.0.3; the author: "Move the Robin to the tree next to the Church. And then remove the tree that the Robin is
 on now"): the robin and her branch now sit on the big park tree beside the church (-16, 37), facing into the park;
 her old tree (-17, -34, by the shop) is gone, with its spot in the route planner's list and in the fade group's

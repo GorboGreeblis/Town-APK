@@ -68,8 +68,12 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
       it waits while its owner is within 6 m of home before it fades out. Once out, nothing comes back until the Event
       ends, however near the player comes (2026-10-30: "Just keep everything faded out until things fade back in. I
       don't care if there is invisible collision"; the earlier come-back-when-near rule was Claude's, not asked for).
-    - **All trees**: every tree the tree builder places (the park's three and the town's outside the fence), carved
-      out of the world's merged meshes into one group ("let's add all trees to the same group for fading out and in"),
+    - **Seeds** (2026-10-31: "If the user starts the Event without having completed 'Seeds', kiosks should NOT fade
+      out"; "Only the tree in the park should NOT fade out during the 'no Seeds' Event"): in an Event without Seeds no
+      kiosk fades and neither does the park's tree with the robin; only the town's trees outside the fence fade (F-B72).
+    - **All trees**: every tree the tree builder places (the park's one, the robin's, and the town's outside the fence), carved
+      out of the world's merged meshes ("let's add all trees to the same group for fading out and in"; since 4.0.4 two
+      items, the park's tree with the robin and the town's trees, that fade together in an Event with Seeds),
       with **the Robin**, who always fades out and in with her tree ("The Robin should always fade out and in with her
       tree"). A new tree made by the builder joins the group by itself (`window.__gcTreeAt`).
     - **Never fade**: the church and Cave, the Ancient, Somlet, the Pond, and anything in the Garden itself ("The

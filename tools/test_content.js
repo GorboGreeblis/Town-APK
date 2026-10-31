@@ -9,13 +9,13 @@
  *   gifts      every townsperson's "Give a blossom" shows their own gift line, costs one Blossom and marks them met;
  *              a dancer's "Let's dance!" opens their dance battle;
  *              the Sheriff's gift is the bribe that opens the Portal (the phone then rings through); Gooward
- *              answers with flying goo; Sparkakus romps about the Library; the Ancient
+ *              answers with flying goo and cannot be interacted with until it is over (A39); Sparkakus romps about the Library; the Ancient
  *   talk       each townsperson's lines come in order, one per talk, and wrap around
  *   shyness    Zollod is shy and his shop is closed until the player takes OVERCOMING SHYNESS from the Library
  *   outfits    the three outfits: too little flint, buying (worn at once), taking off and putting on again
  *   battles    each dancer's battle panel: its title and stamina bar ("Robot steps left", ...), King Dino on drums
  *   ancient    the Ancient's talk line
- *   robin      the robin flies off when picked
+ *   robin      the robin flies off when picked; so does the cardinal on the second park tree (A38)
  *   pizza      the courier ordered after the bribe comes through the glowing Portal and delivers (on its own when it
  *              reaches the player, else when claimed): the line and the Snacks
  *   vignettes  the two-line exchanges: speech bubbles or Gree-mail tokens, counted and ended; the Ancient's only inside
@@ -124,6 +124,19 @@ const LONG = process.argv.includes('--long');
   const sheriff = gifts.out.find((x) => x.id === 'drifter');
   expect('gifts: the Sheriff takes the Blossom as a bribe ("A bribe? …Portal is now open to your use.") and the phone works from then on', sheriff && /^A bribe\?/.test(sheriff.said) && sheriff.phone === true, JSON.stringify(sheriff));
   expect('gifts: Gooward answers a Blossom with flying goo', gifts.goo >= 3, `${gifts.goo} goo arcs`);
+  // A39: Gooward cannot be interacted with until his goo barrage is over (the author: "making Gooward non-interactable
+  // until the goo barrage is over"); the player stands beside him throughout
+  const gw = await page.evaluate(async () => {
+    const H = window.__h, D = window.__dbg, Kt = D.Kt, e = D.It.byId.gorbo; if (!e) return { none: true };
+    Kt.blossoms = Math.max(Kt.blossoms, 2); await H.wait(4500);
+    const beside = () => { D.At.position.x = e.group.position.x + 1.4; D.At.position.z = e.group.position.z; };
+    beside(); await H.wait(300); const before = D.xe.current === e;
+    await H.act(e, /^Give a blossom$/, 300); const g0 = e.giftAt || performance.now();
+    let n = 0, hit = 0; while (performance.now() - g0 < 3800) { beside(); await H.wait(120); if (!D.qt.isOpen && D.Re && 'playing' === (D.jt ? D.jt.top : 'playing')) { n++; if (D.xe.current === e) hit++; } }
+    await H.wait(500); beside(); await H.wait(500);
+    return { before, during: n, targeted: hit, after: D.xe.current === e };
+  });
+  expect('gifts: after a Blossom, Gooward cannot be interacted with until his goo barrage is over, then can again', !gw.none && gw.before && gw.during >= 5 && gw.targeted === 0 && gw.after, JSON.stringify(gw));
   const phone1 = await page.evaluate(async () => { const H = window.__h; return await H.act(H.zone('phone'), /Call for pizza/); });
   expect('phone: after the bribe Nextessa answers ("*Ring Ring* This is Nextessa’s inter-temporal pizza shop!")', phone1 && /^\*Ring Ring\* This is Nextessa/.test(phone1[0] || ''), JSON.stringify(phone1));
   const sp = await page.evaluate(async () => {
@@ -201,6 +214,9 @@ const LONG = process.argv.includes('--long');
   // ---- the robin
   const robin = await page.evaluate(async () => { const H = window.__h, D = window.__dbg, z = H.zone('robin'); const b = window.__dbg.JGP.robin.bird; const p0 = b.getWorldPosition(new THREE.Vector3()); z.run(); await H.wait(1500); const p1 = b.getWorldPosition(new THREE.Vector3()); return { moved: +p0.distanceTo(p1).toFixed(2) }; });
   expect('robin: picking the robin makes it fly off', robin.moved > 0.3, JSON.stringify(robin));
+  // the cardinal (A38) on the second park tree: the robin's behaviour, its own name
+  const cardinal = await page.evaluate(async () => { const H = window.__h, z = H.zone('cardinal'); const c = window.__dbg.JGP.cardinal; if (!z || !c) return { none: true, zone: !!z, bird: !!c }; const b = c.bird; const p0 = b.getWorldPosition(new THREE.Vector3()); z.run(); await H.wait(1500); const p1 = b.getWorldPosition(new THREE.Vector3()); return { label: z.label(), moved: +p0.distanceTo(p1).toFixed(2), at: [+p0.x.toFixed(1), +p0.y.toFixed(1), +p0.z.toFixed(1)] }; });
+  expect('cardinal: on the second park tree, named Cardinal, and picking it makes it fly off like the robin', !cardinal.none && cardinal.label === 'Cardinal' && cardinal.moved > 0.3 && Math.hypot(cardinal.at[0] + 24.5, cardinal.at[2] - 34.5) < 2, JSON.stringify(cardinal));
 
   // ---- the pizza delivery (ordered after the bribe above): the courier comes through the Portal, whose blue light is
   // on while it opens (a light changes every lit shader: this play is part of the compile check at the end)

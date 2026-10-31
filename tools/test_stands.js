@@ -50,8 +50,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const som = D.It.byId.m_somlet; if (som) guard.push(som.group);
     // the robin fades with her tree (the author: "The Robin should always fade out and in with her tree"): one item
     // holds her and every tree the builder placed (window.__gcTreeAt), each with its carved triangles
-    const tr = S.list.find((s) => s.name === 'trees and the robin'), K = window.__gcCarved || {};
-    const robinWithTree = !!(tr && J.robin && tr.gs.includes(J.robin.group) && K.trees && tr.gs.includes(K.trees));
+    const tr = S.list.find((s) => s.name === 'the park\'s trees and birds'), tt = S.list.find((s) => s.name === 'the town\'s trees'), K = window.__gcCarved || {};
+    const robinWithTree = !!(tr && J.robin && tr.gs.includes(J.robin.group) && K.ptree && tr.gs.includes(K.ptree) && tt && K.trees && tt.gs.includes(K.trees));
     const treeN = (window.__gcTreeAt || []).length;
     const out = { robinWithTree, treeN, names: S.list.map((s) => s.name), owners: Object.fromEntries(S.list.map((s) => [s.name, s.own.map((h) => h.id)])), guardN: guard.length, guardHidden: [], fadedGuard: [], early: [], fadeOut: {}, hiddenWhileDancing: [], lateReturn: [], endF: {}, near: null };
     const mats = new Set(); for (const s of S.list) for (const [m] of s.mats) mats.add(m);
@@ -116,8 +116,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   if (r.none) { expect('the stand fader exists (P33)', false); process.exit(1); }
   note(JSON.stringify({ names: r.names, owners: r.owners, fadeOut: r.fadeOut, near: r.near, endF: r.endF, guard: r.guardN, eventEnded: r.eventEnded, eventS: r.eventS }));
   expect('the Event ended (within 10 minutes)', r.eventEnded === true, `${r.eventS} s`);
-  expect('the faded set is the six stands, the gazebo, the phone booth, the portal, and all the trees with the robin; never the church', ['post', 'sheriff', 'garden', 'gallery', 'shop', 'juice', 'gazebo', 'phone booth', 'portal', 'trees and the robin'].every((n) => r.names.includes(n)) && !r.names.includes('church'), r.names.join(', '));
-  expect('the robin and every tree (the park\'s and the town\'s) are one fade item', r.robinWithTree && r.treeN >= 60, `robin with tree ${r.robinWithTree}, ${r.treeN} trees`);
+  expect('the faded set is the six stands, the gazebo, the phone booth, the portal, and all the trees with the robin and the cardinal; never the church', ['post', 'sheriff', 'garden', 'gallery', 'shop', 'juice', 'gazebo', 'phone booth', 'portal', 'the park\'s trees and birds', 'the town\'s trees'].every((n) => r.names.includes(n)) && !r.names.includes('church'), r.names.join(', '));
+  expect('the robin fades with her tree (the park\'s only tree), the town\'s trees as one item beside it', r.robinWithTree && r.treeN >= 60, `robin with tree ${r.robinWithTree}, ${r.treeN} trees`);
   expect('the portal\'s blue effect shows when it opens (F-B71)', r.portalFx && r.portalFx.length >= 2 && r.portalFx.every((v) => v > 0.2), JSON.stringify(r.portalFx));
   expect('no character (every townsperson, and Sparkakus in his library) is in a faded group', r.charN >= 12 && r.charsFaded.length === 0, r.charsFaded.join(', '));
   expect('Sparkakus is shown while the Event dances (his library hidden)', r.sparkShown === true, String(r.sparkShown));

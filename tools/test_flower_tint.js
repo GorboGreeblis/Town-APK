@@ -14,7 +14,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
 (async () => {
   const { expect, note, failures } = reporter();
   const g = await boot({ file, vr: true, fastSim: true });
-  const errors = []; g.page.on('pageerror', (e) => errors.push(e.message));
+  const errors = []; g.page.on('pageerror', (e) => errors.push(e.message)); g.page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text().split('\n')[0]); });   // the game's own caught errors too
   const r = await g.page.evaluate(async () => {
     const D = window.__dbg, J = D.JGP, Ce = J.garden, wait = (ms) => new Promise((res) => setTimeout(res, ms));
     setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250);
@@ -46,6 +46,6 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('a plant\'s colour changes only while it is shrunk away', r.shownChange.length === 0, r.shownChange.join(', '));
   expect('every kind\'s geometry has its petals marked', r.geoN >= 5 && r.marked, `${r.geoN} geometries`);
   expect('no shader compiled inside a headset frame', r.compiles === 0 || r.compiles === null, String(r.compiles));
-  expect('no page errors', errors.length === 0, errors.slice(0, 3).join(' | '));
+  expect('no page errors or logged errors', errors.length === 0, errors.slice(0, 3).join(' | '));
   await g.close(); console.log(failures.length ? `FLOWER TINT TEST FAILED (${failures.length})` : 'FLOWER TINT TEST PASSED'); process.exit(failures.length ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });
