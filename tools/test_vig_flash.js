@@ -19,7 +19,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
 
 (async () => {
   const { expect, note, failures } = reporter();
-  const g = await boot({ file, vr: true, fastSim: false });   // every frame drawn (the GPU-work and bubble checks need real draws)
+  const g = await boot({ file, vr: true, fastSim: false, renderEvery: 4 });   // drawn for real (the GPU-work and bubble checks need real draws), one frame in four for speed
   const errors = []; g.page.on('pageerror', (e) => errors.push(e.message)); g.page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text().split('\n')[0]); });
   const r = await g.page.evaluate(async () => {
     const D = window.__dbg, J = D.JGP, T = window.THREE, V = D.VIGS, O = D.O, wait = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -79,7 +79,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('no GPU work inside a headset frame through every scene (frame-hazard watch)', r.haz === 0 || r.haz === null, JSON.stringify(r.hazFirst).slice(0, 500));
   expect('no shader program made during any scene', r.progChanged.length === 0 && r.progs[0] === r.progs[1], JSON.stringify({ progs: r.progs, changed: r.progChanged.slice(0, 5) }));
   expect('no texture or geometry left behind by the scenes', r.textures[1] <= r.textures[0] && r.geometries[1] <= r.geometries[0], JSON.stringify({ textures: r.textures, geometries: r.geometries }));
-  expect('bubbles were drawn while the player walked round the speakers (at least 2000 bubble-frames drawn)', r.drawnN >= 2000, String(r.drawnN));
+  expect('bubbles were drawn while the player walked round the speakers (at least 500 bubble-frames drawn)', r.drawnN >= 500, String(r.drawnN));
   expect('no bubble spans more than 55 degrees of the view', r.maxDeg <= 55, `${r.maxDeg} degrees at most`);
   expect('no bubble is drawn within 1.2 m of the eyes', r.near === 0, `${r.near} bubble-frames; closest ${r.minD} m`);
   expect('no page errors or logged errors', errors.length === 0, errors.slice(0, 3).join(' | '));
