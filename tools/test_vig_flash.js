@@ -39,6 +39,11 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const seen = new Set(), out = { pairs: 0, played: 0, noBubble: [], skipped: [], progChanged: [] };
     // one scene first, so the bubble pool and the sprite program are in use as in play; then the counts
     const p0 = progs(), t0c = info.memory.textures, g0c = info.memory.geometries;
+    // any program made during the run, with what it is and who draws with it (to find it if it comes)
+    const progSeen = new Set((info.programs || []).map((p) => p.id)), progAll = new Map((info.programs || []).map((p) => [p.id, p])), newProgs = [];
+    const progCheck = (where) => { for (const p of info.programs || []) if (!progSeen.has(p.id)) { progSeen.add(p.id); progAll.set(p.id, p); const users = []; D.C.traverse((o) => { for (const m of (o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [])) { const pr = O.properties.get(m); if (pr && (pr.currentProgram === p || pr.program === p)) { const w = o.getWorldPosition(new T.Vector3()); users.push(m.type + (m.map ? '+map' : '') + (m.color ? ' #' + m.color.getHexString() : '') + ' @' + [w.x, w.y, w.z].map((v) => v.toFixed(1)).join(',')); } } }); const diff = [...progAll.values()].filter((q) => q !== p && q.name === p.name).map((q) => { const a = p.cacheKey.split(','), b = q.cacheKey.split(','), d = []; for (let i = 0; i < Math.max(a.length, b.length); i++) if (a[i] !== b[i]) d.push(i + ':' + b[i] + '->' + a[i]); return d; }).sort((x, y) => x.length - y.length)[0]; newProgs.push({ where, t: +(D.Re.t).toFixed(0), name: p.name, diff: (diff || ['no program of its kind']).slice(0, 6), users: users.slice(0, 3) }); } };
+    const progTimer = setInterval(() => progCheck(cur || 'between scenes'), 200);
+    const geo0 = new Set(); D.C.traverse((o) => { if (o.geometry) geo0.add(o.geometry); });
     let k = 0;
     for (const p of V.all) {
       const key = [p[0], p[1]].sort().join('-'); if (seen.has(key)) continue; seen.add(key);
@@ -66,9 +71,10 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       if (shown === s0) out.noBubble.push(key);
       if (progs() !== before) out.progChanged.push(key + ' ' + before + '>' + progs());
     }
-    O.render = R0;
+    O.render = R0; clearInterval(progTimer); progCheck('end');
     await wait(500);
-    return Object.assign(out, { worst, drawnN, maxDeg: +maxDeg.toFixed(1), near, minD: +minD.toFixed(2), shown, progs: [p0, progs()], textures: [t0c, info.memory.textures], geometries: [g0c, info.memory.geometries], haz: H ? H.n - h0 : null, hazFirst: H ? H.first.slice(f0, f0 + 3) : [], mv: !!(window.__gtXR && window.__gtXR.mvActive) });
+    const geoNew = []; D.C.traverse((o) => { if (o.geometry && !geo0.has(o.geometry) && geoNew.length < 20) { const w = o.getWorldPosition(new T.Vector3()); geoNew.push((o.geometry.attributes.position ? o.geometry.attributes.position.count : 0) + 'v ' + o.type + (o.material && o.material.color ? ' #' + o.material.color.getHexString() : '') + ' vis ' + o.visible + ' @' + [w.x, w.y, w.z].map((v) => v.toFixed(1)).join(',')); } });
+    return Object.assign(out, { newProgs, geoNew, worst, drawnN, maxDeg: +maxDeg.toFixed(1), near, minD: +minD.toFixed(2), shown, progs: [p0, progs()], textures: [t0c, info.memory.textures], geometries: [g0c, info.memory.geometries], haz: H ? H.n - h0 : null, hazFirst: H ? H.first.slice(f0, f0 + 3) : [], mv: !!(window.__gtXR && window.__gtXR.mvActive) });
   });
   if (r.noVR) { expect('in VR with a head position', false); process.exit(1); }
   note(JSON.stringify(Object.assign({}, r, { hazFirst: undefined })));
@@ -77,7 +83,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   note('scenes that ended before a bubble showed (Sparkakus, tied to his library): ' + (r.noBubble.join(', ') || 'none'));
   expect('scenes showed their bubbles (all but Sparkakus\'s)', r.noBubble.filter((k) => !/SP/.test(k)).length === 0, r.noBubble.filter((k) => !/SP/.test(k)).join(', '));
   expect('no GPU work inside a headset frame through every scene (frame-hazard watch)', r.haz === 0 || r.haz === null, JSON.stringify(r.hazFirst).slice(0, 500));
-  expect('no shader program made during any scene', r.progChanged.length === 0 && r.progs[0] === r.progs[1], JSON.stringify({ progs: r.progs, changed: r.progChanged.slice(0, 5) }));
+  if (r.newProgs.length) note('programs made during the run: ' + JSON.stringify(r.newProgs));
+  if (r.geoNew.length) note('geometries in the scene at the end that were not there at the start: ' + JSON.stringify(r.geoNew));
+  expect('no shader program made during any scene', r.progChanged.length === 0 && r.progs[0] === r.progs[1], JSON.stringify({ progs: r.progs, changed: r.progChanged.slice(0, 5), made: r.newProgs }));
   expect('no texture or geometry left behind by the scenes', r.textures[1] <= r.textures[0] && r.geometries[1] <= r.geometries[0], JSON.stringify({ textures: r.textures, geometries: r.geometries }));
   expect('bubbles were drawn while the player walked round the speakers (at least 500 bubble-frames drawn)', r.drawnN >= 500, String(r.drawnN));
   expect('no bubble spans more than 55 degrees of the view', r.maxDeg <= 55, `${r.maxDeg} degrees at most`);
