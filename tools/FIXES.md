@@ -1103,6 +1103,75 @@ while hidden, by the author's word), and S3 still pushes anyone standing in a gr
 `test_stands.js`: walking up to a hidden kiosk leaves it hidden; after the Event nothing fades out again on its way
 back; a townsperson put in a hidden kiosk is outside it once it is back.
 
+- **F-B66** (4.0.2; the author: "I think I just saw Mushroom teleport through the side of his desk instead of moving down
+his ramp", "let's make sure the issue with Mushroom never occurs with anyone else"): leaving for a visit, a
+townsperson's `home` is moved to the foot of their way out (Mushroom's: the foot of his ramp, outside the kiosk). The
+collision then no longer counted him as the kiosk's owner, treated its whole hull as solid with him inside it, and
+pushed him out by the nearest side: 2.4 m through the side wall in one step, with the player at the ramp's foot. Now
+ownership is by the home a townsperson started with (kept at load) as well as the current one, so an owner leaving is
+still an owner; and anyone pushed out of a hull goes out by the side they came from (their previous position), never
+by the nearest. Proven: a trap on Mushroom's position records no step over 0.5 m in four departures with the player at
+the ramp's foot (it had recorded the 2.4 m jump); `test_owner_exit.js` (standard tier, new) sends every townsperson living in a kiosk
+(Mushroom, Fortizmo) and Gemtoe from home on a visit with the player in their way: no jump, all on their way within 60 s.
+
+- **F-B67** (4.0.2; the author: "The fog / mist on the top of the fence issue is still occurring as the user approaches
+it ... check how the fence is rendered from a distance and how it is rendered up close"): from afar the fence's top
+was hidden by the fog (it rises with distance from the player); up close the fog thinned and the first mist wall stood
+1.5 m beyond the fence, so the fence's top came out of the mist with a pale strip of sky-coloured fog behind it. The
+mist's fog now reaches full strength 0.25 m past the fence line (was 1.5 m), the first mist wall stands 0.3 m beyond
+it (was 1.5 m) and starts at its foot. Pictures from 4 m and 1 m on all four sides at two eye heights (`shots.js
+--preset mist`): no pale gap, the fence's top in the mist as from afar.
+
+- **F-B68** (4.0.2; the author: "Sparkakus is now being culled out with his kiosk! the only thing that's visible is his
+tail effect", "Sparkakus really should be the same as all other NPCs"): Sparkakus is built inside the Library's group
+(not a townsperson entity), so P33 faded and hid him with it. Every character is now kept out of the fade groups: a
+group holding one is split into its parts around it (Sparkakus marked as a character; lights are never faded either,
+so the portal's light cannot change the shaders' light count), and a batch is faded only when all its parts are in the
+group. `test_stands.js`: no character (every townsperson and Sparkakus) is in a faded group, and Sparkakus is shown
+while the Event dances.
+
+- **S6** (4.0.2; the author's log a5afcdd5: "A full screen flash occurred after starting a 2nd Event. Seemingly as the
+flowers shrank"; "Could shrinking flowers and shrinking pickups cause flashes in general?"): the log shows no shader,
+texture or geometry change at the flash (2.3 s after the second Event's start), with the player standing among the
+Garden's flowers. A shrinking (or growing) plant's leaves and petals sweep through the space around it, and one passing
+through the eyes fills the view with a single colour for a frame or two: a flash. S1 already hid a character whose
+body held the player's head; now every Garden plant and every pickup (blossoms, mushrooms) within 2.5 m whose bounds
+hold the head (15 cm margin) is left out of that frame's drawing, the same way. `test_safeties.js`: a plant placed
+round the head is not drawn while the head is in it.
+
+- **A27** (4.0.2; the author: "The Phone Booth and the Portal should both be treated as kiosks. They both should fade
+out and then fade back in for the Event, like all other kiosks"): both are fade groups of their own (RULES.md 26), out
+over 10 s once the mist is up and back after the Event; the portal's light stays (lights never fade).
+`test_stands.js` checks both are in the faded set.
+
+- **A28** (4.0.2; the author: "Please add more actual flowers to each of the individual Flower plants in the Garden. By
+flowers: I mean flowers of that type of Flower"): each kind has more open blooms of its own kind, on short side stalks
+from its upper stem (never within 7.5 cm of another head): the thistle 5 more purple heads, the mayweed 8 more daisies,
+the chicory 4 more blue flowers, the milkweed two more pink umbels on side stems (28 and 26 florets), the mallow three
+more flowers (the ends of both side branches and near the top). Built while loading, as before. Pictures before and
+after (`shots.js --preset garden`, the five kinds side by side).
+
+- **A29** (4.0.2; the author: "can we randomize the flower colors for every Event? Each plant should have its own
+randomized color for all flowers on that plant, this randomized color should change for every Event and every subsequent
+Event"): every Garden plant has a flower colour of its own, drawn at random (any hue but the leaves' greens, saturation
+62-92%, lightness 50-64%) when it is planted, and drawn again at each later Event's start once the plant has shrunk away
+(never while it shows). Each kind's petal colours are marked on its geometry while loading (a per-vertex weight: the
+part's brightness against the kind's main petal colour, so veins stay darker and pale parts paler); the plant's own
+material (one per plant, all sharing the one shader program compiled while loading: nothing compiles or uploads during
+play) gives the marked vertices the plant's colour. Stems, leaves, buds, the mayweed's yellow centres and the thistle's
+seed heads keep theirs. `test_flower_tint.js` (standard tier, new): two Events; each plant its own material and colour,
+every colour changed for the second Event, only while shrunk away; no shader compiled inside a frame.
+
+- **F-B69** (4.0.2; the author: "Gemtoe's tie is still floating. This can easily be observed from the sides"): measured
+from the back of the tie straight into the body, the tie stood 13-17 cm in front of the chest along its whole length.
+It now starts at the neck (0.52 -> 0.32 forward in the body's frame), tilts a little more (0.32 -> 0.33 rad) and curves to follow the
+chest (its blade bent forward in the middle, 0.84 x s(1 - s)): 0.6-1.4 cm from knot to tip. Pictures from the side,
+three-quarter and front (`shots.js --preset gemtoe`).
+
+- **F-B70** (4.0.2; found while measuring F-B69): P31's wrapper on `Layers` methods called methods the bundled three.js
+does not have (`enableAll`, `disableAll`), so calling either threw. The game never calls them; the wrapper now wraps
+only the methods that exist.
+
 ## Multiview (release path since 3.15.34)
 
 Edits for the multiview experiment, in order. Three groups:

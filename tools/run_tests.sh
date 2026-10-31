@@ -107,6 +107,8 @@ if [ "$TIER" != quick ]; then
   run "recovery: a townsperson that keeps failing or loses its position is reset, a failing batcher pass is stepped down and frames keep drawing (S4, S5)" node "$ROOT/tools/test_recover.js" "$ASSET"
   run "the flash safeties: the head inside a character hides it for the frame only; a throwing draw hook does not stop the frame (S1)" node "$ROOT/tools/test_safeties.js" "$ASSET"
   run "the gazebo: its seven railed sides stop the player, its doorway open to anyone; Gemtoe talkable from outside and home through the doorway (F-B65)" node "$ROOT/tools/test_gazebo.js" "$ASSET"
+  run "owners leave home by their way out, never through a wall: every kiosk owner and Gemtoe sent on a visit with the player in the way, no jump over 0.5 m (F-B66)" node "$ROOT/tools/test_owner_exit.js" "$ASSET"
+  run "the Garden's flowers: each plant a random colour of its own, new each Event, changed only while shrunk away; nothing compiled in a frame (A29)" node "$ROOT/tools/test_flower_tint.js" "$ASSET"
   run "Mushroom in the Event: down his ramp at the start, never stuck or off its side, home on his desk after (F-B52)" node "$ROOT/tools/test_mushroom_event.js" "$ASSET"
   run "first draws: nothing uploaded inside a headset frame when Nextessa comes or the Event's plants grow; each new object held one frame (F-B51)" node "$ROOT/tools/test_firstdraw.js" "$ASSET"
   run "Backpacka at the pond: the player cannot walk into her; she is not moved; no circles once she leaves" node "$ROOT/tools/test_backpacka.js" "$ASSET"

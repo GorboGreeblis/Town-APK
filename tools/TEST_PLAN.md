@@ -188,6 +188,11 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Every experiment variant still applies to the game file | `experiment.py --check` (quick tier) | done |
 
 | The gazebo's railed sides are solid for everyone, its doorway open; Gemtoe talkable from all round (F-B65) | `test_gazebo.js` (standard tier: eight sides, seven stop at the railing, the doorway lets in; Gemtoe talkable and home in 11 s), `test_roam.js` (nobody in a railing) | done (3.15.67) |
+| An owner leaving home never jumps through their kiosk's wall, with the player in the way (F-B66; "make sure the issue with Mushroom never occurs with anyone else") | `test_owner_exit.js` (standard tier: every kiosk owner and Gemtoe) | done (4.0.2) |
+| Characters (Sparkakus too) and lights are never in a fade group; the phone booth and the portal fade as kiosks (F-B68, A27) | `test_stands.js` | done (4.0.2) |
+| A Garden plant or pickup holding the player's head is not drawn that frame (S6) | `test_safeties.js` | done (4.0.2) |
+| The fence's top in the mist from afar and up close (F-B67); Gemtoe's tie on his chest (F-B69); more blooms on every Garden flower (A28) | `shots.js --preset mist`, `--preset gemtoe`, `--preset garden` (pictures); `.runs/tie_gap.js` (the tie's gap, knot to tip) | done (4.0.2) |
+| Every Garden plant's flowers a random colour of its own, new each Event, changed only while shrunk away (A29) | `test_flower_tint.js` (standard tier) | done (4.0.2) |
 | Anyone standing where a faded kiosk comes back is pushed out (S3) | `test_stands.js` (a townsperson inside a hidden kiosk is outside it once it is back) | done (3.15.67) |
 | The game recovers from a major issue: a townsperson failing every frame or losing its position is reset; a render-path pass failing every frame is stepped down and frames keep drawing (S4, S5) | `test_recover.js` (standard tier; faults injected) | done (3.15.68) |
 | S1's safeties: the head inside a character hides it for the frame only; a throwing per-object draw hook does not stop the frame and is logged once | `test_safeties.js` (standard tier) | done (3.15.68) |
