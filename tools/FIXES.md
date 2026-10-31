@@ -1332,11 +1332,22 @@ the new picture is in place, so it is never shown out of date. Each pickup is no
 trail ("pick blossom", "pick flint"), so a log shows how long before a flash the last pickup came. `test_watch.js`:
 pickups while closed redraw nothing; opening redraws once and never shows an old picture.
 
+- **S14** (4.0.6; S11 continued; found by `test_vig_flash.js`, which now lists every geometry drawn for the first time
+during its hour of play): the Gree-mail tokens the townsfolk send each other in their scenes (Hennrick's cube, King
+Dino's crown, Fortizmo's note, Mama Gorbo's goo, the cards, tiles, gems, letters and the rest) share one geometry per
+shape, but each shape was uploaded the first time anyone sent that token, during play (about 20 uploads in an hour,
+between frames). Every token is now built once while loading, drawn by the geometry warm-up and put away.
+  Also: the Garden plants' warm-up compiled their programs but never uploaded their shapes, so each plant's full and
+  low-detail shapes (two of them 15,400 and 18,500 vertices) were uploaded when first drawn in the Event (the play
+  census, which now names each first-drawn shape's owner and place). They are now uploaded while loading too.
+
 - **F-B79** (4.0.5; found by `test_owner_exit.js`, repeatable): with the player standing on the first point of Gemtoe's
 way out of the gazebo, her stuck rescue (a townsperson blocked eight times while seen, four while unseen, is moved to
 its target with a sparkle) moved her straight onto that point, which is where the player stood: a 1.55 m jump into the
 player. The rescue now never moves a townsperson to a spot within its body plus 0.6 m of the player; it keeps waiting
-(and tries again) until the player moves.
+(and tries again) until the player moves. Not a regression: 4.0.2 does the same (a 1.58 m jump after 36 s of game time,
+measured); its earlier passes ran on a loaded machine, where less game time passed in the test's 60 s and the rescue
+never came.
 
 - **S13** (4.0.5; found re-checking `test_recover.js`): when the recovery safety turns the draw batcher off (S4 step 2),
 it hands every batched object back to be drawn on its own from each batch's list of members; a batch whose list was
