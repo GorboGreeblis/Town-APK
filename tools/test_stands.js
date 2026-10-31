@@ -28,7 +28,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
 
 (async () => {
   const { expect, note, failures } = reporter();
-  const g = await boot({ file, vr: true, fastSim: false });
+  const g = await boot({ file, vr: true, fastSim: false, renderEvery: 4 });   // one frame in four drawn: the game runs at most 0.1 s a frame, so drawing every frame headless left the 190 s Event unfinished after 10 minutes (B50)
   const r = await g.page.evaluate(async () => {
     const D = window.__dbg, J = D.JGP, C = D.C, wait = (ms) => new Promise((res) => setTimeout(res, ms));
     setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250);

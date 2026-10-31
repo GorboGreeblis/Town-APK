@@ -6,6 +6,7 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 
 | Version | versionCode | What changed | Headset |
 | --- | --- | --- | --- |
+| 4.0.12 | 81 | **S17** (T19) the Ancient's body uploaded while loading (the warm-up no longer misses it behind his hiding outside the church). Tests: `test_stands.js` draws one frame in four (B50); `test_jitter.js` records scenes at the worst float (B49). | pending |
 | 4.0.11 | 80 | **P34** (T20) the Event's start no longer costs a long frame: its watchers' ring and the characters' foot points are worked out while loading (44 ms to 18 ms headless). **S16** (T19) the Gem's stand made and uploaded while loading. | pending |
 | 4.0.10 | 79 | **A43** a "To Ormstown" parcel on the Post Office's mail pile. **F-B82** (B47) the head guard's shader compiled at VR entry, not the first time it shows. |  pending |
 | 4.0.9 | 78 | **A42** the Event's pizza boxes fade out at its end (were removed at once). The geometry hold's log measures from the eyes (it measured from the rig's origin on the headset) and names held draw batches. | pending |
