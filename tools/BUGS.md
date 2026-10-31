@@ -13,7 +13,7 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Where | Reproduce | Status |
 | --- | --- | --- | --- | --- |
-| (none) | | | | |
+| B49 | Gooward floats or sinks 0.50 m and Mama Gorbo 0.33 m against their character, outside the Event, about two minutes in (`test_jitter.js`: "every model stays within 25 cm of where it is drawn relative to the character") | Gooward and Mama Gorbo, the park | `node tools/test_jitter.js index.html`: fails the same way on 4.0.10 as released (not from T19/T20's changes) | open; next in the author's order after T19 and T20 |
 
 ## Fixed
 
