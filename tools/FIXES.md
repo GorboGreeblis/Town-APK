@@ -696,7 +696,7 @@ only the fence, a metre of ground and the mist (pictures by the church at 30, 20
 `test_event_fade.js` checks the 15 s timing and that the scene's mist follows the bank and is 0 after the Event.
 
 - **A10** (3.15.57; the author: "Please give Gemtoe a neck tie. no shirt, just a tie"; pictures shown, then "a little
-too high", lowered): a tie on his bib, a knot under the bill and a pointed blade following the chest, in his gems'
+too high", lowered): a tie on her bib, a knot under the bill and a pointed blade following the chest, in her gems'
 purple with gold stripes (a canvas texture painted while loading).
 
 - **F-B47** (3.15.57; the author: "examine the houses in the outside ring: On the sides of the houses, where the wall
@@ -1039,9 +1039,9 @@ consistent collision"): the gazebo's posts and railings were only circles in the
 player's collision never reads, so the player walked through its walls (and a townsperson pushed off its route could
 too). Its seven railed sides are now walls from post to post (0.24 m thick, the posts at their ends), checked by the
 game's own `F.resolve` for the player and every townsperson alike; the eighth side, its doorway, is open to anyone.
-Gemtoe can be talked to from anywhere round it (his talk range 3.8 -> 4.6 m: the walls hold the player up to 4.0 m
-from him). Proven: walking at the gazebo from eight sides stops at the railing on seven and walks in through the
-doorway; Gemtoe's route home touches no wall and he is home in 11 s (`test_gazebo.js`, standard tier since 3.15.68); `test_roam.js` fails anyone standing in a railing.
+Gemtoe can be talked to from anywhere round it (her talk range 3.8 -> 4.6 m: the walls hold the player up to 4.0 m
+from her). Proven: walking at the gazebo from eight sides stops at the railing on seven and walks in through the
+doorway; Gemtoe's route home touches no wall and she is home in 11 s (`test_gazebo.js`, standard tier since 3.15.68); `test_roam.js` fails anyone standing in a railing.
 
 - **S3** (3.15.67; the author: "What happens if NPCs or the player are standing in the areas where kiosks or other
 objects fade back in? The user or NPCs should probably be push out of these areas and prevented from getting stuck.
@@ -1331,6 +1331,40 @@ about and picking things up uploads nothing. Opened with a change waiting, it is
 the new picture is in place, so it is never shown out of date. Each pickup is now an event in the flight recorder's
 trail ("pick blossom", "pick flint"), so a log shows how long before a flash the last pickup came. `test_watch.js`:
 pickups while closed redraw nothing; opening redraws once and never shows an old picture.
+
+- **F-B79** (4.0.5; found by `test_owner_exit.js`, repeatable): with the player standing on the first point of Gemtoe's
+way out of the gazebo, her stuck rescue (a townsperson blocked eight times while seen, four while unseen, is moved to
+its target with a sparkle) moved her straight onto that point, which is where the player stood: a 1.55 m jump into the
+player. The rescue now never moves a townsperson to a spot within its body plus 0.6 m of the player; it keeps waiting
+(and tries again) until the player moves.
+
+- **S13** (4.0.5; found re-checking `test_recover.js`): when the recovery safety turns the draw batcher off (S4 step 2),
+it hands every batched object back to be drawn on its own from each batch's list of members; a batch whose list was
+damaged (the test's injected fault) left its members on the batcher's hidden layer, drawn by nothing. The step now
+also sweeps the scene and returns anything still on that layer. (`test_recover.js`'s draws-per-frame check now allows
+for multiview, which draws both eyes in one call: 35 there, 70 on the classic path.)
+
+- **F-B78** (4.0.5; found by `test_bubble_clear.js` on 4.0.4): a speech bubble cleared the two speakers' heads but not
+a third townsperson standing under it; with Mama Gorbo's taller cap (A36) Fortizmo and Zollod's bubble cut 8 cm into
+her. A bubble now rises above every townsperson within its span (2.2 m plus their body), not only the speakers.
+`test_vig_flash.js` now counts only bubbles the renderer drew in a frame (one out of view is not drawn, and a bubble is
+sized as it is drawn), and retries a scene whose speaker is busy for a moment.
+
+- **S12** (4.0.5; S11 continued, the author: "let's try to clean things up to be less likely to cause these sorts of
+issues in the future"): Nextessa was built on every pizza order (her model made, merged and batched, then her pizza box
+made) and thrown away when she left, so each visit made and uploaded new geometry and disposed it again (the play
+census: 40 buffers made and 26 deleted in a busy session, most of them hers). Now she and her box are made and uploaded
+while loading; an order brings the same Nextessa and the same box back, her leaving puts them away (nothing disposed),
+and the delivered box is kept for the next order. She is not drawn through the draw batcher (one character, a few draws
+while she visits), so no batch is built or dropped for her. `test_courier.js` (standard tier, new): two orders, each
+delivered; the second brings the same model and box; no GL buffer deleted during either visit and none made inside a
+frame (three small ones, two quads and a 205-vertex piece, are uploaded between frames by the geometry hold on her
+first draw). Also: a few batches of load-time warm-up objects (the Event's pizza boxes round the Garden) were dropped
+by the batcher in the first minute of play, once their objects had left the scene; they are now dropped at the end of
+loading.
+  Also: the draw batcher dropped a batch whose objects had left the scene (after 10 checks) by disposing its geometry
+  and material inside the frame being drawn (the play census: 21 buffers deleted inside headset frames during text
+  exchanges). The disposal now happens just after the frame.
 
 - **A39** (4.0.4; the author: "Please limit Gooward's goo barrage (after giving a Blossom) by making Gooward
 non-interactable until the goo barrage is over"): a Blossom given to Gooward starts his barrage (eight volleys over

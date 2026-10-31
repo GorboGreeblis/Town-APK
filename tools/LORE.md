@@ -452,10 +452,10 @@ What the models have in common, as built:
   a hooked parrot bill.
 - **Palette**: reds (`#b8282e` and its shades) with a yellow-orange crest; amber eyes; purple gems with yellow
   sparkles. *(inference: the palette variable is still named `teal`, so the model was once teal.)*
-- **Face**: side-set amber eyes with slit pupils and feathered lids, scaly brows, a beak that opens while he talks.
-- **Motion**: hovers (a little above the ground, on purpose: the author, 2026-10-30), the head looks about, the wings flap faster when he moves, the sparkles twinkle.
+- **Face**: side-set amber eyes with slit pupils and feathered lids, scaly brows, a beak that opens while she talks.
+- **Motion**: hovers (a little above the ground, on purpose: the author, 2026-10-30), the head looks about, the wings flap faster when she moves, the sparkles twinkle.
 - **Tie** (3.15.57, the author: "a neck tie. no shirt, just a tie"): a knot under the bill and a pointed blade down
-  the bib, his gems' purple with gold diagonal stripes. Since 3.15.62 it hangs at 0.32 rad, along the chest fur, and
+  the bib, her gems' purple with gold diagonal stripes. Since 3.15.62 it hangs at 0.32 rad, along the chest fur, and
   only the feathers under it lie flat (FIXES F-B59; the author: "Only those feathers and no others").
 
 #### Glyph
@@ -574,6 +574,7 @@ What the models show that the code does not explain, as the author answered it (
 - **Fortizmo**: the four small dots beside her eyes are beauty marks.
 - **Gemtoe**: floats a little above the ground on purpose (author, 2026-10-30).
 - **Backpacka** is a he; **Fortizmo** is a she (author, 2026-10-30).
+- **Gemtoe** is a she (author, 2026-10-31).
 - **Etcher**: the three marks on his back (a stroked "B", three stacked parallelograms, two diamonds) are symbols of
   the ledgers he can etch on.
 - **The technology on every character** is a deliberate theme: this is a digital world and they are digital

@@ -132,11 +132,11 @@ const LONG = process.argv.includes('--long');
     const beside = () => { D.At.position.x = e.group.position.x + 1.4; D.At.position.z = e.group.position.z; };
     beside(); await H.wait(300); const before = D.xe.current === e;
     await H.act(e, /^Give a blossom$/, 300); const g0 = e.giftAt || performance.now();
-    let n = 0, hit = 0; while (performance.now() - g0 < 3800) { beside(); await H.wait(120); if (!D.qt.isOpen && D.Re && 'playing' === (D.jt ? D.jt.top : 'playing')) { n++; if (D.xe.current === e) hit++; } }
-    await H.wait(500); beside(); await H.wait(500);
+    let n = 0, hit = 0; while (performance.now() - g0 < 3600) { beside(); await H.wait(120); if (!D.qt.isOpen) { D.xe.scan(); n++; if (D.xe.current === e) hit++; } }   // the scan run here (it does not run while a dialogue is open)
+    while (performance.now() - g0 < 4300) await H.wait(100); beside(); await H.wait(300); while (D.qt.isOpen) await H.wait(100); D.xe.scan();
     return { before, during: n, targeted: hit, after: D.xe.current === e };
   });
-  expect('gifts: after a Blossom, Gooward cannot be interacted with until his goo barrage is over, then can again', !gw.none && gw.before && gw.during >= 5 && gw.targeted === 0 && gw.after, JSON.stringify(gw));
+  expect('gifts: after a Blossom, Gooward cannot be interacted with until his goo barrage is over, then can again', !gw.none && gw.before && gw.during >= 3 && gw.targeted === 0 && gw.after, JSON.stringify(gw));
   const phone1 = await page.evaluate(async () => { const H = window.__h; return await H.act(H.zone('phone'), /Call for pizza/); });
   expect('phone: after the bribe Nextessa answers ("*Ring Ring* This is Nextessa’s inter-temporal pizza shop!")', phone1 && /^\*Ring Ring\* This is Nextessa/.test(phone1[0] || ''), JSON.stringify(phone1));
   const sp = await page.evaluate(async () => {

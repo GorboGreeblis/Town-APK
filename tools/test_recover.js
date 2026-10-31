@@ -45,7 +45,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const t1 = performance.now(); while (!logs.some((s) => /recovery: batcher kept failing; step 2/.test(s)) && performance.now() - t1 < 8000) await wait(50);
     const step2 = logs.some((s) => /recovery: batcher kept failing; step 2/.test(s)), step1 = logs.some((s) => /recovery: batcher kept failing; step 1/.test(s));
     frames = calls = 0; const e1 = D.Re.errors; await wait(1500);
-    out.batcher = { batches: n0, step1, step2, s: +((performance.now() - t1) / 1000 - 1.5).toFixed(1), framesAfter: frames, drawsAfter: Math.round(calls / Math.max(1, frames)), errorsAfter: D.Re.errors - e1, left: D.gcEB.list.length, off: !!D.gcEB.off };
+    out.batcher = { batches: n0, step1, step2, s: +((performance.now() - t1) / 1000 - 1.5).toFixed(1), framesAfter: frames, drawsAfter: Math.round(calls / Math.max(1, frames)), errorsAfter: D.Re.errors - e1, left: D.gcEB.list.length, off: !!D.gcEB.off, mv: !!(window.__gtXR && window.__gtXR.mvActive) };
     O.render = R;
     out.logs = logs.filter((s) => /^recovery:/.test(s));
     return out;
@@ -55,7 +55,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   note(JSON.stringify(r));
   expect('a townsperson whose position is not a number is put back home within a second (by the game\'s own guard or S5)', r.nan.finite && r.nan.home < 0.5, JSON.stringify(r.nan));
   expect('a townsperson whose update fails every frame is reset (put back home, busy cleared) and then updates again, without errors', r.failing.recovered && r.failing.log && r.failing.errorsAfter === 0 && r.failing.movedAfter > 0.2, JSON.stringify(r.failing));
-  expect('the batcher failing every frame is stepped down (marks off, then batching off) and frames keep drawing', r.batcher.step1 && r.batcher.step2 && r.batcher.framesAfter > 20 && r.batcher.drawsAfter > 50 && r.batcher.left === 0 && r.batcher.off, JSON.stringify(r.batcher));
+  // draws per frame: multiview (the headset's path) draws both eyes in one call, so half the classic path's count
+  expect('the batcher failing every frame is stepped down (marks off, then batching off) and frames keep drawing', r.batcher.step1 && r.batcher.step2 && r.batcher.framesAfter > 20 && r.batcher.drawsAfter > (r.batcher.mv ? 25 : 50) && r.batcher.left === 0 && r.batcher.off, JSON.stringify(r.batcher));
   expect('once stepped down no more batcher errors come', r.batcher.errorsAfter === 0, String(r.batcher.errorsAfter));
   const other = g.errors.filter((e) => !/injected fault|Cannot read properties of null|null is not an object|\.P\b|reading 'some'|reading 'forEach'|reading 'length'/.test(e));
   expect('no page errors other than the injected faults', other.length === 0, other.slice(0, 3).join(' | '));

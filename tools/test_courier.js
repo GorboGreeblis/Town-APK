@@ -1,67 +1,57 @@
-#!/usr/bin/env node
-// B11: Nextessa (the pizza courier) must reach a player standing on the far side
-// of the Ancient inside the church, deliver, and walk back out, without pinning
-// against the Ancient. Also covers B10: the courier spawns 30 s after the phone
-// call (the portal sets pizza.callDelayMs to 30 s).
+// Nextessa's visits build nothing (standard tier; S12, the flash clean-up; the author: "let's try to clean things up to
+// be less likely to cause these sorts of issues in the future"). Nextessa and her pizza box are made and uploaded while
+// loading; each pizza order brings the same Nextessa and the same box back, and her leaving puts them away (nothing
+// disposed). Pizza is ordered twice in VR (fake XR); each visit is followed to its end:
+//   - each order brings her (through the Portal) and she delivers ("One hot and ready pie!"), then leaves;
+//   - the second visit is the same Nextessa (the same model) carrying the same box as the first;
+//   - no GL buffer is deleted from the call to her leaving (nothing disposed); at most a few small ones are made (two
+//     quads and one small piece, uploaded between frames by the geometry hold), and none inside a headset frame;
+//   - after each visit she is gone from the townsfolk list and the scene; no page errors or logged errors.
 //
-//   node tools/test_courier.js [file] [side]   side: left (default) | right
+//   GT_MULTIVIEW=1 node tools/test_courier.js [file]
 const path = require('path');
-const { boot, reporter, root } = require('./lib/harness.js');
-const file = process.argv[2] && !/^(left|right)$/.test(process.argv[2]) ? path.resolve(process.argv[2]) : undefined;
-const side = (process.argv.slice(2).find((a) => /^(left|right)$/.test(a))) || 'left';
+const { boot, reporter } = require('./lib/harness');
+const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
 
 (async () => {
-  const { page, browser, errors, bootS } = await boot({ file });
-  const { expect, failures } = reporter();
-  console.log(`booted in ${bootS}s; side=${side}`);
-  await page.evaluate(() => { window.__autoAdvance = setInterval(() => { try { const q = window.__dbg.qt; if (q && q.isOpen) q.advance(); } catch (e) {} }, 250); });
-
-  const r = await page.evaluate(async (side) => {
-    const D = window.__dbg, Kt = D.Kt, F = D.F, out = {};
-    const cb = F.buildings.find((B) => B.name === 'church'); if (!cb) return { error: 'no church' };
-    const sv = D.JGP.slug.visit(0.92);
-    const slug = D.JGP.slug.ent.home; const [sx, sz] = F.local(cb, slug.x, slug.z);
-    // Player beside the Ancient, on the side opposite the visitor waypoints (which are at +x).
-    const px = side === 'left' ? -(0.95 + 1.3) : (0.95 + 1.3);
-    const [wx, wz] = F.world(cb, px, sz); D.At.position.set(wx, D.At.position.y, wz);
-    out.playerLocal = [px, +sz.toFixed(2)]; out.playerInChurch = F.inHull(cb, wx, wz);
-    // Order the pizza; the courier appears 30 s after the call ends.
-    D.ue.call(); await new Promise((r) => setTimeout(r, 300));
-    const tCall = performance.now();
-    while (!D.ue.courier && performance.now() - tCall < 45000) await new Promise((r) => setTimeout(r, 250));
-    out.spawnedAfterS = +((performance.now() - tCall) / 1000).toFixed(1); out.spawned = !!D.ue.courier;
-    if (!D.ue.courier) return out;
-    const n = D.ue.courier, p = n.group.position;
-    // Shortcut the 75 m walk: start her at the church's outside waypoint.
-    p.set(sv.out[0], 0, sv.out[1]);
-    const trace = []; let last = [p.x, p.z], lastMoveT = performance.now(), maxStillS = 0, stillState = null;
-    const t0 = performance.now(); let delivered = false, deliveredAt = 0, left = false, leftAt = 0, gone = false;
-    while (performance.now() - t0 < 150000) {
-      await new Promise((r) => setTimeout(r, 200));
-      const c = D.ue.courier; if (!c) { gone = true; break; }
-      const q = c.group.position, st = D.ue.state;
-      const [lx, lz] = F.local(cb, q.x, q.z);
-      if (Math.hypot(q.x - last[0], q.z - last[1]) > 0.15) { last = [q.x, q.z]; lastMoveT = performance.now(); }
-      else if (st !== 'speaking' && !D.qt.isOpen) { const s = (performance.now() - lastMoveT) / 1000; if (s > maxStillS) { maxStillS = s; stillState = st + '@' + lx.toFixed(1) + ',' + lz.toFixed(1); } }
-      if (trace.length === 0 || performance.now() - trace[trace.length - 1].t > 1500) trace.push({ t: Math.round((performance.now() - t0) / 1000), st, lx: +lx.toFixed(1), lz: +lz.toFixed(1), inC: F.inHull(cb, q.x, q.z) });
-      if (!delivered && (st === 'speaking' || Kt.rewards.snacks)) { delivered = true; deliveredAt = (performance.now() - t0) / 1000; }
-      if (delivered && !left && st === 'leaving' && !F.inHull(cb, q.x, q.z)) { left = true; leftAt = (performance.now() - t0) / 1000; }
-      if (left && performance.now() - t0 > leftAt * 1000 + 3000) break;
+  const { expect, note, failures } = reporter();
+  const g = await boot({ file, vr: true, fastSim: false, renderEvery: 4 });   // drawn for real (GPU buffers are made when a geometry is first drawn), one frame in four for speed
+  const errors = []; g.page.on('pageerror', (e) => errors.push(e.message)); g.page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text().split('\n')[0]); });
+  const r = await g.page.evaluate(async () => {
+    const D = window.__dbg, wait = (ms) => new Promise((res) => setTimeout(res, ms)), gl = D.O.getContext();
+    const said = []; const qo = D.qt.open; D.qt.open = function (n, c, text) { said.push(String(text)); return qo.apply(this, arguments); };
+    setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250);
+    await wait(1500);
+    const cnt = { make: 0, del: 0, inFrame: 0, on: false };
+    for (const k of ['createBuffer', 'deleteBuffer']) { const f = gl[k].bind(gl); gl[k] = function () { if (cnt.on && !/fakexr|XRWebGLBindingFake/.test(new Error().stack)) { k === 'createBuffer' ? cnt.make++ : cnt.del++; if (window.__fakeXR && window.__fakeXR.inFrame) cnt.inFrame++; } return f.apply(null, arguments); }; }
+    D.Kt.phone = true; const visits = [];
+    for (let v = 0; v < 2; v++) {
+      const s0 = said.length; cnt.on = true; const b0 = { make: cnt.make, del: cnt.del };
+      try { D.ue.call(); } catch (e) { visits.push({ err: String(e) }); break; }
+      let t0 = performance.now(); while (!D.ue.courier && performance.now() - t0 < 180000) await wait(100);
+      const n = D.ue.courier; if (!n) { visits.push({ noCourier: true, said: said.slice(s0) }); break; }
+      let box = null; n.group.traverse((o) => { if (o.userData && o.userData.gcPz) box = o; });
+      const rec = { group: n.group, box, came: true };
+      // she walks to the player and delivers when near; else she is claimed
+      t0 = performance.now(); while (D.ue.courier && !said.slice(s0).some((x) => x.startsWith('One hot and ready pie!')) && performance.now() - t0 < 240000) { D.At.position.x = n.group.position.x + 1.6; D.At.position.z = n.group.position.z; if (D.ue.state === 'waiting') D.ue.claim(true); await wait(200); }
+      rec.delivered = said.slice(s0).some((x) => x.startsWith('One hot and ready pie!'));
+      t0 = performance.now(); while (D.ue.courier && performance.now() - t0 < 480000) { D.At.position.set(0, D.At.position.y, -20); await wait(200); }
+      await wait(800); cnt.on = false;
+      rec.left = !D.ue.courier; rec.inList = D.It.all.includes(n); let inScene = false; for (let o = n.group; o; o = o.parent) if (o === D.C) inScene = true; rec.inScene = inScene;
+      rec.made = cnt.make - b0.make; rec.deleted = cnt.del - b0.del;
+      visits.push(rec);
+      await wait(1500);
     }
-    out.delivered = delivered; out.deliveredAtS = +deliveredAt.toFixed(1); out.snacks = !!Kt.rewards.snacks;
-    out.leftChurch = left; out.leftAtS = +leftAt.toFixed(1); out.gone = gone; out.maxStillS = +maxStillS.toFixed(1); out.stillState = stillState;
-    out.trace = trace.filter((x, i, a) => i === 0 || i === a.length - 1 || x.st !== a[i - 1].st || Math.abs(x.lx - a[i - 1].lx) + Math.abs(x.lz - a[i - 1].lz) > 1.5).slice(0, 40);
-    out.errors = D.Re.errors;
-    return out;
-  }, side);
-  console.log(JSON.stringify(r));
-  expect('courier spawns after the 30 s portal delay', r.spawned, `${r.spawnedAfterS}s`);
-  expect(`player placed inside the church on the ${side} of the Ancient`, r.playerInChurch, JSON.stringify(r.playerLocal));
-  expect('courier reaches the player and delivers (+Snacks)', r.delivered && r.snacks, `delivered at ${r.deliveredAtS}s`);
-  expect('courier never stands still for more than 8 s while arriving or leaving', r.maxStillS <= 8, `max still ${r.maxStillS}s (${r.stillState})`);
-  expect('courier walks back out of the church after delivering', r.leftChurch, `left at ${r.leftAtS}s`);
-  expect('no page errors', errors.length === 0 && !r.errors, errors.slice(0, 3).join(' | '));
-  await browser.close().catch(() => {});
-  console.log(failures.length ? `COURIER TEST FAILED (${failures.length})` : 'COURIER TEST PASSED');
-  process.exit(failures.length ? 1 : 0);
-})();
+    const out = visits.map((x) => Object.assign({}, x, { group: undefined, box: undefined }));
+    return { visits: out, sameModel: visits.length === 2 && !!visits[0].group && visits[0].group === visits[1].group, sameBox: visits.length === 2 && !!visits[0].box && visits[0].box === visits[1].box, inFrame: cnt.inFrame };
+  });
+  note(JSON.stringify(r));
+  const v = r.visits;
+  expect('two orders: each brings her and she delivers, then leaves', v.length === 2 && v.every((x) => x.came && x.delivered && x.left), JSON.stringify(v));
+  expect('the second visit is the same Nextessa carrying the same box', r.sameModel && r.sameBox, JSON.stringify({ model: r.sameModel, box: r.sameBox }));
+  expect('no GL buffer deleted during either visit (nothing disposed), and at most a few small ones made (her first draw\'s held uploads, between frames)', v.every((x) => x.deleted === 0 && x.made <= 4), JSON.stringify(v.map((x) => [x.made, x.deleted])));
+  expect('none inside a headset frame', r.inFrame === 0, String(r.inFrame));
+  expect('after each visit she is gone from the townsfolk list and the scene', v.every((x) => !x.inList && !x.inScene), JSON.stringify(v.map((x) => [x.inList, x.inScene])));
+  expect('no page errors or logged errors', errors.length === 0, errors.slice(0, 3).join(' | '));
+  await g.close(); console.log(failures.length ? `COURIER TEST FAILED (${failures.length})` : 'COURIER TEST PASSED'); process.exit(failures.length ? 1 : 0);
+})().catch((e) => { console.error(e); process.exit(1); });

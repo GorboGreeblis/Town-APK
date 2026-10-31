@@ -3,7 +3,8 @@
 // text version in VR (fake XR; run it with GT_MULTIVIEW=1 for the headset's render path, as run_tests.sh does) while
 // the player walks round the speakers, 1.3 to 4 m from the first and their eyes rising and falling half a metre. Each
 // line's bubble is a pooled canvas texture painted again for that line, on a sprite from a pool made while loading (S11),
-// sized and faded as it is drawn, from the camera drawing it. On every frame drawn (measured as drawn), and over each scene:
+// sized and faded as it is drawn, from the camera drawing it. On every frame drawn (each bubble the renderer drew in
+// that frame, measured as drawn), and over each scene:
 //   - every pair played and showed its bubbles (Sparkakus's end at once, tied to his library; only noted);
 //   - no GPU work inside a headset frame (texture uploads, mipmaps, pixel reads and the like: the frame-hazard watch);
 //   - no shader program made during the scenes (the programs in use the same after every scene as before the first),
@@ -18,7 +19,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
 
 (async () => {
   const { expect, note, failures } = reporter();
-  const g = await boot({ file, vr: true, fastSim: true });
+  const g = await boot({ file, vr: true, fastSim: false, renderEvery: 4 });   // drawn for real (the GPU-work and bubble checks need real draws), one frame in four for speed
   const errors = []; g.page.on('pageerror', (e) => errors.push(e.message)); g.page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text().split('\n')[0]); });
   const r = await g.page.evaluate(async () => {
     const D = window.__dbg, J = D.JGP, T = window.THREE, V = D.VIGS, O = D.O, wait = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -30,11 +31,23 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const ent = (c) => c === 'SL' ? (J.slug && J.slug.ent) : (D.It.all.find((e) => e.def && e.def.name === NAMES[c]) || line[c] || null);
     const H = window.__gtFrameHaz, h0 = H ? H.n : 0, f0 = H ? H.first.length : 0, info = O.info;
     const progs = () => (info.programs ? info.programs.length : 0);
-    let maxDeg = 0, near = 0, minD = 1e9, shown = 0, worst = null, cur = '';
-    const R0 = O.render; O.render = function () { const res = R0.apply(this, arguments); try { const h = D.we.headPos; for (const b of D.C.children) { if (!b.isSprite || !b.visible || b.renderOrder !== 20 || !(b.material.opacity > 0.01)) continue; shown++; const d = b.position.distanceTo(h); minD = Math.min(minD, d); if (d < 1.2) near++; const deg = 2 * Math.atan(Math.max(b.scale.x, b.scale.y) / 2 / Math.max(d, 0.01)) * 180 / Math.PI; if (deg > maxDeg) { maxDeg = deg; worst = { pair: cur, deg: +deg.toFixed(1), d: +d.toFixed(2), sx: +b.scale.x.toFixed(2), sy: +b.scale.y.toFixed(2), full: b.userData.gcS ? b.userData.gcS.map((v) => +v.toFixed(2)) : null, op: +b.material.opacity.toFixed(2), frame: window.__fakeXR ? window.__fakeXR.frames : null }; } } } catch (e) {} return res; };
+    let maxDeg = 0, near = 0, minD = 1e9, shown = 0, drawnN = 0, worst = null, cur = '';
+    // only bubbles drawn in the frame count (one out of view is not drawn, and is sized as it is drawn): each pooled
+    // bubble marks itself when the renderer draws it
+    for (const sp of window.__gcBubP || []) { const ob = sp.onBeforeRender; sp.onBeforeRender = function () { this.userData.__drawn = true; return ob.apply(this, arguments); }; }
+    const R0 = O.render; O.render = function () { for (const sp of window.__gcBubP || []) sp.userData.__drawn = false; const res = R0.apply(this, arguments); try { const h = D.we.headPos; for (const b of D.C.children) { if (!b.isSprite || !b.visible || b.renderOrder !== 20 || !(b.material.opacity > 0.01)) continue; shown++; if ((window.__gcBubP || []).includes(b) && !b.userData.__drawn) continue; drawnN++; const d = b.position.distanceTo(h); minD = Math.min(minD, d); if (d < 1.2) near++; const deg = 2 * Math.atan(Math.max(b.scale.x, b.scale.y) / 2 / Math.max(d, 0.01)) * 180 / Math.PI; if (deg > maxDeg) { maxDeg = deg; worst = { pair: cur, deg: +deg.toFixed(1), d: +d.toFixed(2), sx: +b.scale.x.toFixed(2), sy: +b.scale.y.toFixed(2), full: b.userData.gcS ? b.userData.gcS.map((v) => +v.toFixed(2)) : null, op: +b.material.opacity.toFixed(2), frame: window.__fakeXR ? window.__fakeXR.frames : null }; } } } catch (e) {} return res; };
     const seen = new Set(), out = { pairs: 0, played: 0, noBubble: [], skipped: [], progChanged: [] };
     // one scene first, so the bubble pool and the sprite program are in use as in play; then the counts
     const p0 = progs(), t0c = info.memory.textures, g0c = info.memory.geometries;
+    // any program made during the run, with what it is and who draws with it (to find it if it comes)
+    const progSeen = new Set((info.programs || []).map((p) => p.id)), progAll = new Map((info.programs || []).map((p) => [p.id, p])), newProgs = [];
+    const progCheck = (where) => { for (const p of info.programs || []) if (!progSeen.has(p.id)) { progSeen.add(p.id); progAll.set(p.id, p); const users = []; D.C.traverse((o) => { for (const m of (o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [])) { const pr = O.properties.get(m); if (pr && (pr.currentProgram === p || pr.program === p)) { const w = o.getWorldPosition(new T.Vector3()); const ch = []; for (let x = o; x && ch.length < 6; x = x.parent) { const ent = D.It.all.find((e) => e.group === x); ch.push(ent ? (ent.id || ent.kind) : (x.name || x.type)); } const ca = o.geometry && o.geometry.attributes.color; users.push(m.type + (m.map ? '+map' : '') + (m.color ? ' #' + m.color.getHexString() : '') + ' vc ' + m.vertexColors + ' colour attr ' + (ca ? ca.itemSize : 'none') + ' ' + ch.join('<') + ' @' + [w.x, w.y, w.z].map((v) => v.toFixed(1)).join(',')); } } }); const diff = [...progAll.values()].filter((q) => q !== p && q.name === p.name).map((q) => { const a = p.cacheKey.split(','), b = q.cacheKey.split(','), d = []; for (let i = 0; i < Math.max(a.length, b.length); i++) if (a[i] !== b[i]) d.push(i + ':' + b[i] + '->' + a[i]); return d; }).sort((x, y) => x.length - y.length)[0]; newProgs.push({ where, t: +(D.Re.t).toFixed(0), name: p.name, diff: (diff || ['no program of its kind']).slice(0, 6), users: users.slice(0, 3) }); } };
+    const progTimer = setInterval(() => progCheck(cur || 'between scenes'), 200);
+    const geo0 = new Set(); D.C.traverse((o) => { if (o.geometry) geo0.add(o.geometry); });
+    // every geometry drawn for the first time during the run (each one is uploaded then): what, whose, where, when
+    const firstDrawn = [], fdSeen = new WeakSet(); D.C.traverse((o) => { if (o.geometry) fdSeen.add(o.geometry); });
+    const rbd = O.renderBufferDirect.bind(O);
+    O.renderBufferDirect = function (cam, sc, geo, mat, obj, grp) { if (geo && !fdSeen.has(geo)) { fdSeen.add(geo); if (firstDrawn.length < 40) { const ch = []; for (let x = obj; x && ch.length < 6; x = x.parent) { const ent = D.It.all.find((e) => e.group === x); ch.push(ent ? (ent.id || ent.kind) : (x.name || x.type)); } const w = obj.getWorldPosition(new T.Vector3()); firstDrawn.push({ where: cur || 'between scenes', t: +D.Re.t.toFixed(0), what: (geo.attributes.position ? geo.attributes.position.count : 0) + 'v ' + geo.type + ' ' + mat.type + (mat.color ? ' #' + mat.color.getHexString() : ''), owner: ch.join('<'), at: [w.x, w.y, w.z].map((v) => +v.toFixed(1)) }); } } return rbd(cam, sc, geo, mat, obj, grp); };
     let k = 0;
     for (const p of V.all) {
       const key = [p[0], p[1]].sort().join('-'); if (seen.has(key)) continue; seen.add(key);
@@ -48,20 +61,25 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       // the player steps away first (a scene does not start with the player beside the speakers), then walks in
       D.At.position.set(sp.x - sp.x / L * 9, y0, sp.z - sp.z / L * 9); await wait(200); cur = key;
       const before = progs();
-      if (!V.play(A, B, true)) { out.skipped.push(key + ' (would not play)'); continue; }
+      // a speaker busy for a moment (walking home, a visit): try again for up to 6 s
+      let ok = false; for (let tr = 0; tr < 12 && !(ok = V.play(A, B, true)); tr++) { await wait(500); while (V.playing()) await wait(100); }
+      if (!ok) { out.skipped.push(key + ' (would not play)'); continue; }
       out.played++; const s0 = shown, t1 = performance.now();
       while (V.playing() && performance.now() - t1 < 15000) {
         const a = (performance.now() - t1) / 1000 + k, rr = cave ? 0.6 : 1.3 + 1.35 * (1 + Math.sin(0.7 * a));
         D.At.position.set(sp.x + rr * Math.cos(0.9 * a), y0 + 0.5 * Math.sin(1.1 * a) - 0.25, sp.z + rr * Math.sin(0.9 * a));
+        if (window.__fakeXR) window.__fakeXR.pose.yaw = Math.atan2(D.At.position.x - sp.x, D.At.position.z - sp.z) - D.At.rotation.y + Math.PI;   // the head turned toward the speaker
         await wait(50);
       }
       D.At.position.y = y0; k += 3;
       if (shown === s0) out.noBubble.push(key);
       if (progs() !== before) out.progChanged.push(key + ' ' + before + '>' + progs());
     }
-    O.render = R0;
+    O.render = R0; clearInterval(progTimer); progCheck('end');
     await wait(500);
-    return Object.assign(out, { worst, maxDeg: +maxDeg.toFixed(1), near, minD: +minD.toFixed(2), shown, progs: [p0, progs()], textures: [t0c, info.memory.textures], geometries: [g0c, info.memory.geometries], haz: H ? H.n - h0 : null, hazFirst: H ? H.first.slice(f0, f0 + 3) : [], mv: !!(window.__gtXR && window.__gtXR.mvActive) });
+    const geoNew = []; D.C.traverse((o) => { if (o.geometry && !geo0.has(o.geometry) && geoNew.length < 20) { const w = o.getWorldPosition(new T.Vector3()); geoNew.push((o.geometry.attributes.position ? o.geometry.attributes.position.count : 0) + 'v ' + o.type + (o.material && o.material.color ? ' #' + o.material.color.getHexString() : '') + ' vis ' + o.visible + ' @' + [w.x, w.y, w.z].map((v) => v.toFixed(1)).join(',')); } });
+    O.renderBufferDirect = rbd;
+    return Object.assign(out, { firstDrawn, newProgs, geoNew, worst, drawnN, maxDeg: +maxDeg.toFixed(1), near, minD: +minD.toFixed(2), shown, progs: [p0, progs()], textures: [t0c, info.memory.textures], geometries: [g0c, info.memory.geometries], haz: H ? H.n - h0 : null, hazFirst: H ? H.first.slice(f0, f0 + 3) : [], mv: !!(window.__gtXR && window.__gtXR.mvActive) });
   });
   if (r.noVR) { expect('in VR with a head position', false); process.exit(1); }
   note(JSON.stringify(Object.assign({}, r, { hazFirst: undefined })));
@@ -70,8 +88,12 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   note('scenes that ended before a bubble showed (Sparkakus, tied to his library): ' + (r.noBubble.join(', ') || 'none'));
   expect('scenes showed their bubbles (all but Sparkakus\'s)', r.noBubble.filter((k) => !/SP/.test(k)).length === 0, r.noBubble.filter((k) => !/SP/.test(k)).join(', '));
   expect('no GPU work inside a headset frame through every scene (frame-hazard watch)', r.haz === 0 || r.haz === null, JSON.stringify(r.hazFirst).slice(0, 500));
-  expect('no shader program made during any scene', r.progChanged.length === 0 && r.progs[0] === r.progs[1], JSON.stringify({ progs: r.progs, changed: r.progChanged.slice(0, 5) }));
+  if (r.newProgs.length) note('programs made during the run: ' + JSON.stringify(r.newProgs));
+  if (r.firstDrawn.length) note('geometries drawn for the first time during the run: ' + JSON.stringify(r.firstDrawn));
+  if (r.geoNew.length) note('geometries in the scene at the end that were not there at the start: ' + JSON.stringify(r.geoNew));
+  expect('no shader program made during any scene', r.progChanged.length === 0 && r.progs[0] === r.progs[1], JSON.stringify({ progs: r.progs, changed: r.progChanged.slice(0, 5), made: r.newProgs }));
   expect('no texture or geometry left behind by the scenes', r.textures[1] <= r.textures[0] && r.geometries[1] <= r.geometries[0], JSON.stringify({ textures: r.textures, geometries: r.geometries }));
+  expect('bubbles were drawn while the player walked round the speakers (at least 500 bubble-frames drawn)', r.drawnN >= 500, String(r.drawnN));
   expect('no bubble spans more than 55 degrees of the view', r.maxDeg <= 55, `${r.maxDeg} degrees at most`);
   expect('no bubble is drawn within 1.2 m of the eyes', r.near === 0, `${r.near} bubble-frames; closest ${r.minD} m`);
   expect('no page errors or logged errors', errors.length === 0, errors.slice(0, 3).join(' | '));
