@@ -1332,6 +1332,12 @@ the new picture is in place, so it is never shown out of date. Each pickup is no
 trail ("pick blossom", "pick flint"), so a log shows how long before a flash the last pickup came. `test_watch.js`:
 pickups while closed redraw nothing; opening redraws once and never shows an old picture.
 
+- **S14** (4.0.6; S11 continued; found by `test_vig_flash.js`, which now lists every geometry drawn for the first time
+during its hour of play): the Gree-mail tokens the townsfolk send each other in their scenes (Hennrick's cube, King
+Dino's crown, Fortizmo's note, Mama Gorbo's goo, the cards, tiles, gems, letters and the rest) share one geometry per
+shape, but each shape was uploaded the first time anyone sent that token, during play (about 20 uploads in an hour,
+between frames). Every token is now built once while loading, drawn by the geometry warm-up and put away.
+
 - **F-B79** (4.0.5; found by `test_owner_exit.js`, repeatable): with the player standing on the first point of Gemtoe's
 way out of the gazebo, her stuck rescue (a townsperson blocked eight times while seen, four while unseen, is moved to
 its target with a sparkle) moved her straight onto that point, which is where the player stood: a 1.55 m jump into the

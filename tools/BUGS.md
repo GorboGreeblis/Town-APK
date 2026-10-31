@@ -19,6 +19,7 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| S14 | Flash clean-up: each token's shape was uploaded the first time it was sent, during play | 4.0.6: every token is built and uploaded while loading (FIXES S14) | 2026-10-31 |
 | F-B79 | Gemtoe's stuck rescue moved her onto the player standing in the gazebo's way out (a 1.55 m jump) | 4.0.5: the rescue never moves a townsperson onto the player (FIXES F-B79) | 2026-10-31 |
 | S13 | Recovery: turning the batcher off left a damaged batch's members hidden | 4.0.5: the scene is swept for anything left on the batcher's layer (FIXES S13) | 2026-10-31 |
 | F-B78 | A speech bubble cut into a third townsperson under it (Fortizmo and Zollod's over Mama Gorbo, 8 cm, with her new cap) | 4.0.5: bubbles rise above every townsperson under their span (FIXES F-B78) | 2026-10-31 |
