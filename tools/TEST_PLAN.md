@@ -69,7 +69,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | No jitter, height bumps or floating models, through the Event and after it (F-B56, F-B57) | `test_jitter.js` (standard tier; 3 minutes with the harness's matrices-only mode) | 3.15.63: see the tools pass (TEST_PLAN's 3.15.63 row) |
 | No shader compiled inside a headset frame, also for a material the warm-up missed (S2) | `test_shaderhold.js` (standard tier) | 3.15.63: pass (3.15.60: 4 compiles inside a frame) |
 | The version the game shows matches the build (landing text, gate corner, VR loading box; A18) | `build.sh` step 3b (fails unless it stamps exactly four places) | done (3.15.63) |
-| A character the head is inside is hidden for the frame; a draw hook that throws does not cut the frame short (S1) | none yet | **todo** (T8) |
+| A character the head is inside is hidden for the frame; a draw hook that throws does not cut the frame short (S1) | `test_safeties.js` (standard tier) | done (3.15.68) |
 | The Garden, the Cave's walkway, Mama Gorbo's goo and Gemtoe's tie look right (F-B57-F-B60) | `shots.js` presets `garden`, `cave`, `gemtoe`; the author's headset run | pictures (3.15.62-3.15.63) |
 | Nextessa waits while the Gem assembles, then delivers (F-B45); Anomalee plants without Snacks and eats from her box with them (F-B49) | `test_courier_gem.js`, `test_anomalee.js` (standard tier) | 3.15.57: pass |
 | Stuck detection and rescue (`De`: re-plan via waypoints, off-screen teleport after 4 stalls; no 0.3 m progress in 5 s counts as a stall, F-B55) | `test_npc_home.js` forced-stuck and far-player scenarios; `test_stuck.js` | done |
@@ -116,7 +116,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Item | How | Coverage |
 | --- | --- | --- |
 | Frame loop alive, no errors, flat JS heap over 20 s in 2D | `test_play.js 2d` | done |
-| Same over 10+ minutes, including events (garden, finale) | `test_play.js` long run | todo |
+| Same over 10+ minutes, including events (garden, finale) | `test_soak.js` (full tier: 10 minutes of pickups, dialogue, shop, battle and pizza; errors, heap, programs and entities bounded); the Event's own runs in `test_stands.js`, `test_event_fade.js`, `test_flower_tint.js`, `test_pizza_fade.js` | done (full tier) |
 | Quality governor (`Ge`), since 3.15.43 (F-B31): every level and the emergency step keep the native render scale and only foveation changes, on the same layer; in town slow frames lower the level with no layer swap; the planting Event drops to the lowest level (full foveation) and locks it however slow the frames, with frames and multiview going, and releases the lock when it ends; the emergency step fires and swaps nothing (P16-P18, the Event's own scale, removed) | `test_governor.js` (standard tier, `GT_DEVICE=quest3s`; frames slowed by a busy loop) | done (3.15.43; 3.15.38's P16/P17 version history) |
 | 72 Hz on Quest 3/3S (VRC.Quest.Performance; the original Quest and Quest 2 are not supported since 3.15.34, the Quest Pro since 3.15.35), loading indicator rule | headset; `perf_log.js` per-device verdicts against 72 and 60 | headset (3.15.47 on a Quest 3S: town median 71.8, the Event median 63.3, 56.4 at worst; NOTES 91. Earlier: 3.15.33, town 72, the Event 58-65) |
 | Console error de-dup shim, the game's error reporting counts (`vo` in the unminified 3.15.44 file, git 21596f1) | `test_play.js` | done |
