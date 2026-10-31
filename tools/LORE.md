@@ -51,7 +51,8 @@ it is **Zollod** who is shy (the book cures him), the **Gem trade is Gemtoe's**,
 - **WANTED posters:** two kinds. One shows an alien face; the other shows a goo
   creature and the name **GLOOPERNAUGHT**. *(inference: the alien is how the
   Sheriff pictures the Human he is hunting.)*
-- **The robin:** a robin perches in the park; pick it and it flies off.
+- **The robin and the cardinal:** a robin and a cardinal perch on the park's two big trees beside the church; pick
+  either and it flies off.
 - **Parcels at the Post Office:** addressed "To Montreal", "To Cobourg" and
   "To Bangkok" (and one without a label).
 - **The Portal.** A gateway between eras, currently locked: "All travel
@@ -269,7 +270,7 @@ editions.") and the Ancient texts.
 | Name | Code id | Role / home | Nature and notes |
 | --- | --- | --- | --- |
 | Mama Gorbo | `p_mamagorbo` | Runs "the local fast food joint" (Gooburger); gardener | Round, bouncy, made of "noble goo" that "can heal many inflictions". Married to Gooward ("met over a spilled goo shake. Love at first splat!"). The Ancient calls her "Mother of goo". The lime tube draped around her front is a goo tube (author). |
-| Gooward | `gorbo` | Mama's "hubby"; "runs the Art Gallery now"; "quite the artist" | Speaks only in "Gomp"; crystal wings; goo bubbles; painted King Dino's billboard and the gallery painting (signed). Given a Blossom ("GOOMP") he flings goo at the player. Has a second set of eyes (the two octagonal discs on his head) and forehead wrinkles (author). |
+| Gooward | `gorbo` | Mama's "hubby"; "runs the Art Gallery now"; "quite the artist" | Speaks only in "Gomp"; crystal wings; goo bubbles; painted King Dino's billboard and the gallery painting (signed). Given a Blossom ("GOOMP") he flings goo at the player, and cannot be spoken to until his barrage is over (4.0.4, A39). Has a second set of eyes (the two octagonal discs on his head) and forehead wrinkles (author). |
 | Gemtoe | `p_gemtoe` | Keeper of the First Bank of Greeblis; at Gemtoe's Gazebo | Invented "Avarice"; tails curl around crystals; trades the Summoning Stone for the Gem; envies Sparkakus ("Spark collects books and calls it a job. Why am I so different?"). Sells "digital plots out here in the Greeblis-verse!" (talk line, author, 3.15.53). |
 | Etcher | `p_etcher` | Data preservation; dance floor | Tentacles etch data into everything; scales hold "a backup of a backup"; "My skin is a ledger." The three yellow marks on his back (a stroked "B", three stacked parallelograms, two diamonds) are symbols of the ledgers he can etch on (author). |
 | Glyph | `p_glyph` | "Master of symbols"; dance floor | Plates "fit together like a sentence"; ends lines with "don't you think?" |
@@ -476,6 +477,8 @@ What the models have in common, as built:
 - **Face**: two octagonal porthole eyes, one large and one small, with purple glowing lenses; no mouth.
 - **Extras**: three ooze drips that a bulge travels down, drops that grow, fall and leave peach splats on the ground,
   orbiting pins "AP", "IP" and wifi, four flashing yellow sparks.
+- **Cap** (since 4.0.4, A36): a yellow baseball cap with the teal M of Mistergummery's on its crown, worn pushed back
+  (her big eye covers the upper front of her head), its brim above the eye.
 - **Motion**: deep jelly breathing, a bounce and nod while she talks, lenses pulsing; her base lifts when she tilts
   so she never sinks into the ground.
 
@@ -536,6 +539,12 @@ What the models have in common, as built:
   park: rusty breast, dark back and head, white throat with streaks, a
   yellow bill, white eye-rings and brows, three tail feathers. All matte clay, no textures. It breathes, looks about,
   flicks its tail every 9 s, and when picked flies up, hides for 10-18 s and returns.
+
+#### The cardinal
+- A male cardinal (since 4.0.4, A38; from the author's photos) on a branch of the second park tree (-24.5, 34.5), facing
+  the park. The robin's body, wings, tail and head, in a cardinal's colours: bright red all over, a darker red-brown
+  back, wings and tail, a tall swept-back crest, a black mask and bib round a thick orange-red bill, no eye rings and
+  no white tail tips. It moves as the robin does (a few seconds out of step) and, picked, flies off and returns.
 
 #### Backpacka
 - **Body**: a horizontal lathe body with seven colour patches, a ten-segment neck, a head with a jaw and tongue, a
@@ -671,8 +680,9 @@ Garden at the origin. Inside it:
 - **What fills the gaps.** 1,750 grass tufts (nine blades each, in four greens: `#5f9a32`, `#6faa3a`, `#4f8a2a`,
   `#7ab842`), every sixth with a tiny white or yellow five-petal flower, scattered by the seeded generator anywhere in
   the park except the Garden (15.8 m), the walks, the dance floor, inside buildings and within 3.4 m of the key
-  spots; two big park trees (31, -33.5; -16, 37, beside the church, where the robin perches; a third at -17, -34,
-  the robin's until 4.0.3, was removed at the author's word, A30).
+  spots; two big park trees beside the church: (-16, 37), where the robin perches, and (-24.5, 34.5), to its right
+  from the Garden, where the cardinal perches (4.0.4, A37, A38); the robin's old tree at -17, -34 went in 4.0.3, A30,
+  and the one behind the Sheriff's and the Post Office at 31, -33.5 in 4.0.4, A31.
 - **The fence.** Black iron railings 1.04 m high round the whole park, with no gate: square pickets 7 cm wide every
   0.32 m on two rails (0.18 and 0.9 m up), a post every 3.2 m with a pyramid cap, and brick pillars (`#9a4a36`, 1.3 m,
   stone caps, iron balls) at the four corners and the middle of the north side. Beyond 18-28 m the modelled pickets
@@ -859,9 +869,10 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
 - **Rocks and pebbles**: 20 stones round the pond, painted flat on its bank in three greys (A23; dodecahedra until 3.15.67); the Garden's painted stones and rocks;
   about 1,360 small stones in the Cave; the 40 flint pickups (dark faceted stones with a glint).
 - **Mushrooms**: on and round the Sheriff's kiosk, round Mushroom's house and as its roof.
-- **The pond** (`buildPond`): a grass rim 4.9 m round, a soil bank 4.1 m, and water 3.7 m round that bobs (8 mm) and
-  slowly shifts its blue-green (`#3a8aa0`, glossy, with pale rings painted on it that drift slowly round); ripples
-  spread from three spots in turn, thin pale rings growing to the edge and fading (A21; drawn within 26 m).
+- **The pond** (`buildPond`): a grass rim 4.9 m round, a soil bank 4.1 m, and still water 3.7 m round: a plain water
+  texture, deep teal in the middle and lighter at the rim, with short wave streaks and a few glints, low shine; nothing
+  on it moves (A33, 4.0.4; its bobbing, colour pulse, drifting rings and ripples, A21, were removed at the author's
+  word).
 - **Blossoms**: the 32 pickups, each a stem with leaves and a flower of seven red, five orange and three gold petals
   with a soft orange halo.
 - **Clouds** (`gcRnd("clouds")`): fourteen (seven until 3.15.68, A24), each three to five white spheres (white with a
@@ -903,7 +914,7 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   (A5); small objects more than 26 m from the centre are hidden the same way; a UFO in flight leaves by its exit path
   (A6). Nothing pops in or out (the author, A5: "Nothing should ever appear to pop out or pop in"). The pond is never
   among them (F-B64).
-- **The fade groups** (P33, RULES.md 26): once the mist is up, each kiosk and the gazebo, and every tree with the robin,
+- **The fade groups** (P33, RULES.md 26): once the mist is up, each kiosk and the gazebo, and every tree with the robin and the cardinal,
   fade out over 10 s and stay out until the Event ends, then fade back over 10 s; never the church and
   Cave, the Ancient, Somlet, the pond or the Garden.
 

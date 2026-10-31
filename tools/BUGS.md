@@ -19,6 +19,19 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| S11 | Flash clean-up (the author): text scenes made a sprite and material per line and let them go at the end | 4.0.4: bubbles pooled; every text scene checked on the headset's path (`test_vig_flash.js`); GPU work during play listed (`play_census.js`) (FIXES S11) | 2026-10-31 |
+| S10 | Flashes around pickups (the author): the hidden HUD was still redrawn and uploaded after every pickup | 4.0.4: the HUD is redrawn only while open (FIXES S10) | 2026-10-31 |
+| A36 | Mama Gorbo's new cap clipped into her big eye disk in the pictures (the author) | 4.0.4, before release: worn pushed back, 8.4 cm clear; `test_cap.js` (FIXES A36) | 2026-10-31 |
+| F-B77 | A speech bubble cut into or was hidden by a speaker's body (the Ancient's behind Mama Gorbo; the author) | 4.0.4: bubbles above both speakers' real tops and drawn over everything; all 101 text pairs checked (FIXES F-B77) | 2026-10-31 |
+| F-B76 | Mushroom's hat clipped into his head (the author, 4.0.3) | 4.0.4: the hat raised 5 cm (FIXES F-B76) | 2026-10-31 |
+| S9 | Flashes with text scenes while moving about (the author): the speech bubble filled 70% of the view or more near the speaker | 4.0.4: a bubble never spans more than about 50 degrees, fades out within 1.2 m (FIXES S9) | 2026-10-31 |
+| S8 | Full-screen flashes while watching Mama Gorbo and Gooward meet and moving about (the author) | 4.0.4: their goo blobs arc through eye height; a blob within 0.7 m of the eyes is hidden (FIXES S8) | 2026-10-31 |
+| S7 | Two full-screen flashes around pickups (the author's log 6155900f) | 4.0.4: no GPU work found in frames around pickups; the HUD's redraw delayed 0.5 s and drawn before it is seen; Garden plants fade near the eye; the recorder names objects near the eyes on a mark (FIXES S7) | 2026-10-31 |
+| F-B75 | The pond's far side changed shape as the player approached (the author, 4.0.2) | 4.0.4: the stone ring's slope-scaled depth offset removed (FIXES F-B75) | 2026-10-31 |
+| F-B74 | Backpacka's water jets and the drip from his mouth not seen against the mist (the author, 4.0.2) | 4.0.4: the mist walls are drawn first, so the water (and the rainbow) draw over them (FIXES F-B74) | 2026-10-31 |
+| F-B73 | The fence's pickets and rails vanished into the Event's mist beyond about 20 m (the author's video; the long-standing fence-top report) | 4.0.4: the mist walls drawn first of all see-through things (FIXES F-B73) | 2026-10-31 |
+| F-B72 | Kiosks faded in an Event started without Seeds, where their townsfolk stay home (the author, 4.0.2) | 4.0.4: without Seeds only the town's trees fade (FIXES F-B72) | 2026-10-31 |
+| S6 (revised) | Garden flowers vanished when the player walked into them (the author, 4.0.2; S6) | 4.0.4: plants are no longer hidden; S6 keeps to pickups (FIXES S6, revised) | 2026-10-31 |
 | F-B71 | The portal's blue effect no longer showed when a pizza was ordered (the author, 4.0.2): the fade group's set-up gave its materials copies (A27, F-B68) | 4.0.3: only materials a mesh outside the group uses are copied; the effect stays out of the fade (FIXES F-B71) | 2026-10-31 |
 | F-B70 | P31's wrapper on `Layers` methods threw for methods the bundled three.js lacks (`enableAll`, `disableAll`; never called by the game; found measuring F-B69) | 4.0.2: only existing methods are wrapped (FIXES F-B70) | 2026-10-30 |
 | F-B69 | Gemtoe's tie still floated, seen from the side (the author, 4.0.1): 13-17 cm in front of the chest | 4.0.2: set back to the neck and curved along the chest, 0.6-1.4 cm off it (FIXES F-B69) | 2026-10-30 |

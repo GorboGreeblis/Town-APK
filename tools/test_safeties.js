@@ -2,8 +2,8 @@
 // screen flashes in general?"). In VR (fake XR, rendering on):
 //   - the player's head inside a character (its body radius, below its height) hides that character for the frame
 //     only: logged "head inside ... hidden for the frame", and the character is visible again between frames;
-//   - the head inside a Garden flower (or a Blossom or Flint pickup) hides it for the frame only (S6: a flower
-//     shrinking or growing through the eyes never fills the view);
+//   - the head inside a Garden flower leaves it drawn (S6 revised, the author: "Flowers in the Garden disappear when the
+//     user walks into them. This should not occur"); S6 keeps to pickups;
 //   - an object whose per-object draw hook throws does not stop the frame: the frame's draw calls stay what they were
 //     without it (three.js would otherwise draw nothing after it), the error is logged once for that object (not
 //     every frame), and frames keep coming;
@@ -37,8 +37,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     requestAnimationFrame(hold); await wait(1200); holding = false; D.uo.resolve = res0; await wait(100);
     D.At.position.set(h.group.position.x + 8, D.At.position.y, h.group.position.z);
     out.head = { id: h.id, logged: logs.filter((s) => /^head inside \d+ character\(s\): hidden for the frame/.test(s)).length, frames, betweenHidden, visibleAfter: h.group.visible };
-    // 1b. the head inside a Garden flower (S6, S1 widened: a flower shrinking or growing through the eyes never fills
-    // the view): a plant-sized object put in the Garden's list of flowers at the head
+    // 1b. the head inside a Garden flower leaves it drawn (S6 revised): a plant-sized object put in the Garden's list of
+    // flowers at the head
     await wait(400);   // the head position follows the player's move on the next frames
     { const J = D.JGP, plants = J.garden && J.garden.plants; if (plants) { const n0 = logs.length; const hp = D.we.headPos || D.At.position, fh = hp.y + 0.6; const g0 = new T.Group(), m0 = new T.Mesh(new T.BoxGeometry(0.8, fh, 0.8), new T.MeshLambertMaterial({ color: 0x44aa33 })); m0.position.y = fh / 2; g0.add(m0); g0.position.set(hp.x, 0, hp.z); D.C.add(g0); const e = { g: g0, grow: 1, kind: 0 }; plants.push(e);
       // hidden at the moment each frame is drawn (the log line is capped at 20 a session), shown between frames
@@ -66,7 +66,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   note(JSON.stringify(r));
   expect('the head inside a character hides it for the frame (logged)', r.head.logged >= 1, JSON.stringify(r.head));
   expect('the character is visible between frames and after', r.head.betweenHidden === 0 && r.head.visibleAfter, JSON.stringify(r.head));
-  expect('the head inside a Garden flower hides it for the frame only (S6), visible between frames and after', r.flower && r.flower.drawn > 10 && r.flower.hiddenDrawn >= r.flower.drawn - 2 && r.flower.between === 0 && r.flower.visibleAfter, JSON.stringify(r.flower));
+  expect('the head inside a Garden flower leaves it drawn (S6 revised: flowers never vanish when walked into)', r.flower && r.flower.drawn > 10 && r.flower.hiddenDrawn === 0 && r.flower.between === 0 && r.flower.visibleAfter, JSON.stringify(r.flower));
   expect('a throwing draw hook does not stop the frame: the draws stay as without it (within 10%: townsfolk move; a frame stopped short loses most) and frames keep coming', r.hook.bad.frames > 20 && r.hook.bad.draws >= 0.9 * r.hook.base.draws, JSON.stringify(r.hook));
   expect('the draw hook error is logged once for the object, not every frame', r.hook.loggedOnce, String(r.hook.logged));
   const other = g.errors.filter((e) => !/injected draw hook fault/.test(e));

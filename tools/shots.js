@@ -6,7 +6,8 @@
 //   node tools/shots.js [file] --view "label@ex,ey,ez>tx,ty,tz" [--view ...] [--event] [--prefix P]
 // presets: garden (from above, standing, ground level; flowers set out as the Event plants them), cave (the visitors'
 //   walkway, the visit spot, the entrance from both sides, with a visitor placed), gemtoe (front, side, close on the tie,
-//   three-quarter, feet), mist (the Event's mist at full: four sides of the fence from 4 m and 1 m, seated and standing),
+//   three-quarter, feet), mama (Mama Gorbo's cap: front, side, three-quarter, back, above, and from a standing player's eyes), birds (the robin and the
+//   cardinal on the park's two trees), mist (the Event's mist at full: four sides of the fence from 4 m and 1 m, seated and standing),
 //   church (the Event's mist at full: approaching the church roof from six distances), park (the whole park from above
 //   and its four corners, in play and in the Event with the fade groups in full and hidden), pond (the water at four
 //   moments 1.5 s apart, from 7 m and 3 m), stands (the Event's stands
@@ -59,6 +60,14 @@ const out = path.join(root, 'tools/.runs/shots'); fs.mkdirSync(out, { recursive:
       } else if (p === 'gemtoe') {
         place('p_gemtoe', 0, -28); D.It.byId.p_gemtoe.group.rotation.y = 0; await go(8, -36);
         shoot('Gemtoe front', [0, 1.6, -24.5], [0, 1.2, -28]); shoot('Gemtoe side', [3.5, 1.6, -28], [0, 1.2, -28]); shoot('Gemtoe side, close on the tie', [1.8, 1.7, -27.7], [0, 1.5, -27.7]); shoot('Gemtoe three-quarter', [2.4, 1.5, -25.6], [0, 1.2, -28]); shoot('Gemtoe feet, ground level', [3, 0.12, -28], [0, 0.1, -28]);
+      } else if (p === 'mama') {
+        // A36: Mama Gorbo's cap, with her facing +z
+        place('p_mamagorbo', 0, -28); D.It.byId.p_mamagorbo.group.rotation.y = 0; await go(8, -36);
+        shoot('Mama Gorbo front', [0, 3.2, -23.2], [0, 2.6, -28]); shoot('Mama Gorbo side', [4.8, 3.2, -28], [0, 2.6, -28]); shoot('Mama Gorbo three-quarter', [3.4, 3.6, -24.6], [0, 2.7, -28]); shoot('Mama Gorbo back', [0, 3.6, -32.8], [0, 2.7, -28]); shoot('Mama Gorbo from above, close on the cap', [1.6, 4.6, -25.6], [0, 2.9, -28]); shoot('Mama Gorbo front, from a standing player\'s eyes', [0.6, 1.7, -24], [0, 2.7, -28]); shoot('Mama Gorbo three-quarter, from a standing player\'s eyes', [3.2, 1.7, -25.4], [0, 2.7, -28]);
+      } else if (p === 'birds') {
+        // A30, A37, A38: the robin and the cardinal on the park's two trees
+        await go(-8, 22);
+        shoot('the park trees from the Garden', [-6, 1.6, 14], [-20, 4, 36]); shoot('the robin, close', [-14.3, 3.0, 34.2], [-15.46, 2.9, 35.66]); shoot('the cardinal, close', [-22.1, 2.7, 32.0], [-23.66, 2.55, 33.32]); shoot('the cardinal, side', [-22.2, 2.6, 34.2], [-23.66, 2.55, 33.32]);
       } else if (p === 'mist') {
         await mistFull();
         const sides = [['east', (d) => [37.6 - d, -8], [1, 0]], ['west', (d) => [-37.6 + d, -8], [-1, 0]], ['north', (d) => [-12, 49.6 - d], [0, 1]], ['south', (d) => [12, -37.6 + d], [0, -1]]];
@@ -73,7 +82,7 @@ const out = path.join(root, 'tools/.runs/shots'); fs.mkdirSync(out, { recursive:
         }
       } else if (p === 'park') {
         // the whole park: from above and from the four corners inside the fence, in play, then in the Event (mist full)
-        // with the fade groups (all kiosks and the gazebo; all trees with the robin) in full and hidden
+        // with the fade groups (all kiosks and the gazebo; all trees with the robin and the cardinal) in full and hidden
         const S = window.__gcSt, V = [['from above, south', [0, 38, -36], [0, 0, 8]], ['from above, north-east', [30, 30, 44], [-2, 0, -2]], ['south-west corner', [-34, 1.7, -34], [0, 1, 6]], ['south-east corner', [34, 1.7, -34], [0, 1, 6]], ['north-east corner', [34, 1.7, 46], [0, 1, 4]], ['north-west corner', [-34, 1.7, 46], [0, 1, 4]]];
         for (const [nm, e, t] of V) { await go(e[0], e[2]); shoot(`Park ${nm}`, e, t); }
         await mistFull();
