@@ -13,7 +13,9 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Where | Reproduce | Status |
 | --- | --- | --- | --- | --- |
-| (none) | | | | |
+| B46 | Flashes (full-screen, one or two frames), most recently three in log 8d838908 (4.0.6): 2.4 s after leaving the Cave as a text scene started, 2.6 s after leaving the Cave in an Event, 2.0 s after starting an Event. Nothing the record watched changed at any of them; none seen on 4.0.7 (log 5dc2b257) | the headset (Quest 3) | play as usual, press B right after a flash | open, watching: 4.0.7's record (S15) shows at the mark whether the game drew the flash (`rec light`) and the frames' health (`rec xr frames`); safeties so far S1-S15 |
+| B47 | A shader program compiled between frames near Fortizmo's bar (a black MeshBasicMaterial at about -36.9, 2.6, -7.5), about 8 minutes in, in one long headless run | Fortizmo's bar | not repeatable; `test_vig_flash.js` logs its details if it comes back | open, intermittent; held by the shader hold (S2), never inside a frame |
+| B48 | Compositor tears and stale frames: the headset counts 19-25 tears and dozens of seconds with 8 or more stale frames in a 12-25 minute run; none line up with the flashes | the headset's compositor | the VrApi lines of any headset log | open; the game cannot switch them off; it keeps frames short (T16, T20) and no longer stalls on the mark (S15) |
 
 ## Fixed
 

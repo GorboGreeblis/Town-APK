@@ -1,6 +1,7 @@
 #!/bin/sh
 # Rebuilds everything that ships from the game file alone (RULES.md 2), then checks it:
-#   0. the game file is minified (RULES.md 19): minify_game.js, a no-op when it already is;
+#   0. the game file is minified (RULES.md 19): minify_game.js, a no-op when it already is; when it changes the file,
+#      minify_identity.js proves the minified file builds the same world as the edited one (else the build stops);
 #   1. the copies: index.html at the root and the APK's asset (sync_game.py);
 #   2. the pre-painted textures in the APK's assets/tex/ (prerender_textures.js; painting is seeded, FIXES R1, so an
 #      unchanged game file paints the same files again);
@@ -26,7 +27,19 @@ ASSETS="$ROOT/tools/android/app/src/main/assets"; GRADLE="$ROOT/tools/android/ap
 [ -n "${ANDROID_HOME:-}${ANDROID_SDK_ROOT:-}" ] || export ANDROID_HOME=$(sed -n "s/^sdk.dir=//p" "$ROOT/tools/android/local.properties" 2>/dev/null | head -1)
 
 echo "== 0. minified game file"
+# the game file as edited, kept so the minified result can be proved to build the same world (the author: "this
+# minified version is tested against the original to ensure that no changes have been made to the game")
+mkdir -p "$ROOT/tools/.runs"; cp "$ROOT/tools/uncompressed.html" "$ROOT/tools/.runs/before_minify.html"
 node "$ROOT/tools/minify_game.js" | tail -1
+if cmp -s "$ROOT/tools/uncompressed.html" "$ROOT/tools/.runs/before_minify.html"; then
+  echo "minification changed nothing (the file was already fully minified)"
+else
+  if node "$ROOT/tools/minify_identity.js" "$ROOT/tools/.runs/before_minify.html" "$ROOT/tools/uncompressed.html" > "$ROOT/tools/.runs/minify_identity.log" 2>&1; then
+    tail -2 "$ROOT/tools/.runs/minify_identity.log"
+  else
+    tail -8 "$ROOT/tools/.runs/minify_identity.log"; echo "BUILD STOPPED: the minified game file does not build the same world as the edited one"; exit 1
+  fi
+fi
 
 echo "== 1. copies of the game file"
 python3 -I "$ROOT/tools/sync_game.py"
