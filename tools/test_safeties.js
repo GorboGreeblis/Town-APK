@@ -7,6 +7,9 @@
 //   - an object whose per-object draw hook throws does not stop the frame: the frame's draw calls stay what they were
 //     without it (three.js would otherwise draw nothing after it), the error is logged once for that object (not
 //     every frame), and frames keep coming;
+//   - the head guard (the view dims to black as the head goes into a wall) shows there and compiles no shader the first
+//     time (B47: it rides on the camera, which joins the scene only at VR entry, so the loading warm-up never reached it;
+//     its shader is now compiled at VR entry);
 //   - no page errors but the injected one.
 //
 //   node tools/test_safeties.js [file]
@@ -60,10 +63,18 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     D.C.remove(m); O.render = R;
     out.hook = { base, bad, loggedOnce: e0 === 1 && e1 === 1, logged: e1 };
     console.error = ce;
+    // 4. the head guard (the view dims to black as the head goes into a wall; B47): its shader is compiled while loading,
+    //    so the first time it shows nothing is compiled
+    { const HG = D.JGP.headGuard, F = D.F, p0 = O.info.programs.length; let at = null;
+      // a point at a wall: the guard's own distance to the nearest building part, within 5 cm
+      for (const b of F.buildings) { for (let k = 0; k <= 40 && !at; k++) { const w = F.world(b, b.hull[0] + (b.hull[2] - b.hull[0]) * k / 40, b.hull[1]); const d = HG.sdist(w[0], 1.6, w[1]); if (d > -0.05 && d < 0.05) at = new T.Vector3(w[0], 1.6, w[1]); } if (at) break; }
+      HG.at = at; let shown = 0; for (let k = 0; k < 40; k++) { await wait(30); if (HG.mesh && HG.mesh.visible) shown++; } HG.at = null; await wait(300);
+      out.guard = { at: at && at.toArray().map((v) => +v.toFixed(2)), mesh: !!HG.mesh, shown, level: +HG.level().toFixed(2), newPrograms: O.info.programs.length - p0, hiddenAfter: HG.mesh ? !HG.mesh.visible : null }; }
     return out;
   });
   await g.close();
   note(JSON.stringify(r));
+  expect('the head guard shows as the head goes into a wall, and compiles no shader then (its shader is compiled at VR entry; B47)', r.guard && r.guard.mesh && r.guard.shown > 0 && r.guard.newPrograms === 0, JSON.stringify(r.guard));
   expect('the head inside a character hides it for the frame (logged)', r.head.logged >= 1, JSON.stringify(r.head));
   expect('the character is visible between frames and after', r.head.betweenHidden === 0 && r.head.visibleAfter, JSON.stringify(r.head));
   expect('the head inside a Garden flower leaves it drawn (S6 revised: flowers never vanish when walked into)', r.flower && r.flower.drawn > 10 && r.flower.hiddenDrawn === 0 && r.flower.between === 0 && r.flower.visibleAfter, JSON.stringify(r.flower));

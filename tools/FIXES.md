@@ -1332,6 +1332,19 @@ the new picture is in place, so it is never shown out of date. Each pickup is no
 trail ("pick blossom", "pick flint"), so a log shows how long before a flash the last pickup came. `test_watch.js`:
 pickups while closed redraw nothing; opening redraws once and never shows an old picture.
 
+- **A43** (4.0.10; the author: "Add an additional package to the mail pile behind the Post Office kiosk. This package
+should have a 'To Ormstown' label"): a fifth parcel, in the others' style and size, on the back of the pile (between
+the stacks, clear of them so the whole label shows), addressed "To Ormstown". Its label is painted while loading like the
+others' (and pre-painted in `tex/` by the build). Pictures before and after, and close on the label.
+
+- **F-B82** (4.0.10; B47: "a shader program compiled between frames near Fortizmo's bar", seen in long headless runs
+of `test_vig_flash.js`, a different text scene each time): it was the head guard, the black sphere on the camera that
+dims the view as the head goes into a wall. The test moved the player next to each scene's speakers, sometimes with
+the head at a wall, and the guard's shader was compiled the first time it showed. The camera, and so the guard, joins
+the scene only at VR entry, so the loading warm-up never reached it. Its shader is now compiled at VR entry, with the
+controller rays'. Never inside a frame before either (the shader hold, S2), so not a flash. `test_safeties.js` puts the
+head at a wall: the guard shows and nothing is compiled.
+
 - **A42** (4.0.9; the author: "Please ensure that pizza boxes on the ground fade out at the end of the Event. Pizza
 boxes currently pop out instead"): the Event's pizza boxes (the stacks round the ring of watchers and Anomalee's open
 box) were removed the frame the Event ended. They now fade out over 1.6 s first. They draw with their own copies of the

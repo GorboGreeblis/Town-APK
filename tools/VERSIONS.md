@@ -6,6 +6,7 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 
 | Version | versionCode | What changed | Headset |
 | --- | --- | --- | --- |
+| 4.0.10 | 79 | **A43** a "To Ormstown" parcel on the Post Office's mail pile. **F-B82** (B47) the head guard's shader compiled at VR entry, not the first time it shows. |  pending |
 | 4.0.9 | 78 | **A42** the Event's pizza boxes fade out at its end (were removed at once). The geometry hold's log measures from the eyes (it measured from the rig's origin on the headset) and names held draw batches. | pending |
 | 4.0.8 | 77 | **A41** the HUD opens on the watch face itself (in its plane, centred, 8 cm wide) with a fully opaque panel, reading like the watch. Carries 4.0.7's flash record (S15) for the next headset log. | pending |
 | 4.0.7 | 76 | The author's asks on 4.0.6 and the flash log 8d838908. **S15** the flash record: the drawn picture's brightness every frame (read back only at the mark, `rec light`), XR frame health (frames with no head pose are no longer drawn), state changes, head jumps and turns, and the geometry hold's objects in the trail; the mark no longer stalls a frame. **F-B80** Mama Gorbo's cap refitted so her head never comes through it. **F-B81** the watch clear of the hand. **A40** the Cardinal faces the Robin. | pending |

@@ -53,8 +53,8 @@ it is **Zollod** who is shy (the book cures him), the **Gem trade is Gemtoe's**,
   Sheriff pictures the Human he is hunting.)*
 - **The robin and the cardinal:** a robin and a cardinal perch on the park's two big trees beside the church; pick
   either and it flies off.
-- **Parcels at the Post Office:** addressed "To Montreal", "To Cobourg" and
-  "To Bangkok" (and one without a label).
+- **Parcels at the Post Office:** on the mail pile behind the kiosk, addressed "To Montreal", "To Cobourg",
+  "To Bangkok" and "To Ormstown" (4.0.10), and one without a label.
 - **The Portal.** A gateway between eras, currently locked: "All travel
   through the Portal is locked down until further notice." (Mushroom).
   Hennrick came through it and cannot go back. Pizza is ordered through it
