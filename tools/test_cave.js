@@ -25,7 +25,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const church = F.buildings.find((B) => B.name === 'church');
     const total = () => Object.values(J.visits().made).reduce((a, b) => a + b, 0);
     const attempt = async (inCave, draw) => {
-      if (inCave) D.At.position.set(church.x, D.At.position.y, church.z);
+      // in the Cave: at the end of the visitors' walkway, where the Ancient is visited (the church's origin is no longer
+      // open floor: the player was pushed out of the church before the check, B51)
+      if (inCave) { const w = J.slug.visit(1).way, p = w[w.length - 1]; D.At.position.set(p[0], D.At.position.y, p[1]); }
       else { const [x, z] = J.slug.visit(1).out; D.At.position.set(x, D.At.position.y, z + 3); }
       await wait(300);
       const cave = J.vigs.computeInCave(), n0 = total(), before = new Set(J.visits().all.map((v) => v.v + '>' + v.h));
