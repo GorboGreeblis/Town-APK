@@ -21,12 +21,12 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 | B76 | The draw-nothing marks' counter can wrap back onto an old mark value after the recovery helper disables them (-7) and the layer wrappers keep counting | the batcher's draw-nothing marks | only after a recovery step 1 | open, low (the audit, T23) |
 | B77 | The geometry warm-up's draw raises WebGL INVALID_OPERATION on about twelve parked batch sources (330-vertex basic meshes on the ground) when it runs in VR (at VR entry): their index buffers belong to the batch; harmless (nothing is drawn, the uploads happen before the draw) but noise in a GL-error watch | the warm-up, the batcher | `GT_GLERR=1` on a probe that calls `__gtGeoWarm` in VR | open, low (the audit, T23) |
 | B54 | Remaining first-draw uploads during play, all between frames and held by the geometry hold (never inside a frame): since 4.0.14 (S21) Backpacka's rainbow and rings and the portal's effect and panels are uploaded while loading; and the Garden's 24-vertex box with them; the shop's item preview is built while loading since 4.0.15 (S22); the Gem stand's ring is on the GPU before the Speech (checked headless on 4.0.14); left: the Event's four 312-vertex shapes | the Event | `play_census.js` | open, low; T19 lists them |
-| B55 | The Post Office's mail pile has no test (pictures only) | the mail pile | GAME.md's index | open, low (T24) |
 
 ## Fixed
 
 | # | Bug | Fix | Date |
 | --- | --- | --- | --- |
+| B55 | The Post Office's mail pile had no test (pictures only) | `test_mailpile.js` (standard tier, 4.0.15): five parcels, four painted labels, none floating or buried, labels facing out, the Ormstown parcel clear of the others and the stacks | 2026-11-02 |
 | B53 | `test_safeties.js`'s two time-window frame counts failed under machine load | the test counts frames, not time (24 frames, up to 8 s) | 2026-11-02 |
 | B56 | A throw in the projection layer's begin() or end() ended the frame loop for good and left the frame flagged open, jamming every between-frames upload hold (the audit, entry script, high) | S19: both guarded, logged, the flag always cleared; `test_safeties.js` throws once from begin | 2026-11-02 |
 | B57 | A draw that threw halfway counted as drawn, so the fallback draw (S18) never ran and the half-drawn frame went to the headset (the audit, medium) | S19: the frame counts as drawn once the draw returned | 2026-11-02 |
