@@ -26,25 +26,21 @@ Worked around until the author can do them (the author, 2026-10-31).
 | T26 | The headset-confirmation backlog: confirmed by the author's 4.0.15 run (2026-11-02): F-B83 (no tiles at the edge of view), S18-S20 (no flashes), the FPS bar; still to confirm when convenient: A41 (the HUD on the watch, now bigger: A44), A42 (pizza boxes fade), A43 (the Ormstown parcel), P34 (no long frame at the Event's start: the log shows none) | open, author | VERSIONS.md 4.0.7-4.0.17 |
 | T27 | Another full code review after this pass (the author, 2026-11-02): five reviews on 4.0.15 done 2026-11-02 (the entry script and layers shim, the three.js multiview patches, the engine side, the game logic, the leftovers): one high (B78), three medium (B80, B83, B84) and nine low findings; B78, B80, B81, B82 fixed in 4.0.17 (S24); the rest logged (B79, B83-B88) for T28; the leftovers found (a dead visit helper, write-only head-script fields, two diagnostic counters, stale doc wording) for 4.0.17 | done (2026-11-02) | FIXES S24; BUGS B78-B88 |
 
-## Resume point (4.0.15, 2026-11-02)
+## Resume point (4.0.18, 2026-11-02)
 
-- **Builds since the author's last headset run (4.0.7, 2026-10-31):** 4.0.8-4.0.12 (A41, A42, A43, F-B82, P34, S16,
-  S17); 4.0.13 foveation fixed at 0 (F-B83, B52) and the flash safeties (S18); 4.0.14 the code audit's fixes (S19,
-  S20), the leftovers removed (L1), the warm-up's missed shapes (S21), B49 explained; 4.0.15 the shop's item preview
-  built while loading (S22), the mail-pile test (B55). PRs #47-#55 merged; PR #56 (4.0.15) open as a draft.
-- **The author cannot test now** (2026-11-02): fixes keep landing on the main build through draft PRs; everything
-  since 4.0.7 is listed for one confirming session (T26); the flash experiment test (T22) was closed by the author;
-  T21 (the cap and the watch) passes.
-- **Running or queued on the machine when this was written:** the full tier on 4.0.15 with coverage
-  (`tools/.runs/full_4.0.15.log`, then the dead-code census `dead_code_4.0.15.log`, the play census
-  `play_census_4.0.15.log` and the content test alone `content_4.0.15.log`); the second full code review (T27: five
-  reviews of `tools/.runs/audit/`) and the tools audit (T24) as background reviews. If this session ended before they
-  reported, re-run them: `tools/.runs/queue_full15.sh` and the review briefs in FIXES S19-S20's spirit (the entry
-  script and layers shim, the three.js multiview patches, the engine side, the game logic, the leftovers).
-- **Next:** act on the tier's failures and the reviews' verified findings (T23, T27), finish T19's last shape (the
-  Event's 312-vertex shapes, by the play census), T24's remaining tool re-runs (`fill_probe.js`, `event_cpu.js`,
-  `occlusion_census.js` alone) and the tools audit; then the full pass on the last build (T18) once the author's
-  headset run (T3) has happened.
+- **Builds since the author's last headset run (4.0.15, 2026-11-02, log f57f19a2: no flashes, FPS passes, the dancers
+  fine):** 4.0.17 the HUD 10 cm wide (A44), the hands and watch built while loading (S23), the second code review's
+  safeties (S24: B78, B80-B82); 4.0.18 the point lights always visible (B83), `instancing` in the shader hold (B84),
+  the courier's clock under panels (B86), leftovers (L2). PRs #47-#55 merged; PR #56 (4.0.15-4.0.18) open as a draft.
+- **The author** tests when they can: the bigger HUD and the hands at entry are the next things to look at (T3).
+- **Running or queued on the machine when this was written:** the full tier with coverage started on 4.0.17 and
+  continued on the 4.0.18 asset after the build landed mid-run (`tools/.runs/full_4.0.17.log`; its one failure so far,
+  the compressed check, is that mid-run swap: the check passes on 4.0.18), then the dead-code census, the play census
+  and the content test alone (a queue script in `tools/.runs/`, session scratch). For a clean census, run `GT_COVERAGE=1 tools/run_tests.sh
+  --standard` on the 4.0.18 asset and `node tools/dead_code.js tools/android/app/src/main/assets/index.html`.
+- **Next:** T28's remaining items (B79 when a trip carries its state, B85, B87, B88), T19's last shape by the play
+  census, T24's tool re-runs alone (`fill_probe.js`, `event_cpu.js`, `occlusion_census.js`); then the full pass on the
+  last build (T18) once the author's headset run (T3) has happened.
 
 ## Done
 
