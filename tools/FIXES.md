@@ -1525,6 +1525,21 @@ experiment, all on the multiview lead.
     session cleared; the second session runs on the classic path (two passes, no multiview), its shaders recompiled
     between frames by the hold.
   - The mipmap list is emptied on exit (a small leak since S20 kept the mipmaps).
+- **S25** (4.0.18; T28, the second review): three more.
+  - **The two point lights stay visible; their intensity drives them** (B83). The portal's light and the Speech's
+    light were shown and hidden with their fades; every toggle changed three.js's lights hash, which bumps the lights
+    state version, and the next frame ran a parameter pass over every lit object (the shader hold's re-check, S19)
+    and would have held every lit object for a frame if that light count had never been compiled. Both lights are
+    always in the scene now (intensity 0 when off), so the count never changes in play and the shaders are compiled
+    once, while loading, for the one configuration.
+  - **The shader hold mirrors `instancing`** (B84): a regular mesh sharing a cached material with the pickups'
+    instanced batch made three.js flip the material's program every frame; the hold now checks the instancing flag
+    like three.js, and each instanced batch takes its own clone of the material.
+  - **The courier's arrival clock pauses under every panel and dialogue** (B86), as it did under the Gem hold and the
+    menu hold; a long shop or battle panel no longer makes her leave with the pizza.
+- **L2** (4.0.18; the second leftovers review): `JGP.visitPlan` (a visit helper nothing called; the docs named it,
+  reworded to `JGP.visits`), four write-only head-script fields (`layersErr`, `mvHook`, `heldTex`; `drawErr` became a
+  one-time log line, `loader draw failed`), two diagnostic counters of the matrix-walk freeze (`n`, `unfrozen`).
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures

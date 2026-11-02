@@ -26,7 +26,10 @@ const FAST = `(() => { const n = performance.now.bind(performance), t0 = n(); pe
   const g = await boot({ file, vr: true, noVisits: false, initScripts: [FAST] });
   const r = await g.page.evaluate(async (MIN) => {
     const D = window.__dbg, J = D.JGP, wait = (ms) => new Promise((res) => setTimeout(res, ms));
-    const logs = []; const L0 = window.__gtLog; window.__gtLog = (s) => { if (/^no progress/.test(s)) logs.push(s); try { L0 && L0(s); } catch (e) {} };
+    const logs = [], trips = []; const L0 = window.__gtLog; window.__gtLog = (s) => { if (/^no progress/.test(s)) { logs.push(s);
+      // B79: what the walker was doing at the trip (its position, home, target, way-finding state, the player's distance)
+      try { const id = /^no progress: (\S+)/.exec(s)[1], e = D.It.all.find((x) => x.id === id || x.kind === id); if (e) { const p = e.group.position, d = e.dest || null; trips.push({ id, at: [+p.x.toFixed(1), +p.z.toFixed(1)], home: e.home ? [+e.home.x.toFixed(1), +e.home.z.toFixed(1)] : null, dest: d ? [+d.x.toFixed(1), +d.z.toFixed(1)] : null, goHome: !!e.goHome, visiting: !!e.visiting, hosting: !!e.hosting, busy: e.busy || null, nav: e.gcNav ? e.gcNav.length : 0, trek: !!e.trek, player: +Math.hypot(D.At.position.x - p.x, D.At.position.z - p.z).toFixed(1), t: +D.Re.t.toFixed(1) }); } } catch (e) {} }
+      try { L0 && L0(s); } catch (e) {} };
     setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 300);
     D.At.position.set(-20, D.At.position.y, -25);
     const viaE = D.It.all.filter((e) => e.def && e.def.via && e.def.via.length), via = viaE.map((e) => e.id || e.def.__type);
@@ -55,11 +58,12 @@ const FAST = `(() => { const n = performance.now.bind(performance), t0 = n(); pe
     // home again: every doorway townsfolk within 2 game minutes
     const t1 = D.Re.t; let away = viaE;
     while (D.Re.t - t1 < 120) { await wait(500); away = viaE.filter((e) => { const p = e.group.position; return e.visiting || e.hosting || Math.hypot(p.x - e.home.x, p.z - e.home.z) > 0.5 || !J.homeGround(e); }); if (!away.length) break; }
-    return { minutes: +((D.Re.t - g0) / 60).toFixed(1), made: Object.values(J.visits().made).reduce((a, b) => a + b, 0), forced, via, spells, logs: logs.slice(0, 8), nLogs: logs.length, away: away.map((e) => e.id || e.def.name) };
+    return { trips: trips.slice(0, 12), minutes: +((D.Re.t - g0) / 60).toFixed(1), made: Object.values(J.visits().made).reduce((a, b) => a + b, 0), forced, via, spells, logs: logs.slice(0, 8), nLogs: logs.length, away: away.map((e) => e.id || e.def.name) };
   }, MIN);
   await g.close();
   note(`${r.minutes} game minutes, ${r.made} visits (${r.forced} forced to and from ${r.via.join(', ')})`);
   expect('no townsfolk goes 12 game seconds without getting closer to its target', r.spells.length === 0, JSON.stringify(r.spells.slice(0, 6)));
+  if (r.trips && r.trips.length) note('B79 trips: ' + JSON.stringify(r.trips));
   expect('the stuck detector\'s last resort never trips ("no progress")', r.nLogs === 0, r.logs.join(' | '));
   expect('every townsfolk with a doorway route is back home at the end', r.away.length === 0, r.away.join(', '));
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
