@@ -26,20 +26,21 @@ Worked around until the author can do them (the author, 2026-10-31).
 | T26 | The headset-confirmation backlog: confirmed by the author's 4.0.15 run (2026-11-02): F-B83 (no tiles at the edge of view), S18-S20 (no flashes), the FPS bar; still to confirm when convenient: A41 (the HUD on the watch, now bigger: A44), A42 (pizza boxes fade), A43 (the Ormstown parcel), P34 (no long frame at the Event's start: the log shows none) | open, author | VERSIONS.md 4.0.7-4.0.17 |
 | T27 | Another full code review after this pass (the author, 2026-11-02): five reviews on 4.0.15 done 2026-11-02 (the entry script and layers shim, the three.js multiview patches, the engine side, the game logic, the leftovers): one high (B78), three medium (B80, B83, B84) and nine low findings; B78, B80, B81, B82 fixed in 4.0.17 (S24); the rest logged (B79, B83-B88) for T28; the leftovers found (a dead visit helper, write-only head-script fields, two diagnostic counters, stale doc wording) for 4.0.17 | done (2026-11-02) | FIXES S24; BUGS B78-B88 |
 
-## Resume point (4.0.18, 2026-11-02)
+## Resume point (4.0.20, 2026-11-02)
 
 - **Builds since the author's last headset run (4.0.15, 2026-11-02, log f57f19a2: no flashes, FPS passes, the dancers
   fine):** 4.0.17 the HUD 10 cm wide (A44), the hands and watch built while loading (S23), the second code review's
   safeties (S24: B78, B80-B82); 4.0.18 the point lights always visible (B83), `instancing` in the shader hold (B84),
-  the courier's clock under panels (B86), leftovers (L2). PRs #47-#55 merged; PR #56 (4.0.15-4.0.18) open as a draft.
+  the courier's clock under panels (B86), leftovers (L2); 4.0.19 the meeting's seek and the glyph cache (S26); 4.0.20
+  the shader hold's allocation (S27). PRs #47-#55 merged; PR #56 (4.0.15-4.0.20) open as a draft.
 - **The author** tests when they can: the bigger HUD and the hands at entry are the next things to look at (T3).
 - **Running or queued on the machine when this was written:** the full tier with coverage started on 4.0.17 and
   continued on the 4.0.18 asset after the build landed mid-run (`tools/.runs/full_4.0.17.log`; its one failure so far,
   the compressed check and the texture census's one 404, are the mid-run swaps of the copies and the pre-painted
   textures by the 4.0.18 and 4.0.19 builds: both checks pass on the builds), then the dead-code census, the play census
-  and the content test alone (a queue script in `tools/.runs/`, session scratch). A clean full tier with coverage on 4.0.19 is chained behind it (`tools/.runs/full_4.0.19.log`), with no build
-  during it; its census is the one to read (`dead_code_4.0.19.log`).
-- **Next:** T28's remaining items (B79 when a trip carries its state, B85, B87, B88), T19's last shape by the play
+  and the content test alone (a queue script in `tools/.runs/`, session scratch). A clean full tier with coverage is chained behind it (`tools/.runs/full_4.0.19.log`, running on the 4.0.20 asset),
+  with no build during it; its census is the one to read (`dead_code_4.0.19.log`), then the three report tools alone.
+- **Next:** B79 when a trip carries its state, T19's last shape by the play
   census, T24's tool re-runs alone (`fill_probe.js`, `event_cpu.js`, `occlusion_census.js`); then the full pass on the
   last build (T18) once the author's headset run (T3) has happened.
 
