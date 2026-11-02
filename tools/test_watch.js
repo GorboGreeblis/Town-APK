@@ -7,7 +7,7 @@
 //   - opened, then the hand lowered (not looking at the watch), the HUD closes within 0.6 s;
 //   - opened, the HUD lies on the watch face (A41; the author: "Move the HUD to be placed on top of the watch face when
 //     opened. Ensure that the HUD has a solid background to be fully readable"): in the face's plane just above it, near
-//     its centre, about 8 cm wide, its background fully opaque;
+//     its centre, about 10 cm wide (8 cm until 4.0.15, A44), its background fully opaque;
 //   - flash prevention (the author: the flashes came "around the time that I picked up pickups"): pickups while the HUD
 //     is closed redraw nothing (no texture upload while walking about); opening it redraws it once, and it is never shown
 //     with an old picture (hidden until the new one is in place);
@@ -56,7 +56,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     // pickups while closed: nothing redrawn
     const r0 = UI.hud.redraws; D.Kt.blossoms += 2; D.Kt.acorns += 1; await wait(1500); out.closedRedraws = UI.hud.redraws - r0;
     await pressY(); out.opened = await shownDuring(1000); out.openRedraws = UI.hud.redraws - r0;
-    // where it shows (A41): on the watch face, in the face's plane, centred over it, about 8 cm wide, an opaque panel
+    // where it shows (A41, A44): on the watch face, in the face's plane, centred over it, about 10 cm wide, an opaque panel
     { const T = window.THREE, m = UI.hud.mesh, wf = left && left.handMesh.userData.gcWatch; m.updateMatrixWorld(true);
       const c = new T.Vector3().setFromMatrixPosition(wf.matrixWorld), n = new T.Vector3(0, 0, 1).transformDirection(wf.matrixWorld), hn = new T.Vector3(0, 0, 1).transformDirection(m.matrixWorld), hp = new T.Vector3().setFromMatrixPosition(m.matrixWorld), ws = m.getWorldScale(new T.Vector3());
       const cv = UI.hud.c, g = cv.getContext('2d'), px = g.getImageData(cv.width / 2, 40, 1, 1).data, corner = g.getImageData(20, 120, 1, 1).data;
@@ -75,7 +75,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('looking at the watch alone does not open the HUD', r.lookingBeforeY && r.lookingBeforeY.n === 0, JSON.stringify(r.lookingBeforeY));
   expect('Y while looking at the watch opens the HUD (shown while looking)', r.opened && r.opened.n >= r.opened.f - 3, JSON.stringify(r.opened));
   expect('pickups while the HUD is closed redraw nothing (no upload while walking about)', r.closedRedraws === 0, String(r.closedRedraws));
-  expect('opened, the HUD lies on the watch face: in its plane, a few millimetres above it, near its centre, about 8 cm wide (A41)', r.place && r.place.parent && r.place.facing > 0.999 && r.place.above > 0 && r.place.above < 0.01 && r.place.off < 0.02 && Math.abs(r.place.width - 0.08) < 0.005, JSON.stringify(r.place));
+  expect('opened, the HUD lies on the watch face: in its plane, a few millimetres above it, near its centre, about 10 cm wide (A41, A44)', r.place && r.place.parent && r.place.facing > 0.999 && r.place.above > 0 && r.place.above < 0.01 && r.place.off < 0.02 && Math.abs(r.place.width - 0.10) < 0.005, JSON.stringify(r.place));
   expect('its background is solid (fully opaque), so it reads over anything behind it (A41)', r.place && r.place.alpha[0] === 255 && r.place.alpha[1] === 255 && r.place.opacity === 1, JSON.stringify(r.place && { alpha: r.place.alpha, opacity: r.place.opacity }));
   expect('opening redraws it once, and it is never shown with an old picture', r.openRedraws === 1 && r.opened && r.opened.stale === 0, JSON.stringify({ redraws: r.openRedraws, stale: r.opened && r.opened.stale }));
   expect('Y again closes it', r.closedByY && r.closedByY.n === 0, JSON.stringify(r.closedByY));

@@ -86,7 +86,7 @@ if [ "$TIER" != quick ]; then
   run "compressed version: works as a Bitcoin ordinal (alone, under the ordinal content policy; unpacks, boots, enters VR) (RULES.md 20)" node "$ROOT/tools/test_compressed.js"
   run "the Event's first start: no texture, framebuffer or pixel work or shader compile inside a frame, no layer swap (F-B33)" node "$ROOT/tools/event_start_check.js" "$ASSET"
   run "texture census: no texture is made during play (emotes, faces, bubbles, pizza: the flash causes, F-B29/F-B30)" node "$ROOT/tools/texture_census.js" "$ASSET"
-  run "quality governor: the layer never touched in play, foveation fixed at 0 (F-B31, F-B83); the Event locks the lowest level and releases it" env GT_DEVICE=quest3s node "$ROOT/tools/test_governor.js" "$ASSET"
+  run "the frame governor and the fixed foveation: the layer's foveation fixed at 0 from VR entry, the quality levels gone, slow frames swap and change nothing, the over-budget flag logs once, the Event's far-object safeguard on and off (F-B31, F-B83, L1)" node "$ROOT/tools/test_governor.js" "$ASSET"
   run "game content: gifts, talk order, shyness, bribe, outfits, battles, the Ancient, the robin, Event lines, Backpacka" node "$ROOT/tools/test_content.js" "$ASSET"
   run "greeting: walking townsfolk stop and face the player within 3.2 m for 12 s; Sparkakus greets from 6 m" node "$ROOT/tools/test_greet.js" "$ASSET"
   run "wrist HUD and haptics: what is held is shown and redrawn; Blossoms and new friends pulse the controllers" node "$ROOT/tools/test_hud.js" "$ASSET"

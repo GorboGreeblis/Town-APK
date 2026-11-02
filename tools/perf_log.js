@@ -138,18 +138,18 @@ const comp = (text.match(/shader program\(s\) compiled during play/g) || []).len
 if (town.length) console.log(`  town:  ${JSON.stringify(stats(town))}`);
 if (ev.length) console.log(`  Event: ${JSON.stringify(stats(ev))}`);
 const levels = {}; for (const r of rows) if (r.level !== null) levels[r.level] = (levels[r.level] || 0) + 1;
-if (Object.keys(levels).length) console.log(`  governor levels (a log from before 4.0.14; all native scale since 3.15.43): ${JSON.stringify(levels)}`);
+if (Object.keys(levels).length) console.log(`  governor levels (a log from before 4.0.14; all native scale since 3.15.43): ${JSON.stringify(levels)}`);   // the level wording below applies to those logs only
 const fovs = {}; for (const r of rows) if (r.fov !== null) fovs[r.fov] = (fovs[r.fov] || 0) + 1;
 if (Object.keys(fovs).length) console.log(`  layer foveation read back (fixed at 0 since 4.0.13): ${JSON.stringify(fovs)}${fovs['0'] === rows.length ? '' : '  WARNING: not 0 in every line'}`);
 const low = rows.slice().sort((a, b) => a.fps - b.fps).slice(0, 5);
 console.log('  lowest readings:');
-for (const r of low) console.log(`    ${r.fps} fps at (${r.x}, ${r.z})${r.event ? ' during the Event' : ''}, level ${r.level}${r.scale ? ', scale ' + r.scale : ''}, ${r.calls} calls, ${r.tris} triangles`);
+for (const r of low) console.log(`    ${r.fps} fps at (${r.x}, ${r.z})${r.event ? ' during the Event' : ''}${r.level !== null ? ', level ' + r.level : ''}${r.scale ? ', scale ' + r.scale : ''}, ${r.calls} calls, ${r.tris} triangles`);
 // which load the frame rate follows: Pearson correlation over the readings (needs a spread of readings)
 const corr = (xs, ys) => { const n = xs.length; if (n < 4) return null; const mx = xs.reduce((a, b) => a + b) / n, my = ys.reduce((a, b) => a + b) / n; let sxy = 0, sxx = 0, syy = 0; for (let i = 0; i < n; i++) { sxy += (xs[i] - mx) * (ys[i] - my); sxx += (xs[i] - mx) ** 2; syy += (ys[i] - my) ** 2; } return sxx && syy ? sxy / Math.sqrt(sxx * syy) : null; };
 const rCalls = corr(rows.map((r) => r.calls), rows.map((r) => r.fps)), rTris = corr(rows.map((r) => r.tris), rows.map((r) => r.fps));
 const follows = rCalls !== null && rTris !== null ? (Math.abs(rCalls) >= Math.abs(rTris) ? 'draw calls' : 'triangles') : null;
 if (rCalls !== null) console.log(`  the frame rate follows ${follows} (correlation with draw calls ${rCalls.toFixed(2)}, with triangles ${rTris.toFixed(2)}; -1 is a perfect match)`);
-const cause = (r) => follows && (r.tris > 300000 || r.calls > 200) ? follows : r.tris > 300000 ? 'triangles' : r.calls > 200 ? 'draw calls' : r.level >= 4 ? 'GPU-bound (governor at its floor)' : 'CPU or GPU, governor not at its floor';
+const cause = (r) => follows && (r.tris > 300000 || r.calls > 200) ? follows : r.tris > 300000 ? 'triangles' : r.calls > 200 ? 'draw calls' : r.level === null ? 'CPU or GPU' : r.level >= 4 ? 'GPU-bound (governor at its floor)' : 'CPU or GPU, governor not at its floor';
 if (swaps.length) {
   console.log(`  render scale changes (projection layer swaps): ${swaps.map((w) => `${(w.ms / 1000).toFixed(0)} s -> ${w.scale}`).join(', ')}`);
   const byScale = {}; for (const r of rows) if (r.scale !== null && r.scale !== undefined) (byScale[r.scale] = byScale[r.scale] || []).push(r);

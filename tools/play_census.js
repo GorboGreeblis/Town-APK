@@ -27,7 +27,7 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     document.createElement = function (tag) { const el = ce.apply(document, arguments); if (String(tag).toLowerCase() === 'canvas') { const rec = { t: ((performance.now() - t0) / 1000).toFixed(1), step: window.__tc.step, what: 'canvas', where: where() }; window.__tc.canvases.push(rec); el.__tcRec = rec; } return el; };
     HTMLCanvasElement.prototype.getContext = function () { if (this.__tcRec && this.__tcRec.what === 'canvas') this.__tcRec.what = `canvas ${this.width}x${this.height}`; return gc.apply(this, arguments); };
     // a GL texture allocated after loading, named by its first upload (size and source); the fake headset's own eye
-    // textures (a layer swap on the headset makes its own) are not the game's
+    // textures ((until 3.15.43 a layer swap on the headset made its own)) are not the game's
     const ct = gl.createTexture.bind(gl), fresh = new Map(), ti = gl.texImage2D.bind(gl);
     gl.createTexture = function () { const t = ct(); const w = where(); if (!/XRWebGLBindingFake/.test(new Error().stack)) { const rec = { t: ((performance.now() - t0) / 1000).toFixed(1), step: window.__tc.step, what: 'GL texture', where: w }; window.__tc.textures.push(rec); fresh.set(t, rec); } return t; };
     gl.texImage2D = function () { const b = gl.getParameter(gl.TEXTURE_BINDING_2D), rec = b && fresh.get(b); if (rec) { fresh.delete(b); const a = arguments, src = a[a.length - 1]; rec.what = 'GL texture ' + (src && src.width ? src.width + 'x' + src.height + ' ' + (src.tagName || src.constructor.name) : a[3] + 'x' + a[4]); } return ti.apply(null, arguments); };

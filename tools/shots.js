@@ -88,7 +88,7 @@ const out = path.join(root, 'tools/.runs/shots'); fs.mkdirSync(out, { recursive:
         await mistFull();
         for (const [nm, e, t] of V) { await go(e[0], e[2]); for (const f of [1, 0]) { if (S) S.set(f); shoot(`Park ${nm}: fade groups ${f ? 'in full' : 'hidden'}`, e, t); } if (S) S.set(1); }
       } else if (p === 'pond') {
-        // the pond's water (ripples spread from three spots, the painted rings drift): one view at four moments
+        // the pond's water (a still texture since 4.0.4, A33; until then ripples spread from three spots, the painted rings drift): one view at four moments
         await go(22.6, -2.6);
         for (let k = 0; k < 4; k++) { shoot(`Pond, 7 m, t+${(k * 1.5).toFixed(1)} s`, [23.6, 1.6, -2.6], [29.6, 0, -2.6]); shoot(`Pond close, 3 m, t+${(k * 1.5).toFixed(1)} s`, [27, 1.5, 0], [29.6, 0.1, -2.6]); await wait(1500); }
       } else if (p === 'church') {
