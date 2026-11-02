@@ -58,7 +58,7 @@ The HTML is 8 lines since the minification (3.15.45; it was 93 before); most of 
 - Player: speed 4.5, body radius 0.6, spawn `[-36.3, -20]`.
 - Interaction radii: talk 3.4, greet 3.2.
 - XR: eye height 2.6, near 0.15, stick dead-zone 0.15, snap turn 30 degrees
-  (`Math.PI/6`), pick range 16, UI distance 11.5, foveation per quality level
+  (`Math.PI/6`), pick range 16, UI distance 11.5, fixed foveation 0 (one value, set at VR entry, never changed: F-B83)
   (the framebuffer scale is native, 1, at every level and in the emergency
   step: `quality`, `sosScale`; F-B31), target 72 Hz with an adaptive quality controller
   (`targetHz`, `emaAlpha`, `overFrames`, `underFrames`).
@@ -202,6 +202,14 @@ Read from the code and checked by the tests named; numbers are game seconds and 
 - **The head inside a character.** A character the player's head is inside is hidden for that frame, so its inside
   never fills the view (S1).
 - **A failing draw hook.** A per-object draw hook that throws is logged once and the frame is drawn to the end (S1).
+- **A frame the game did not draw is drawn anyway** (S18). The entry script counts the game's draws per headset frame;
+  a frame begun on the projection layer with none is drawn by the entry script itself before the frame ends, so the
+  compositor never shows a swapchain image the game left untouched.
+- **Black behind the sky** (S18). The renderer clears to black, not to the sky's near-white horizon colour; the sky
+  sphere covers every pixel, so nothing visible changes, and a frame whose draw is ever lost shows black, not white.
+- **Nothing touches the session after VR entry** (F-B83, S18): one fixed foveation set at entry, the projection layer
+  never swapped, the camera's far plane never changed (three.js would re-send the session's depth range), the eye
+  buffer never read during play (the light record is opt-in), and a flush at the end of every frame.
 
 ## Every element of the game, where it is described and what tests it
 
@@ -236,7 +244,7 @@ story, characters and looks are in `LORE.md` (section named); the fixes in `FIXE
 | View safeties | The head guard (the view dims at a wall), the head inside a character, held uploads and shader compiles, eye guards (goo, bubbles, confetti) | GAME "Safeties"; FIXES S1-S15, F-B82 | `test_safeties.js`, `test_shaderhold.js`, `test_firstdraw.js`, `test_goo_eye.js`, `test_bubble_eye.js` |
 | The flash record | The B mark logs the last seconds: state changes, GPU work, the drawn picture's brightness, XR frame health | FIXES D2, S15; `HEADSET_DIAG.md` | `test_flashlog.js` |
 | Sound | Every sound synthesised; positional hearing radii | GAME "Content hooks" | `test_audio.js` |
-| Frame rate and quality | The governor (render scale, foveation), multiview, batching | `PERF.md`, `RENDERING.md` | `test_governor.js`, `test_lod.js`; report tools in `README.md` |
+| Frame rate and quality | The governor (its level now only drives the Event's far-object safeguard; the render scale is native and foveation fixed at 0), multiview, batching | `PERF.md`, `RENDERING.md` | `test_governor.js`, `test_lod.js`; report tools in `README.md` |
 | Stability | Recovery from faults, long play | GAME "Safeties"; FIXES S3-S5, S13 | `test_recover.js`, `test_soak.js` |
 | The three forms | The APK, `index.html` (archive), `index.compressed.html` (ordinal) | GAME "The three forms it ships in"; NOTES 100 | `test_entry.js`, `test_standalone.js`, `test_compressed.js` |
 

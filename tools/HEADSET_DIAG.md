@@ -180,6 +180,11 @@ Since 3.15.57 (D3, the author: "let's try to make the logs more verbose"):
 - After `MARK flash seen`, the flight recorder's last 10 s: `rec ... slow:` (frames over 20 ms, with their time before
   the mark), `rec changes:` (programs, textures, geometries and draw calls changing, the head inside a character),
   `rec events:` (focus changes in the last minute).
+- Since 4.0.7 (S15): `rec xr frames: no head pose N, undrawn N, drawn twice N, held N, head position tracked|EMULATED`
+  (the frames' health; since 4.0.13 also "drawn by the fallback N": frames the game did not draw and the entry script
+  drew instead, S18), `rec near eyes (3 s)` (anything within 0.35 m of the eyes), and `rec light` (the drawn picture's
+  brightness around the mark; since 4.0.13 opt-in only, off on the headset: it read the eye buffer every frame, S18).
+- Since 4.0.13: the entry log's `foveation fixed at 0 (the layer reads 0)` and `fov=` in every perf line (F-B83).
 Since 3.15.59-3.15.63 the log also has:
 - `geometry held for one frame: N object(s) uploaded between frames` (F-B51): new geometry held back a frame; expected
   now and then (Nextessa's visits, the Event's plants).
