@@ -36,8 +36,10 @@ the activity hand-off. Two wrapper-side items are worth doing:
 
 The game already carries its own performance design, written for the Quest:
 
-- **Adaptive quality governor** (`Ge`): frame-time EMA against a 72 Hz budget;
-  five levels; lowest level locked and far scenery hidden during the finale.
+- **Frame governor** (`Ge`): frame-time EMA against a 72 Hz budget (the perf
+  line's fps) and a frames-over-budget flag that only logs; the far plane
+  shortened and far scenery faded during the finale. The five quality levels
+  were removed in 4.0.14 (L1): they changed nothing since F-B83.
   *(Since 3.15.43, F-B31: native scale at every level and in the emergency
   step. Since 4.0.13, F-B83: foveation is one fixed value, 0, set at VR entry
   and never changed; the levels change nothing on the layer. The GPU sits at

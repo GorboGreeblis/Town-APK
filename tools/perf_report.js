@@ -62,7 +62,7 @@ const excerpt = (line, col) => { const l = assetLines[line]; if (!l) return ''; 
     window.__pfSnap = () => {
       const C = D.C, T = window.THREE; let transparent = 0, lights = 0, meshes = 0, pts = 0;
       C.traverse((o) => { if (!o.visible) return; let p = o.parent; while (p) { if (!p.visible) return; p = p.parent; } if (o.isLight) lights++; if (o.isPoints) pts++; if (!o.isMesh) return; meshes++; const m = Array.isArray(o.material) ? o.material[0] : o.material; if (m && m.transparent && m.visible !== false) transparent++; });
-      return { programs: O.info.programs.length, progNames: O.info.programs.map((p) => p.name), textures: O.info.memory.textures, geometries: O.info.memory.geometries, calls: O.info.render.calls, tris: O.info.render.triangles, points: O.info.render.points, transparent, lights, meshes, pts, heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : 0, level: D.Ge && D.Ge.level != null ? D.Ge.level : 'n/a', creaturesNear: (() => { try { const p = D.At.position; return D.It.all.filter((e) => e.group && e.group.visible !== false && Math.hypot(e.group.position.x - p.x, e.group.position.z - p.z) < 25).length; } catch (e) { return -1; } })(), objects: (() => { let n = 0; C.traverse(() => n++); return n; })() };
+      return { programs: O.info.programs.length, progNames: O.info.programs.map((p) => p.name), textures: O.info.memory.textures, geometries: O.info.memory.geometries, calls: O.info.render.calls, tris: O.info.render.triangles, points: O.info.render.points, transparent, lights, meshes, pts, heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : 0, creaturesNear: (() => { try { const p = D.At.position; return D.It.all.filter((e) => e.group && e.group.visible !== false && Math.hypot(e.group.position.x - p.x, e.group.position.z - p.z) < 25).length; } catch (e) { return -1; } })(), objects: (() => { let n = 0; C.traverse(() => n++); return n; })() };
     };
   }, realDraw);
   const cdp = await page.context().newCDPSession(page);
@@ -92,10 +92,10 @@ const excerpt = (line, col) => { const l = assetLines[line]; if (!l) return ''; 
     const script = all.filter((t) => !t.native && !/^__glTimed/.test(t.fn));
     const top = script.slice(0, 6), glTop = all.filter((t) => t.native).slice(0, 3);
     const scriptBusy = script.reduce((a, t) => a + t.ms, 0);
-    const perfLine = lastPerfLine(log0); const lm = perfLine && /level=(\d+)/.exec(perfLine);
+    const perfLine = lastPerfLine(log0); const lm = perfLine && /fov=(\S+)/.exec(perfLine);
     const r = { name, setupError, frames: frames.length, p50: q(0.5), p90: q(0.9), p99: q(0.99), max: +(w[w.length - 1] || 0).toFixed(1), glP50: qg(0.5), glP99: qg(0.99), glMax: +(wg[wg.length - 1] || 0).toFixed(1), scriptMsPerFrame: +(scriptBusy / Math.max(1, frames.length)).toFixed(2), glTop,
       newPrograms: after.programs - before.programs, newProgramNames: after.progNames.filter((n) => !before.progNames.includes(n)), newTextures: after.textures - before.textures, newGeometries: after.geometries - before.geometries, newObjects: after.objects - before.objects,
-      calls: after.calls, tris: Math.round(after.tris), points: after.points, transparent: after.transparent, lights: after.lights, meshes: after.meshes, heapMB: after.heap, heapDeltaMB: after.heap - before.heap, level: lm ? +lm[1] : after.level, perfLine, creaturesNear: after.creaturesNear, top };
+      calls: after.calls, tris: Math.round(after.tris), points: after.points, transparent: after.transparent, lights: after.lights, meshes: after.meshes, heapMB: after.heap, heapDeltaMB: after.heap - before.heap, fov: lm ? lm[1] : null, perfLine, creaturesNear: after.creaturesNear, top };
     results.push(r); return r;
   };
 
@@ -141,7 +141,7 @@ const excerpt = (line, col) => { const l = assetLines[line]; if (!l) return ''; 
   console.log(`  machine speed: workload ${calib0} / ${calib1} ms` + (baseline && baseline.calib ? ` (baseline machine ${baseline.calib} ms: baseline times scaled by ${k.toFixed(2)})` : ' (the baseline has no calibration: its times compared as they are)') + `; absolute limits scaled by ${kAbs.toFixed(2)}`);
   const lines = [];
   console.log(realDraw ? '  draws rasterised (software GL: GL stalls are this machine)' : '  draw calls stubbed (script and upload costs only; renderer counters kept)');
-  const fmt = (r) => `${r.name.padEnd(28)} frames ${String(r.frames).padStart(4)}  script p50 ${String(r.p50).padStart(5)} p99 ${String(r.p99).padStart(5)} max ${String(r.max).padStart(6)} ms  GL p50 ${String(r.glP50).padStart(5)} p99 ${String(r.glP99).padStart(7)} ms  calls ${String(r.calls).padStart(3)}  tris ${String(r.tris).padStart(6)}  transp ${String(r.transparent).padStart(3)}  lights ${r.lights}  creatures<25m ${r.creaturesNear}  +prog ${r.newPrograms} +tex ${r.newTextures} +geo ${r.newGeometries}  heap ${r.heapMB} MB${r.level !== 'n/a' ? '  level ' + r.level : ''}`;
+  const fmt = (r) => `${r.name.padEnd(28)} frames ${String(r.frames).padStart(4)}  script p50 ${String(r.p50).padStart(5)} p99 ${String(r.p99).padStart(5)} max ${String(r.max).padStart(6)} ms  GL p50 ${String(r.glP50).padStart(5)} p99 ${String(r.glP99).padStart(7)} ms  calls ${String(r.calls).padStart(3)}  tris ${String(r.tris).padStart(6)}  transp ${String(r.transparent).padStart(3)}  lights ${r.lights}  creatures<25m ${r.creaturesNear}  +prog ${r.newPrograms} +tex ${r.newTextures} +geo ${r.newGeometries}  heap ${r.heapMB} MB${r.fov !== null && r.fov !== undefined ? '  fov ' + r.fov : ''}`;
   for (const r of results) {
     console.log('  ' + fmt(r));
     if (r.setupError) console.log(`        setup error: ${r.setupError}`);

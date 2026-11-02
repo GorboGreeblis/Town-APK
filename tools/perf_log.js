@@ -19,9 +19,10 @@ if (!file) { console.error('usage: node tools/perf_log.js <logcat.txt>'); proces
 const buf = fs.readFileSync(file);
 // PowerShell's `>` writes UTF-16 little-endian with a byte-order mark; plain adb output is UTF-8
 const text = (buf[0] === 0xff && buf[1] === 0xfe) || (buf.length > 3 && buf[1] === 0 && buf[3] === 0) ? buf.toString('utf16le').replace(/^\ufeff/, '') : buf.toString('utf8');
-const re = /(?:m=(\d+)ms )?perf fps=([\d.]+) level=(\d+) calls=(\d+) tris=(\d+)( event)? at=(-?\d+),(-?\d+)(?: dev=(\S+))?/g;
+// the perf line: `level=` until 4.0.13 (the governor's quality levels, removed in 4.0.14), `fov=` since 4.0.13 (the layer's fixed foveation read back)
+const re = /(?:m=(\d+)ms )?perf fps=([\d.]+)(?: level=(\d+))?(?: fov=(\S+))? calls=(\d+) tris=(\d+)( event)? at=(-?\d+),(-?\d+)(?: dev=(\S+))?/g;
 const rows = []; let m;
-while ((m = re.exec(text))) rows.push({ ms: m[1] ? +m[1] : null, fps: +m[2], level: +m[3], calls: +m[4], tris: +m[5], event: !!m[6], x: +m[7], z: +m[8], dev: m[9] || 'unknown' });
+while ((m = re.exec(text))) rows.push({ ms: m[1] ? +m[1] : null, fps: +m[2], level: m[3] !== undefined ? +m[3] : null, fov: m[4] !== undefined ? m[4] : null, calls: +m[5], tris: +m[6], event: !!m[7], x: +m[8], z: +m[9], dev: m[10] || 'unknown' });
 // the render scale over time, from the layer lines ("projection layer swapped to scale 0.82", "... live, scale 1")
 const swaps = []; const rs = /m=(\d+)ms projection layer (?:swapped to scale|live, scale) ([\d.]+)/g;
 while ((m = rs.exec(text))) swaps.push({ ms: +m[1], scale: +m[2] });
@@ -136,8 +137,10 @@ if (hz) console.log(`  WARNING: ${hz} texture operations logged while a multivie
 const comp = (text.match(/shader program\(s\) compiled during play/g) || []).length; if (comp) console.log(`  WARNING: ${comp} shader compiles during play logged (hitches)`);
 if (town.length) console.log(`  town:  ${JSON.stringify(stats(town))}`);
 if (ev.length) console.log(`  Event: ${JSON.stringify(stats(ev))}`);
-const levels = {}; for (const r of rows) levels[r.level] = (levels[r.level] || 0) + 1;
-console.log(`  governor levels (all native scale since 3.15.43; 3-4 foveated): ${JSON.stringify(levels)}`);
+const levels = {}; for (const r of rows) if (r.level !== null) levels[r.level] = (levels[r.level] || 0) + 1;
+if (Object.keys(levels).length) console.log(`  governor levels (a log from before 4.0.14; all native scale since 3.15.43): ${JSON.stringify(levels)}`);
+const fovs = {}; for (const r of rows) if (r.fov !== null) fovs[r.fov] = (fovs[r.fov] || 0) + 1;
+if (Object.keys(fovs).length) console.log(`  layer foveation read back (fixed at 0 since 4.0.13): ${JSON.stringify(fovs)}${fovs['0'] === rows.length ? '' : '  WARNING: not 0 in every line'}`);
 const low = rows.slice().sort((a, b) => a.fps - b.fps).slice(0, 5);
 console.log('  lowest readings:');
 for (const r of low) console.log(`    ${r.fps} fps at (${r.x}, ${r.z})${r.event ? ' during the Event' : ''}, level ${r.level}${r.scale ? ', scale ' + r.scale : ''}, ${r.calls} calls, ${r.tris} triangles`);

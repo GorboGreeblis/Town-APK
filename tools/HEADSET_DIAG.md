@@ -129,8 +129,8 @@ Since 3.15.43 (F-B31) the handover line is `projection layer live, scale 1, msaa
 While presenting, the game posts one line every ten seconds:
 
 ```
-page: m=perf fps=71.8 level=2 calls=118 tris=201240 at=-36,-20
-page: m=perf fps=41.2 level=4 calls=131 tris=266812 event at=2,-3
+page: m=perf fps=71.8 fov=0 calls=118 tris=201240 at=-36,-20
+page: m=perf fps=41.2 fov=0 calls=131 tris=266812 event at=2,-3
 ```
 
 `fps` is 1000 over the governor's frame-time average, `level` the governor's
@@ -156,7 +156,7 @@ incomplete (...)` means it fell back to the classic path at entry.
 
 ```
 page: m=... gpu: Adreno (TM) 740; vertex_uniform_vectors=256 fragment_uniform_vectors=... ; device Quest 3S
-page: m=... perf fps=71.8 level=2 calls=118 tris=201240 at=-36,-20 dev=Quest_3S
+page: m=... perf fps=71.8 fov=0 calls=118 tris=201240 at=-36,-20 dev=Quest_3S
 ```
 
 The `gpu:` line (3.15.34) gives the headset's real GPU limits: the test tools
@@ -205,6 +205,6 @@ Since 3.15.59-3.15.63 the log also has:
 - The flight recorder's lines (D5): `frame gap N ms before frame F, heap A > B MB` (frames the headset did not get, over
   45 ms; a heap that drops in the gap is a garbage-collector pause), `frame F drew N calls (the frame before: M)` (an
   empty or half-drawn frame: the look of a full-screen flash), `frame F: the camera matrix is not finite`, and
-  `governor level L (foveation X[, emergency])`. The B mark's dump adds `rec gaps:`.
+  `frames over budget for N frames (...)` (the over-budget flag, once; `governor level L` until 4.0.13). The B mark's dump adds `rec gaps:`.
 `node tools/perf_log.js run.txt` reads them all: the recorder under each mark, geometry uploads, focus changes, the
 stretches when another process (the system shell) drew instead of the game, and `--trail` prints the event trail.

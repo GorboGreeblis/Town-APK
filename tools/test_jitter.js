@@ -48,7 +48,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
         }
         s.last = p;
         // the Event's dances and planting move the model by design
-        if (frames % 12 === 0 && s.b0 !== null && e.busy !== 'finale') {
+        // a text scene's gestures (the hop, the bow) lift the model by design: not measured while one plays (B49)
+        if (frames % 12 === 0 && s.b0 !== null && e.busy !== 'finale' && !e.vig) {
           const b = bottom(e); if (b !== null && Math.abs(b - s.b0) > s.worstFloat) { s.worstFloat = Math.abs(b - s.b0); s.floatAt = { t: +D.Re.t.toFixed(1), ev: !!D.me.active, busy: e.busy || null, vig: !!e.vig, meet: !!(e.hearts || e.meeting), at: p.map((v) => +v.toFixed(2)), moving: !!e.moving }; } }
       }
       requestAnimationFrame(tick);

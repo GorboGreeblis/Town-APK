@@ -9,7 +9,7 @@
  * Controls exposed on window.__fakeXR:
  *   fire()                    dispatch `sessiongranted` (Meta immersive launch)
  *   sessions                  every session created (last one is current)
- *   pose.y / pose.yaw         head height (m) and yaw (rad) used for views
+ *   pose.y / pose.yaw / pose.pitch   head height (m), yaw and pitch (rad, + looks up) used for views
  *   setInputs([{handedness, axes:[x,y,x2,y2], buttons:[{pressed,value}]}])
  *   leftPose                  {position, orientation, matrix}: hold the left controller there (with poses on)
  *                             fake controllers (gamepad-like), [] for none
@@ -28,9 +28,10 @@
     m[0] = f / aspect; m[5] = f; m[10] = (far + near) / (near - far); m[11] = -1; m[14] = (2 * far * near) / (near - far);
     return m;
   }
-  function matrixFor(x, y, z, yaw) {
-    const c = Math.cos(yaw), s = Math.sin(yaw);
-    return new Float32Array([c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, x, y, z, 1]);
+  function matrixFor(x, y, z, yaw, pitch) {
+    // column-major; R = Ry(yaw) * Rx(pitch): the head yaws, then pitches (pose.pitch, rad, + looks up)
+    const c = Math.cos(yaw), s = Math.sin(yaw), cp = Math.cos(pitch || 0), sp = Math.sin(pitch || 0);
+    return new Float32Array([c, 0, -s, 0, s * sp, cp, c * sp, 0, s * cp, -sp, c * cp, 0, x, y, z, 1]);
   }
   function invert(m) {
     // rigid transform inverse: R^T, -R^T t
@@ -74,7 +75,7 @@
       this.eye = eye; const dx = eye === 'left' ? -0.032 : 0.032;
       const floor = session.floorSpace;              // local-floor: origin at floor; local: origin at head
       const y = floor ? S.pose.y : 0;
-      this.transform = new RigidTransform({ x: dx, y, z: 0 }, null, matrixFor(dx, y, 0, S.pose.yaw));
+      this.transform = new RigidTransform({ x: dx, y, z: 0 }, null, matrixFor(dx, y, 0, S.pose.yaw, S.pose.pitch));
       const rs = session.renderState;
       // S.headsetFov: a Quest 3-like eye (96 deg vertical x 100 deg horizontal) instead of the default 90 deg x 8/9.
       this.projectionMatrix = S.headsetFov ? perspective(96, Math.tan(50 * Math.PI / 180) / Math.tan(48 * Math.PI / 180), rs.depthNear, rs.depthFar) : perspective(90, (session.layerAspect || (16 / 9)) / 2, rs.depthNear, rs.depthFar);
@@ -86,7 +87,7 @@
     getViewerPose() {
       if (S.noPose > 0) { S.noPose--; return null; }   // tracking lost for a frame (test_flashlog.js)
       const v = [new View('left', this.session), new View('right', this.session)];
-      return { views: v, transform: new RigidTransform({ x: 0, y: this.session.floorSpace ? S.pose.y : 0, z: 0 }), emulatedPosition: !!S.emulated };
+      return { views: v, transform: new RigidTransform({ x: 0, y: this.session.floorSpace ? S.pose.y : 0, z: 0 }, null, matrixFor(0, this.session.floorSpace ? S.pose.y : 0, 0, S.pose.yaw, S.pose.pitch)), emulatedPosition: !!S.emulated };
     }
     // Controller poses are null unless a test turns them on (window.__fakeXR.poses = true): three.js shows a
     // controller's ray and grip groups only while their spaces have poses, and the input test steers the rays

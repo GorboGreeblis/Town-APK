@@ -1394,6 +1394,98 @@ experiment, all on the multiview lead.
   `test_flashlog.js` checks the fallback draw's counter, that the black clear never shows (no dark cell in a quiet
   frame) and the light record with it turned on.
 
+- **S19** (4.0.14; the code audit, T23, the author: "perform a full audit of the game's code to catch any potential
+  issues"; "keep adding safeties for stability"): three safeties on the headset frame path, from the audit's verified
+  findings.
+  - **The layer's begin() and end() are guarded.** The entry script's frame wrapper called the projection layer's
+    begin (get the eye views, bind the frame's images) and end (discard depth, flush) unguarded; one throw there (a
+    destroyed layer, a lost context) would have ended the frame loop for good, since three.js requests the next
+    frame only after the callback returns, and left `xrFrameOpen` set, which silently jams every between-frames
+    upload hold (textures, geometry, shaders). Now a throw in begin logs `layer begin failed (S19)` (counted in
+    `fc.beginFail`), the frame runs without the layer, a throw in end is logged likewise, and the open flag is always
+    cleared. `test_safeties.js` throws from begin once and checks frames keep coming.
+  - **A frame counts as drawn only once the draw returned.** The draw count went up before the draw ran, so a draw
+    that threw halfway (caught by the game's frame wrapper) counted as drawn: the fallback draw (S18) never ran and
+    the half-drawn frame went to the headset. Now the count moves after the draw, so the fallback draws the frame.
+  - **The shader hold sees a recompile of a compiled material.** The hold treated any material with a program as
+    "not new", but three.js recompiles a compiled material when the lights, the fog, the output encoding or the
+    multiview state change; such a compile ran inside the frame unseen. The hold now checks the same conditions
+    three.js does (the material's version, the lights' state version, the fog, multiview) and compiles between
+    frames. The lights' state version is known only after three.js sets the lights up, after the per-object hold
+    check, so when it changed every object in the frame's list is re-checked there and a held one is skipped for
+    the frame. `test_safeties.js` adds a directional light in VR and checks the compile is held, none during play.
+  - The audit's fourth finding on the holds (the geometry hold ignores a changed attribute version: an animated
+    shape's per-frame `needsUpdate` uploads its data inside the frame) is left as it is, by design (B59, closed): the
+    hold covers a shape's first upload only; holding a shape every frame its data changes would leave it unseen,
+    and those updates are small sub-data writes to a buffer that exists.
+
+- **S20** (4.0.14; the code audit, T23): five more from the engine-side and game-logic reviews.
+  - **The hand meshes are built once per controller and hand** and reused on every controller switch or reconnect;
+    before, every switch rebuilt them in play, making a new watch-face plane and material each time (held one frame:
+    the watch face absent) and never freeing the old mesh. The watch face's geometry and material are shared.
+  - **A failed VR entry after the session was taken is torn down** (`VR entry failed after the session started
+    (S20)`), so the "press A to try again" retry works; before, the session stayed alive with no end handler and the
+    entry refused every retry until a reload.
+  - **Leaving VR keeps the mipmaps.** The session's end reverted every texture to no mipmaps with `needsUpdate` (a
+    full re-upload on the landing page) and the next VR entry re-uploaded them all in slices 2.6 s in, the one path
+    left where textures were uploaded again in play (F-B40's rule). The loading-time mipmap pass stays; the 2.6 s
+    pass now finds nothing on every entry.
+  - **A batched part whose matrix is not finite is hidden, never drawn raw.** The batcher dropped such a part from
+    its batch and handed it back to three.js on layer 0, which drew it with NaN clip coordinates (undefined
+    rasterisation: on Adreno this can cover the view, a plausible flash mechanism). Hidden now, counted in
+    `gcEB.nonFinite`, logged once (`non-finite matrix on ...: hidden, not drawn (S20)`).
+  - **An Event whose update keeps failing is ended** after 30 frames in a row (`recovery: the Event kept failing for
+    30 frames: ended (S20)`); nothing else could end it (the mist, the fades, the hidden pickups and the busy flags
+    would have stayed for the session). The recovery helper that teleports a failing walker home keeps an Event
+    walker in the Event (one mover, not two fighting) and clears its way-finding state.
+  - Game logic (the audit's seven low findings, all fixed): the stuck rescue keeps re-routing while the player
+    stands on the walker's target (it only skipped the teleport, so the walker shoved against the player until they
+    moved); the courier's arrival clock does not run while the Gem scene holds her (as the menu hold already did);
+    a scene wrapper adopted from the talk or batch wrapper gets the scenes' rotation order, so a bow or lean goes
+    toward the partner; an Event started while the last one's pizza boxes still fade finishes the fade at once, so
+    the boxes are served again; the frog's planting walk speed is put back when the Event ends (it stayed at 1 m/s
+    into later Events).
+- **L1** (4.0.14; the leftovers audit, T23, the author: "this is the final version of the game, please look for any
+  leftovers from past systems that still remain"): every leftover the audit confirmed, removed.
+  - **The governor's quality levels** (five levels, `quality: [1, 1, 1, 1, 1]`, the stepping up and down with its
+    probe, backoff and lockouts, the Event's level lock, `level0`, `finaleLockMs`, `overFrac`, `underFrac`,
+    `overFrames`, `underFrames`): since F-B83 the level changed nothing (native scale at every level, the foveation
+    fixed). What stays: the frame-time average (`Ge.ema`, the perf line's fps), a frames-over-budget flag that logs
+    once (`frames over budget for 216 frames (...): nothing changed, the layer untouched (L1)`, `Ge.sos`), and the
+    Event's far-object safeguard (the far plane at `finaleFar`, the far scenery fades), which keys on the Event
+    alone. The perf line no longer carries `level=`; `perf_log.js` reads both old and new lines and summarises
+    `fov=`. `test_governor.js` rewritten for it.
+  - Dead tuning and state: `sosScale`, `maxLayerRebuilds` (the old layer-rebuild system, F-B31), `Ge.rebuilds`; the
+    XR module's no-op logger and its four dead calls (the context-loss message now reaches the headset log:
+    `ERR context lost: leaving VR`); the shim's projection-layer swap branch (one layer per session since F-B83) and
+    the `keepDepth` flag; the `Pico` device remnant; four hooks nothing read (`__gcEyeVig`, `__gcHudOpenDraws`,
+    `__gbSides`, `__gtMT`).
+  - **The loading bar's step count** was 39 against 21 real boot steps, so the bar stopped at about half at the
+    handover to the game; it is 21 now (B71).
+  - Kept on purpose (fallbacks, experiment anchors, hooks with readers): the classic XRWebGLLayer loader and the
+    non-multiview path (the `nolayers`, `nomultiview`, `ovronly` experiments; headless tests without `GT_MULTIVIEW`),
+    the multiview-incomplete fallback, the loader's retry, the game's own session request without `layers`, the
+    `local` reference-space fallback, the draw fallback and frame checks (S18), the light record, the D2 B-mark.
+- **S21** (4.0.14; T19, S12 continued): the geometry warm-up (S12) draws every object once while loading and again at
+  VR entry so every shape is on the GPU before play; eight shapes it never reached were uploaded the first time they
+  were drawn in play (between frames, held by the geometry hold): Backpacka's rainbow over the Garden (520 vertices) and his
+  three water rings (165), the portal's open effect (205, twice) and its two panels. Their materials start at opacity
+  0 with `visible` off (the fade safety), and three.js leaves an object whose material is not visible out of the
+  frame's list, override material or not, so the warm-up's draw skipped them. The warm-up now shows those materials
+  for its draw and, after it, uploads directly (attributes and index, no draw) whatever its draw still left off the
+  GPU; its log line counts both (`... N unseen materials shown for it, M uploaded without a draw`). The 24-vertex
+  box in the Garden (a hidden group built before the characters spawn) is covered by the same upload. Left for
+  T19: the shop's item preview, the Gem stand's ring re-made before the Speech, the Event's four 312-vertex shapes.
+- **S22** (4.0.15; T19): the shop's item preview (the gold ring and the mirror behind the player's reflection, 194 + 97
+  vertices) was built the first time the shop opened in VR; it is built while loading now (`__gtShopWarm`, hidden in
+  the scene, moved onto the UI anchor when the shop opens) and the warm-up uploads it (`geometry warm-up (shop
+  preview)`). A headless Speech on 4.0.14 uploads nothing (the Gem stand's ring, listed in T19 since 4.0.11, is
+  covered by S16 and S21).
+- **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
+  and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
+  2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
+  (the hop, the bow) lift the model on purpose. Nothing floats outside scenes. The test no longer measures a model
+  while its character is in a scene; the bug is closed as explained, not fixed.
 - **S17** (4.0.12; T19, S12 continued; found by the play census on 4.0.11, 26 buffers made during play, all between
 frames): the Ancient's own body (15 shapes, the largest 3,243 vertices) was uploaded the first time the player came near
 the church. The geometry warm-up draws every object once while loading, but the Ancient's draw wrapper hides his body
@@ -1485,12 +1577,12 @@ search over the cap's height, size, crown height, tilt and depth for no vertex t
 3 cm clear chose: 10 cm higher, 5 cm further back, 1.9x wide with a crown 1.5x taller, tilted back 0.5 rad. No head
 vertex comes through, the eyes are 20 cm clear and the rim sits on her head (at most 8.6 cm off it, at the back of her
 egg-shaped head). `test_cap.js` now measures all of this against the real head.
-
+  Confirmed in the headset by the author, 2026-11-02 ("T21 passes").
 - **F-B81** (4.0.7; the author: "The new watch face clips too much into the hand model"): the watch sat 2 mm into the
 back of the hand at the cuff; its case is now thinner and shorter (33 x 7 x 29 mm) and set 2 mm up and 3 cm toward
 the fingers, the face on top of it; pictures from the face, the fingers' side, the cuff's side and both low sides show
 it clear of the hand and the cuff and still readable. `test_watch.js` passes.
-
+  Confirmed in the headset by the author, 2026-11-02 ("T21 passes").
 - **A40** (4.0.7; the author: "Please flip the Cardinal to be facing the opposite direction (towards the Robin)"): the
 Cardinal is turned round on its branch (its beak toward the Robin: 0.94 in line, was -0.94). `test_content.js` checks
 it, before either bird flies.

@@ -64,7 +64,9 @@ const outDir = path.join(root, 'tools/.runs/multiview');
     expect(`${label}: multiview draws at most half as many calls as the classic path`, r.callsMV * 2 <= r.callsC + 2, `multiview ${r.callsMV}, classic ${r.callsC}`);
     expect(`${label}: no GL error`, r.glErr === 0, `error ${r.glErr}`);
   };
-  const placeAt = (x, z, yaw) => page.evaluate(([x, z, yaw]) => { const D = window.__dbg; D.At.position.x = x; D.At.position.z = z; window.__fakeXR.pose.yaw = yaw; }, [x, z, yaw]);
+  // --pitch N: the head pitched N rad (+ looks up) for every view (the right eye's matrices and lights under pitch)
+  const pitch = (() => { const i = process.argv.indexOf('--pitch'); return i > 0 ? parseFloat(process.argv[i + 1]) || 0 : 0; })();
+  const placeAt = (x, z, yaw) => page.evaluate(([x, z, yaw, pitch]) => { const D = window.__dbg; D.At.position.x = x; D.At.position.z = z; window.__fakeXR.pose.yaw = yaw; window.__fakeXR.pose.pitch = pitch; }, [x, z, yaw, pitch]);
   // Flash fix (the author's flashes on pickups and menu hovers, NOTES 67): nothing may make the GPU save and reload a
   // half-drawn multiview frame: no texture upload or copy, mipmap build, pixel read, blit or switch to another
   // framebuffer while a frame draws (the game counts them, in its multiview code). Pickups, a dialogue, the

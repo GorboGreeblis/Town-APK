@@ -7,9 +7,9 @@ Living list. Done items move to the bottom with the date. Bugs live in
 
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
-| T19 | S12 continued: the last shapes still uploaded the first time they are drawn during play (all between frames, held by the geometry hold, none inside a frame): the Speech's three bubble shapes (100, 76 and 148 vertices), Backpacka's water in the Event (165), the Event's mist panel (520), the church's inside on first entry (14 objects), the Event's pizza boxes' two draw batches (new each Event, by design); upload them while loading where they are fixed | open | `play_census.js`; FIXES S11-S14 |
-| T20 | The Event's start costs one long frame (about 42 ms, every Event, headset logs 8d838908 and 5dc2b257): spread its set-up over several frames | done 4.0.11 (P34: 44 ms to 18 ms headless; the author's headset reading still to come) | the log's "long frame 42 ms event" at each "ev event false > true" |
-| T8 | Remaining test-plan rows | done 3.15.68 | The townsfolk's spreading (`ho`): every townsperson has an idle pattern, so it runs only while one walks home (`goHome`, set by the navigator `Be`, which also sets `wanderAt` 120 s on): it is the walk-home mover, tested by `test_stuck.js` and the gazebo probe (Gemtoe home in 11 s); its spread-out branch runs only if a walk home takes over 2 minutes (a fallback). S1's safeties: `test_safeties.js`. |
+| T19 | S12 continued: shapes still uploaded the first time they are drawn during play (all between frames, held by the geometry hold, none inside a frame). Done in 4.0.14 (S21): Backpacka's rainbow and three water rings, the portal's open effect and panels (the warm-up now shows unseen materials and uploads what its draw misses). The Garden's 24-vertex box is covered by the same upload. The shop's item preview (194 + 97 vertices) is built while loading in 4.0.15 (S22). The Gem stand's ring is on the GPU before the Speech (a headless Speech on 4.0.14 uploads nothing: S16 and S21 cover it). Left: the Event's four 312-vertex shapes | open | `play_census.js`; FIXES S11-S17, S21 |
+| T23 | Full code audit (the author: "perform a full audit of the game's code to catch any potential issues"; "this is the final version ... no leftovers from past games or past systems should be present"): five parallel reviews of the beautified game file (the entry script and layers shim, the three.js multiview patches, the engine side, the game logic, the leftovers from past systems) done 2026-11-02: 4 high/medium and 7 low defects fixed (S19, S20; B56-B70), the leftovers removed (L1; B71), five low findings kept open (B72-B76); still to do: the full tier on 4.0.14 with `GT_COVERAGE=1` and the dead-code census (`dead_code.js`) on its coverage (the 4.0.13 run died with the session's worker) | in progress (2026-11-02) | FIXES S19, S20, L1; `tools/.runs/full_4.0.14.log` |
+| T24 | The test suite, documentation and tools fully built out to catch any remaining issue (the author): every element in GAME.md's index with a test (the Post Office's mail pile has pictures only); every FIXES entry since 4.0.7 with a check (done so far); the report tools re-checked on the current build (7 of 11 ran clean; `fill_probe.js`, `event_cpu.js`, `occlusion_census.js` not yet re-run alone); the tool audit for obsolete or redundant files; `test_safeties.js`'s two frame-count checks made load-proof (B53: done 4.0.14) | open | `README.md`, `TEST_PLAN.md`, `TESTING.md` |
 | T9 | The full pass after every build, with `--resume` (RULES.md 23) | ongoing; last finished for 3.15.54 (NOTES 96) | `TESTING.md` |
 | T15 | Keep the docs and tools current with each change | ongoing | `README.md`, `TESTING.md` |
 
@@ -19,38 +19,24 @@ Worked around until the author can do them (the author, 2026-10-31).
 
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
-| T3 | Headset run of the latest build (4.0.13: the dancers at the edge of view, B52; flashes, with B pressed right after any; 4.0.7 run on 2026-10-31, log 5dc2b257; 4.0.7 run on 2026-10-31, log 5dc2b257, no flashes seen), log captured live (`capture_log.ps1` / `.sh`): the Event's frame rate from afar and from the back of the dance floor; Fortizmo in and out of her bar; the Mushroom on his desk and walking (not floating); Mama Gorbo, Gooward and Etcher in and around the Garden (no jitter); Mama Gorbo's goo by the pond; Gemtoe's tie from the side; the Cave's entrance and walkway; the mist (30 s in and out, close to the fence); the version in the loading box's corner; no flashes, B pressed right after any (D2): the mark now logs `rec light` (the drawn picture's brightness around it) and `rec xr frames` (S15), which tell whether a flash was drawn by the game; on 4.0.8/4.0.9 also the HUD on the watch (A41) and the pizza boxes fading at the Event's end (A42) | open, author | `HEADSET_DIAG.md`, `RELEASE.md` sections 3 and 5 |
-| T21 | Mama Gorbo's cap (F-B80) and the watch (F-B81): the author's look in the headset | open, author | pictures in FIXES F-B80, F-B81 |
+| T3 | Headset run of the latest build (4.0.13; the author cannot test now, 2026-11-02; fixes keep landing on the main build meanwhile): the dancers at the edge of view with the head pitched (B52) and `fov=0` in every perf line; flashes, with B pressed right after any (the mark logs the state trail and `rec xr frames`; a lost draw now shows black, not white); 4.0.7 run on 2026-10-31, log 5dc2b257, no flashes seen; log captured live (`capture_log.ps1` / `.sh`) | open, author | `HEADSET_DIAG.md`, `RELEASE.md` sections 3 and 5 |
 | T18 | Full pass on the final build (RULES.md 23), with `--resume`, and the Ordinals check on its compressed version (ordinals.com, ordiscan.com and Quest Browser) (the author: "Please treat this as the final build until I say otherwise"; "postpone the full pass until I can test in headset first") | the Ordinals check done on 4.0.9 (NOTES 100: all passed, both explorers' policies and the preview frame; the real Quest Browser on the headset is the author's); the full pass waiting on T3 | `TESTING.md`; the last finished full pass was 3.15.54 (NOTES 96) |
 | T4 | Store upload: the final build to the Alpha channel, then the age group (13+) on its build page (T16's frame rate now holds in the headset, 2026-10-31) | open, author; after T3 and T18 | `RELEASE.md` section 5; the listing, IARC rating, privacy page and supported devices are done |
-| T22 | The flashes' single-variable headset test (S18): the `ovronly` experiment APK (`tools/.runs/GreeblisTown-exp-ovronly.apk`: OVR_multiview2, no MSAA) installed over 4.0.13 for one session of normal play, then 4.0.13 back; if the flashes stop with it, the OCULUS_multiview path is the cause and the next build moves off it (a supersampled OVR path); if they go on, the `nomultiview` experiment APK (`GreeblisTown-exp-nomultiview.apk`: the classic two-pass path the author remembers as flash-free) is the next session's test | open, author | FIXES S18; `tools/build_experiment.sh ovronly`; RULES.md 22 (reinstall the release after) |
+| T26 | The headset-confirmation backlog: changes landed on the main build without the author's headset run, to be confirmed in one session when the author can test again: F-B83 (foveation fixed at 0: no tiles at the edge of view), S18 (the flash safeties: any flash now black, not white?), A41 (the HUD on the watch), A42 (pizza boxes fade), A43 (the Ormstown parcel), P34 (no long frame at the Event's start: no "long frame 42 ms event" at `ev event false > true`) | open, author | VERSIONS.md 4.0.7-4.0.13 |
+| T27 | Another full code review after this pass (the author, 2026-11-02: "add another full code review to the end of the Tasks list. Apply any needed fixes found after this pass"): the same five reviews (the entry script and layers shim, the three.js multiview patches, the engine side, the game logic, the leftovers) on the build that carries T23's fixes, with the full tier's coverage and the dead-code census, every finding verified against the code and fixed through draft PRs | open, after T23 | FIXES S19, S20, L1; `tools/.runs/audit/` |
 
-## Resume point (3.15.68: the final build's full pass)
+## Resume point (4.0.13, 2026-11-02)
 
-- **3.15.53-3.15.63** (PRs #29-#36): the mist bank and the Event's fades (A4-A9, A16, A19), Backpacka into the mist
-  (A7), the Mushroom's ramp (F-B39, F-B52), flashes (F-B48, F-B51, F-B54; safeties S1, S2), Fortizmo's pathing for
-  every doorway townsfolk (F-B55), the flat Garden (F-B57), the Cave floor (F-B60), Mama Gorbo's goo (F-B58),
-  Gemtoe's tie (F-B59), the version on the loading box (A18), P26-P30, the dead-code census (R8); tools:
-  `test_stuck.js`, `test_jitter.js`, `test_shaderhold.js`, `shots.js`, the harness's `renderEvery` and
-  `fastSim: 'matrices'`, a quick `test_textfit.js` (NOTES 99).
-- **3.15.64**: the full pass on 3.15.63 found two bugs and was stopped for a new build: F-B61 (a held geometry upload
-  left the last object drawn with another geometry's index buffer: WebGL error 1282 every frame; Sparkakus's bulb beam)
-  and F-B62 (standalone: the mural's disposed placeholders re-uploaded inside the first headset frame). Tools: every
-  test now fails the pass on a WebGL error (`GT_GLERR=1` names the call and object), `test_standalone.js` fails on
-  frame hazards, `run_tests.sh` prints each stage's result as it ends (`grep '^--- '`).
-- **3.15.65-3.15.67** (PRs #37, #38): the Event's CPU (F-B63, P31-P33: culling skips draw-nothing subtrees, the matrix
-  walk skips still groups, the fade groups of RULES.md 26), the pond never faded (F-B64), the gazebo's walls solid
-  (F-B65), the fade-in safety (S3), the Event's flowers taller and more colourful (A20, A22), the pond's ripples (A21).
-  Tools: `event_cpu.js`, `event_sweep.js`, `test_stands.js`, `shots.js` presets `park`, `pond`, `stands`.
-- **Next:** the stability pass and the bug-finding pass (the author's tasks), then the full pass on the latest build
-  (`tools/.runs/full_<version>.log`; fix what it finds, a game fix is a new build and a new pass), then the Ordinals
-  check (T18).
-- **3.15.68**: the pond's stones flat (A23), fourteen clouds (A24), the recovery safeties (S4, S5) with
-  `test_recover.js`, `test_safeties.js` (S1), `test_gazebo.js` (F-B65); P32 never marks a moving group.
-- **4.0.0**: the clouds whitened (A25).
-- **4.0.1**: the fade groups stay out until the Event ends (A26).
-- **Open (author):** T3 (headset run of 4.0.1), T4.
-- **Then:** T16 from the author's reading.
+- **Builds since the author's last headset run (4.0.7, 2026-10-31):** 4.0.8 the HUD on the watch (A41); 4.0.9 the pizza
+  boxes fade (A42); 4.0.10 the Ormstown parcel (A43), the head guard's shader at VR entry (F-B82); 4.0.11 the Event's
+  start without a long frame (P34), the Gem's stand uploaded at load (S16); 4.0.12 the Ancient's body uploaded at load
+  (S17); 4.0.13 foveation fixed at 0 (F-B83, B52) and the flash safeties (S18). PRs #47-#54 merged.
+- **The author cannot test now** (2026-11-02): fixes keep landing on the main build through draft PRs; everything
+  since 4.0.7 is listed for one confirming session (T26); the flash experiment test (T22) was closed by the author.
+- **Running or queued on the machine:** the pitched per-eye comparisons (B52), then the full tier on 4.0.13 with
+  coverage (`tools/.runs/full_4.0.13.log`), then the dead-code census; five code reviews in flight (T23).
+- **Next:** verify and fix the audit's findings (T23), remove the leftovers it confirms, finish T19, T24, T25; then
+  the full pass on the last build (T18) once the author's headset run (T3) has happened.
 
 ## Done
 
@@ -67,6 +53,10 @@ Worked around until the author can do them (the author, 2026-10-31).
 | D9 | Event performance: P14, P16-P18 (3.15.36-3.15.40; P16-P18 removed in 3.15.43); B27 (3.15.35, 3.15.39); closed by the author, reopened as T16 | 2026-10-27 |
 | D10 | Content, governor, HUD, greeting and warm-up coverage tests; P19 (3.15.41); standard and full tiers pass | 2026-10-28 |
 | D11 | Former T2 (safe release build), T5-T7, T11-T14 (performance and stability passes, the graphical pass, the soak): done across 3.15.11-3.15.41, recorded in TEST_PLAN.md and PERF.md | 2026-10-28 |
+| D26 | T25, B49 explained: every float the jitter test caught was a text scene's gesture (the hop, the bow); the test skips scenes (4.0.14) | 2026-11-02 |
+| D25 | T22, the flashes' single-variable headset test (the `ovronly` and `nomultiview` experiment sessions): closed by the author without a run, "let's close out T22" (2026-11-02); the experiments stay buildable (`build_experiment.sh`) | 2026-11-02 |
+| D24 | T21, Mama Gorbo's cap (F-B80) and the watch (F-B81): the author's look in the headset, "T21 passes" (2026-11-02) | 2026-11-02 |
+| D23 | T20, the Event's start without a long frame (P34, 4.0.11); T8, the remaining test-plan rows (3.15.68); B50 and B51, both the tests (4.0.12, 4.0.13: `test_stands.js` passes on the built 4.0.13) | 2026-11-02 |
 | D22 | T16, the frame rate (top priority): the author, 2026-10-31: "The FPS now fully passes the bar, in headset" (4.0.7-4.0.9; PERF.md sections 13-14) | 2026-10-31 |
 | D12 | The flashes after the 3.15.41 headset run: textures made during play (F-B29, F-B30, `texture_census.js`) and the Event's pizza batched (P20) (3.15.42) | 2026-10-28 |
 | D13 | No layer swaps and no uploads inside a frame (F-B31), the Event scale removed (P16-P18), P21, P22, the occlusion census (nothing to remove); one game file edited directly (3.15.43) | 2026-10-28 |

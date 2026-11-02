@@ -58,12 +58,11 @@ The HTML is 8 lines since the minification (3.15.45; it was 93 before); most of 
 - Player: speed 4.5, body radius 0.6, spawn `[-36.3, -20]`.
 - Interaction radii: talk 3.4, greet 3.2.
 - XR: eye height 2.6, near 0.15, stick dead-zone 0.15, snap turn 30 degrees
-  (`Math.PI/6`), pick range 16, UI distance 11.5, fixed foveation 0 (one value, set at VR entry, never changed: F-B83)
-  (the framebuffer scale is native, 1, at every level and in the emergency
-  step: `quality`, `sosScale`; F-B31), target 72 Hz with an adaptive quality controller
-  (`targetHz`, `emaAlpha`, `overFrames`, `underFrames`).
+  (`Math.PI/6`), pick range 16, UI distance 11.5, fixed foveation 0 (one value, set at VR entry, never changed: F-B83),
+  the framebuffer scale native (1), target 72 Hz with a frame-time average (`targetHz`, `emaAlpha`) and a
+  frames-over-budget flag that only logs (`sosFrac`, `sosFrames`); the quality levels are gone (L1, 4.0.14).
 - Pickups: 32 blossoms (regrow 12 s), 40 flint (regrow 12 s; called acorns in the code, flint in the game's own text and the Store).
-- Finale: 190 s of planting (180 s until 3.15.57, A9), NPC chatter every 3-7 s, `finaleLockMs` 600 s.
+- Finale: 190 s of planting (180 s until 3.15.57, A9), NPC chatter every 3-7 s, the far plane at `finaleFar` (300) for the Event's far-object safeguard.
 - Pizza: call delay 1.8 s, driver spawn radius 75, gives up after 100 s.
 - Gravity 14.
 

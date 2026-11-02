@@ -18,8 +18,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const D = window.__dbg, O = D.O, C = D.C, t = D.t;
     const cap = O.capabilities;
     const out = { renderer: { pixelRatio: O.getPixelRatio(), antialias: !!O.getContextAttributes().antialias, maxAnisotropy: cap.getMaxAnisotropy(), isWebGL2: cap.isWebGL2, maxSamples: cap.maxSamples } };
-    // the quality governor (`Ge`): its level and state; the levels themselves live in the VR module's tuning
-    out.quality = { levels: null, foveation: null, current: D.Ge ? D.Ge.level : null, governor: D.Ge ? { budget: D.Ge.budget, rebuilds: D.Ge.rebuilds, sos: D.Ge.sos } : null };
+    // the frame governor (`Ge`): the frame-time average and the over-budget flag (its quality levels were removed in 4.0.14, L1)
+    out.quality = { foveation: D.t && D.t.xr ? D.t.xr.foveation : null, governor: D.Ge ? { budgetMs: +D.Ge.budget.toFixed(2), emaMs: +D.Ge.ema.toFixed(2), overBudgetFlag: D.Ge.sos } : null };
     try { const s = D.O.xr.getSession(); const bl = s && s.renderState.baseLayer; out.xr = { fbScale: bl && bl.__gbScale, fixedFoveation: bl && bl.fixedFoveation, w: bl && bl.framebufferWidth, h: bl && bl.framebufferHeight, shim: !!(window.__gtXR && window.__gtXR.shim), msaa: window.__gtXR && window.__gtXR.shim ? window.__gtXR.shim.samples : null }; } catch (err) { out.xr = { error: String(err) }; }
     // Textures in use by visible materials.
     const tex = new Map();
