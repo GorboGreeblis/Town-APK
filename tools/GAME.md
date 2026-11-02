@@ -131,7 +131,7 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   game's collision tests the player against each building's wall parts (where the church lets the player through)
   while everyone else meets the whole outline. Inside, only the Ancient's vignettes play. Tools that need the
   player's reachable area must test with the player's own position object (`occlusion_census.js` does).
-- **Visits and vignettes.** Townsfolk visit each other (`visitPlan`); pairs standing near each other play one of
+- **Visits and vignettes.** Townsfolk visit each other (`JGP.visits`); pairs standing near each other play one of
   90 two-line vignettes (speech bubbles, or Gree-mail tokens flying between them), the Ancient's 12 only inside
   the church. A new visit is tried every 4 s once due (22-32 s after the last); the pick favours the pairs that have
   visited least. The Ancient's visits may be picked on 12.5% of tries, 32% while the player is in the Cave, where

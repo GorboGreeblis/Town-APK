@@ -1,6 +1,7 @@
 // Render sharpness report (graphical pass, T13): what decides how crisp the
-// picture is on the headset, read from the built game. Render scale per quality
-// level (the projection layer's scaleFactor), fixed foveation per level, the
+// picture is on the headset, read from the built game. The render scale (native,
+// 1, at all times since 3.15.43), the fixed foveation (0 since 4.0.13; the quality
+// levels are gone since 4.0.14, L1), the frame governor's average and flag, the
 // renderer's pixel ratio and antialias, and every texture's filtering: size,
 // mipmaps, min/mag filters, anisotropy. Blurry textures at grazing angles come
 // from anisotropy 1 with mipmaps; shimmering ones from no mipmaps on large

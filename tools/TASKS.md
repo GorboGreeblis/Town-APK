@@ -8,6 +8,7 @@ Living list. Done items move to the bottom with the date. Bugs live in
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
 | T19 | S12 continued: shapes still uploaded the first time they are drawn during play (all between frames, held by the geometry hold, none inside a frame). Done in 4.0.14 (S21): Backpacka's rainbow and three water rings, the portal's open effect and panels (the warm-up now shows unseen materials and uploads what its draw misses). The Garden's 24-vertex box is covered by the same upload. The shop's item preview (194 + 97 vertices) is built while loading in 4.0.15 (S22). The Gem stand's ring is on the GPU before the Speech (a headless Speech on 4.0.14 uploads nothing: S16 and S21 cover it). Left: the Event's four 312-vertex shapes (the census of 4.0.11; a first Event on 4.0.14, 150 s at fast sim, holds nothing: the play census on 4.0.15 decides whether anything is left) | open | `play_census.js`; FIXES S11-S17, S21 |
+| T28 | The second review's open findings (T27): done in 4.0.18: B83 (lights kept visible, intensity driven to 0), B84 (`instancing` in the shader hold's conditions; own materials for instanced batches), B86 (the courier's clock paused under every panel), the leftovers (L2). B85 and B87 done in 4.0.19 (S26). B88 done in 4.0.20 (S27). Left: B79 (a trip with its state); the tools audit's remaining items (the `quest2` harness profile, `slice_profile.js`) | done but B79 (2026-11-02) | BUGS B79, B85, B87, B88 |
 | T23 | Full code audit (the author: "perform a full audit of the game's code to catch any potential issues"; "this is the final version ... no leftovers from past games or past systems should be present"): five parallel reviews of the beautified game file (the entry script and layers shim, the three.js multiview patches, the engine side, the game logic, the leftovers from past systems) done 2026-11-02: 4 high/medium and 7 low defects fixed (S19, S20; B56-B70), the leftovers removed (L1; B71), five low findings kept open (B72-B76); still to do: the full tier on 4.0.14 with `GT_COVERAGE=1` and the dead-code census (`dead_code.js`) on its coverage (the 4.0.13 run died with the session's worker) | in progress (2026-11-02) | FIXES S19, S20, L1; `tools/.runs/full_4.0.14.log` |
 | T24 | The test suite, documentation and tools fully built out to catch any remaining issue (the author): every element in GAME.md's index with a test (the Post Office's mail pile: `test_mailpile.js`, 4.0.15); every FIXES entry since 4.0.7 with a check (done so far); the report tools re-checked on the current build (7 of 11 ran clean; `fill_probe.js`, `event_cpu.js`, `occlusion_census.js` not yet re-run alone); the tool audit for obsolete or redundant files; `test_safeties.js`'s two frame-count checks made load-proof (B53: done 4.0.14) | open | `README.md`, `TEST_PLAN.md`, `TESTING.md` |
 | T9 | The full pass after every build, with `--resume` (RULES.md 23) | ongoing; last finished for 3.15.54 (NOTES 96) | `TESTING.md` |
@@ -19,31 +20,29 @@ Worked around until the author can do them (the author, 2026-10-31).
 
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
-| T3 | Headset run of the latest build (4.0.13; the author cannot test now, 2026-11-02; fixes keep landing on the main build meanwhile): the dancers at the edge of view with the head pitched (B52) and `fov=0` in every perf line; flashes, with B pressed right after any (the mark logs the state trail and `rec xr frames`; a lost draw now shows black, not white); 4.0.7 run on 2026-10-31, log 5dc2b257, no flashes seen; log captured live (`capture_log.ps1` / `.sh`) | open, author | `HEADSET_DIAG.md`, `RELEASE.md` sections 3 and 5 |
+| T3 | Headset run of the latest build: 4.0.15 run on 2026-11-02 (log f57f19a2: no flashes, FPS passes, the dancers fine); next, 4.0.17 (the bigger HUD, the hands at entry, the second review's safeties) | open, author | `HEADSET_DIAG.md`, `RELEASE.md` sections 3 and 5 |
 | T18 | Full pass on the final build (RULES.md 23), with `--resume`, and the Ordinals check on its compressed version (ordinals.com, ordiscan.com and Quest Browser) (the author: "Please treat this as the final build until I say otherwise"; "postpone the full pass until I can test in headset first") | the Ordinals check done on 4.0.9 (NOTES 100: all passed, both explorers' policies and the preview frame; the real Quest Browser on the headset is the author's); the full pass waiting on T3 | `TESTING.md`; the last finished full pass was 3.15.54 (NOTES 96) |
 | T4 | Store upload: the final build to the Alpha channel, then the age group (13+) on its build page (T16's frame rate now holds in the headset, 2026-10-31) | open, author; after T3 and T18 | `RELEASE.md` section 5; the listing, IARC rating, privacy page and supported devices are done |
-| T26 | The headset-confirmation backlog: changes landed on the main build without the author's headset run, to be confirmed in one session when the author can test again: F-B83 (foveation fixed at 0: no tiles at the edge of view), S18 (the flash safeties: any flash now black, not white?), A41 (the HUD on the watch), A42 (pizza boxes fade), A43 (the Ormstown parcel), P34 (no long frame at the Event's start: no "long frame 42 ms event" at `ev event false > true`) | open, author | VERSIONS.md 4.0.7-4.0.13 |
-| T27 | Another full code review after this pass (the author, 2026-11-02: "add another full code review to the end of the Tasks list. Apply any needed fixes found after this pass"): the same five reviews (the entry script and layers shim, the three.js multiview patches, the engine side, the game logic, the leftovers) on the build that carries T23's fixes, with the full tier's coverage and the dead-code census, every finding verified against the code and fixed through draft PRs | open, after T23 | FIXES S19, S20, L1; `tools/.runs/audit/` |
+| T26 | The headset-confirmation backlog: confirmed by the author's 4.0.15 run (2026-11-02): F-B83 (no tiles at the edge of view), S18-S20 (no flashes), the FPS bar; still to confirm when convenient: A41 (the HUD on the watch, now bigger: A44), A42 (pizza boxes fade), A43 (the Ormstown parcel), P34 (no long frame at the Event's start: the log shows none) | open, author | VERSIONS.md 4.0.7-4.0.17 |
+| T27 | Another full code review after this pass (the author, 2026-11-02): five reviews on 4.0.15 done 2026-11-02 (the entry script and layers shim, the three.js multiview patches, the engine side, the game logic, the leftovers): one high (B78), three medium (B80, B83, B84) and nine low findings; B78, B80, B81, B82 fixed in 4.0.17 (S24); the rest logged (B79, B83-B88) for T28; the leftovers found (a dead visit helper, write-only head-script fields, two diagnostic counters, stale doc wording) for 4.0.17 | done (2026-11-02) | FIXES S24; BUGS B78-B88 |
 
-## Resume point (4.0.15, 2026-11-02)
+## Resume point (4.0.20, 2026-11-02)
 
-- **Builds since the author's last headset run (4.0.7, 2026-10-31):** 4.0.8-4.0.12 (A41, A42, A43, F-B82, P34, S16,
-  S17); 4.0.13 foveation fixed at 0 (F-B83, B52) and the flash safeties (S18); 4.0.14 the code audit's fixes (S19,
-  S20), the leftovers removed (L1), the warm-up's missed shapes (S21), B49 explained; 4.0.15 the shop's item preview
-  built while loading (S22), the mail-pile test (B55). PRs #47-#55 merged; PR #56 (4.0.15) open as a draft.
-- **The author cannot test now** (2026-11-02): fixes keep landing on the main build through draft PRs; everything
-  since 4.0.7 is listed for one confirming session (T26); the flash experiment test (T22) was closed by the author;
-  T21 (the cap and the watch) passes.
-- **Running or queued on the machine when this was written:** the full tier on 4.0.15 with coverage
-  (`tools/.runs/full_4.0.15.log`, then the dead-code census `dead_code_4.0.15.log`, the play census
-  `play_census_4.0.15.log` and the content test alone `content_4.0.15.log`); the second full code review (T27: five
-  reviews of `tools/.runs/audit/`) and the tools audit (T24) as background reviews. If this session ended before they
-  reported, re-run them: `tools/.runs/queue_full15.sh` and the review briefs in FIXES S19-S20's spirit (the entry
-  script and layers shim, the three.js multiview patches, the engine side, the game logic, the leftovers).
-- **Next:** act on the tier's failures and the reviews' verified findings (T23, T27), finish T19's last shape (the
-  Event's 312-vertex shapes, by the play census), T24's remaining tool re-runs (`fill_probe.js`, `event_cpu.js`,
-  `occlusion_census.js` alone) and the tools audit; then the full pass on the last build (T18) once the author's
-  headset run (T3) has happened.
+- **Builds since the author's last headset run (4.0.15, 2026-11-02, log f57f19a2: no flashes, FPS passes, the dancers
+  fine):** 4.0.17 the HUD 10 cm wide (A44), the hands and watch built while loading (S23), the second code review's
+  safeties (S24: B78, B80-B82); 4.0.18 the point lights always visible (B83), `instancing` in the shader hold (B84),
+  the courier's clock under panels (B86), leftovers (L2); 4.0.19 the meeting's seek and the glyph cache (S26); 4.0.20
+  the shader hold's allocation (S27). PRs #47-#56 merged (#56 with 4.0.17); PR #57 (4.0.18-4.0.20, rebased onto main) open as a draft.
+- **The author** tests when they can: the bigger HUD and the hands at entry are the next things to look at (T3).
+- **Running or queued on the machine when this was written:** the full tier with coverage started on 4.0.17 and
+  continued on the 4.0.18 asset after the build landed mid-run (`tools/.runs/full_4.0.17.log`; its one failure so far,
+  the compressed check and the texture census's one 404, are the mid-run swaps of the copies and the pre-painted
+  textures by the 4.0.18 and 4.0.19 builds: both checks pass on the builds), then the dead-code census, the play census
+  and the content test alone (a queue script in `tools/.runs/`, session scratch). A clean full tier with coverage is chained behind it (`tools/.runs/full_4.0.19.log`, running on the 4.0.20 asset),
+  with no build during it; its census is the one to read (`dead_code_4.0.19.log`), then the three report tools alone.
+- **Next:** B79 when a trip carries its state, T19's last shape by the play
+  census, T24's tool re-runs alone (`fill_probe.js`, `event_cpu.js`, `occlusion_census.js`); then the full pass on the
+  last build (T18) once the author's headset run (T3) has happened.
 
 ## Done
 

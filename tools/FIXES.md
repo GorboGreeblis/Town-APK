@@ -1481,6 +1481,75 @@ experiment, all on the multiview lead.
   the scene, moved onto the UI anchor when the shop opens) and the warm-up uploads it (`geometry warm-up (shop
   preview)`). A headless Speech on 4.0.14 uploads nothing (the Gem stand's ring, listed in T19 since 4.0.11, is
   covered by S16 and S21).
+- **A44** (4.0.17; the author: "The HUD needs to be a little bigger to be easily readable to the player"): opened on
+  the watch face, the HUD is 10 cm wide (8 cm since A41), the same shape and place (centred over the face, 4 mm
+  above it, opaque). `test_watch.js` checks the new width.
+- **S23** (4.0.17; the author's headset log f57f19a2 on 4.0.15: "geometry held for one frame: 3 object(s) uploaded
+  between frames: #2a2a32 r0.03m at 0.5m, #3a3a44 r0.02m at 0.5m" right at VR entry, with a 90 ms frame): the hand
+  meshes (the watch's ring and case among them) were built at VR entry, the first time a controller connected, and
+  their shapes were uploaded by the hold. They are built and uploaded while loading now (`geometry warm-up (hands and
+  watch)`: both hands and the empty hand, drawn once at y = -60 and removed), so the per-controller cache (S20) is
+  filled from shapes already on the GPU.
+- **B64 kept** (4.0.17): the stuck rescue's 4.0.14 change (no early return when the player stands within the walker's
+  body radius + 0.6 m of its target: the walker re-routes instead of waiting) was first blamed for the frog's "no
+  progress" trips in the author's 4.0.15 log and reverted; the second review and the author's older logs (4.0.4-4.0.7:
+  3 to 16 trips) showed the frog's trips are its own stall (B79), and the tier with the early return back made the
+  last resort trip for Gooward with the player in his way ("gorbo 0.7 m from its target for 5 s", seven times) and
+  left Mama Gorbo standing after a recovery. The re-route stays.
+- **The author's log f57f19a2** (4.0.15, 2026-11-02, Quest 3, 595 s with one Event; the author: "No flashes were
+  observed", "FPS passes the bar", "the issue with my view that I noticed on NPCs no longer seems to be occurring"):
+  no mark, no flash record; `fov=0` in all 59 perf lines; the frames-over-budget flag never fired; 64.6 fps lowest
+  (town, 507k triangles), Event median 70, town median 72; one frame that drew almost nothing: the first VR frame (74
+  calls, expected at entry); 24 long frames, the longest 90 ms at VR entry (the hands, S23); held uploads in play: the
+  hands at entry (S23), one white shape (r0.05 m) at 201 s, two draw batches rebuilt in the Event at 404 and 418 s
+  (B72's kind), a #1f2a3a box (r6.7 m) at 561 s after the Event (T19); the stuck detector's last resort tripped six
+  times for the frog (B64, above). B46 is fixed unless it recurs; B52 is confirmed fixed by the author.
+- **S24** (4.0.17; the second code review, T27): six safeties from the engine-side and entry-script reviews.
+  - **The non-finite hide covers rotation and scale.** S20 hid a batched part whose position was not finite; a NaN in
+    the rotation or scale (a `lookAt` on coincident points, a NaN quaternion from a gesture) gave a NaN determinant,
+    which took the part out of its batch and handed it back to three.js on layer 0, drawn raw. The test now includes
+    the determinant, the object remembers the state (`gcNF`), and the batcher's own fallbacks (a batch program that
+    cannot run, the recovery helper's step 2, the "gone" sweep) leave such a part hidden.
+  - **A failed UI build is not marked built.** `Fo()` set `F.built` before building; a throw inside left a half-built
+    UI (no controllers) that every later VR entry reused and failed on each frame. The flag is cleared on a throw.
+  - **The Event's forced end survives a throwing step.** The end routine cleared the active flag last; a throw in the
+    outro or the stands' reset (likely the same cause as the failing update S20 ends the Event for) left the Event
+    active and the wrap retried every 30 frames. The flag is cleared first and the rest guarded (`finale-wrap`).
+  - **A torn-down VR entry unbinds three.js's session** (`setSession(null)`), so the retry starts clean; the shim
+    destroys a replaced projection layer 100 ms after the replacement (the removed swap branch was the only place
+    that destroyed one).
+  - **A second session after an exit can start** (B78). The head script replaced `window.XRWebGLLayer` with its stub
+    for the whole page life and never cleared its parked session, so after an exit (the system menu, `_.exit`) the
+    game's own session request on "Press A to continue" got three.js's `updateRenderState` throwing on the stub: a
+    blank immersive session nothing could end. On the session's end the native class is put back and the parked
+    session cleared; the second session runs on the classic path (two passes, no multiview), its shaders recompiled
+    between frames by the hold.
+  - The mipmap list is emptied on exit (a small leak since S20 kept the mipmaps).
+- **S25** (4.0.18; T28, the second review): three more.
+  - **The two point lights stay visible; their intensity drives them** (B83). The portal's light and the Speech's
+    light were shown and hidden with their fades; every toggle changed three.js's lights hash, which bumps the lights
+    state version, and the next frame ran a parameter pass over every lit object (the shader hold's re-check, S19)
+    and would have held every lit object for a frame if that light count had never been compiled. Both lights are
+    always in the scene now (intensity 0 when off), so the count never changes in play and the shaders are compiled
+    once, while loading, for the one configuration.
+  - **The shader hold mirrors `instancing`** (B84): a regular mesh sharing a cached material with the pickups'
+    instanced batch made three.js flip the material's program every frame; the hold now checks the instancing flag
+    like three.js, and each instanced batch takes its own clone of the material.
+  - **The courier's arrival clock pauses under every panel and dialogue** (B86), as it did under the Gem hold and the
+    menu hold; a long shop or battle panel no longer makes her leave with the pizza.
+- **L2** (4.0.18; the second leftovers review): `JGP.visitPlan` (a visit helper nothing called; the docs named it,
+  reworded to `JGP.visits`), four write-only head-script fields (`layersErr`, `mvHook`, `heldTex`; `drawErr` became a
+  one-time log line, `loader draw failed`), two diagnostic counters of the matrix-walk freeze (`n`, `unfrozen`).
+- **S26** (4.0.19; T28, B87): a meeting's seek is dropped when either partner becomes unavailable (an Event, a visit,
+  a scene) instead of staying flagged until the next meeting; before, the seek flag and the moved home point biased
+  the roam until then.
+  Also (B85): the emotes' glyph cache keeps up to 160 glyph-and-colour textures before evicting any (40 before),
+  so a session's emotes and scene tokens (about 30 pairs) are painted once each and never disposed and remade in
+  play; a first use still paints its 64 x 64 canvas, uploaded between frames by the texture hold.
+- **S27** (4.0.20; T28, B88): the shader hold's per-object check no longer makes a one-element array for every
+  frustum-visible mesh every frame (a single material is checked directly); the other small per-frame allocations
+  the review listed (the walkers' vectors, the courier's step, the HUD's arrays while open) stay: no defect, GC pressure
+  only, and the frame recorder reports heap drops as gaps so a regression would show.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
