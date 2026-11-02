@@ -12,6 +12,11 @@
 //     its shader is now compiled at VR entry);
 //   - no page errors but the injected one.
 //
+//   - the audit's safeties (S19, S20; 4.0.14): the layer's begin() throwing once (logged, frames keep coming, the frame
+//     not left open); a draw that throws inside three.js runs the fallback draw; a lights change is seen by the shader
+//     hold (its re-check after the lights are set up); the hand meshes are built once per controller and hand.
+//   Frame counts are counted, not timed (B53: load-proof).
+//
 //   node tools/test_safeties.js [file]
 const path = require('path');
 const { boot, reporter } = require('./lib/harness');
@@ -46,12 +51,12 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     { const J = D.JGP, plants = J.garden && J.garden.plants; if (plants) { const n0 = logs.length; const hp = D.we.headPos || D.At.position, fh = hp.y + 0.6; const g0 = new T.Group(), m0 = new T.Mesh(new T.BoxGeometry(0.8, fh, 0.8), new T.MeshLambertMaterial({ color: 0x44aa33 })); m0.position.y = fh / 2; g0.add(m0); g0.position.set(hp.x, 0, hp.z); D.C.add(g0); const e = { g: g0, grow: 1, kind: 0 }; plants.push(e);
       // hidden at the moment each frame is drawn (the log line is capped at 20 a session), shown between frames
       let between = 0, fr = 0, hiddenDrawn = 0, drawn = 0, on = true; const R0 = D.O.render; D.O.render = function () { if (on) { drawn++; if (!g0.visible) hiddenDrawn++; } return R0.apply(this, arguments); };
-      const chk = () => { if (!on) return; fr++; if (!g0.visible) between++; requestAnimationFrame(chk); }; requestAnimationFrame(chk); await wait(1000); on = false; D.O.render = R0;
+      const chk = () => { if (!on) return; fr++; if (!g0.visible) between++; requestAnimationFrame(chk); }; requestAnimationFrame(chk); { const t0 = performance.now(); while (drawn < 12 && performance.now() - t0 < 8000) await wait(50); } on = false; D.O.render = R0;   // counts frames, not time (B53: load-proof)
       out.flower = { hiddenDrawn, drawn, between, fr, visibleAfter: g0.visible };
       plants.splice(plants.indexOf(e), 1); D.C.remove(g0); } }
     // 2. a draw hook that throws: the frame is drawn to the end
     const R = O.render; let n = 0, calls = 0; O.render = function () { const x = R.apply(this, arguments); n++; calls += O.info.render.calls; return x; };
-    const measure = async () => { n = calls = 0; await wait(1000); return { frames: n, draws: Math.round(calls / Math.max(1, n)) }; };
+    const measure = async () => { n = calls = 0; const t0 = performance.now(); while (n < 24 && performance.now() - t0 < 8000) await wait(50); return { frames: n, draws: Math.round(calls / Math.max(1, n)) }; };   // 24 frames, however loaded the machine (B53)
     const p = D.At.position; D.At.position.set(0, p.y, -14); await wait(600);
     const base = await measure();
     const m = new T.Mesh(new T.BoxGeometry(0.3, 0.3, 0.3), new T.MeshLambertMaterial({ color: 0xff00ff })); m.position.set(0, 1.4, -16); m.frustumCulled = false; m.renderOrder = -1000;
@@ -70,6 +75,30 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       for (const b of F.buildings) { for (let k = 0; k <= 40 && !at; k++) { const w = F.world(b, b.hull[0] + (b.hull[2] - b.hull[0]) * k / 40, b.hull[1]); const d = HG.sdist(w[0], 1.6, w[1]); if (d > -0.05 && d < 0.05) at = new T.Vector3(w[0], 1.6, w[1]); } if (at) break; }
       HG.at = at; let shown = 0; for (let k = 0; k < 40; k++) { await wait(30); if (HG.mesh && HG.mesh.visible) shown++; } HG.at = null; await wait(300);
       out.guard = { at: at && at.toArray().map((v) => +v.toFixed(2)), mesh: !!HG.mesh, shown, level: +HG.level().toFixed(2), newPrograms: O.info.programs.length - p0, hiddenAfter: HG.mesh ? !HG.mesh.visible : null }; }
+    // 5. the audit's safeties (S19, S20): the layer's begin() throwing once does not kill the frame loop or leave the
+    //    frame flagged open; a draw that throws inside three.js leaves the frame uncounted, so the fallback draw runs;
+    //    a lights change is seen by the shader hold (compiled between frames, none in play); the hand meshes are built
+    //    once per controller and hand and reused
+    { const X = window.__gtXR, logs5 = []; const L0 = window.__gtLog; window.__gtLog = (s) => { logs5.push(String(s)); try { L0 && L0(s); } catch (e) {} };
+      const framesN = (k, ms) => new Promise((res) => { const r0 = X.renders, t0 = performance.now(); const f = () => (X.renders >= r0 + k || performance.now() - t0 > ms ? res(X.renders - r0) : requestAnimationFrame(f)); requestAnimationFrame(f); });
+      out.s19 = {};
+      if (X.shim && X.shim.begin) { const B0 = X.shim.begin; let thrown = 0; X.shim.begin = function () { if (!thrown) { thrown = 1; throw new Error('injected begin fault'); } return B0.apply(this, arguments); };
+        const after = await framesN(6, 4000); X.shim.begin = B0;
+        out.s19.begin = { beginFail: X.fc.beginFail || 0, logged: logs5.filter((l) => /^layer begin failed \(S19\)/.test(l)).length, after, open: !!X.xrFrameOpen }; }
+      else out.s19.begin = null;
+      { // the throw happens inside the renderer's draw (the first draw after the mesh joins the scene), not in the game's update
+        const f0 = X.fc.fallback || 0, bad = new T.Mesh(new T.BoxGeometry(0.1, 0.1, 0.1), new T.MeshBasicMaterial()); bad.frustumCulled = false; let armed = 1, inR = false;
+        const R2 = O.render; O.render = function () { inR = true; try { return R2.apply(this, arguments); } finally { inR = false; } };
+        const mw = bad.matrixWorld; Object.defineProperty(bad, 'matrixWorld', { get() { if (inR && armed > 0) { armed--; throw new Error('injected matrix fault'); } return mw; }, configurable: true });
+        D.C.add(bad); const after = await framesN(6, 4000); D.C.remove(bad); O.render = R2;
+        out.s19.draw = { fallback: (X.fc.fallback || 0) - f0, after, armed }; }
+      { const n0 = logs5.length, p0 = X.mvStats ? X.mvStats.programsDuringPlay : 0; const Lp = new T.DirectionalLight(0xffffff, 0); Lp.position.set(0, 3, 0); D.C.add(Lp); await framesN(6, 4000); D.C.remove(Lp); await framesN(4, 3000);
+        out.s19.lights = { held: logs5.slice(n0).filter((l) => /^shader held for one frame/.test(l)).length, inPlay: (X.mvStats ? X.mvStats.programsDuringPlay : 0) - p0, mv: !!X.mvActive }; }
+      { // both controllers connected (the fake headset's inputs), their hand meshes built from the cache and reused on a reconnect
+        const FX = window.__fakeXR; if (FX && FX.setInputs) { FX.poses = true; FX.setInputs([{ handedness: 'left', buttons: [] }, { handedness: 'right', buttons: [] }]); await framesN(4, 3000); FX.setInputs([{ handedness: 'right', buttons: [] }, { handedness: 'left', buttons: [] }]); await framesN(4, 3000); FX.setInputs([{ handedness: 'left', buttons: [] }, { handedness: 'right', buttons: [] }]); await framesN(4, 3000); }
+        const UI = D.UI; out.s19.hands = UI.ctrls.map((c) => ({ hand: c.hand, cached: !!(c.hm && Object.keys(c.hm).length), same: !!(c.hm && c.handMesh === c.hm[c.hand === 'left' ? -1 : c.hand === 'right' ? 1 : 0]) }));
+        out.s19.watchShared = !!(UI.watchGeo && UI.watchMat); }
+      window.__gtLog = L0; }
     return out;
   });
   await g.close();
@@ -80,7 +109,11 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('the head inside a Garden flower leaves it drawn (S6 revised: flowers never vanish when walked into)', r.flower && r.flower.drawn > 10 && r.flower.hiddenDrawn === 0 && r.flower.between === 0 && r.flower.visibleAfter, JSON.stringify(r.flower));
   expect('a throwing draw hook does not stop the frame: the draws stay as without it (within 10%: townsfolk move; a frame stopped short loses most) and frames keep coming', r.hook.bad.frames > 20 && r.hook.bad.draws >= 0.9 * r.hook.base.draws, JSON.stringify(r.hook));
   expect('the draw hook error is logged once for the object, not every frame', r.hook.loggedOnce, String(r.hook.logged));
-  const other = g.errors.filter((e) => !/injected draw hook fault/.test(e));
+  const other = g.errors.filter((e) => !/injected draw hook fault|injected begin fault|injected matrix fault/.test(e));
+  expect('S19: the layer\'s begin() throwing once is logged, frames keep coming and the frame is not left open', r.s19.begin === null || (r.s19.begin.beginFail >= 1 && r.s19.begin.logged >= 1 && r.s19.begin.after >= 5 && !r.s19.begin.open), JSON.stringify(r.s19.begin));
+  expect('S19: a draw that throws inside three.js runs the fallback draw (the frame is counted only once drawn) and frames keep coming', r.s19.draw.fallback >= 1 && r.s19.draw.after >= 5, JSON.stringify(r.s19.draw));
+  expect('S19: a lights change is seen by the shader hold: compiled between frames, none during play', r.s19.lights.held >= 1 && r.s19.lights.inPlay === 0, JSON.stringify(r.s19.lights));
+  expect('S20: the hand meshes are built once per controller and hand and reused; the watch face shares one geometry and material', r.s19.hands.every((h) => h.cached && h.same) && r.s19.watchShared, JSON.stringify({ hands: r.s19.hands, watchShared: r.s19.watchShared }));
   expect('no page errors other than the injected one', other.length === 0, other.slice(0, 3).join(' | '));
   console.log(failures.length ? `SAFETIES TEST FAILED (${failures.length})` : 'SAFETIES TEST PASSED'); process.exit(failures.length ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });

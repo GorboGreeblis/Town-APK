@@ -38,7 +38,7 @@ const seconds = +(process.argv[3] || 90);
     if (!D.me.active) return { error: 'event did not start', out };
     const start = performance.now();
     for (let t = 0; t < seconds; t += 2) { await wait(2000); const s = snap(t === 30 || t === 60); s.t = Math.round((performance.now() - start) / 1000); out.samples.push(s); }
-    out.governor = D.Ge ? { level: D.Ge.level, emaMs: +D.Ge.ema.toFixed(1) } : null;
+    out.governor = D.Ge ? { emaMs: +D.Ge.ema.toFixed(1) } : null;
     return out;
   }, seconds);
   if (r.error) { console.log(r.error); await g.close(); process.exit(1); }

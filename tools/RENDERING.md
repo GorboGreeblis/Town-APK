@@ -13,7 +13,7 @@ that keep it fast and flash-free, each with the test that enforces it. Details a
 | Layers shim | in the head script of the game file [42, 47] | The game's three.js only knows `baseLayer`, which the `layers` feature forbids. The game gets a facade session whose `baseLayer` is a projection layer; every frame callback is wrapped in `begin(frame)` / `end()`. The layer is never swapped since 3.15.43 (F-B31; the swap code that kept the old layer in front until the new one was drawn is unused, `maxLayerRebuilds: 0`). |
 | Multiview | in the head script, and the multiview edits to the bundled three.js in the game file [65, 67] | Both eyes in one pass into a texture-array projection layer. The release path since 3.15.34. |
 | Batcher `gcEB` | the game, plus P8-P10, P12, P20, P23-P25, P27, P29 | Merges opaque Phong/Lambert/Basic meshes into batches; per-part transform, colour, shininess and specular live in a uniform array read by a patched vertex shader. Scenery parts up to 60,000 vertices (P23, 3.15.47; 4,000 before); the creatures in one pass together (P24, 3.15.48); a model built after the batching step (Backpacka) is handed to the batcher when it is built (P25, 3.15.50). Culling skips subtrees that draw nothing (P31, 3.15.65); the matrix walk skips the still top-level groups, audited round-robin (P32, 3.15.66); a group the Event fades hides and shows with its batches woken (P33, 3.15.66). |
-| Quality governor `Ge` | the game, plus P1 [47], F-B31 [83] | Frame-time average against the 72 Hz budget; five levels, all at the native render scale (`quality: [1, 1, 1, 1, 1]`), fixed foveation one value, `t.xr.foveation` (0), set on the layer once at VR entry and never changed (F-B83, 4.0.13; before it the levels set 0, 0, 0, 0.5, 1 and full foveation stayed on after the first Event: B52). The planting Event locks the lowest level from its first frame [71] and the level goes back to the entry level after it; the level now only drives the Event's far-object safeguard. Emergency (1.6x the budget): the lowest level, still at native scale (`sosScale: 1`). Since 3.15.43 (F-B31) the layer is never swapped; since 4.0.13 it is never touched in play. |
+| Frame governor `Ge` | the game, plus P1 [47], F-B31 [83], L1 | Frame-time average against the 72 Hz budget (the perf line's fps) and a frames-over-budget flag that only logs; fixed foveation one value, `t.xr.foveation` (0), set on the layer once at VR entry and never changed (F-B83, 4.0.13; before it the levels set 0, 0, 0, 0.5, 1 and full foveation stayed on after the first Event: B52). The five quality levels and their stepping were removed in 4.0.14 (L1): they changed nothing since F-B83. The planting Event's far-object safeguard (the far plane at `finaleFar`, the far scenery fades) keys on the Event alone [71]. Since 3.15.43 (F-B31) the layer is never swapped; the render scale is native. |
 
 ## 2. Boot to first frame
 
@@ -38,9 +38,10 @@ that keep it fast and flash-free, each with the test that enforces it. Details a
    frame (F-B48).
 6. The game's first frame replaces the cube and quad layers with the projection layer (`projection layer
    live, scale ..., msaa 4` in the log).
-7. 2.6 s after the VR entry the textures switch to mipmaps and 4x anisotropy in slices of at most 0.6 Mpx, 40 ms
-   apart, each uploaded right after its switch (F-B36, 3.15.49; `mipmaps on: N textures re-uploaded between frames`
-   in the log). Until then the switch re-uploaded all of them at once.
+7. Every texture gets mipmaps and 4x anisotropy while loading, uploaded once by the warm-up (F-B40; `mipmaps on: N
+   textures set while loading` in the log). The sliced pass 2.6 s after VR entry (F-B36, 3.15.49) remains as a
+   backstop and finds nothing; since 4.0.14 (S20) leaving VR keeps the mipmaps, so a second entry uploads nothing
+   either.
 
 ## 3. One frame, in multiview
 
@@ -129,8 +130,8 @@ afterwards keeps only the last minutes of a long session). The lines that descri
 - `multiview planned (...)` or `multiview not used (...)`, then `gpu: ...`: the decision, the GPU's real
   limits and the device.
 - `projection layer live, scale S, msaa M, multiview true|false`: the layer (scale 1 since 3.15.43). A
-  `projection layer swapped to scale ...` line should never appear since then (F-B31: no swaps).
-- `perf fps=... level=... fov=... dev=...`: the frame rate by scene, with the governor level, the layer's fixed foveation read back (0 since 4.0.13) and where the player stood.
+  `projection layer swapped to scale ...` line never appears since then (F-B31: no swaps; the swap branch itself was removed in 4.0.14, L1).
+- `perf fps=... fov=... calls=... tris=... at=... dev=...`: the frame rate by scene, the layer's fixed foveation read back (0 since 4.0.13) and where the player stood (`level=` until 4.0.13: the quality levels, removed in 4.0.14).
 - `multiview: ...`: any hazard or compile during play. There should be none. Since 3.15.48 (D2) a compile line
   names the key fields that differ from the closest program of its kind.
 - `geometry held for one frame: ...` (F-B51), `shader held for one frame: ...` (S2) and `head inside N character(s)`

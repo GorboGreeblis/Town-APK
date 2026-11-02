@@ -48,7 +48,7 @@ const INFO = ['bufferData', 'bufferSubData', 'createBuffer', 'createTexture', 'b
     // view (on the classic path that upload falls inside the frame; the mipmap switch after entering VR re-uploads all, F-B36)
     const P = D.O.properties, seen = new Set(), waiting = [];
     D.C.traverse((o) => { for (const m of [].concat(o.material || [])) for (const k in m) { const t = m[k]; if (!t || !t.isTexture || !t.image || seen.has(t)) continue; seen.add(t); const p = P.get(t); if (!(p && p.__webglTexture && p.__version === t.version)) waiting.push(`${k} ${t.image.width}x${t.image.height} ${p && p.__webglTexture ? 'stale' : 'never uploaded'}${o.visible ? '' : ' (hidden)'}`); } });
-    return { log, started, tYes, tActive, level: D.Ge && D.Ge.level, foveationNow: sh().fixedFoveation, textures: seen.size, waiting };
+    return { log, started, tYes, tActive, foveationNow: sh().fixedFoveation, textures: seen.size, waiting };
   }, [HAZARD, INFO]);
   await g.close();
   const L = r.log, frames = L.filter((e) => e.k === 'frame');
