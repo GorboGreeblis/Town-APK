@@ -6,6 +6,7 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 
 | Version | versionCode | What changed | Headset |
 | --- | --- | --- | --- |
+| 4.0.19 | 88 | **S26** (T28) a meeting's seek dropped when a partner becomes unavailable (B87). | pending build |
 | 4.0.18 | 87 | **S25** (T28) the two point lights always visible with intensity driving them (B83), `instancing` in the shader hold's conditions and own materials for instanced batches (B84), the courier's clock paused under every panel (B86). **L2** leftovers: `JGP.visitPlan`, write-only head-script fields, two freeze counters. | pending |
 | 4.0.17 | 86 | **A44** the HUD 10 cm wide on the watch (8 cm before). **S23** the hand meshes and the watch built and uploaded while loading (the author's log: held at VR entry, a 90 ms frame). **S24** the second review's safeties: a NaN rotation or scale hides the part too (B80), a failed UI build is not marked built (B81), the Event's forced end survives a throw (B82), a torn-down entry unbinds the session and a replaced layer is destroyed, a second session after an exit can start (B78). Tests: `test_hud.js` rewritten for A35/A41 (it had checked the HUD on the grip, pre-A35). | pending |
 | 4.0.16 | 85 | Built with the stuck rescue's early return put back (B64), never shipped: the tier then showed the re-route is the right behaviour (Gooward's last resort tripped with the player in his way), so 4.0.17 restored it within the hour. | superseded by 4.0.17 |

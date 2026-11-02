@@ -1540,6 +1540,9 @@ experiment, all on the multiview lead.
 - **L2** (4.0.18; the second leftovers review): `JGP.visitPlan` (a visit helper nothing called; the docs named it,
   reworded to `JGP.visits`), four write-only head-script fields (`layersErr`, `mvHook`, `heldTex`; `drawErr` became a
   one-time log line, `loader draw failed`), two diagnostic counters of the matrix-walk freeze (`n`, `unfrozen`).
+- **S26** (4.0.19; T28, B87): a meeting's seek is dropped when either partner becomes unavailable (an Event, a visit,
+  a scene) instead of staying flagged until the next meeting; before, the seek flag and the moved home point biased
+  the roam until then.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
