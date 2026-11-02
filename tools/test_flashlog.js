@@ -5,8 +5,10 @@
 //   - an XR frame with no head pose is not drawn (it would draw into the last frame's picture) and is logged, and
 //     frames keep coming after it;
 //   - lost tracking (the head position emulated) is logged, and so is its return;
-//   - the light record: a one-frame white flash staged in front of the eyes shows in the mark's "rec light" line as a
-//     one-frame spike at that frame, and the line is flat without it;
+//   - the light record (opt-in since S18; the test turns it on): a one-frame white flash staged in front of the eyes
+//     shows in the mark's "rec light" line as a one-frame spike at that frame, and the line is flat without it;
+//   - the renderer clears to black behind the sky sphere (S18) and the sphere covers the view: no dark cell in a quiet
+//     frame's record;
 //   - the light record costs no frames (no GPU readback during play: the frame count over 3 s stays within 15% of
 //     the same run with the record off);
 //   - the mark's dump does not stall the frame it is pressed in (its heavy part, the near-eyes scan, runs in slices
@@ -28,6 +30,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     window.__gtLog = (s) => { logs.push(String(s)); try { L0 && L0(s); } catch (e) {} };
     await wait(2500);
     const out = { mv: !!X.mvActive };
+    X.lum.on = true;   // the light record is opt-in since S18 (its per-frame read binds another framebuffer inside the frame): the test turns it on
     const frames = (n) => new Promise((res) => { const r0 = X.renders; const k = () => (X.renders >= r0 + n ? res() : requestAnimationFrame(k)); requestAnimationFrame(k); });
     // 1. a frame with no head pose
     const r0 = X.renders, np0 = X.fc.nopose; F.noPose = 1; await frames(5);
@@ -44,6 +47,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     sh.position.set(0, -80, 0); D.C.add(sh); await frames(4);
     const quiet = logs.length; window.__gtFR.dump(); for (let k = 0; k < 240 && !logs.slice(quiet).some((l) => /^rec light/.test(l)); k++) await wait(250);
     out.flat = (logs.slice(quiet).find((l) => /^rec light/.test(l)) || '').replace(/.*one-frame spikes or dips: /, '');
+    // S18: the renderer clears to black behind the sky sphere; the sphere covers the whole view, so no 8x8 cell of a quiet frame is dark
+    { const rec = await new Promise((res) => X.lum.read(res)); out.darkest = rec && rec.length ? +Math.min(...rec.slice(-24).flatMap((e) => e.v)).toFixed(3) : null; }
     sh.position.copy(D.we.headPos); await frames(3); sh.position.set(0, -80, 0); await frames(20);
     const L1 = logs.length, t0 = performance.now(); window.__gtFR.dump(); out.dumpMs = Math.round(performance.now() - t0);
     for (let k = 0; k < 240 && !(logs.slice(L1).some((l) => /^rec near eyes/.test(l)) && logs.slice(L1).some((l) => /^rec light/.test(l))); k++) await wait(250);   // the sliced scan and the light read finish over the next frames
@@ -66,6 +71,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('lost tracking and its return are logged', r.tracking.lost >= 1 && r.tracking.back >= 1, JSON.stringify(r.tracking));
   expect('the light record costs no frames (within 15% of the rate with it off)', r.rateOn >= 0.85 * r.rateOff, `${r.rateOn} frames on, ${r.rateOff} off, in 3 s`);
   expect('without a flash the light line shows no spike', r.flat === 'none', r.flat);
+  expect('the black clear never shows: the sky sphere covers the view (no dark cell in a quiet frame; S18)', r.darkest !== null && r.darkest > 0.04, String(r.darkest) + ' (a black cell would read 0; dark objects read about 0.12)');
   expect('the staged one-frame flash shows in the mark\'s light line as a spike', !!r.light && /spikes or dips: \+\d+/.test(r.light), (r.light || 'no line').slice(-200));
   expect('the mark\'s dump does not stall its frame (under 25 ms; the near-eyes scan runs in slices)', r.dumpMs < 25 && !!r.near, `${r.dumpMs} ms; ${r.near ? 'near-eyes line logged' : 'no near-eyes line'}`);
   expect('the mark logs the XR frame health line', !!r.xr && /no head pose \d+/.test(r.xr), r.xr || 'none');

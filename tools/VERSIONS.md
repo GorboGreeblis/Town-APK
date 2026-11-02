@@ -6,6 +6,7 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 
 | Version | versionCode | What changed | Headset |
 | --- | --- | --- | --- |
+| 4.0.13 | 82 | **F-B83** (B52, MAJOR) foveation rebuilt: one fixed value (0) set once at VR entry, never changed; the governor never touches the layer (full foveation had stayed on after every first Event: coarse tiles at the edge of view). **S18** flash safeties: an undrawn frame is drawn by the entry script, black clear behind the sky, the per-frame light record off (opt-in), the `ovronly` experiment for the headset. | pending |
 | 4.0.12 | 81 | **S17** (T19) the Ancient's body uploaded while loading (the warm-up no longer misses it behind his hiding outside the church). Tests: `test_stands.js` draws one frame in four (B50); `test_jitter.js` records scenes at the worst float (B49). | pending |
 | 4.0.11 | 80 | **P34** (T20) the Event's start no longer costs a long frame: its watchers' ring and the characters' foot points are worked out while loading (44 ms to 18 ms headless). **S16** (T19) the Gem's stand made and uploaded while loading. | pending |
 | 4.0.10 | 79 | **A43** a "To Ormstown" parcel on the Post Office's mail pile. **F-B82** (B47) the head guard's shader compiled at VR entry, not the first time it shows. |  pending |

@@ -1332,6 +1332,68 @@ the new picture is in place, so it is never shown out of date. Each pickup is no
 trail ("pick blossom", "pick flint"), so a log shows how long before a flash the last pickup came. `test_watch.js`:
 pickups while closed redraw nothing; opening redraws once and never shows an old picture.
 
+- **F-B83** (4.0.13; B52, MAJOR, the author: "Looking at the 3 dancers: Etcher, Mont, and Glyph: I see a loss in detail
+or a change of lighting on their body when I move my head up while looking down at their body ... rectangular breaks
+in their view ... the user should never see differences in the image based on their head position"; "rebuild the
+Foveation system to reflect the current game"): fixed foveated rendering. The quality governor had five levels whose
+only remaining effect was the layer's fixed foveation (0, 0, 0, 0.5, 1; the render scale has been native at every
+level since F-B31), and the planting Event drops the governor to its lowest level and locks it there for the Event
+(P1): full foveation, the headset drawing the edge of the view in coarse rectangular tiles. After the Event the lock
+was released but the level never came back: the governor steps down only after 300 frames under 80% of the budget,
+and at 72 Hz under vsync a frame always measures the whole 13.9 ms, so it never reads "under budget". Every headset
+log shows it: "governor level 4 (foveation 1)" at the first Event's start and "level=4" in every perf line after, to
+the end of the session (logs 8d838908, 5dc2b257). Full foveation then stays on for the rest of play, and a body that
+was sharp at the centre of the view turns to coarse tiles as the head moves and it reaches the edge: exactly the
+author's observation. It never helped the frame rate either: the Event is CPU-bound (PERF.md 13-14; GPU at 55-70% in
+every log) and foveation only saves GPU work.
+  The rebuild: foveation is one fixed value, `t.xr.foveation` (0: off), set on the projection layer once at VR entry
+  and never changed in play; the governor no longer touches the layer at all (its layer-change function is gone; its
+  level now only drives the Event's far-object safeguard), the Event's lowest-level lock stays, and after the Event
+  the level goes back to the entry level. The entry log says "foveation fixed at 0 (the layer reads 0)" and every
+  perf line carries `fov=` read back from the layer. `test_governor.js` checks all of it.
+  (The author's own reading had two more suspects: the governor's layer-rebuild branch, dead since `maxLayerRebuilds`
+  went to 0 in F-B31, now removed with the function; and the governor setting foveation on the session's base layer
+  while three.js draws through the projection layer: the base layer the game sees is the layers shim's facade, whose
+  `fixedFoveation` forwards to the live projection layer, so that one was a single object after all.)
+
+- **S18** (4.0.13; the author: "The screen flashes are still occurring on the latest build. Please look into more
+possible causes and add additional safeties"; "Before we updated to not render both eyes separately, I don't remember
+seeing full screen flashes. Possible lead"; "keep adding safeties for stability"): four safeties and one headset
+experiment, all on the multiview lead.
+  - **A frame the game did not draw is drawn anyway.** With a projection layer, every frame's picture is a fresh
+    swapchain image the compositor shows whatever is in it; a frame the game's loop began on the layer but did not
+    draw (an error before the draw, say) would show that image's old or undefined content. The entry script now
+    counts the game's draws per frame and, if a begun frame has none, draws the scene itself before the frame ends
+    (`drawFallback`, logged in `rec xr frames` as "drawn by the fallback").
+  - **The clear colour is black behind the sky.** The renderer cleared each frame to the sky's horizon colour
+    (#d6e6ef, near white in a headset) before drawing; the sky sphere (radius 150, inside the 300 m far plane,
+    drawn after everything opaque) covers every pixel anyway, so nothing visible changes: pictures before and after
+    are identical pixel for pixel. If a frame's draw is ever lost on the headset (other engines report whole-scene
+    flicker on the Quest 3 with multiview and "worse with a clear colour set"), it now shows a black frame, far less
+    violent to the eyes than a white one, and tells us the draw was lost rather than drawn white.
+  - **The light record is opt-in.** S15's per-frame 8x8 copy of the eye buffer binds a second framebuffer and reads
+    the swapchain texture inside the frame, which on the headset means an extra render-target switch and a forced
+    MSAA resolve every frame: the very pattern Meta's engineers name for multiview flicker. It is off unless a test
+    turns it on (`__gtXR.lum.on`); the mark's other lines (state trail, XR frame health, GPU work, near-eyes) stay.
+  - **No layer change in play at all** (F-B83 above): with foveation fixed, nothing touches the projection layer
+    after VR entry.
+  - **The `ovronly` experiment** (`tools/build_experiment.sh ovronly`): the release draws both eyes in one pass
+    through OCULUS_multiview with 4x MSAA. Another engine's users report "the entire scene is flickering whenever a
+    GUI element is present" on the Quest 3 with that extension but not with plain OVR_multiview2, and this game has
+    GUI textures (the dialogue box, bubbles, the HUD) updated in play. The experiment asks for no samples, so the shim
+    takes the OVR_multiview2 path (no MSAA, a depth texture array), as 3.15.33's first multiview did: the
+    single-variable headset test for the flashes (T22). Not a release candidate as it is (no antialiasing).
+  - **No render-state change in play.** three.js sends the session a new depth range (`updateRenderState({depthNear,
+    depthFar})`) whenever the camera's far plane changes, and the Event's safeguard changed it at every Event's start
+    (300 to 310 m) and end: two mid-session render-state changes per Event, at the moments two of the reported flashes
+    fell near ("2.0 s after starting an Event", "at the start of a 2nd Event"). The Event now keeps the normal far
+    plane, and three.js is patched to send the depth range once per session (a later change is logged and kept off
+    the session). With F-B83, nothing touches the session's render state after VR entry.
+  - **A flush at the end of every frame**, after the draw and the depth discard, before the compositor takes the
+    picture (Meta's own samples do).
+  `test_flashlog.js` checks the fallback draw's counter, that the black clear never shows (no dark cell in a quiet
+  frame) and the light record with it turned on.
+
 - **S17** (4.0.12; T19, S12 continued; found by the play census on 4.0.11, 26 buffers made during play, all between
 frames): the Ancient's own body (15 shapes, the largest 3,243 vertices) was uploaded the first time the player came near
 the church. The geometry warm-up draws every object once while loading, but the Ancient's draw wrapper hides his body
@@ -1542,6 +1604,11 @@ tools/prerender_textures.js, never shipped).
 - **nomultiview**: No multiview (NOTES 65, 67): the release draws both eyes in one pass (multiview, headset- confirmed
 in 3.15.33's experiment); this variant plans it off, so the game takes the classic path (each eye
 drawn separately), to measure or diagnose.
+
+- **ovronly** (4.0.13, S18): OVR_multiview2 only, no MSAA: the release renders both eyes in one pass through
+OCULUS_multiview with 4x MSAA; other engines report whole-scene flicker on the Quest 3 with that extension (and GUI
+textures) but not with plain OVR_multiview2. The single-variable headset test for the flashes (T22); not a release
+candidate as it is (no antialiasing).
 
 - **flashlog** (removed 2026-10-29 with the tools cleanup: its B mark has been in the release since D2, 3.15.48, and its
 swap log has had nothing to log since F-B31; in git history only).

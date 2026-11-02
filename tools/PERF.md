@@ -37,11 +37,12 @@ the activity hand-off. Two wrapper-side items are worth doing:
 The game already carries its own performance design, written for the Quest:
 
 - **Adaptive quality governor** (`Ge`): frame-time EMA against a 72 Hz budget;
-  five levels that only raise fixed foveation (0 → 1) while keeping the
-  framebuffer scale at 1.0; an emergency 0.82 scale after 3 s over 1.6x
-  budget; lowest level locked and far scenery hidden during the finale.
+  five levels; lowest level locked and far scenery hidden during the finale.
   *(Since 3.15.43, F-B31: native scale at every level and in the emergency
-  step; the governor changes foveation only, on the same layer.)*
+  step. Since 4.0.13, F-B83: foveation is one fixed value, 0, set at VR entry
+  and never changed; the levels change nothing on the layer. The GPU sits at
+  55-70% in every headset log; the Event is CPU-bound, which foveation never
+  helped.)*
 - **Draw batching** (`gcEB`): opaque Phong/Lambert/Basic meshes are merged
   into batches of up to 32 parts with per-part transform and colour in a
   uniform array, driven by a patched vertex shader. Result below: ~36 draw
