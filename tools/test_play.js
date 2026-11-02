@@ -139,8 +139,9 @@ async function scenario(name, srvUrl, browser) {
   if (before.heapMB != null) expect('JS heap did not grow more than 50% while running', after.heapMB <= before.heapMB * 1.5 + 8, `${before.heapMB}MB -> ${after.heapMB}MB`);
 
   if (name === 'vr' && s.hasSession && (await page.evaluate(() => !!(window.__gtXR && window.__gtXR.shim)))) {
-    // Layers mode: a quality-governor rebuild replaces the projection layer. The swap must keep the
-    // old layer in front until the new one has been drawn (no undrawn frame), then drop it.
+    // Layers mode: a second baseLayer set through the facade replaces the projection layer in place: one layer
+    // in the render state before, during and after, frames flowing. (Until 4.0.14 the old layer was kept in
+    // front until the new one had been drawn, the quality governor's rebuild; that swap branch is gone, L1.)
     const sw = await page.evaluate(async () => {
       // (this test runs without the harness hook: the facade is reachable through the session the game holds)
       const sess = (window.__gtXR && window.__gtXR.session) || window.__play.session, real = sess.__real || sess;
@@ -153,7 +154,7 @@ async function scenario(name, srvUrl, browser) {
       const t0 = performance.now(); while (window.__fakeXR.frames - f0 < 3 && performance.now() - t0 < 15000) await new Promise((r) => setTimeout(r, 50));
       return { before, during, after: real.renderState.layers.length, frames: window.__fakeXR.frames - f0, scale: window.__gtXR.shim.scale };
     });
-    expect('layer swap keeps the old layer in front until the new one is drawn, then drops it', sw.before === 1 && sw.during === 2 && sw.after === 1 && sw.frames >= 2 && sw.scale === 0.9, JSON.stringify(sw));
+    expect('a second baseLayer through the facade replaces the projection layer in place (one layer throughout, frames flowing; the swap branch is gone since 4.0.14, L1)', sw.before === 1 && sw.during === 1 && sw.after === 1 && sw.frames >= 2 && sw.scale === 0.9, JSON.stringify(sw));
   }
   if (name === 'vr' && s.hasSession) {
     // Session visibility: hidden (system menu) then visible again; the game blurs, captures its textures,

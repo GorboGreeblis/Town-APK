@@ -1479,7 +1479,8 @@ experiment, all on the multiview lead.
 - **S22** (4.0.15; T19): the shop's item preview (the gold ring and the mirror behind the player's reflection, 194 + 97
   vertices) was built the first time the shop opened in VR; it is built while loading now (`__gtShopWarm`, hidden in
   the scene, moved onto the UI anchor when the shop opens) and the warm-up uploads it (`geometry warm-up (shop
-  preview)`).
+  preview)`). A headless Speech on 4.0.14 uploads nothing (the Gem stand's ring, listed in T19 since 4.0.11, is
+  covered by S16 and S21).
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
