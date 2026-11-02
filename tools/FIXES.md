@@ -1473,9 +1473,13 @@ experiment, all on the multiview lead.
   0 with `visible` off (the fade safety), and three.js leaves an object whose material is not visible out of the
   frame's list, override material or not, so the warm-up's draw skipped them. The warm-up now shows those materials
   for its draw and, after it, uploads directly (attributes and index, no draw) whatever its draw still left off the
-  GPU; its log line counts both (`... N unseen materials shown for it, M uploaded without a draw`). Left for T19:
-  the shapes made in play (the shop's item preview, the Gem stand's ring re-made before the Speech, the Event's
-  four 312-vertex shapes, a 24-vertex box in the Garden).
+  GPU; its log line counts both (`... N unseen materials shown for it, M uploaded without a draw`). The 24-vertex
+  box in the Garden (a hidden group built before the characters spawn) is covered by the same upload. Left for
+  T19: the shop's item preview, the Gem stand's ring re-made before the Speech, the Event's four 312-vertex shapes.
+- **S22** (4.0.15; T19): the shop's item preview (the gold ring and the mirror behind the player's reflection, 194 + 97
+  vertices) was built the first time the shop opened in VR; it is built while loading now (`__gtShopWarm`, hidden in
+  the scene, moved onto the UI anchor when the shop opens) and the warm-up uploads it (`geometry warm-up (shop
+  preview)`).
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
