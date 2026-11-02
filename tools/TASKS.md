@@ -35,9 +35,10 @@ Worked around until the author can do them (the author, 2026-10-31).
 - **The author** tests when they can: the bigger HUD and the hands at entry are the next things to look at (T3).
 - **Running or queued on the machine when this was written:** the full tier with coverage started on 4.0.17 and
   continued on the 4.0.18 asset after the build landed mid-run (`tools/.runs/full_4.0.17.log`; its one failure so far,
-  the compressed check, is that mid-run swap: the check passes on 4.0.18), then the dead-code census, the play census
-  and the content test alone (a queue script in `tools/.runs/`, session scratch). For a clean census, run `GT_COVERAGE=1 tools/run_tests.sh
-  --standard` on the 4.0.18 asset and `node tools/dead_code.js tools/android/app/src/main/assets/index.html`.
+  the compressed check and the texture census's one 404, are the mid-run swaps of the copies and the pre-painted
+  textures by the 4.0.18 and 4.0.19 builds: both checks pass on the builds), then the dead-code census, the play census
+  and the content test alone (a queue script in `tools/.runs/`, session scratch). A clean full tier with coverage on 4.0.19 is chained behind it (`tools/.runs/full_4.0.19.log`), with no build
+  during it; its census is the one to read (`dead_code_4.0.19.log`).
 - **Next:** T28's remaining items (B79 when a trip carries its state, B85, B87, B88), T19's last shape by the play
   census, T24's tool re-runs alone (`fill_probe.js`, `event_cpu.js`, `occlusion_census.js`); then the full pass on the
   last build (T18) once the author's headset run (T3) has happened.
