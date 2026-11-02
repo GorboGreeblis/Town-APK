@@ -1543,6 +1543,9 @@ experiment, all on the multiview lead.
 - **S26** (4.0.19; T28, B87): a meeting's seek is dropped when either partner becomes unavailable (an Event, a visit,
   a scene) instead of staying flagged until the next meeting; before, the seek flag and the moved home point biased
   the roam until then.
+  Also (B85): the emotes' glyph cache keeps up to 160 glyph-and-colour textures before evicting any (40 before),
+  so a session's emotes and scene tokens (about 30 pairs) are painted once each and never disposed and remade in
+  play; a first use still paints its 64 x 64 canvas, uploaded between frames by the texture hold.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
