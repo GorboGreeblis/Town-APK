@@ -1540,9 +1540,11 @@ experiment, all on the multiview lead.
 - **L2** (4.0.18; the second leftovers review): `JGP.visitPlan` (a visit helper nothing called; the docs named it,
   reworded to `JGP.visits`), four write-only head-script fields (`layersErr`, `mvHook`, `heldTex`; `drawErr` became a
   one-time log line, `loader draw failed`), two diagnostic counters of the matrix-walk freeze (`n`, `unfrozen`).
-- **S26** (4.0.19; T28, B87): a meeting's seek is dropped when either partner becomes unavailable (an Event, a visit,
-  a scene) instead of staying flagged until the next meeting; before, the seek flag and the moved home point biased
-  the roam until then.
+- **S26** (4.0.19; T28, B87): a meeting's seek is dropped when either partner becomes unavailable for good (an
+  Event, a partner busy, in a scene, visiting or hosting) instead of staying flagged until the next meeting; before,
+  the seek flag and the moved home point biased the roam until then. 4.0.19 dropped it on any unavailability, a
+  transient one included (going home, the player near), which left Mama Gorbo standing after a recovery reset
+  (`test_recover.js`, the mixed tier on 4.0.20); 4.0.21 keeps the seek through transient states, as before.
   Also (B85): the emotes' glyph cache keeps up to 160 glyph-and-colour textures before evicting any (40 before),
   so a session's emotes and scene tokens (about 30 pairs) are painted once each and never disposed and remade in
   play; a first use still paints its 64 x 64 canvas, uploaded between frames by the texture hold.
