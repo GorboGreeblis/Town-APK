@@ -1546,6 +1546,10 @@ experiment, all on the multiview lead.
   Also (B85): the emotes' glyph cache keeps up to 160 glyph-and-colour textures before evicting any (40 before),
   so a session's emotes and scene tokens (about 30 pairs) are painted once each and never disposed and remade in
   play; a first use still paints its 64 x 64 canvas, uploaded between frames by the texture hold.
+- **S27** (4.0.20; T28, B88): the shader hold's per-object check no longer makes a one-element array for every
+  frustum-visible mesh every frame (a single material is checked directly); the other small per-frame allocations
+  the review listed (the walkers' vectors, the courier's step, the HUD's arrays while open) stay: no defect, GC pressure
+  only, and the frame recorder reports heap drops as gaps so a regression would show.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
