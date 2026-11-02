@@ -32,7 +32,7 @@ Worked around until the author can do them (the author, 2026-10-31).
   fine):** 4.0.17 the HUD 10 cm wide (A44), the hands and watch built while loading (S23), the second code review's
   safeties (S24: B78, B80-B82); 4.0.18 the point lights always visible (B83), `instancing` in the shader hold (B84),
   the courier's clock under panels (B86), leftovers (L2); 4.0.19 the meeting's seek and the glyph cache (S26); 4.0.20
-  the shader hold's allocation (S27). PRs #47-#56 merged (#56 with 4.0.17); PR #57 (4.0.18-4.0.20, rebased onto main) open as a draft.
+  the shader hold's allocation (S27). PRs #47-#57 merged (#57 with 4.0.20); the branch restarts from main for the next change.
 - **The author** tests when they can: the bigger HUD and the hands at entry are the next things to look at (T3).
 - **Running or queued on the machine when this was written:** the full tier with coverage started on 4.0.17 and
   continued on the 4.0.18 asset after the build landed mid-run (`tools/.runs/full_4.0.17.log`; its one failure so far,
