@@ -1687,7 +1687,8 @@ experiment, all on the multiview lead.
   nothing to give: the Event's far-object safeguard already fades every small prop beyond 26 m (31k triangles inside
   that radius, 7k in its outer fifth), the batched town holds 387k triangles of which 369k lie within 42 m of the
   centre and 18k beyond, and the outer town is behind the mist's own far detail; the heavy frames are the park itself,
-  so the only further cut would hide things the player sees (not taken; RULES.md 28 is the rule kept instead).
+  so the only further cut would hide things the player sees (not taken; the author then closed the option altogether:
+  nothing that affects the player's experience negatively; RULES.md "Decisions that close an option").
 - **The harness tags the governor in its folded form** (4.0.24, tools only; T9): the harness exposes the governor to
   tests by rewriting its declaration text (`const Ge={`); A50's removal of the pulse counters, which stood between
   the batcher's box and the governor, let the minifier fold the two into one statement (`const $e=...,Ge={ema:`), so

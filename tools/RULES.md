@@ -199,3 +199,6 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
   layer; the classic two-eye path; skipping a late frame), only the first goes ahead (4.0.24, S30): "let's close out
   options 2, 3, and 4"; "I don't want to try option 3 at any point" (the classic two-eye path stays closed for good);
   "2 and 4 may introduce other problems".
+- The Event's headroom by fading more scenery: closed (2026-11-03, "let's close out this option altogether. I don't
+  want anything that will effect user experience negatively"); the measurement (FIXES S30) showed nothing to take
+  without hiding what the player sees, and nothing that costs the player's view is taken for performance from here on.
