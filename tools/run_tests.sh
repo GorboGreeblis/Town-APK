@@ -89,7 +89,7 @@ if [ "$TIER" != quick ]; then
   run "the frame governor and the fixed foveation: the layer's foveation fixed at 0 from VR entry, the quality levels gone, slow frames swap and change nothing, the over-budget flag logs once, the Event's far-object safeguard on and off (F-B31, F-B83, L1)" node "$ROOT/tools/test_governor.js" "$ASSET"
   run "game content: gifts, talk order, shyness, bribe, outfits, battles, the Ancient, the robin, Event lines, Backpacka" node "$ROOT/tools/test_content.js" "$ASSET"
   run "greeting: walking townsfolk stop and face the player within 3.2 m for 12 s; Sparkakus greets from 6 m" node "$ROOT/tools/test_greet.js" "$ASSET"
-  run "wrist HUD and haptics: what is held is shown and redrawn; Blossoms and new friends pulse the controllers" node "$ROOT/tools/test_hud.js" "$ASSET"
+  run "wrist HUD: what is held is shown and redrawn; no controller ever vibrates (A50)" node "$ROOT/tools/test_hud.js" "$ASSET"
   run "roamers and townsfolk: never in a foreign building, a solid zone or the Garden, never outside the park, roamers keep moving" node "$ROOT/tools/test_roam.js" "$ASSET" $([ "$TIER" = full ] && echo --long)
   run "Mama Gorbo and Gooward's meetings: schedule, spots, goo arcs and hearts, called off by the Event" node "$ROOT/tools/test_meet.js" "$ASSET"
   run "jazz drums: on the beat on both clocks, on time for the drummer, look-ahead, silent far away and under the horn" node "$ROOT/tools/test_jazz.js" "$ASSET"
@@ -116,6 +116,7 @@ if [ "$TIER" != quick ]; then
   run "Mama Gorbo's cap: her head never through the crown or brim, both eye disks 3 cm clear, its rim on her head (A36, F-B80)" node "$ROOT/tools/test_cap.js" "$ASSET"
   run "the Post Office's mail pile: five parcels, four labelled with painted textures, none floating or buried, every label facing out, the Ormstown parcel clear of the others and the stacks (A43, B55)" node "$ROOT/tools/test_mailpile.js" "$ASSET"
   run "scenery asks of 2026-11-03: the cap closed underneath with a full-disc brim, one hanging basket at Garden Supplies, the church doorway backed, no cross (A45-A48)" node "$ROOT/tools/test_scenery.js" "$ASSET"
+  run "leaving VR and entering again: the second session on the projection layer, through the frame wrapper, with multiview and the holds (S31)" node "$ROOT/tools/test_reentry.js" "$ASSET"
   run "the flash record: no drawing without a head pose, tracking logged, the light record catches a staged one-frame flash at no frame cost, the mark never stalls, held geometry named (S15)" node "$ROOT/tools/test_flashlog.js" "$ASSET"
   run "the Event's pizza boxes fade out at its end with their own materials, no shader compiled (A42)" node "$ROOT/tools/test_pizza_fade.js" "$ASSET"
   run "Backpacka's water shows against the mist: the drip from his mouth at the pond and in flight, the jets, drops and rainbow over the Garden, each with a mist wall behind (F-B74)" node "$ROOT/tools/test_bp_water.js" "$ASSET"

@@ -153,7 +153,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     (`tools/run_tests.sh --full`, about 3.5 hours; `--resume` after a container restart), and its result is reported and
     recorded in TEST_PLAN.md before the work moves on. Restated 2026-10-30 with the version: "let's bump this build to
     v4.0.0"; "Once this work is done: please treat this as if it were the final build" (4.0.0, versionCode 69;
-    `build.sh --bump` continues from it).
+    `build.sh --bump` continues from it). Restated 2026-11-03 for 4.0.25: "Until I say otherwise: treat this as if it were the
+    final build" (the final-build process: the clean full tier with coverage, no build during it, then the dead-code
+    census, the play census and the report tools, results recorded before the work moves on).
 
 24. **Every copy of the game file is kept updated at all times** (2026-10-29: "keep all copies of the game file
     updated at all times"): `index.html` and the APK's asset (byte copies), `index.compressed.html` (the compressed
@@ -199,6 +201,11 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
   layer; the classic two-eye path; skipping a late frame), only the first goes ahead (4.0.24, S30): "let's close out
   options 2, 3, and 4"; "I don't want to try option 3 at any point" (the classic two-eye path stays closed for good);
   "2 and 4 may introduce other problems".
+- Option 1 (no colour clear, S30, 4.0.24): taken out in 4.0.25 (2026-11-03, "The next build should not have the no clear
+  addition"); the colour is cleared to black each frame (S18). Closed for good (2026-11-03, "Let's remove the no-clear
+  option. The risk is too high. We can close this option out as well"): no build tries it again.
+- A test build without the depth discard (P14, the layer's end): closed (2026-11-03, "'Test a build without the
+  depth discard' close out this option"). The discard stays in every build; no experiment build drops it.
 - The Event's headroom by fading more scenery: closed (2026-11-03, "let's close out this option altogether. I don't
   want anything that will effect user experience negatively"); the measurement (FIXES S30) showed nothing to take
   without hiding what the player sees, and nothing that costs the player's view is taken for performance from here on.

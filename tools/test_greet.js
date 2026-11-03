@@ -34,8 +34,12 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
       // stay: still held at 10 s, released by 14 s (the 12 s greeting)
       await gwait(8.5); rec.heldAt10 = e.held;
       await gwait(4); rec.heldAt14 = e.held;
-      // step 8 m away, then come back: greeted again
-      const q = e.group.position; At.position.set(q.x + 8, At.position.y, q.z); await gwait(1.5); rec.resetFar = !e.nearSince;
+      // step 8 m away, then come back: greeted again (S32: the far reset also runs while they are busy)
+      const q = e.group.position; At.position.set(q.x + 8, At.position.y, q.z);
+      // the reset is checked against the distance actually kept (the townsperson walks on meanwhile) and their task
+      { const g0 = gs(), w0 = performance.now(); let minD = 99, busy = 0; while (gs() - g0 < 1.5 && performance.now() - w0 < 9000) { minD = Math.min(minD, Math.hypot(At.position.x - q.x, At.position.z - q.z)); if (e.busy) busy++; await wait(50); }
+        rec.farMin = +minD.toFixed(2); rec.busyFar = busy > 0; }
+      rec.resetFar = !e.nearSince;
       At.position.set(q.x + 2, At.position.y, q.z); await gwait(1.5); rec.heldAgain = e.held;
       out.npcs.push(rec);
       At.position.set(q.x + 12, At.position.y, q.z + 12); await gwait(1);

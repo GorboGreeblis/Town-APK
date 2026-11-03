@@ -25,26 +25,23 @@ Worked around until the author can do them (the author, 2026-10-31).
 | T26 | The headset-confirmation backlog: confirmed by the author's 4.0.15 run (2026-11-02): F-B83 (no tiles at the edge of view), S18-S20 (no flashes), the FPS bar; the 4.0.21 run (logs 550715df, 09ba968c): S23 (nothing held at entry), S8 (the goo safety fired, no flash), S25/L1; still to confirm when convenient: A41 (the HUD on the watch, now bigger: A44), A42 (pizza boxes fade), A43 (the Ormstown parcel), A45-A48 (4.0.22), P34 (the Event's start is still a 46 ms frame on the headset) | open, author | VERSIONS.md 4.0.7-4.0.17 |
 | T27 | Another full code review after this pass (the author, 2026-11-02): five reviews on 4.0.15 done 2026-11-02 (the entry script and layers shim, the three.js multiview patches, the engine side, the game logic, the leftovers): one high (B78), three medium (B80, B83, B84) and nine low findings; B78, B80, B81, B82 fixed in 4.0.17 (S24); the rest logged (B79, B83-B88) for T28; the leftovers found (a dead visit helper, write-only head-script fields, two diagnostic counters, stale doc wording) for 4.0.17 | done (2026-11-02) | FIXES S24; BUGS B78-B88 |
 
-## Resume point (4.0.23, 2026-11-03)
+## Resume point (4.0.25, 2026-11-03)
 
 - **Builds since the author's last full headset run (4.0.21, logs 550715df and 09ba968c: no flashes, the floor held):**
   4.0.22 the cap closed (A45), the basket (A46), the church doorway's backing (A47), the cross gone (A48), S28; the
   author's 4.0.22 session (logs 86dfef83/d4ee8f89, 99bf1cc9): a black screen after an idle wake (B89, the Guardian
   dialog, system-side) and one dark flash by the gazebo among snap turns and a pickup (B46 open again). 4.0.23 the
-  basket on the player's left (A49), no controller vibration (A50), the recorder watching the layer path (S29). PRs
-  #47-#60 merged (#60 with 4.0.23); 4.0.24 (S30, no colour clear) is the next build, after the clean tier on 4.0.23.
-- **The author** tests when they can: the next flash's mark now prints `rec frames (3 s)` (S29); the basket side, the
-  cap, the church doorway (T3).
-- **Running or queued on the machine when this was written:** the full tier with coverage started on the 4.0.23 asset
-  (`tools/.runs/full_4.0.23.log`; the 4.0.24 build landed during it, so its later stages run on 4.0.24 and its census is
-  mixed, not the clean one; its "compressed version" failure is the game file edited for 4.0.24 during that check; the 4.0.22 tier was stopped at 35 passes for the build: its four failures were the
-  content test's own waiting (fixed), the frog's trips with their state (B79, dump extended), Hennrick's model 0.46 m
-  off for a moment in `test_jitter.js` (to rerun alone), and the recovery test's 3 s window (fixed)), then the
-  dead-code census, the play census, the content test alone, the three report tools alone (T24) and a second content
-  run. No build during it.
-- **Next:** read those results as they land (T9, T23, T24); `test_jitter.js` and `test_flashlog.js` alone on an idle
-  machine; B79 from the next trip dump; the next flash mark's S29 lines; then the full pass on the last build (T18)
-  once the author's headset run (T3) has happened.
+  basket on the player's left (A49), no controller vibration (A50), the recorder watching the layer path (S29).
+  4.0.24 (PR #61, merged): S30, no colour clear and the flush before the hand-over. 4.0.25 (PR #62, draft): the third
+  audit's fixes (S31: B79 fixed, re-entry on the projection layer, S30's flush removed, the loop guarded, logs capped,
+  leftovers gone) and S30's no-clear taken out at the author's word (B90 closed). PRs #47-#61 merged.
+- **The author** tests when they can: the next flash's mark prints `rec frames (3 s)` (S29); the basket side, the cap,
+  the church doorway (T3); entering VR again after an exit (S31 re-entry).
+- **Running on the machine when this was written:** the final-build process on the 4.0.25 asset
+  (`tools/.runs/final_4.0.25.sh`, log `tools/.runs/full_4.0.25.log`): the full tier with coverage, then the dead-code
+  census, the play census, the content test alone and the report tools. No build during it.
+- **Next:** read those results as they land and fix what they find (T18, T23, T24); the next flash mark's S29 lines
+  (B46); B91 (latent, low).
 
 ## Done
 
@@ -78,3 +75,4 @@ Worked around until the author can do them (the author, 2026-10-31).
 | D19 | 3.15.53-3.15.60: the mist bank and the Event's fades, Backpacka into the mist, the Mushroom's ramp, flashes (F-B48, F-B51), seams (F-B47), the randomness decisions applied; PRs #29-#33 | 2026-10-30 |
 | D20 | 3.15.62-3.15.63: Fortizmo's pathing (F-B55), the Mushroom floating (F-B56), the flat Garden (F-B57), the goo (F-B58), Gemtoe's tie (F-B59), the Cave floor (F-B60), the mist over the fence (A19), the version on the loading box (A18), flash safeties (S1, S2), P29-P30, the dead-code census (R8); PRs #34-#35 | 2026-10-30 |
 | D21 | Tools pass before the final full pass: the quick dialogue layout test, `renderEvery` and `fastSim: 'matrices'`, `shots.js`, `perf_log.js`'s new lines, the docs check of the tier list (PR #36). (D numbers here are tasks; FIXES.md's D entries are diagnostics, a separate numbering.) | 2026-10-30 |
+| D29 | T29: the third full code audit (five reviews of the 4.0.24 file); every finding verified and fixed in 4.0.25 (S31) or recorded (B91, latent) | 2026-11-03 |

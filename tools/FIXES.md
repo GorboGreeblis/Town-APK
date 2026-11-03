@@ -1680,20 +1680,100 @@ experiment, all on the multiview lead.
   that swapchain image's previous picture, about three frames old, instead of the clear (black since S18, the sky's
   near-white before): on a still view nothing, on a snap turn a one-frame step back. S29's lines still report what
   was lost. `RENDERING.md` section 3. Also from the same ask ("any other possible easy wins for stability?"): the
-  layer shim flushes the context right after the game's draw, before the layer's frame ends, so the frame's GPU
-  commands are submitted before the compositor can reach for the image (the browser flushes at frame end anyway;
-  this moves it ahead of the hand-over at no cost).
+  layer shim flushes the context right after the game's draw, before the layer's frame ends. Correction (found in the
+  tools pass that followed): the layer's `end` has flushed after the draw, and after the non-MSAA blit, since S18, so
+  this second flush adds nothing; it comes out with the next game change (T29), and the flush the author approved
+  stays as the one in `end`. `test_safeties.js`'s S30 check (a flush inside each frame after the draw) holds with
+  either.
   The third easy win asked for, more headroom in the Event's heaviest views by fading the far scenery earlier, has
   nothing to give: the Event's far-object safeguard already fades every small prop beyond 26 m (31k triangles inside
   that radius, 7k in its outer fifth), the batched town holds 387k triangles of which 369k lie within 42 m of the
   centre and 18k beyond, and the outer town is behind the mist's own far detail; the heavy frames are the park itself,
   so the only further cut would hide things the player sees (not taken; the author then closed the option altogether:
   nothing that affects the player's experience negatively; RULES.md "Decisions that close an option").
+  **Taken out in 4.0.25** (the author: "The next build should not have the no clear addition"), after the third
+  audit (B90) found it likely made the Quest's tiled GPU load both eye images back every frame (about 24 MB) and that
+  its benefit rested on the browser keeping the images' old contents, which nothing showed: the colour is cleared to
+  black again each frame (S18). The flush in the layer's `end` stays; the extra flush went with S31.
 - **The harness tags the governor in its folded form** (4.0.24, tools only; T9): the harness exposes the governor to
   tests by rewriting its declaration text (`const Ge={`); A50's removal of the pulse counters, which stood between
   the batcher's box and the governor, let the minifier fold the two into one statement (`const $e=...,Ge={ema:`), so
   the tag missed and every governor check failed with "Cannot read properties of undefined" (the 4.0.23 tier's one
   real failure). The tag now takes that form as well.
+- **test_content.js re-places the player before Gooward's after-barrage check** (4.0.24, tools only; T9): the check
+  put the player beside Gooward once, then waited for the gift's dialogue to close before scanning; on a loaded
+  machine (the stage took 49 minutes beside the full tier and five audit reviewers) the dialogue closed late and
+  Gooward had wandered, so the scan found nobody ("after: false"). The barrage lock itself is 4 s of wall time and
+  ended on time. The check now puts the player beside him before each scan, for up to 3 s. The vignette fix of the
+  same test held in that run: 15 played, none refused.
+- **Tests for 4.0.23-4.0.24 and the fake headset brought to the headset's timing** (4.0.24, tools only; the author:
+  "Please ensure that all tools, documentation, and test cases reflect the current build"): `test_safeties.js` checks
+  S30 (no colour clear, depth and stencil still cleared; a flush inside each headset frame after the game's draw);
+  `test_flashlog.js` checks the mark's `rec frames (3 s)` line (S29) and words its sky check for S30; the fake
+  headset's frames now predict their display time two frames ahead of their start, as the runtime does (it used the
+  frame's start, so S29's "late" counted every frame under the fake); its one projection texture is documented as
+  counting every frame in "same swapchain image twice". The pixel-reading tools were checked against S30: each either
+  clears explicitly (`fill_probe.js`, `overdraw_probe.js`) or renders whole scenes the sky or a marker covers.
+- **S31, the third full code audit** (4.0.25; T29, the author: "While tasks are ongoing. Please begin a full code
+  audit"): five parallel reviews of the beautified 4.0.24 file (the entry script and layer shim, the three.js patches,
+  the engine side, the game logic, the leftovers). None found the cause of the dark flash (B46): the three.js and
+  engine reviews ruled out their parts, which supports S29's view that the loss is on the layer path. Fixed:
+  - **B79's cause** (the logic review, reproduced headless): when the frog's corridor home moved toward the bar's
+    doorway, the post walk started the doorway route from inside the bar, because "the new home lies beyond her" alone
+    started it although she and her home stood in the same building; she walked out of the opening and back in and the
+    no-progress check tripped. The route step survived the rescue, so she tripped again about 7 s later (the pairs in
+    the headset logs). The route now starts from inside the home's own building only when she is more than 4 m from
+    home, and every go-home clears the route step. An 8-minute natural-play reproduction went from 5 trips to 0;
+    `test_stuck.js` passes on the patched file.
+  - **The no-progress clock restarts while a walker is busy, or held by a dialogue, menu or panel**, and the stuck
+    count starts over whenever it is not walking toward a target: a walker released after a long dance battle or
+    dialogue tripped "no progress" on its first frame, and a count left by a cancelled rescue made the last-resort
+    teleport come early.
+  - **The recovery reset clears the way-finding state** (go-home, route, nav, route step, stuck counts), as S20 said
+    it did; a walker reset mid-route used to set off again on the stale route. Its log is capped at 20 lines.
+  - **Re-entering VR after an exit runs on the projection layer again** (the entry review): the first session comes
+    from the entry script with the layers feature and the frame wrapper; a second one was requested by the game as a
+    plain session, so it ran three.js's default path with no projection layer, no multiview and none of the in-frame
+    holds (shapes and shaders first drawn then would upload or compile inside frames). The game now asks the entry
+    script for it (`session requested again (re-entry)` in the log). New `test_reentry.js` (standard tier) fails on
+    4.0.24 and passes now.
+  - **The extra flush S30 added is gone**: it ran before the layer's end, whose depth discard (P14) then found the
+    depth already written out, which on the Quest's tiled GPU brought back the per-frame depth write P14 removed; the
+    flush in `end`, after the discard, stays.
+  - **A throw out of the game's frame loop no longer stops it**: three.js asks for its next frame only after the
+    loop returns, so the loop is guarded (logged as `[loop]`), and the layer wrapper catches and counts a throw too.
+  - **Errors are logged five times per context, then once every 10 s with a count**: an entity failing every frame
+    used to send a log request every frame for the rest of the session.
+  - **A material that drops off the transparent list is made visible again**: a fade that restored a material to
+    opaque on the helper's rescan frame (1 in 120) left it hidden for good, e.g. the next Event's pizza boxes.
+  - **The batcher's fallback disposes its batches between frames**, as its gone sweep does (RULES.md 28).
+  - **A reused render item never carries a stale hold flag**; the draw-hook error report is guarded.
+  - **The mark's lines**: `rec xr frames` now prints the fallback draws, failed begins and ends and callback throws
+    (the docs promised "drawn by the fallback" since S18; the line never had it); `rec frames (3 s)` counts only GL
+    errors within its 3 s (the latest 12 are kept, not the first 12) and gives the session total beside them. The
+    harness's end-of-test GL-error check now also reads the errors the sampled read took.
+  - **The recorder reads the wrist HUD through a game hook**: it read `window.__dbg`, which exists only in test copies,
+    so "ev hud" never appeared in headset logs (S7).
+  - **Leftovers removed** (the leftovers review): the comfort vignette ring was still painted, dithered, uploaded and
+    stepped every frame after A34 hid it (RULES.md 27); the loader's `stop`, which could never act; build statistics
+    and three `JGP` exports nothing read; unread `__gtXR` fields (`loaderFrames`, `slices`, `sub.at`); a time argument
+    left from L1; three unused stone materials made while loading the pond.
+  Not changed, for the author: B90 (S30's possible per-frame GPU load and unproven benefit: a headset measurement
+  decides); B91 (latent gaps with no trigger today).
+- **S32, the 4.0.25 final pass's findings** (4.0.26; T18, the author: "Until I say otherwise: treat this as if it were
+the final build"):
+  - **B92 fixed: a townsperson's greeting is reset while they are busy too.** The reset after the player has been more
+    than 6 m away (`greetClear`) ran after the busy return in the townsperson's update, so a task taken up while the
+    player was away kept the old greeting time and, on the next approach, they walked on instead of stopping
+    (`test_greet.js`, Mama Gorbo). The reset now runs first, every frame, whatever the townsperson is doing; nothing
+    else changes (a busy townsperson is still never held for a greeting).
+  - **Test fixes from the same pass** (no game change): `test_owner_exit.js` counts its windows in game seconds with a
+    wall cap, and a run where the machine starved the game clock (frames over 1 s count 1/60 s; one run gave 4.9 game
+    seconds in 273 wall seconds) says so instead of reading as a stuck owner (Gemtoe at the gazebo, which left in every
+    run alone on 4.0.24 and 4.0.25); `test_greet.js` records the distance kept and the task when the reset is missed.
+    The flash log's 29 ms dump stall came with the machine loaded by those reruns (rerun alone on 4.0.26).
+  - The 4.0.25 full tier with coverage ran past its 16000 s limit in the text-scene test (about 66 minutes under
+    coverage and load, 13-18 minutes before); the final pass moves to 4.0.26 with a longer limit.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures

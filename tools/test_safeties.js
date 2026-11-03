@@ -15,6 +15,8 @@
 //   - the audit's safeties (S19, S20; 4.0.14): the layer's begin() throwing once (logged, frames keep coming, the frame
 //     not left open); a draw that throws inside three.js runs the fallback draw; a lights change is seen by the shader
 //     hold (its re-check after the lights are set up); the hand meshes are built once per controller and hand.
+//   - the colour, depth and stencil buffers are cleared each frame (S30's no-clear, 4.0.24, was taken out in 4.0.25),
+//     and each headset frame flushes the context after the game's draw and before the layer's frame ends (S18).
 //   Frame counts are counted, not timed (B53: load-proof).
 //
 //   node tools/test_safeties.js [file]
@@ -99,6 +101,13 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
         const UI = D.UI; out.s19.hands = UI.ctrls.map((c) => ({ hand: c.hand, cached: !!(c.hm && Object.keys(c.hm).length), same: !!(c.hm && c.handMesh === c.hm[c.hand === 'left' ? -1 : c.hand === 'right' ? 1 : 0]) }));
         out.s19.watchShared = !!(UI.watchGeo && UI.watchMat); }
       window.__gtLog = L0; }
+    { // the clear (S30's no-clear taken out in 4.0.25) and the flush inside each headset frame after the game's draw and
+      // before the layer's frame ends (S18)
+      const X2 = window.__gtXR || {}, gl = D.O.getContext(), f0 = gl.flush; let inFrame = 0, outFrame = 0, drawsBefore = 0;
+      const framesS = (k, ms) => new Promise((res) => { const r0 = X2.renders || 0, t0 = performance.now(); const f = () => ((X2.renders || 0) >= r0 + k || performance.now() - t0 > ms ? res() : requestAnimationFrame(f)); requestAnimationFrame(f); });
+      gl.flush = function () { if (X2.xrFrameOpen) { inFrame++; if ((X2.renders || 0) > 0) drawsBefore++; } else outFrame++; return f0.apply(this, arguments); };
+      const r0 = X2.renders || 0; await framesS(10, 5000); const frames = (X2.renders || 0) - r0; gl.flush = f0;
+      out.s30 = { autoClearColor: D.O.autoClearColor, autoClearDepth: D.O.autoClearDepth, autoClearStencil: D.O.autoClearStencil, frames, inFrame, drawsBefore, mv: !!X2.mvActive }; }
     return out;
   });
   await g.close();
@@ -114,6 +123,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('S19: a draw that throws inside three.js runs the fallback draw (the frame is counted only once drawn) and frames keep coming', r.s19.draw.fallback >= 1 && r.s19.draw.after >= 5, JSON.stringify(r.s19.draw));
   expect('S19: a lights change is seen by the shader hold: compiled between frames, none during play', r.s19.lights.held >= 1 && r.s19.lights.inPlay === 0, JSON.stringify(r.s19.lights));
   expect('S20: the hand meshes are built once per controller and hand and reused; the watch face shares one geometry and material', r.s19.hands.every((h) => h.cached && h.same) && r.s19.watchShared, JSON.stringify({ hands: r.s19.hands, watchShared: r.s19.watchShared }));
+  expect('the colour, depth and stencil buffers are cleared each frame (S30\'s no-clear was taken out in 4.0.25 at the author\'s word; the clear colour is black, S18)', r.s30 && r.s30.autoClearColor === true && r.s30.autoClearDepth === true && r.s30.autoClearStencil === true, JSON.stringify(r.s30));
+  expect('each headset frame flushes the context after the game\'s draw, before the layer\'s frame ends (the flush in the layer\'s end, S18)', r.s30 && r.s30.frames >= 5 && r.s30.inFrame >= r.s30.frames && r.s30.drawsBefore >= r.s30.frames, JSON.stringify(r.s30));
   expect('no page errors other than the injected one', other.length === 0, other.slice(0, 3).join(' | '));
   console.log(failures.length ? `SAFETIES TEST FAILED (${failures.length})` : 'SAFETIES TEST PASSED'); process.exit(failures.length ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });
