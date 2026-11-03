@@ -478,7 +478,9 @@ What the models have in common, as built:
 - **Extras**: three ooze drips that a bulge travels down, drops that grow, fall and leave peach splats on the ground,
   orbiting pins "AP", "IP" and wifi, four flashing yellow sparks.
 - **Cap** (since 4.0.4, A36): a yellow baseball cap with the teal M of Mistergummery's on its crown, worn pushed back
-  (her big eye covers the upper front of her head), its brim above the eye.
+  (her big eye covers the upper front of her head), its brim above the eye. Since 4.0.22 (A45) the crown is closed
+  underneath and the brim is a full disc whose back half sits inside the crown, so nothing shows inside the cap from
+  below or beside the brim (the author: "The brim of Mama Gorbo's hat does not connect with the hat").
 - **Motion**: deep jelly breathing, a bounce and nod while she talks, lenses pulsing; her base lifts when she tilts
   so she never sinks into the ground.
 
@@ -726,7 +728,7 @@ Outside the fence:
 | --- | --- | --- | --- |
 | POST OFFICE | blue `#33508f` / navy `#22325a` | pink `#e276a0` | A mound of 2,300 letters behind the counter (seven paper tints, some stamped red or blue) on which Somlet sleeps; a 6 x 4 pigeonhole wall full of letters; parcels in kraft paper. |
 | SHERIFF'S | brown `#8a5a3a` / `#6a3a1a` | red `#b82822` with nine white spots per slope: a mushroom cap | Taller by 1 m; the desk 1.545 m up with Mushroom's wooden ramp at its left end (1.77 m wide, A13; F-B39); a gold six-point star on the back wall; WANTED posters; clusters of toadstools on the corners and the counter, two big red ones in front, a giant one at the side, twelve more on the roof (A14); an orange flag with a red mushroom emblem 10.5 m up. |
-| GARDEN SUPPLIES | green `#6f8f5a` / `#2f5a2a` | rust `#a85c3a` | Potted plants, seed trays, two glass jars each holding a strange rooted specimen. |
+| GARDEN SUPPLIES | green `#6f8f5a` / `#2f5a2a` | rust `#a85c3a` | Potted plants, seed trays, two glass jars each holding a strange rooted specimen; one hanging basket at the left of the front (the one over the ramp went in 4.0.22, A46: Zollod clipped into it leaving). |
 | GOOWARD'S GALLERY | cream `#e8e0cc` / plum `#3a2a5a` | purple `#584284` | Wider (8.4 m) and taller by 1 m, no counter; the painting in its gold frame; paint cans in five colours, some tipped over; 58 paint splats on the floor; brushes; two easels with small landscapes. |
 
 - **The Library** (`buildLibrary`): open to the sky, no walls or roof: eight bookcases on a large Persian rug
@@ -954,9 +956,10 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   and 9.3 m high, with cream stone trim (`#cdc5b4`) and a dark base; a slate shingle roof (`#3a3c44`) to 14.3 m with an
   iron crest of spikes along the ridge; stepped buttresses along the sides; pinnacles with gold balls at the nave's
   front corners; on each side, near the ends, a window of wine-red glass and one of blue, each under a diamond light.
-  In front, a tower 4.4 m square: a dark red door (`#8a1e24`) in three receding stone arches up four steps; a tall
-  pointed window above it; a belfry with louvred openings at 13.6-17.5 m; battlements and four pinnacles; a gold cross
-  20.5 m up.
+  In front, a tower 4.4 m square: a dark red door (`#8a1e24`) in three receding stone arches up four steps, the arches
+  on a stone backing pier to pier and up through the window sill (since 4.0.22, A47: a notch beside the arches showed
+  the tower wall); a tall pointed window above it; a belfry with louvred openings at 13.6-17.5 m; battlements and four
+  pinnacles; a stone cap at 18.1 m (the gold cross that stood 20.5 m up went in 4.0.22, A48).
 - **The stained glass** (painted at load, leaded panes with a slight glow of their own): the front window (3.4 m wide,
   4.2 to 13.2 m up; `paintTravelerWindow` in 3.15.44) shows a winged figure in a white robe with gold curls and a
   halo of gold rays, holding a glowing screen, a cable from it plugged into the ground, descending in a beam of light

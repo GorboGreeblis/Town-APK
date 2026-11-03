@@ -1560,6 +1560,53 @@ experiment, all on the multiview lead.
   frustum-visible mesh every frame (a single material is checked directly); the other small per-frame allocations
   the review listed (the walkers' vectors, the courier's step, the HUD's arrays while open) stay: no defect, GC pressure
   only, and the frame recorder reports heap drops as gaps so a regression would show.
+- **A45** (4.0.22; the author: "The brim of Mama Gorbo's hat does not connect with the hat. The user is able to see
+  inside of this shape"): the cap's crown was an open half-ellipsoid and its brim a half disc whose straight back edge
+  stood 20 cm outside the crown at the sides, so from below or beside the brim the player looked into the hollow crown
+  (its inside faces are not drawn) and at the brim's open cut. The crown is closed underneath by a disc at its rim and
+  the brim is a full disc, its back half inside the crown; the visible brim is the same peak with a rounded edge where
+  it meets the crown. `test_cap.js` measures the full disc (its back half excluded where it is inside the crown);
+  `test_scenery.js` checks the disc and the brim's back edge; pictures `tools/.runs/shots/hat0_*` (before) and
+  `hat1_*` (after, session scratch).
+- **A46** (4.0.22; the author: "Remove the hanging plant from the top right side of the Garden Supplies kiosk. Reason:
+  Zollod clips into it when passing this way"): the kiosk hung two baskets from its roof edge, one over each end of the
+  front; the one on the ramp side (the player's right, facing the kiosk) hung in Zollod's way out. It is gone; the
+  other keeps its look (its colours were indexed by its slot). `test_scenery.js` casts rays at both spots.
+- **A47** (4.0.22; the author: "A small gap is visible from the sides of the front doorway to the church, when the
+  doorway connects to the church ... above the stairs. Around the doorway itself: when viewed from the sides or around
+  the top"): rays from every side found no hole in the tower or its junction with the nave (`tools/.runs/` probes,
+  session scratch), but a notch: the doorway's three stepped arches stood on the tower face with 20 cm of bare wall
+  between the innermost arch's edge and the corner pier on each side (the pier 5 cm proud of the wall), and the arch
+  tops met the window sill with the wall showing between the steps; from beside the steps and looking up, that read
+  as a gap between the doorway and the church. A stone backing in the trim colour now sits behind the arches, pier to
+  pier and up through the sill (the outermost arch's outline, the innermost arch's opening, 1 cm into the wall and
+  5 mm short of the first arch's face so no faces coincide). `test_scenery.js` casts a ray into the old notch.
+- **A48** (4.0.22; the author: "Please remove the gold cross from the top of the church tower"): the two gold boxes
+  (20.5 m up) are gone; the stone cap at 18.1 m tops the tower. `test_scenery.js` casts a ray down the tower's axis.
+- **The author's logs 550715df (the run) and 09ba968c (the full logcat)** (4.0.21, 2026-11-02, Quest 3, 27 minutes
+  with two Events, three dance battles, the Gem scene, the courier, the Cave and 278 snap turns; the author: "no
+  flashes were observed during this last run"): no mark, no flash record, no compile, no layer swap, no upload inside
+  a frame, `fov=0` in all 127 perf lines, the over-budget flag never fired; the goo safety (S8) fired 13 times during
+  the Gorbo meeting with no flash seen (its first headset evidence); nothing held at VR entry (S23 confirmed); the
+  floor held (never under 60; medians 71.9 town, 71.6 Event; the genuine in-play lows 64-66 fps during the dance
+  battles, not at the heaviest geometry); 56 long frames in 21 minutes of play, the Event's start still 46 ms on the
+  headset (18 ms headless, P34); three headset sleeps handled; no error, recovery or fade-safety line; the full logcat
+  (a wrapped ring buffer holding the game's last 70 s only) shows no crash, ANR, GL error or memory pressure. Held
+  between frames: the Event's pizza-box and plant batches (B72's kind) and, as in f57f19a2, the Library's rug box
+  (S28 below). The stuck detector: 8 trips, all the frog, six in three pairs 7 s apart (B79), one at 0.5 m from its
+  mark (S28). The report: `tools/.runs/` (session scratch); analysis as for f57f19a2.
+- **S28** (4.0.22; the two logs above): three changes.
+  - **The warm-up uploads the originals of the merged multi-material meshes.** The group merger (`__gtMM`, 4.0.x)
+    rewires a multi-material mesh whose groups share materials to a merged-index copy on its first draw, which is the
+    warm-up's own draw, so the mesh's own index was never uploaded; when a fade made its materials transparent (the
+    kiosks at the Event) the merger put the original back and its first draw was held for a frame: the Library's rug
+    box (11 x 8 m, `#1f2a3a`), once per session in both logs. The warm-up now uploads each merger entry's original
+    too (one mesh in the current scene) and logs the count; `test_firstdraw.js` checks every entry is on the GPU.
+  - **The hold's log names a nameless shape by its vertices** ("mesh of 24 vertices #1f2a3a ..." instead of
+    "undefined #1f2a3a ..."): the log printed `undefined` for an object without a name up its parent chain, so the Gem
+    scene's shape in log 550715df ("undefined #ffffff r0.16m at 8.0m") could not be told apart.
+  - **The no-progress check leaves walkers within 0.8 m of their mark alone** (was 0.5 m): the log's "frog 0.5 m from
+    its target for 5 s" counted a walker standing at its mark toward the rescue's teleport.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures

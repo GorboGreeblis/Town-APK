@@ -8,7 +8,8 @@
 //   - she hands the pizza over; the Event starts and runs 2 minutes (its plants grow and are batched);
 // expected: no buffer made inside a frame; the game reports holding something back at least once, each object only
 // once (no object held frame after frame, which would leave it unseen); everything held back is on the GPU after its
-// frame; no page errors.
+// frame; the originals of the meshes the multi-material group merger rewired are on the GPU from the warm-up (S28: a
+// fade reverts to them in play; the Library's rug box was held at the Event in two headset logs); no page errors.
 //
 //   node tools/test_firstdraw.js [file]
 process.env.GT_MULTIVIEW = '1';
@@ -31,6 +32,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const gone = new WeakSet(), GP = THREE.BufferGeometry.prototype, gd = GP.dispose; GP.dispose = function () { gone.add(this); return gd.call(this); };   // replaced batches
     const flushed = []; const up = O.gcObjUpdate; O.gcObjUpdate = function (o) { const res = up.call(this, o); flushed.push(o.geometry); return res; };
     const out = { inFrame, held };
+    // S28: the originals of the multi-material meshes the group merger rewired (their own index) are on the GPU from the warm-up, so a fade's revert never uploads in play
+    const mm = (window.__gtMM && window.__gtMM.list) || []; out.merged = { n: mm.length, onGpu: mm.filter((e) => e.g && !O.gcNeedsUpload(e.g)).length };
     phase = 'courier'; Kt.rewards.snacks = false; D.ue.call();
     let t0 = performance.now(); while (!D.ue.courier && performance.now() - t0 < 150000) await wait(200);
     const c = D.ue.courier; out.came = !!c;
@@ -54,6 +57,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('new objects were held back for one frame and uploaded between frames', r.held.length >= 1, `${r.held.length} hold(s)`);
   expect('nothing held frame after frame (each hold is a new object; under 40 holds)', r.held.length < 40, `${r.held.length} hold(s): ${r.held.slice(0, 12).join(',')}`);
   expect('every object held back is on the GPU after its frame (vertices and indices; batches replaced since aside)', r.parts > 0 && r.uploaded === r.parts, `${r.uploaded} of ${r.parts}`);
+  expect('S28: every merged multi-material mesh has its original shape on the GPU from the warm-up (a fade reverts to it in play)', r.merged && r.merged.n > 0 && r.merged.onGpu === r.merged.n, JSON.stringify(r.merged));
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   console.log(failures.length ? `FIRST DRAW TEST FAILED (${failures.length})` : 'FIRST DRAW TEST PASSED'); process.exit(failures.length ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });
