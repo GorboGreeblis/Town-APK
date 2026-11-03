@@ -34,19 +34,6 @@ EXPERIMENTS = {
     # Draw every mesh individually: no gcEB batches, no custom vertex shader.
     "nobatch": [("const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[]};",
                  "const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[],off:!0};")],
-    # Snap spread (S36, the snap-turn lead): the release turns the rig 30 degrees in one frame; this variant spreads each
-    # snap over the next three frames (about 42 ms at 72 Hz), to learn in the headset whether the one-frame jump is what
-    # the flashes follow (the author's snap-turn test, log 95c052a2: two marks in 55 s of turning in place).
-    "snapspread": [
-        ("function Wo(t){Oo();const w=N.clone();", "function Wo(t){Wo.q=(Wo.q||0)+t,Wo.n=3}function WoX(t){Oo();const w=N.clone();"),
-        ("_.update=function(t,D,N){if(_.calibrateHeight&&N)", "_.update=function(t,D,N){if(Wo.n>0){const a=Wo.q/Wo.n;Wo.q-=a,Wo.n--,WoX(a)}if(_.calibrateHeight&&N)"),
-    ],
-    # Snap spread over two frames (S36): as snapspread, half the time (about 28 ms at 72 Hz); the author found the
-    # three-frame spread jarring ("too jarring without a black screen between turns").
-    "snapspread2": [
-        ("function Wo(t){Oo();const w=N.clone();", "function Wo(t){Wo.q=(Wo.q||0)+t,Wo.n=2}function WoX(t){Oo();const w=N.clone();"),
-        ("_.update=function(t,D,N){if(_.calibrateHeight&&N)", "_.update=function(t,D,N){if(Wo.n>0){const a=Wo.q/Wo.n;Wo.q-=a,Wo.n--,WoX(a)}if(_.calibrateHeight&&N)"),
-    ],
     # No pickup effects: no sparkle particles, no floating labels, no HUD/label texture churn from pickups.
     "noeffects": [("gcEB.ready=!0,", "gcEB.ready=!0,Nt.sparkle=()=>{},Ut.at=()=>{},Ut.above=()=>{},")],
 }

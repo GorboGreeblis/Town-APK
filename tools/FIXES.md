@@ -1902,6 +1902,26 @@ frame already hands the game (no GL call added, RULES.md 28):
     seen during turns, turns are no longer appearing as clean to the user". Each in-between frame is shown, and
     the display's persistence blends it with the next, so a spread snap reads as a smear rather than a cut; with
     the three-frame spread found jarring, neither spread gives a clean turn.
+- **S37, the blink snap** (4.0.31; the author: "Is there no way to just rebuild snap turning to be cleaner and more
+  stable?", "Let's rebuild the snap turning", "let's weaken Rule 27 to allow for this"):
+  - **Why a blink**: the release snap turned the rig 30 degrees in one frame, first thing in the frame, and every record
+    showed that frame drawn whole; the headset still showed a brief black at every turn and, about once in 110 turns,
+    a flash. Spreading the turn over two or three frames removed the black but ghosted. A rebuild of the same instant
+    turn (on WebXR's own tracking space) would hand the headset the same picture, so it was not made. The blink
+    changes what the eye sees at the cut instead: the turn is made while the view is dark.
+  - **How**: a stick flick queues the turn (`Wo.req`); each frame `Wo.step` walks the blink `[.5, 1, 1, .6, .25]`
+    (one value a frame, about 70 ms at 72 Hz): half dark on the flick's own frame, the turn made on the next, fully
+    dark frame, one more dark frame, then back. The dark is the head guard's own black sphere (B47: on the camera,
+    drawn last over everything, its shader compiled while loading), which shows the darker of the wall fade and the
+    blink (`window.__gtBlink`, read by the guard's own loop): nothing new is made, compiled or uploaded, and no GL call is added (RULES.md 28). The turn itself is the
+    release's (`Wo`, about the head), and the snap count the recorder reads (`snap`, the S in `rec timeline`) is taken
+    on the turn's frame. A turn queued while something else set the rig's facing (VR entry, a scene) is dropped; VR
+    entry and exit end any blink; a blink not stepped for 250 ms is ignored, so a stalled update can never leave the
+    view dark. The snap gap (0.4 s) and the angle (30 degrees) are unchanged.
+  - **Rules**: RULES.md 27 relaxed by the author for this blink only; the no-full-screen-flash priority notes it as the
+    one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
+  - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
+    sphere at full dark and hidden after, and nothing compiled.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures

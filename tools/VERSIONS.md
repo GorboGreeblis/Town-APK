@@ -6,6 +6,7 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 
 | Version | versionCode | What changed | Headset |
 | --- | --- | --- | --- |
+| 4.0.31 | 100 | **S37**: the blink snap: each snap turn is made inside a short blink (the view dims to black and back over five frames, about 70 ms; the turn on a fully dark frame), on the head guard's sphere, nothing new made; RULES.md 27 relaxed for it by the author. Rule 29 (never a no-layers build); the `nolayers`, `snapspread` and `snapspread2` experiments removed. | not yet run |
 | 4.0.30 | 99 | **S36**: a frame timeline of the last 150 frames on each mark (display step, callback time, draw calls, snap turns, pickups, skipped slots); the skipped-slot baseline from the last 90 frames. The `snapspread` experiment APK for the snap-turn lead. | not yet run |
 | 4.0.29 | 98 | **S35**: the flash record gains display slots skipped (from each frame's predicted display time), layer image size changes and view matrix faults, in a new `rec display (3 s)` line on each mark; no GL call added. With all of 4.0.28. | not yet run |
 | 4.0.28 | 97 | **S34** (the author's flash log 1b7d04a9 and full log 7968f2fc): B93 fixed (A50's leftover controller-pulse call in the ray's hover, "Ot is not defined" about 170 times a run); the mark's swapchain line says it cannot see a repeat on this browser instead of a misleading count; `test_freevars.js` (new). **A51**: with Snacks the Event's pizza boxes fade in at its start (and Anomalee's when she sets it down), and still fade out at its end. With all of 4.0.27 (S33). | not yet run |
@@ -109,8 +110,8 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 Diagnostic APKs (`tools/build_experiment.sh NAME`, same package and version as
 the release, never uploaded; since RULES.md 22 for measurement only, never to try a
 change, where they were once A/B builds). Current variants (`python3 tools/experiment.py --list`):
-`nomultiview` (the classic path), `ovronly`, `nobatch`, `noeffects`, `snapspread`, `snapspread2`, and `texcapture` (used by
+`nomultiview` (the classic path), `ovronly`, `nobatch`, `noeffects`, and `texcapture` (used by
 `prerender_textures.js`, never built as an APK). Earlier ones, in git history only:
-`nolayers` (removed 2026-11-03, closed by the author), `flashlog` (removed 2026-10-29; its B mark is in the release since D2, 3.15.48), `layers` (became the release in 3.15.13), `multiview` (became the release in
+`snapspread` and `snapspread2` (removed 2026-11-03, superseded by the blink snap, S37), `nolayers` (removed 2026-11-03, closed by the author), `flashlog` (removed 2026-10-29; its B mark is in the release since D2, 3.15.48), `layers` (became the release in 3.15.13), `multiview` (became the release in
 3.15.34), `sharp` (retired; its setting became the adaptive scale), `native`,
 `directrequest`, `keepalive`, `nogovernor` (dropped in 3.15.43).
