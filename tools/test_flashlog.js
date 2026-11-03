@@ -16,6 +16,8 @@
 //     between frames: the dump call itself takes under 25 ms);
 //   - the mark logs the layer path's line (S29, 4.0.23): `rec frames (3 s): N, late N, calls median, tris median,
 //     under 70%, same swapchain image twice`;
+//   - the mark logs the display line (S35, 4.0.29): `rec display (3 s): display slots skipped N (ms@-t s) of a P ms
+//     period, layer image changes N (...; now viewports in WxH), view matrix faults N`: none of the last two in steady play;
 //   - a geometry held for a frame is named in the log (what, its colour, its size and how far from the eyes);
 //   - no frame-hazard (GPU work inside a headset frame), no page errors.
 //
@@ -69,6 +71,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     out.xr = after.find((l) => /^rec xr frames/.test(l)) || null;
     out.near = after.find((l) => /^rec near eyes/.test(l)) || null;
     out.frames = after.find((l) => /^rec frames \(3 s\)/.test(l)) || null;
+    out.display = after.find((l) => /^rec display \(3 s\)/.test(l)) || null;
     D.C.remove(sh);
     // 5. a geometry held for a frame is named: a new shape put in view
     const box = new T.Mesh(new T.BoxGeometry(0.31, 0.31, 0.31), new T.MeshBasicMaterial({ color: 0x33aa55 }));
@@ -89,6 +92,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('the staged one-frame flash shows in the mark\'s light line as a spike', !!r.light && /spikes or dips: \+\d+/.test(r.light), (r.light || 'no line').slice(-200));
   expect('the mark\'s dump does not stall its frame (under 25 ms; the near-eyes scan runs in slices)', r.dumpMs < 25 && !!r.near, `${r.dumpMs} ms; ${r.near ? 'near-eyes line logged' : 'no near-eyes line'}`);
   expect('the mark logs the XR frame health line', !!r.xr && /no head pose \d+/.test(r.xr), r.xr || 'none');
+  expect('S35: the mark logs the display line: display slots skipped against the period, layer image changes, view matrix faults (none in steady play)', !!r.display && /display slots skipped \d+/.test(r.display) && /ms period/.test(r.display) && /layer image changes 0 .*\(0 in the session; now \d/.test(r.display) && /view matrix faults 0 \(0 in the session\)/.test(r.display), r.display || 'none');
   expect('S29: the mark logs the layer path line: frames, late, calls and triangles medians, repeated swapchain images', !!r.frames && /^rec frames \(3 s\): \d+, late \d+/.test(r.frames) && /calls median \d+/.test(r.frames) && /tris median \d+k/.test(r.frames) && /same swapchain image twice: (\d+|every frame \(this browser hands one texture object per layer)/.test(r.frames), r.frames || 'none');
   expect('a geometry held for a frame is named in the log', r.held.some((l) => /flashlog test box #33aa55 r0\.\d+m at \d/.test(l)), r.held.join(' | ').slice(0, 300));
   expect('no GPU work inside a headset frame (frame-hazard watch)', r.haz === 0 || r.haz === null, JSON.stringify(r.hazFirst).slice(0, 300));

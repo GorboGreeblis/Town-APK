@@ -1853,6 +1853,21 @@ run"; "please fully analyze the above logs"; the run was on 4.0.25 or 4.0.26, 11
     group is batched when its fade-in ends (the batcher leaves see-through materials out, so a group batched mid-fade
     would stay unbatched all Event). No shader is compiled for either fade. `test_pizza_fade.js` checks the fade in, the
     batching after it, and the fade out.
+- **S35, more for the flash record** (4.0.29; the author: "Is there anything else we can track in the log to track down
+this flash issue?", then "Yes, add those and kick off a new build"). Three records, all plain script on what each
+frame already hands the game (no GL call added, RULES.md 28):
+  - **Display slots skipped**: each XR frame's predicted display time is compared with the last one's; a step longer
+    than 1.5 of the shortest step seen (the headset's frame period) means the headset showed an older frame in
+    between. Kept for the last 32 such steps.
+  - **Layer image changes**: each frame's eye viewports and texture size from the layer; any change from the frame
+    before is kept and logged ("layer image changed: ... > ..."), since a frame drawn to the old size would come out
+    wrong.
+  - **View matrix faults**: each eye's projection and view matrices are checked to be finite, and the projection's
+    field of view against the frame before (a jump over 5% is kept and logged, "view projection jumped").
+  The mark's dump has a new line, `rec display (3 s): display slots skipped N (last 8: ms@-t s) of a P ms period (N
+  in the session), layer image changes N (...; now viewports in WxH), view matrix faults N (N in the session)`.
+  GPU timing per frame (timer queries) was offered and left out: it would add GL calls inside each frame, which
+  RULES.md 28 forbids. `test_flashlog.js` checks the new line and that steady play has no image change or matrix fault.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures

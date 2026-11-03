@@ -33,7 +33,7 @@ EXPERIMENTS = {
     # No multiview (NOTES 65, 67): the release draws both eyes in one pass (multiview, headset-
     # confirmed in 3.15.33's experiment); this variant plans it off, so the game takes the classic
     # path (each eye drawn separately), to measure or diagnose the multiview path against it.
-    "nomultiview": [('n=!(!f||l&&!c&&!s),a="webgl2 "+i', 'n=!1,a="experiment nomultiview; webgl2 "+i')],
+    "nomultiview": [('n=!(!f||l&&!s&&!c),a="webgl2 "+i', 'n=!1,a="experiment nomultiview; webgl2 "+i')],
     # OVR_multiview2 only, no MSAA (S18): the release renders both eyes in one pass through OCULUS_multiview with
     # 4x MSAA; other engines report whole-scene flicker on the Quest 3 with that extension (and GUI textures) but
     # not with plain OVR_multiview2. This variant asks for no samples, so the shim takes the OVR_multiview2 path with
