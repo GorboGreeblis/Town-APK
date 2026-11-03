@@ -47,7 +47,9 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     // Sparkakus: a "!" from 6 m
     let bang = 0; const ua = D.Ut.at; D.Ut.at = function (x, y, z, s) { if (s === '!') bang++; return ua.apply(this, arguments); };
     const sp = D.st && D.st.pos ? D.st.pos() : null;
-    if (sp) { At.position.set(sp.x + 9, At.position.y, sp.z); await fwait(1, 20); const b0 = bang; At.position.set(sp.x + 4.5, At.position.y, sp.z); await fwait(1.5, 20); out.spBang = bang - b0; At.position.set(sp.x + 9, At.position.y, sp.z); await fwait(1, 20); At.position.set(sp.x + 4.5, At.position.y, sp.z); await fwait(1.5, 20); out.spBangAgain = bang - b0; }
+    // he walks about, so the player is placed from where he is at each step, and held there each frame of the wait
+    const hold = async (d, s) => { const g0 = gs(), w0 = performance.now(); while (gs() - g0 < s && performance.now() - w0 < s * 6000) { const p = D.st.pos(); At.position.set(p.x + d, At.position.y, p.z); await wait(50); } await fwait(0, 20); };
+    if (sp) { await hold(9, 1); const b0 = bang; await hold(4.5, 1.5); out.spBang = bang - b0; await hold(9, 1); await hold(4.5, 1.5); out.spBangAgain = bang - b0; }
     D.Ut.at = ua;
     return out;
   });
