@@ -6,7 +6,7 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 
 | Version | versionCode | What changed | Headset |
 | --- | --- | --- | --- |
-| 4.0.21 | 90 | **S26 revised** a meeting's seek kept through transient states (going home, the player near); 4.0.19's drop on any state left Mama Gorbo standing after a recovery reset (`test_recover.js`). | pending build |
+| 4.0.21 | 90 | **S26 reverted** (B87 closed by design): the meeting's seek stays set as before 4.0.19; both drops left Mama Gorbo standing after a recovery reset (`test_recover.js`). | pending |
 | 4.0.20 | 89 | **S27** (T28) the shader hold's per-object check allocates nothing per frame (B88). | pending |
 | 4.0.19 | 88 | **S26** (T28) a meeting's seek dropped when a partner becomes unavailable (B87); the emotes' glyph cache cap 160 (B85). | pending |
 | 4.0.18 | 87 | **S25** (T28) the two point lights always visible with intensity driving them (B83), `instancing` in the shader hold's conditions and own materials for instanced batches (B84), the courier's clock paused under every panel (B86). **L2** leftovers: `JGP.visitPlan`, write-only head-script fields, two freeze counters. | pending |
