@@ -1600,6 +1600,13 @@ experiment, all on the multiview lead.
   (it starts one every 18-28 s, 8 s long), so a burst of refusals ("HNMUt refused, MUKDt refused, ...", 12 of 15 in the
   clean tier of 2026-11-03, 4 in a solo run on 2026-11-02) came whenever the test's turn fell inside one. The test now
   waits for no exchange to be playing as well, tries once more if refused, and notes how many first tries were refused.
+- **B89 explained** (4.0.22; the author's logs 86dfef83 and d4ee8f89, 2026-11-02 23:28; "I took off my headset, let it
+  idle, and then put it back on: I was then stuck on a black screen", later "now the game is back"): at the wake the
+  game's session resumed and drew a frame (71 fps), then the system's Guardian dialog took immersive focus (the game
+  hidden), its process died 0.4 s later and the Guardian service failed to find its room anchors every second from then
+  on ("ANCHOR_QUERY_FAILED, dialog"), so the headset showed nothing until the boundary was re-established; the game was
+  alive and hidden throughout and came back with focus. System-side (the 4.0.21 run's three wakes had no Guardian
+  involvement); no game change; `HEADSET_DIAG.md` says what the black means and what brings the game back.
 - **S28** (4.0.22; the two logs above): three changes.
   - **The warm-up uploads the originals of the merged multi-material meshes.** The group merger (`__gtMM`, 4.0.x)
     rewires a multi-material mesh whose groups share materials to a merged-index copy on its first draw, which is the

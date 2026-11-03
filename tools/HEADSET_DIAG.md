@@ -177,6 +177,10 @@ Since 3.15.57 (D3, the author: "let's try to make the logs more verbose"):
   (`cave`), a vignette playing, the Event, the screen (`playing`, `dialogue`, `panel`), the courier's state, the Gem
   (`gem`) and the snap turns (`snap`, a count; since 3.15.60, so a flash can be matched with the turn before it).
 - `xr visibility visible | visible-blurred | hidden`: the session's focus (the system menu, the headset taken off).
+  A black screen after waking the headset, with `xr visibility visible` then `hidden` right after and no frames: the
+  system's Guardian (boundary) dialog took focus (logcat: `GuardianDialogActivity`, `NO_LONGER_IMMERSIVE for
+  com.oculus.browser`, then `ANCHOR_QUERY_FAILED, dialog` every second when it cannot relocalise the room after an idle).
+  The game is alive underneath and resumes when focus returns; the Meta button or a boundary reset brings it back (B89).
 - After `MARK flash seen`, the flight recorder's last 10 s: `rec ... slow:` (frames over 20 ms, with their time before
   the mark), `rec changes:` (programs, textures, geometries and draw calls changing, the head inside a character),
   `rec events:` (focus changes in the last minute).
