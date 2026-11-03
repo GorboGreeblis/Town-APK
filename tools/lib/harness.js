@@ -224,11 +224,13 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
           fs.mkdirSync(path.join(root, 'tools/.runs'), { recursive: true }); fs.appendFileSync(path.join(root, 'tools/.runs/frame_hazards.log'), new Date().toISOString() + ' ' + line + '\n');
         }
       } catch (e) {}
-      // any WebGL error raised since boot (the game never reads errors, so the first one is still pending here; a lost
-      // context's own code aside); collected by run_tests.sh, which fails the pass on any. Rerun with GT_GLERR=1 to see
-      // which call and object raised it (F-B61 was found this way).
+      // any WebGL error raised since boot (a lost context's own code aside); collected by run_tests.sh, which fails the
+      // pass on any. The game reads errors in one place only: since S29 (4.0.23) the layer shim samples getError every
+      // 60th frame on the multiview path and keeps what it read in __gtXR.sub (err, errAt), so a pending error is the
+      // later of the two and the sampled ones are added here. Rerun with GT_GLERR=1 to see which call and object raised
+      // it (F-B61 was found this way).
       try {
-        const e = await page.evaluate(() => { const O = window.__dbg && window.__dbg.O; const gl = O && O.getContext(); const e = gl && !gl.isContextLost() ? gl.getError() : 0; return e === 0x9242 ? 0 : e; });   // CONTEXT_LOST_WEBGL: a test that loses the context on purpose
+        const e = await page.evaluate(() => { const O = window.__dbg && window.__dbg.O; const gl = O && O.getContext(); let e = gl && !gl.isContextLost() ? gl.getError() : 0; if (e === 0x9242) e = 0; const sub = window.__gtXR && window.__gtXR.sub; if (!e && sub && sub.err && sub.errAt && sub.errAt.length) e = sub.errAt[sub.errAt.length - 1][1]; return e; });   // CONTEXT_LOST_WEBGL: a test that loses the context on purpose
         if (e) {
           const line = `${path.basename(process.argv[1] || '?')}: WebGL error ${e} (0x${e.toString(16)}) raised during the run (rerun with GT_GLERR=1 to name the call and object)`;
           console.log('  WARNING  GL error: ' + line);

@@ -1710,6 +1710,52 @@ experiment, all on the multiview lead.
   frame's start, so S29's "late" counted every frame under the fake); its one projection texture is documented as
   counting every frame in "same swapchain image twice". The pixel-reading tools were checked against S30: each either
   clears explicitly (`fill_probe.js`, `overdraw_probe.js`) or renders whole scenes the sky or a marker covers.
+- **S31, the third full code audit** (4.0.25; T29, the author: "While tasks are ongoing. Please begin a full code
+  audit"): five parallel reviews of the beautified 4.0.24 file (the entry script and layer shim, the three.js patches,
+  the engine side, the game logic, the leftovers). None found the cause of the dark flash (B46): the three.js and
+  engine reviews ruled out their parts, which supports S29's view that the loss is on the layer path. Fixed:
+  - **B79's cause** (the logic review, reproduced headless): when the frog's corridor home moved toward the bar's
+    doorway, the post walk started the doorway route from inside the bar, because "the new home lies beyond her" alone
+    started it although she and her home stood in the same building; she walked out of the opening and back in and the
+    no-progress check tripped. The route step survived the rescue, so she tripped again about 7 s later (the pairs in
+    the headset logs). The route now starts from inside the home's own building only when she is more than 4 m from
+    home, and every go-home clears the route step. An 8-minute natural-play reproduction went from 5 trips to 0;
+    `test_stuck.js` passes on the patched file.
+  - **The no-progress clock restarts while a walker is busy, or held by a dialogue, menu or panel**, and the stuck
+    count starts over whenever it is not walking toward a target: a walker released after a long dance battle or
+    dialogue tripped "no progress" on its first frame, and a count left by a cancelled rescue made the last-resort
+    teleport come early.
+  - **The recovery reset clears the way-finding state** (go-home, route, nav, route step, stuck counts), as S20 said
+    it did; a walker reset mid-route used to set off again on the stale route. Its log is capped at 20 lines.
+  - **Re-entering VR after an exit runs on the projection layer again** (the entry review): the first session comes
+    from the entry script with the layers feature and the frame wrapper; a second one was requested by the game as a
+    plain session, so it ran three.js's default path with no projection layer, no multiview and none of the in-frame
+    holds (shapes and shaders first drawn then would upload or compile inside frames). The game now asks the entry
+    script for it (`session requested again (re-entry)` in the log). New `test_reentry.js` (standard tier) fails on
+    4.0.24 and passes now.
+  - **The extra flush S30 added is gone**: it ran before the layer's end, whose depth discard (P14) then found the
+    depth already written out, which on the Quest's tiled GPU brought back the per-frame depth write P14 removed; the
+    flush in `end`, after the discard, stays.
+  - **A throw out of the game's frame loop no longer stops it**: three.js asks for its next frame only after the
+    loop returns, so the loop is guarded (logged as `[loop]`), and the layer wrapper catches and counts a throw too.
+  - **Errors are logged five times per context, then once every 10 s with a count**: an entity failing every frame
+    used to send a log request every frame for the rest of the session.
+  - **A material that drops off the transparent list is made visible again**: a fade that restored a material to
+    opaque on the helper's rescan frame (1 in 120) left it hidden for good, e.g. the next Event's pizza boxes.
+  - **The batcher's fallback disposes its batches between frames**, as its gone sweep does (RULES.md 28).
+  - **A reused render item never carries a stale hold flag**; the draw-hook error report is guarded.
+  - **The mark's lines**: `rec xr frames` now prints the fallback draws, failed begins and ends and callback throws
+    (the docs promised "drawn by the fallback" since S18; the line never had it); `rec frames (3 s)` counts only GL
+    errors within its 3 s (the latest 12 are kept, not the first 12) and gives the session total beside them. The
+    harness's end-of-test GL-error check now also reads the errors the sampled read took.
+  - **The recorder reads the wrist HUD through a game hook**: it read `window.__dbg`, which exists only in test copies,
+    so "ev hud" never appeared in headset logs (S7).
+  - **Leftovers removed** (the leftovers review): the comfort vignette ring was still painted, dithered, uploaded and
+    stepped every frame after A34 hid it (RULES.md 27); the loader's `stop`, which could never act; build statistics
+    and three `JGP` exports nothing read; unread `__gtXR` fields (`loaderFrames`, `slices`, `sub.at`); a time argument
+    left from L1; three unused stone materials made while loading the pond.
+  Not changed, for the author: B90 (S30's possible per-frame GPU load and unproven benefit: a headset measurement
+  decides); B91 (latent gaps with no trigger today).
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures

@@ -190,6 +190,11 @@ Since 3.15.57 (D3, the author: "let's try to make the logs more verbose"):
   drew instead, S18), `rec near eyes (3 s)` (anything within 0.35 m of the eyes), and `rec light` (the drawn picture's
   brightness around the mark; since 4.0.13 opt-in only, off on the headset: it read the eye buffer every frame, S18).
 - Since 4.0.13: the entry log's `foveation fixed at 0 (the layer reads 0)` and `fov=` in every perf line (F-B83).
+- Since 4.0.25 (S31): `session requested again (re-entry), features=...` when VR is entered again after an exit
+  (the second session on the projection layer like the first); `rec xr frames` adds `drawn by the fallback N` and,
+  when non-zero, `begin failed`, `end failed`, `callback threw`; `[loop] ...` for a throw out of the game's frame
+  loop; errors repeat at most five times per context, then `[context] N more errors` every 10 s; `rec frames (3 s)`'s
+  `GL errors` counts only those within the 3 s, with the session total beside them.
 - Since 4.0.23 (S29): `rec frames (3 s): N, late N (worst -X ms@-t s), calls median C, tris median Tk, under 70%: ...,
   same swapchain image twice: N, GL errors N (code@-t s ...)`: the layer path's health in the 3 s before the mark. A
   dark flash on 4.0.22-4.0.23 (the clear was black, S18) meant the frame shown held no draw; since 4.0.24 (S30) the
