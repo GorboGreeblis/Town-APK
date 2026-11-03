@@ -1595,6 +1595,11 @@ experiment, all on the multiview lead.
   between frames: the Event's pizza-box and plant batches (B72's kind) and, as in f57f19a2, the Library's rug box
   (S28 below). The stuck detector: 8 trips, all the frog, six in three pairs 7 s apart (B79), one at 0.5 m from its
   mark (S28). The report: `tools/.runs/` (session scratch); analysis as for f57f19a2.
+- **test_content.js waits for the game's own exchange** (4.0.22, tools only; T9): the vignette section waited for its two
+  partners to be free and then asked the game to play, but the game refuses any play while an exchange of its own runs
+  (it starts one every 18-28 s, 8 s long), so a burst of refusals ("HNMUt refused, MUKDt refused, ...", 12 of 15 in the
+  clean tier of 2026-11-03, 4 in a solo run on 2026-11-02) came whenever the test's turn fell inside one. The test now
+  waits for no exchange to be playing as well, tries once more if refused, and notes how many first tries were refused.
 - **S28** (4.0.22; the two logs above): three changes.
   - **The warm-up uploads the originals of the merged multi-material meshes.** The group merger (`__gtMM`, 4.0.x)
     rewires a multi-material mesh whose groups share materials to a merged-index copy on its first draw, which is the

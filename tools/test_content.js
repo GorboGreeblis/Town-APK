@@ -263,11 +263,14 @@ const LONG = process.argv.includes('--long');
       const sp = [A, B].find((e) => e === (D.st && D.st.ent));
       if (sp && sp.stay) sp.stay();
       const free = (e) => { try { if (e.sync) e.sync(); } catch (x) {} return !e.busy && !(e.scene && e.scene()) && !e.visiting && !e.hosting; };
-      await H.gwait(() => free(A) && free(B), 60, 300);
+      // and the game refuses a play while any exchange of its own runs (it starts one every 18-28 s): wait for that too, and try once more
+      const ready = () => !V.playing() && free(A) && free(B);
+      await H.gwait(ready, 60, 300);
       const id = pk[0] + pk[1] + (text ? 't' : ''), n0 = V.plays[id] || 0;
       // count what the exchange adds to the scene (speech bubbles one after the other, or the flying tokens)
       let shown = 0; const add0 = C.add; C.add = function () { shown += arguments.length; return add0.apply(this, arguments); };
-      const ok = V.play(A, B, text);
+      let ok = V.play(A, B, text);
+      if (!ok) { out.retried = (out.retried || 0) + 1; await H.gwait(ready, 60, 300); ok = V.play(A, B, text); }
       if (!ok) { C.add = add0; if (sp && sp.browse) sp.browse(); out.failed.push(id + ' refused'); return; }
       // vignette time runs on game frames, so a slow machine stretches the 8.2 s of a text exchange
       const w = await H.gwait(() => !V.playing(), 40, 900);   // a text exchange lasts 8.2 game seconds
@@ -290,7 +293,7 @@ const LONG = process.argv.includes('--long');
     }
     return out;
   }, LONG);
-  note(`vignettes: ${vig.total} in all (${vig.town} between townsfolk, ${vig.ancient} with the Ancient); line-up ${vig.cast}; played ${vig.played.length} (game seconds): ` + vig.played.map((r) => `${r.id} ${r.s}s`).join(', '));
+  note(`vignettes: ${vig.total} in all (${vig.town} between townsfolk, ${vig.ancient} with the Ancient); line-up ${vig.cast}; played ${vig.played.length}, ${vig.retried || 0} first refused while the game's own exchange ran (game seconds): ` + vig.played.map((r) => `${r.id} ${r.s}s`).join(', '));
   expect('vignettes: the game knows all 102 exchanges (90 between townsfolk + the Ancient\'s 12)', vig.total === 102 && vig.town === 90 && vig.ancient === 12, JSON.stringify([vig.total, vig.town, vig.ancient]));
   expect('vignettes: the line-up includes the Ancient and, once cured, Zollod', /SL/.test(vig.cast) && /ZL/.test(vig.cast) && /SP/.test(vig.cast), vig.cast);
   expect(`vignettes: every exchange played shows its bubbles or tokens, is counted, and ends (${vig.played.length} played)`, vig.failed.length === 0 && vig.played.length >= (LONG ? 102 : 15), JSON.stringify(vig.failed.slice(0, 4)));
