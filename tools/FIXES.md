@@ -1606,7 +1606,8 @@ experiment, all on the multiview lead.
   hidden), its process died 0.4 s later and the Guardian service failed to find its room anchors every second from then
   on ("ANCHOR_QUERY_FAILED, dialog"), so the headset showed nothing until the boundary was re-established; the game was
   alive and hidden throughout and came back with focus. System-side (the 4.0.21 run's three wakes had no Guardian
-  involvement); no game change; `HEADSET_DIAG.md` says what the black means and what brings the game back.
+  involvement; the author: "I'm testing in low light", and the logcat shows the tracking cameras switching to their
+  low-light mode at the wake, which makes relocalising the room hard); no game change; `HEADSET_DIAG.md` says what the black means and what brings the game back.
 - **S28** (4.0.22; the two logs above): three changes.
   - **The warm-up uploads the originals of the merged multi-material meshes.** The group merger (`__gtMM`, 4.0.x)
     rewires a multi-material mesh whose groups share materials to a merged-index copy on its first draw, which is the
