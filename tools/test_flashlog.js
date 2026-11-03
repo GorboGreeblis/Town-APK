@@ -7,8 +7,9 @@
 //   - lost tracking (the head position emulated) is logged, and so is its return;
 //   - the light record (opt-in since S18; the test turns it on): a one-frame white flash staged in front of the eyes
 //     shows in the mark's "rec light" line as a one-frame spike at that frame, and the line is flat without it;
-//   - the renderer clears to black behind the sky sphere (S18) and the sphere covers the view: no dark cell in a quiet
-//     frame's record;
+//   - the clear colour is a muted ground tone outdoors (#6f8a78) and black in the Cave (S33), so a lost frame would be
+//     a small change of light; with the clear forced black, the sky sphere covers the view: no dark cell in a quiet
+//     frame's record (S18);
 //   - the light record is off unless a test turns it on, and frames keep coming with it on (its readback costs frames
 //     by design, S18; the old rule that it costs none held only while both 3 s windows stalled alike);
 //   - the mark's dump does not stall the frame it is pressed in (its heavy part, the near-eyes scan, runs in slices
@@ -53,8 +54,12 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     sh.position.set(0, -80, 0); D.C.add(sh); await frames(4);
     const quiet = logs.length; window.__gtFR.dump(); for (let k = 0; k < 240 && !logs.slice(quiet).some((l) => /^rec light/.test(l)); k++) await wait(250);
     out.flat = (logs.slice(quiet).find((l) => /^rec light/.test(l)) || '').replace(/.*one-frame spikes or dips: /, '');
-    // S18: the renderer clears to black behind the sky sphere; the sphere covers the whole view, so no 8x8 cell of a quiet frame is dark
-    { const rec = await new Promise((res) => X.lum.read(res)); out.darkest = rec && rec.length ? +Math.min(...rec.slice(-24).flatMap((e) => e.v)).toFixed(3) : null; }
+    // S33: outdoors the renderer clears to a muted ground tone (#6f8a78), in the Cave to black; read here, then the
+    // clear is forced black for 30 frames so a gap in the sky sphere would show as a dark cell (S18): none may
+    out.clearOut = D.O.getClearColor(new T.Color()).getHex();
+    { const V = D.JGP.vigs, ic = V.computeInCave; V.computeInCave = () => true; await frames(30); out.clearCave = D.O.getClearColor(new T.Color()).getHex();
+      const rec = await new Promise((res) => X.lum.read(res)); out.darkest = rec && rec.length ? +Math.min(...rec.slice(-24).flatMap((e) => e.v)).toFixed(3) : null;
+      V.computeInCave = ic; await frames(3); out.clearBack = D.O.getClearColor(new T.Color()).getHex(); }
     sh.position.copy(D.we.headPos); await frames(3); sh.position.set(0, -80, 0); await frames(20);
     const L1 = logs.length, t0 = performance.now(); window.__gtFR.dump(); out.dumpMs = Math.round(performance.now() - t0);
     for (let k = 0; k < 240 && !(logs.slice(L1).some((l) => /^rec near eyes/.test(l)) && logs.slice(L1).some((l) => /^rec light/.test(l))); k++) await wait(250);   // the sliced scan and the light read finish over the next frames
@@ -79,7 +84,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   // the record reads the eye buffer every frame (a render-target switch and a forced resolve: S18 made it opt-in and off on the headset), so it costs frames by design; what must hold is that it is off unless asked for and that frames keep coming with it on
   expect('the light record is off unless a test turns it on (S18), and frames keep coming with it on (its readback costs frames by design)', r.lumDefaultOff === true && r.rateOn > 10 && r.rateOff > 10, `${r.rateOn} frames on, ${r.rateOff} off, in 3 s; off by default: ${r.lumDefaultOff}`);
   expect('without a flash the light line shows no spike', r.flat === 'none', r.flat);
-  expect('the black clear never shows: the sky sphere covers the view (no dark cell in a quiet frame; S18)', r.darkest !== null && r.darkest > 0.04, String(r.darkest) + ' (a black cell would read 0; dark objects read about 0.12)');
+  expect('the clear never shows: with the clear forced black, the sky sphere covers the view (no dark cell in a quiet frame; S18)', r.darkest !== null && r.darkest > 0.04, String(r.darkest) + ' (a black cell would read 0; dark objects read about 0.12)');
+  expect('the clear colour is a muted ground tone outdoors (#6f8a78) and black in the Cave, so a lost frame is a small change of light (S33)', r.clearOut === 0x6f8a78 && r.clearCave === 0 && r.clearBack === 0x6f8a78, JSON.stringify({ out: (r.clearOut || 0).toString(16), cave: (r.clearCave || 0).toString(16), back: (r.clearBack || 0).toString(16) }));
   expect('the staged one-frame flash shows in the mark\'s light line as a spike', !!r.light && /spikes or dips: \+\d+/.test(r.light), (r.light || 'no line').slice(-200));
   expect('the mark\'s dump does not stall its frame (under 25 ms; the near-eyes scan runs in slices)', r.dumpMs < 25 && !!r.near, `${r.dumpMs} ms; ${r.near ? 'near-eyes line logged' : 'no near-eyes line'}`);
   expect('the mark logs the XR frame health line', !!r.xr && /no head pose \d+/.test(r.xr), r.xr || 'none');

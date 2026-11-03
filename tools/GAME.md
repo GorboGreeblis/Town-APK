@@ -204,9 +204,10 @@ Read from the code and checked by the tests named; numbers are game seconds and 
 - **A frame the game did not draw is drawn anyway** (S18). The entry script counts the game's draws per headset frame;
   a frame begun on the projection layer with none is drawn by the entry script itself before the frame ends, so the
   compositor never shows a swapchain image the game left untouched.
-- **Black behind the sky** (S18). The renderer clears to black, not to the sky's near-white horizon colour; the sky
-  sphere covers every pixel, so nothing visible changes, and a frame whose draw is ever lost shows black, not white.
-  (4.0.24 left the colour uncleared, S30; taken out in 4.0.25, B90.)
+- **A soft tone behind the sky** (S18, S33). The renderer clears to a muted ground green outdoors (#6f8a78) and to
+  black in the Cave, never to the sky's near-white horizon colour; the sky sphere covers every pixel, so nothing
+  visible changes, and a frame whose draw is ever lost shows a flat tone close to the scene's own brightness.
+  (Black everywhere from 4.0.13 to 4.0.26; 4.0.24 left the colour uncleared, S30, taken out in 4.0.25, B90.)
 - **Nothing touches the session after VR entry** (F-B83, S18): one fixed foveation set at entry, the projection layer
   never swapped, the camera's far plane never changed (three.js would re-send the session's depth range), the eye
   buffer never read during play (the light record is opt-in), and a flush at the end of every frame.

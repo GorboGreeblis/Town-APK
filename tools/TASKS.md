@@ -22,26 +22,30 @@ Worked around until the author can do them (the author, 2026-10-31).
 | T3 | Headset run of the latest build: 4.0.21 run on 2026-11-02 (logs 550715df and 09ba968c: no flashes in 27 minutes with two Events, the floor held); next, 4.0.22 (the cap, the basket, the church doorway and cross, S28) | open, author | `HEADSET_DIAG.md`, `RELEASE.md` sections 3 and 5 |
 | T18 | Full pass on the final build (RULES.md 23), with `--resume`, and the Ordinals check on its compressed version (ordinals.com, ordiscan.com and Quest Browser) (the author: "Please treat this as the final build until I say otherwise"; "postpone the full pass until I can test in headset first") | the Ordinals check done on 4.0.9 (NOTES 100: all passed, both explorers' policies and the preview frame; the real Quest Browser on the headset is the author's); the full pass waiting on T3 | `TESTING.md`; the last finished full pass was 3.15.54 (NOTES 96) |
 | T4 | Store upload: the final build to the Alpha channel, then the age group (13+) on its build page (T16's frame rate now holds in the headset, 2026-10-31) | open, author; after T3 and T18 | `RELEASE.md` section 5; the listing, IARC rating, privacy page and supported devices are done |
-| T26 | The headset-confirmation backlog: confirmed by the author's 4.0.15 run (2026-11-02): F-B83 (no tiles at the edge of view), S18-S20 (no flashes), the FPS bar; the 4.0.21 run (logs 550715df, 09ba968c): S23 (nothing held at entry), S8 (the goo safety fired, no flash), S25/L1; still to confirm when convenient: A41 (the HUD on the watch, now bigger: A44), A42 (pizza boxes fade), A43 (the Ormstown parcel), A45-A48 (4.0.22), P34 (the Event's start is still a 46 ms frame on the headset) | open, author | VERSIONS.md 4.0.7-4.0.17 |
+| T26 | The headset-confirmation backlog: confirmed by the author's 4.0.15 run (2026-11-02): F-B83 (no tiles at the edge of view), S18-S20 (no flashes), the FPS bar; the 4.0.21 run (logs 550715df, 09ba968c): S23 (nothing held at entry), S8 (the goo safety fired, no flash), S25/L1; confirmed by the author on 2026-11-03: A41/A44 (the HUD on the watch), A42 (pizza boxes fade), A43 (the Ormstown label), A45 (Mama Gorbo's cap), A47 (the church doorway), A48 (the cross removed); still to confirm when convenient: A46/A49 (the basket on the player's left), entering VR again after an exit (S31), P34 (the Event's start, a 46 ms frame on 4.0.21; trimmed again in S33) | open, author | VERSIONS.md 4.0.7-4.0.17 |
 | T27 | Another full code review after this pass (the author, 2026-11-02): five reviews on 4.0.15 done 2026-11-02 (the entry script and layers shim, the three.js multiview patches, the engine side, the game logic, the leftovers): one high (B78), three medium (B80, B83, B84) and nine low findings; B78, B80, B81, B82 fixed in 4.0.17 (S24); the rest logged (B79, B83-B88) for T28; the leftovers found (a dead visit helper, write-only head-script fields, two diagnostic counters, stale doc wording) for 4.0.17 | done (2026-11-02) | FIXES S24; BUGS B78-B88 |
 
-## Resume point (4.0.25, 2026-11-03)
+## Resume point (4.0.27, 2026-11-03)
 
 - **Builds since the author's last full headset run (4.0.21, logs 550715df and 09ba968c: no flashes, the floor held):**
   4.0.22 the cap closed (A45), the basket (A46), the church doorway's backing (A47), the cross gone (A48), S28; the
   author's 4.0.22 session (logs 86dfef83/d4ee8f89, 99bf1cc9): a black screen after an idle wake (B89, the Guardian
   dialog, system-side) and one dark flash by the gazebo among snap turns and a pickup (B46 open again). 4.0.23 the
   basket on the player's left (A49), no controller vibration (A50), the recorder watching the layer path (S29).
-  4.0.24 (PR #61, merged): S30, no colour clear and the flush before the hand-over. 4.0.25 (PR #62, draft): the third
-  audit's fixes (S31: B79 fixed, re-entry on the projection layer, S30's flush removed, the loop guarded, logs capped,
-  leftovers gone) and S30's no-clear taken out at the author's word (B90 closed). PRs #47-#61 merged.
-- **The author** tests when they can: the next flash's mark prints `rec frames (3 s)` (S29); the basket side, the cap,
-  the church doorway (T3); entering VR again after an exit (S31 re-entry).
-- **Running on the machine when this was written:** the final-build process on the 4.0.25 asset
-  (`tools/.runs/final_4.0.25.sh`, log `tools/.runs/full_4.0.25.log`): the full tier with coverage, then the dead-code
-  census, the play census, the content test alone and the report tools. No build during it.
+  4.0.24 S30 (no-clear). 4.0.25 the third audit's fixes (S31) and the no-clear taken out (closed for good, RULES.md).
+  4.0.26 B92 fixed (S32, from the 4.0.25 final pass). 4.0.27 every open bug and minor improvement (S33: B91, B72-B77,
+  B54; the softer clear colour; the Event's start trimmed); its 4.0.26 final pass was stopped for it. PRs #47-#62 merged.
+- **Closed by the author on 2026-11-03:** no-clear (for good) and a test build without the depth discard. The other two
+  flash options (B91's gaps, a softer clear colour) went into 4.0.27 at the author's word. Open bugs: B46 only.
+- **The author** tests when they can: the next flash's mark prints `rec frames (3 s)` (S29); the basket side; entering
+  VR again after an exit (S31 re-entry). Confirmed in the headset on 2026-11-03: the cap, the church doorway, the cross
+  removed, the HUD, the pizza boxes' fade, the Ormstown label.
+- **Running on the machine when this was written:** the final-build process on the 4.0.27 asset
+  (`tools/.runs/final_4.0.27.sh`, log `tools/.runs/full_4.0.27.log`; the full tier gets 32000 s, the report tools
+  5400 s each): the full tier with coverage, then the dead-code census, the play census, the content test alone and the
+  report tools. No build during it. The 4.0.25 pass (TEST_PLAN) stopped at its time limit in stage 46 of 52.
 - **Next:** read those results as they land and fix what they find (T18, T23, T24); the next flash mark's S29 lines
-  (B46); B91 (latent, low).
+  (B46).
 
 ## Done
 

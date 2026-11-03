@@ -1774,6 +1774,55 @@ the final build"):
     The flash log's 29 ms dump stall came with the machine loaded by those reruns (rerun alone on 4.0.26).
   - The 4.0.25 full tier with coverage ran past its 16000 s limit in the text-scene test (about 66 minutes under
     coverage and load, 13-18 minutes before); the final pass moves to 4.0.26 with a longer limit.
+- **S33, every open bug and minor improvement** (4.0.27; the author: "Please apply all minor improvements listed above
+and all fixes for bugs listed above"):
+  - **B91, the third audit's four latent gaps, closed.** (1) Sprites now go through both per-object holds, as meshes
+    do: a sprite whose shape or shader is not on the GPU yet is held one frame and made between frames. (2) The shader
+    hold checks the four recompile conditions it lacked, each as three.js checks it (the render target's encoding, the
+    environment map, the clipping planes, 4-component vertex colours); they only decide whether to look up the
+    program cache, so an object is held only when its program truly does not exist. (3) The multiview decision is no
+    longer cached as "no" when it is asked before the session exists or from a context that is not WebGL2 (the
+    loader's, whose fallback path asks it); it is asked again at most twice a second until it can be made, and logs
+    "multiview not decided yet" once. (4) A compile or upload between frames that throws is logged once ("shader hold:
+    the compile between frames failed for ..." or "geometry hold: the upload ...") and its object is let through to
+    draw as three.js would, instead of being held, silently, every frame for ever.
+  - **B72 and B54: batches made in play are built after the frame.** A character spawned in play, the Event's pizza
+    boxes and the Event's stage were batched inside the frame callback (per-vertex hashing, a CPU spike) and their
+    batch's shape then held a frame (the play census's 312- and 148-vertex shapes). They are now batched right after
+    the frame, between frames, and the batch's shape uploaded at once, so it is on the GPU before its first draw and
+    nothing is uploaded inside a frame.
+  - **B73: the eye hide's cold batches.** Hiding a character for the head inside it now wakes its batches (a batch
+    gone quiet checked hides one frame in four), so the hide is honoured in the same frame. The Garden's plants are
+    left to their own near-eye fade (S7, dithered within 0.3-0.5 m of the eye), which is why the eye hide skips them.
+  - **B74: closed, no change needed.** The emotes' warm-up reuses its pool of sixteen sprites since S11; run again it
+    adds no sprite, mesh or material (checked).
+  - **B75: the loader is released.** Its WebGL context, cube and quad layers, program, buffer, texture and canvas
+    stayed for the whole session; 10 s after the game holds the session they are released between frames (layers
+    destroyed, context lost; the game's own context is separate) and the log says "loader released". An entry that
+    fails before then keeps the loader for its retry.
+  - **B76: the mark counter.** With the draw-nothing marks turned off by the recovery step, the counter is set to minus
+    infinity, not -7, so the layer wrappers counting it up can never bring it back onto an old mark (which would have
+    skipped a subtree that had since been filled).
+  - **B77: the warm-up's GL errors.** In VR the geometry warm-up draws with xr off, which goes into the layer's
+    multiview framebuffer and raises an error on every draw (in both render modes, on every build since the warm-up
+    ran in VR; the uploads it is for are done before each draw). Its GL work is unchanged; the errors are read off
+    right after it, between frames, and logged once ("its draw into the layer's framebuffer raised N GL error
+    kind(s)"), so the error watch no longer counts them as errors in play.
+  - **The clear colour, softer.** Outdoors the renderer now clears to a muted ground green (#6f8a78, the loader's own
+    ground colour) instead of black; in the Cave it stays black. The sky sphere covers every pixel, so nothing visible
+    changes; a frame whose draw is lost would show a flat mid tone close to the scene's own brightness, a far smaller
+    change of light than black. The colour changes only when the player crosses into or out of the Cave, inside the
+    frame's own draw.
+  - **The Event's start, trimmed (P34 continued).** The fade's start walked every object in the town up to its
+    top-level group to find materials shared with what does not fade; it now walks each top-level group's subtree once.
+    The foot points' second forced update of every participant's matrices, which nothing between needed, is gone.
+    Headless medians of seven starts each (4.0.26, then 4.0.27): the press 19.4 to 16.2 ms, the first frame after it
+    46.1 to 44.0 ms, the second 17.9 to 15.9 ms; the rest of the first frame is spread over the batcher, the matrices
+    and the draw, with no single large cost left.
+  - **B46 (the flashes) stays open**: these close every gap the code still had and soften what a lost frame would
+    show; the cause has not been found in the game.
+  - `test_s33.js` (new, standard tier) checks each of these; `test_flashlog.js` checks the clear colour outdoors and in
+    the Cave and still checks, with the clear forced black, that the sky sphere covers the view.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures

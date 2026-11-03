@@ -197,8 +197,15 @@ Since 3.15.57 (D3, the author: "let's try to make the logs more verbose"):
   `GL errors` counts only those within the 3 s, with the session total beside them.
 - Since 4.0.23 (S29): `rec frames (3 s): N, late N (worst -X ms@-t s), calls median C, tris median Tk, under 70%: ...,
   same swapchain image twice: N, GL errors N (code@-t s ...)`: the layer path's health in the 3 s before the mark. A
-  dark flash (the clear is black, S18; 4.0.24 alone left it uncleared) means the frame shown held no draw: a late frame (the GPU past the
+  flash of one flat colour (since 4.0.27 a muted green-grey outdoors and black in the Cave, S33; black everywhere
+  before, S18; 4.0.24 alone left it uncleared) means the frame shown held no draw: a late frame (the GPU past the
   display time), a repeated swapchain image, or a GL error after the attach says where the draw was lost.
+Since 4.0.27 (S33) the log may also have: `loader released: its layers, program, buffer, texture and context` (once,
+about 10 s after entry: expected); `multiview not decided yet: ...` (once, if the renderer asked before the session:
+expected, the decision follows); `shader hold: the compile between frames failed for ...` or `geometry hold: the
+upload between frames failed for ...` (not expected: the object was then drawn without the hold, report it);
+`geometry warm-up: its draw into the layer's framebuffer raised N GL error kind(s), read off here` (at VR entry:
+expected, harmless).
 Since 3.15.59-3.15.63 the log also has:
 - `geometry held for one frame: N object(s) uploaded between frames` (F-B51): new geometry held back a frame; expected
   now and then (Nextessa's visits, the Event's plants).
