@@ -1540,12 +1540,13 @@ experiment, all on the multiview lead.
 - **L2** (4.0.18; the second leftovers review): `JGP.visitPlan` (a visit helper nothing called; the docs named it,
   reworded to `JGP.visits`), four write-only head-script fields (`layersErr`, `mvHook`, `heldTex`; `drawErr` became a
   one-time log line, `loader draw failed`), two diagnostic counters of the matrix-walk freeze (`n`, `unfrozen`).
-- **S26** (4.0.19; T28, B87): a meeting's seek is dropped when either partner becomes unavailable (an Event, a visit,
-  a scene) instead of staying flagged until the next meeting; before, the seek flag and the moved home point biased
-  the roam until then.
-  Also (B85): the emotes' glyph cache keeps up to 160 glyph-and-colour textures before evicting any (40 before),
-  so a session's emotes and scene tokens (about 30 pairs) are painted once each and never disposed and remade in
-  play; a first use still paints its 64 x 64 canvas, uploaded between frames by the texture hold.
+- **S26** (4.0.19, reverted 4.0.21; T28, B87): 4.0.19 dropped a meeting's seek when a partner became unavailable; both
+  forms of it (any unavailability, then lasting ones only) left Mama Gorbo standing after a recovery reset
+  (`test_recover.js`: she is expected to walk again, which the seek toward Gooward provides even while he is busy).
+  The original behaviour is back: the seek stays set until the meeting or its reset, as the game relies on it; B87 is
+  closed by design. Kept from 4.0.19 (B85): the emotes' glyph cache keeps up to 160 glyph-and-colour textures before
+  evicting any (40 before), so a session's emotes and scene tokens (about 30 pairs) are painted once each and never
+  disposed and remade in play; a first use still paints its 64 x 64 canvas, uploaded between frames by the texture hold.
 - **S27** (4.0.20; T28, B88): the shader hold's per-object check no longer makes a one-element array for every
   frustum-visible mesh every frame (a single material is checked directly); the other small per-frame allocations
   the review listed (the walkers' vectors, the courier's step, the HUD's arrays while open) stay: no defect, GC pressure
