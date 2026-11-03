@@ -202,6 +202,9 @@ Since 3.15.57 (D3, the author: "let's try to make the logs more verbose"):
   flash of one flat colour (since 4.0.27 a muted green-grey outdoors and black in the Cave, S33; black everywhere
   before, S18; 4.0.24 alone left it uncleared) means the frame shown held no draw: a late frame (the GPU past the
   display time), a repeated swapchain image, or a GL error after the attach says where the draw was lost.
+The device in the `perf` lines (`dev=Quest_3`) comes from the browser's user agent; the author's Quest 3S reports
+itself as a Quest 3 there (log 1b7d04a9, 2026-11-03), so the per-device verdicts cannot tell the two apart.
+
 Since 4.0.27 (S33) the log may also have: `loader released: its layers, program, buffer, texture and context` (once,
 about 10 s after entry: expected); `multiview not decided yet: ...` (once, if the renderer asked before the session:
 expected, the decision follows); `shader hold: the compile between frames failed for ...` or `geometry hold: the
