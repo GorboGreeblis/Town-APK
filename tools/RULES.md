@@ -180,6 +180,11 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     S2), the opt-in light record (S18) and the sampled error read of S29 (one every 60 frames, at the frame's start)
     are the standing exceptions, and anything new waits for the gap between frames.
 
+29. **Never a no-layers build** (2026-11-03: "Please note as a Rule that we will never use a no layers build"; "It has
+    serious issues and we're not taking this route"): every build, release or experiment, requests the WebXR
+    `layers` feature and renders through the projection layer; no build drops it for the plain WebXR layer (the
+    removed `nolayers` experiment, FIXES S36, log 4d0d3716).
+
 ## Priorities
 
 - **Never below 60 fps on a Quest 3S and a Quest 3** (2026-10-30: "Tiny visual changes are ok to reach 60 fps.
@@ -205,8 +210,8 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
   addition"); the colour is cleared to black each frame (S18). Closed for good (2026-11-03, "Let's remove the no-clear
   option. The risk is too high. We can close this option out as well"): no build tries it again.
 - The plain WebXR layer (the `nolayers` experiment, no projection layer, no multiview): closed (2026-11-03, "Close out
-  the no layers build. It has serious issues and we're not taking this route"); the experiment is removed and no
-  build drops the `layers` feature again.
+  the no layers build. It has serious issues and we're not taking this route"); the experiment is removed, and
+  rule 29 makes it standing: no build drops the `layers` feature.
 - A test build without the depth discard (P14, the layer's end): closed (2026-11-03, "'Test a build without the
   depth discard' close out this option"). The discard stays in every build; no experiment build drops it.
 - The Event's headroom by fading more scenery: closed (2026-11-03, "let's close out this option altogether. I don't

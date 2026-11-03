@@ -1896,7 +1896,8 @@ frame already hands the game (no GL call added, RULES.md 28):
     serious issues and we're not taking this route." Without layers the game falls back to the classic two-eye path
     (no multiview: "multiview not decided yet ... layers false"), 56-67 fps of 72 in busy views and a loader held at
     6-10 fps for about 12 s before the drop-in. The experiment is removed from `tools/experiment.py` and no build
-    tries the plain WebXR layer again (RULES.md).
+    tries the plain WebXR layer again: RULES.md 29, at the author's word ("Please note as a Rule that we will never
+    use a no layers build").
   - **Ghosting on the spread snaps** (the author, 2026-11-03, `snapspread` and `snapspread2`): "some ghosting can be
     seen during turns, turns are no longer appearing as clean to the user". Each in-between frame is shown, and
     the display's persistence blends it with the next, so a spread snap reads as a smear rather than a cut; with
