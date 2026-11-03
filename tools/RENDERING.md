@@ -60,6 +60,10 @@ that keep it fast and flash-free, each with the test that enforces it. Details a
      new shader program is held and its program compiled after the frame (S2, `shader held for one frame`); a
      character the player's head is inside is hidden for the frame (S1, `head inside N character(s)`), and a
      draw hook that throws is logged and skipped rather than ending the frame (S1, `[draw hook]`).
+   - **No colour clear.** Since 4.0.24 (S30) the frame's colour buffer is not cleared: the sky sphere (radius 150,
+     inside the far plane) covers every pixel, so nothing visible changes (pictures identical), and a frame whose
+     draw is lost on the way to the compositor shows that swapchain image's previous picture, about three frames
+     old, instead of the clear (black since S18). Depth and stencil are still cleared every frame.
    - **Draw.** three.js draws each object once with the left camera. Multiview programs pick each eye's
      matrices by `gl_ViewID_OVR`. The left eye reads the uniforms three.js always uploads; the right eye
      reads its own model-view, normal, view and projection matrices, computed on the CPU exactly as

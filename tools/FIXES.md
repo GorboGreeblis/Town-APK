@@ -1670,6 +1670,16 @@ experiment, all on the multiview lead.
   3x on every file, 4.0.22 included: it reads the eye buffer every frame, which is why S18 made it opt-in and off on
   the headset, so the rule that it costs no frames was stale. The test now checks what matters: the record is off
   unless a test turns it on, and frames keep coming with it on.
+- **S30** (4.0.24; the author, on the dark flash: "we have tried many times and not found the cause, what about hiding
+  the symptom as a fix?"; of the four options put to them (no colour clear, MSAA 2 on the layer, the classic two-eye
+  path, skipping a late frame) "let's close out options 2, 3, and 4"): the colour buffer is no longer cleared each
+  frame (`autoClearColor` off; depth and stencil still cleared). The sky sphere covers every pixel, so nothing visible
+  changes: ten wide views rendered twice in a row in the same page, once with the clear and once without, differ by
+  about 100 pixels in 400,000 (0.03%), less than two renders with the clear differ from each other (about 300, the
+  grass, clouds and water moving between frames). A frame whose draw is lost on the way to the compositor now shows
+  that swapchain image's previous picture, about three frames old, instead of the clear (black since S18, the sky's
+  near-white before): on a still view nothing, on a snap turn a one-frame step back. S29's lines still report what
+  was lost. `RENDERING.md` section 3.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
