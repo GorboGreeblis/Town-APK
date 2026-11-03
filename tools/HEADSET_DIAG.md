@@ -197,8 +197,7 @@ Since 3.15.57 (D3, the author: "let's try to make the logs more verbose"):
   `GL errors` counts only those within the 3 s, with the session total beside them.
 - Since 4.0.23 (S29): `rec frames (3 s): N, late N (worst -X ms@-t s), calls median C, tris median Tk, under 70%: ...,
   same swapchain image twice: N, GL errors N (code@-t s ...)`: the layer path's health in the 3 s before the mark. A
-  dark flash on 4.0.22-4.0.23 (the clear was black, S18) meant the frame shown held no draw; since 4.0.24 (S30) the
-  colour is not cleared, so a lost draw shows the image's previous picture (a one-frame step back) instead: a late frame (the GPU past the
+  dark flash (the clear is black, S18; 4.0.24 alone left it uncleared) means the frame shown held no draw: a late frame (the GPU past the
   display time), a repeated swapchain image, or a GL error after the attach says where the draw was lost.
 Since 3.15.59-3.15.63 the log also has:
 - `geometry held for one frame: N object(s) uploaded between frames` (F-B51): new geometry held back a frame; expected

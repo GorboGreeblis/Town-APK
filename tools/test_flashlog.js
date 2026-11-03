@@ -79,7 +79,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   // the record reads the eye buffer every frame (a render-target switch and a forced resolve: S18 made it opt-in and off on the headset), so it costs frames by design; what must hold is that it is off unless asked for and that frames keep coming with it on
   expect('the light record is off unless a test turns it on (S18), and frames keep coming with it on (its readback costs frames by design)', r.lumDefaultOff === true && r.rateOn > 10 && r.rateOff > 10, `${r.rateOn} frames on, ${r.rateOff} off, in 3 s; off by default: ${r.lumDefaultOff}`);
   expect('without a flash the light line shows no spike', r.flat === 'none', r.flat);
-  expect('nothing but the sky shows behind the scene: no dark cell in a quiet frame (the clear was black since S18; since S30 the colour is not cleared at all)', r.darkest !== null && r.darkest > 0.04, String(r.darkest) + ' (a black cell would read 0; dark objects read about 0.12)');
+  expect('the black clear never shows: the sky sphere covers the view (no dark cell in a quiet frame; S18)', r.darkest !== null && r.darkest > 0.04, String(r.darkest) + ' (a black cell would read 0; dark objects read about 0.12)');
   expect('the staged one-frame flash shows in the mark\'s light line as a spike', !!r.light && /spikes or dips: \+\d+/.test(r.light), (r.light || 'no line').slice(-200));
   expect('the mark\'s dump does not stall its frame (under 25 ms; the near-eyes scan runs in slices)', r.dumpMs < 25 && !!r.near, `${r.dumpMs} ms; ${r.near ? 'near-eyes line logged' : 'no near-eyes line'}`);
   expect('the mark logs the XR frame health line', !!r.xr && /no head pose \d+/.test(r.xr), r.xr || 'none');

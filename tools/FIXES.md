@@ -1691,6 +1691,10 @@ experiment, all on the multiview lead.
   centre and 18k beyond, and the outer town is behind the mist's own far detail; the heavy frames are the park itself,
   so the only further cut would hide things the player sees (not taken; the author then closed the option altogether:
   nothing that affects the player's experience negatively; RULES.md "Decisions that close an option").
+  **Taken out in 4.0.25** (the author: "The next build should not have the no clear addition"), after the third
+  audit (B90) found it likely made the Quest's tiled GPU load both eye images back every frame (about 24 MB) and that
+  its benefit rested on the browser keeping the images' old contents, which nothing showed: the colour is cleared to
+  black again each frame (S18). The flush in the layer's `end` stays; the extra flush went with S31.
 - **The harness tags the governor in its folded form** (4.0.24, tools only; T9): the harness exposes the governor to
   tests by rewriting its declaration text (`const Ge={`); A50's removal of the pulse counters, which stood between
   the batcher's box and the governor, let the minifier fold the two into one statement (`const $e=...,Ge={ema:`), so
