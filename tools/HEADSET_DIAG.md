@@ -190,6 +190,10 @@ Since 3.15.57 (D3, the author: "let's try to make the logs more verbose"):
   drew instead, S18), `rec near eyes (3 s)` (anything within 0.35 m of the eyes), and `rec light` (the drawn picture's
   brightness around the mark; since 4.0.13 opt-in only, off on the headset: it read the eye buffer every frame, S18).
 - Since 4.0.13: the entry log's `foveation fixed at 0 (the layer reads 0)` and `fov=` in every perf line (F-B83).
+- Since 4.0.23 (S29): `rec frames (3 s): N, late N (worst -X ms@-t s), calls median C, tris median Tk, under 70%: ...,
+  same swapchain image twice: N, GL errors N (code@-t s ...)`: the layer path's health in the 3 s before the mark. A
+  dark flash (the clear is black since S18) means the frame shown held no draw: a late frame (the GPU past the
+  display time), a repeated swapchain image, or a GL error after the attach says where the draw was lost.
 Since 3.15.59-3.15.63 the log also has:
 - `geometry held for one frame: N object(s) uploaded between frames` (F-B51): new geometry held back a frame; expected
   now and then (Nextessa's visits, the Event's plants).

@@ -46,7 +46,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Left stick walk with dead-zone, speed, collision with buildings (`F.solid`) and bodies (`uo`), park bounds | `test_input.js` (walking into a townsperson never overlaps; walking outward stays inside the park) | done |
 | Right stick snap turn 30°, no repeat while held | `test_input.js` | done |
 | Trigger/grip (`select`/`squeeze`): pick ray, pick range/cone, menu choice, UI buttons 4/5 | `test_input.js` (events only) | partial |
-| Controller mapping on real hardware (hand assignment, haptics) | sideload | headset |
+| Controller mapping on real hardware (hand assignment; no haptics anywhere since 4.0.23, A50) | sideload | headset |
 
 ## 4. World and collision
 
@@ -86,7 +86,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Every talk line, gift line, campfire line renders without overflow and has no spelling errors | `spellcheck_dialogue.py`; `test_textfit.js` (full tier; about a minute) | done (3.15.63: 296 lines, 337 pages, all fit) |
 | Talk flow: `Talk to`, cycling lines, `|` page breaks, typewriter speed | `test_progression.js` (every line shown) | partial |
 | Panels (`_t`): shop, campfire/garden event, battle; buttons CLOSE/DONE/LEAVE | `test_progression.js` | partial |
-| HUD counts (blossoms, acorns, artifacts) update; the wrist HUD on the left grip shows the Event checkboxes and every held item, redraws only on change; haptic pulses on a gained Blossom (0.3, 35 ms) and a new friend (0.5, 70 ms) | `test_hud.js` (standard tier; fake controllers record pulses) | done |
+| HUD counts (blossoms, acorns, artifacts) update; the wrist HUD on the left grip shows the Event checkboxes and every held item, redraws only on change; no controller ever vibrates (A50, RULES.md 26) | `test_hud.js` (standard tier; the fake controllers record every pulse) | done (no haptics since 4.0.23) |
 
 ## 7. Economy and progression (`Kt`)
 

@@ -25,19 +25,24 @@ Worked around until the author can do them (the author, 2026-10-31).
 | T26 | The headset-confirmation backlog: confirmed by the author's 4.0.15 run (2026-11-02): F-B83 (no tiles at the edge of view), S18-S20 (no flashes), the FPS bar; the 4.0.21 run (logs 550715df, 09ba968c): S23 (nothing held at entry), S8 (the goo safety fired, no flash), S25/L1; still to confirm when convenient: A41 (the HUD on the watch, now bigger: A44), A42 (pizza boxes fade), A43 (the Ormstown parcel), A45-A48 (4.0.22), P34 (the Event's start is still a 46 ms frame on the headset) | open, author | VERSIONS.md 4.0.7-4.0.17 |
 | T27 | Another full code review after this pass (the author, 2026-11-02): five reviews on 4.0.15 done 2026-11-02 (the entry script and layers shim, the three.js multiview patches, the engine side, the game logic, the leftovers): one high (B78), three medium (B80, B83, B84) and nine low findings; B78, B80, B81, B82 fixed in 4.0.17 (S24); the rest logged (B79, B83-B88) for T28; the leftovers found (a dead visit helper, write-only head-script fields, two diagnostic counters, stale doc wording) for 4.0.17 | done (2026-11-02) | FIXES S24; BUGS B78-B88 |
 
-## Resume point (4.0.22, 2026-11-03)
+## Resume point (4.0.23, 2026-11-03)
 
-- **Builds since the author's last headset run (4.0.21, 2026-11-02, logs 550715df and 09ba968c: no flashes, the floor
-  held):** 4.0.22 the cap closed with a full-disc brim (A45), the basket over Garden Supplies' ramp gone (A46), the
-  church doorway's backing (A47), the cross gone (A48), S28 (the merger's originals uploaded while loading, the hold's
-  names, the no-progress margin 0.8 m). PRs #47-#58 merged (#58 with 4.0.21); 4.0.22 on the branch for the next PR.
-- **The author** tests when they can: the cap, the kiosk, the church doorway (T3); the headset confirmations in T26.
-- **Running or queued on the machine when this was written:** the clean full tier with coverage on the 4.0.22 asset
-  (`tools/.runs/full_4.0.22.log`; the tier on 4.0.21 was stopped for the build), then the dead-code census
-  (`dead_code_4.0.22.log`, T23's last part), the play census, the content test alone, the three report tools alone
-  (`fill_probe.js`, `event_cpu.js`, `occlusion_census.js`; T24) and a second solo content run. No build during it.
-- **Next:** read those results as they land (T9, T23, T24); B79 when a trip carries its state; then the full pass on the
-  last build (T18) once the author's headset run (T3) has happened.
+- **Builds since the author's last full headset run (4.0.21, logs 550715df and 09ba968c: no flashes, the floor held):**
+  4.0.22 the cap closed (A45), the basket (A46), the church doorway's backing (A47), the cross gone (A48), S28; the
+  author's 4.0.22 session (logs 86dfef83/d4ee8f89, 99bf1cc9): a black screen after an idle wake (B89, the Guardian
+  dialog, system-side) and one dark flash by the gazebo among snap turns and a pickup (B46 open again). 4.0.23 the
+  basket on the player's left (A49), the recorder watching the layer path (S29). PRs #47-#59 merged (#59 with 4.0.22).
+- **The author** tests when they can: the next flash's mark now prints `rec frames (3 s)` (S29); the basket side, the
+  cap, the church doorway (T3).
+- **Running or queued on the machine when this was written:** the clean full tier with coverage on the 4.0.23 asset
+  (`tools/.runs/full_4.0.23.log`; the 4.0.22 tier was stopped at 35 passes for the build: its four failures were the
+  content test's own waiting (fixed), the frog's trips with their state (B79, dump extended), Hennrick's model 0.46 m
+  off for a moment in `test_jitter.js` (to rerun alone), and the recovery test's 3 s window (fixed)), then the
+  dead-code census, the play census, the content test alone, the three report tools alone (T24) and a second content
+  run. No build during it.
+- **Next:** read those results as they land (T9, T23, T24); `test_jitter.js` and `test_flashlog.js` alone on an idle
+  machine; B79 from the next trip dump; the next flash mark's S29 lines; then the full pass on the last build (T18)
+  once the author's headset run (T3) has happened.
 
 ## Done
 

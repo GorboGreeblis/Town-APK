@@ -1,13 +1,13 @@
-// Wrist HUD and haptics (standard tier; A35, A41, A44; FIXES F-B27 for the pulses). Since 4.0.5 (A35) the HUD is hidden
+// Wrist HUD and no haptics (standard tier; A35, A41, A44; A50: no controller vibration anywhere, RULES.md 26). Since 4.0.5 (A35) the HUD is hidden
 // until Y is pressed while the player looks at the left-hand watch; opened, it lies on the watch face (A41; 10 cm wide
 // since A44). Checked, in VR (fake XR, both controllers connected):
 //   - the HUD is hidden by default (A35);
 //   - Y while looking at the watch opens it, on the watch face (its mesh under the face mesh), not on the grip;
 //   - opened, with nothing held, the three Event checkboxes are empty and no item is shown;
 //   - each change to what is held is shown and redrawn within a second (Blossoms, flint, Artifacts, the Gem, the
-//     book, the Stone, the Seeds, the pizza): the panel's signature carries the new count or flag and its draw ran;
-//     nothing is redrawn when nothing changed;
-//   - gaining a Blossom pulses both controllers (0.3, 35 ms), meeting someone new too (0.5, 70 ms), nothing else;
+//     book, the Stone, the Seeds, the pizza): the panel's signature carries the new count or flag and its draw ran
+//     (waited for, up to 2.5 s: the draw comes 0.5 s after the change, S7); nothing is redrawn when nothing changed;
+//   - nothing ever pulses a controller: not a Blossom gained, not someone new met, not a menu press (A50);
 //   - no page errors.
 //
 //   node tools/test_hud.js [file]
@@ -50,10 +50,11 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     out.opened = hud.mesh.visible; out.onWatch = hud.mesh.parent === watch; out.onGrip = hud.mesh.parent === left.grip;
     out.empty = hud.sig;
     X.pulses = [];
+    // a change is drawn 0.5 s after it (S7) and the panel cycles its canvases, so each step waits for its signature, up to 2.5 s
     const step = async (label, fn, want) => {
       const v0 = draws, p0 = X.pulses.length; X.leftPose = lookPose();
-      fn(); await wait(900);
-      out.steps.push({ label, sig: hud.sig, ok: want(hud.sig || ''), redrawn: draws > v0, pulses: X.pulses.slice(p0) });
+      fn(); const t0 = performance.now(); while (!(want(hud.sig || '') && draws > v0) && performance.now() - t0 < 2500) await wait(100); await wait(200);
+      out.steps.push({ label, sig: hud.sig, ok: want(hud.sig || ''), redrawn: draws > v0, pulses: X.pulses.slice(p0), s: +((performance.now() - t0) / 1000).toFixed(1) });
     };
     await step('2 Blossoms', () => { Kt.blossoms = 2; }, (s) => /blossom,2/.test(s));
     await step('5 flint', () => { Kt.acorns = 5; }, (s) => /flint,5/.test(s));
@@ -80,11 +81,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect(`opened, each change to what is held is shown and redrawn (${changes.length} changes: Blossoms, flint, Artifacts, the Gem, the book, the Stone, the Seeds, the pizza)`, changes.length === 11 && bad.length === 0, JSON.stringify(bad).slice(0, 600));
   const still = steps.find((s) => s.label === 'nothing changes');
   expect('the HUD does not redraw when nothing changed', still && !still.redrawn, JSON.stringify(still));
-  const bl = steps.filter((s) => /Blossom/.test(s.label)), met = steps.find((s) => s.label === 'someone new met');
-  expect('gaining a Blossom pulses both controllers (strength 0.3, 35 ms)', bl.length > 0 && bl.every((s) => s.pulses.length === 2 && s.pulses.every((p) => p[1] === 0.3 && p[2] === 35)), JSON.stringify(bl.map((s) => s.pulses)));
-  expect('meeting someone new pulses both controllers (strength 0.5, 70 ms)', met && met.pulses.length === 2 && met.pulses.every((p) => p[1] === 0.5 && p[2] === 70), JSON.stringify(met && met.pulses));
-  const other = steps.filter((s) => !/Blossom/.test(s.label) && s.label !== 'someone new met');
-  expect('nothing else pulses', other.every((s) => s.pulses.length === 0), JSON.stringify(other.filter((s) => s.pulses.length).map((s) => [s.label, s.pulses])));
+  expect('no controller ever vibrates: Blossoms gained, someone new met, every change above (A50, RULES.md 26)', steps.every((s) => s.pulses.length === 0), JSON.stringify(steps.filter((s) => s.pulses.length).map((s) => [s.label, s.pulses])));
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   await g.close();
   console.log(failures.length ? `HUD TEST FAILED (${failures.length})` : 'HUD TEST PASSED');

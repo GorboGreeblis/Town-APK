@@ -2,8 +2,8 @@
 // cap's parts measured; the kiosks and the church, merged into their builders' geometry, checked with rays):
 //   - A45: Mama Gorbo's cap is closed underneath (a flat disc the width of the crown under it) and its brim is a full
 //     disc (its back half inside the crown), so nothing shows inside the cap from below or beside the brim;
-//   - A46: Garden Supplies has one hanging basket (the one over the ramp is gone: Zollod clipped into it), hung from
-//     one wire;
+//   - A46, A49: Garden Supplies has one hanging basket, on the player's left facing the kiosk (local -x); the right one,
+//     which Zollod clipped into, is gone;
 //   - A47: the church's front doorway has a stone backing behind its arches, pier to pier and up through the window
 //     sill (4.3 m wide, 3.25 m high, 0.2 m deep), so no notch or slit shows where the arches meet the tower;
 //   - A48: no gold cross on the church tower (a ray down the tower's axis meets the stone cap at 18.1 m);
@@ -30,7 +30,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const K = window.__gcCapDbg, cap = K && K.cap; out.cap = null;
     if (cap) { let rim = 0, back = 0, n = 0; const v = new T.Vector3(); cap.children.forEach((o) => { if (!o.isMesh) return; o.updateMatrix(); const a = o.geometry.attributes.position; for (let i = 0; i < a.count; i++) { v.fromBufferAttribute(a, i).applyMatrix4(o.matrix); n++; if (Math.abs(v.y) < 1e-4 && Math.hypot(v.x, v.z / 1.05) < 0.51) rim++; if (Math.abs(v.x) < 0.1 && v.z > -0.02 && v.z < 0.1 && v.y > 0.04 && v.y < 0.08) back++; } });
       out.cap = { vertices: n, rimRing: rim, brimBack: back }; }
-    // A46: Garden Supplies' hanging baskets: a ray from each side toward where each basket hangs (local x +-2.2, 2.15 m forward, at its pot's height 2.78 m): the kept pot is met at its edge (x 2.42); on the ramp side the ray crosses the old spot and meets the kept basket (x about 1.97); the kiosk's frame is its group at 27.5, 34.5
+    // A46, A49: Garden Supplies' hanging basket: a ray from each side toward where a basket hangs (local x +-2.2, 2.15 m forward, at its pot's height 2.78 m): the kept pot (local -x, the player's left facing the kiosk) is met at its edge (x -2.42); from the right the ray crosses the empty spot and meets the kept basket (x about -1.97); the kiosk's frame is its group at 27.5, 34.5
     const kiosk = C.children.find((o) => o.isGroup && o.userData.keepInFinale && o.children.length >= 5 && Math.abs(o.position.x - 27.5) < 0.6 && Math.abs(o.position.z - 34.5) < 0.6) || null;
     out.baskets = null;
     if (kiosk) { kiosk.updateMatrixWorld(true); const L = (x, y, z) => new T.Vector3(x, y, z).applyMatrix4(kiosk.matrixWorld).toArray(), inv = new T.Matrix4().copy(kiosk.matrixWorld).invert();
@@ -45,7 +45,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   note(JSON.stringify(r));
   expect('A45: Mama Gorbo\'s cap is closed underneath by a flat disc the width of its crown, at its rim (a second ring of vertices at the rim)', !!r.cap && r.cap.rimRing >= 120, JSON.stringify(r.cap));
   expect('A45: the brim is a full disc, its back edge inside the crown (vertices there; a half disc has none)', !!r.cap && r.cap.brimBack >= 2, JSON.stringify(r.cap));
-  expect('A46: Garden Supplies has one hanging basket, on its left; the one over the ramp (its right) is gone', !!r.baskets && r.baskets[0] !== null && r.baskets[0] > -1.5 && r.baskets[1] !== null && r.baskets[1] > 2.3 && r.baskets[1] < 2.6, JSON.stringify(r.baskets));
+  expect('A46, A49: Garden Supplies has one hanging basket, on the player\'s left (its local -x side); none on the right', !!r.baskets && r.baskets[0] !== null && r.baskets[0] < -2.3 && r.baskets[0] > -2.6 && r.baskets[1] !== null && r.baskets[1] < 1.5, JSON.stringify(r.baskets));
   expect('A47: the notch beside the church doorway is closed: a ray into it meets the backing\'s side, not the tower wall', !!r.notch && r.notch[0] > 2.1 && r.notch[2] < 27.12, JSON.stringify(r.notch));
   expect('A48: no cross on the church tower: a ray down its axis meets the stone cap at 18.1 m (the cross reached 20.5 m)', !!r.towerTop && r.towerTop[1] < 18.3 && r.towerTop[1] > 17.8, JSON.stringify(r.towerTop));
   expect('no page errors', errors.length === 0, errors.slice(0, 3).join(' | '));
