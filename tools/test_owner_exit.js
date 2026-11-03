@@ -4,7 +4,8 @@
 // sent on a visit from home with the player standing in their way out (on the first point of their way out, or 1.5 m
 // from home toward the park's middle). A trap on their position records any single write that moves them more than
 // 0.5 m (a jump through a wall); none may happen, and each must be on their way (more than 2 m from home) within 60 s,
-// or, where the player fills their only doorway (Gemtoe's gazebo), within 30 s once the player steps away.
+// or, where the player fills their only doorway (Gemtoe's gazebo), within 30 s once the player steps away (game
+// seconds, so a loaded machine does not cut the windows short; one who never leaves is dumped with what held them).
 //
 //   node tools/test_owner_exit.js [file]
 const path = require('path');
@@ -33,14 +34,18 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       for (const k of ['x', 'z']) { desc[k] = Object.getOwnPropertyDescriptor(P, k); let v = P[k]; Object.defineProperty(P, k, { configurable: true, enumerable: true, get() { return v; }, set(n) { if (armed && Math.abs(n - v) > 0.5 && hits.length < 4) hits.push({ k, from: +v.toFixed(2), to: +n.toFixed(2), stack: new Error().stack.split('\n').slice(2, 6).map((l) => l.trim().replace(/https?:\/\/[^ ]*\//, '')).join(' < ') }); v = n; } }); }
       const partner = D.It.byId[m.id === 'gratelet' ? 'blinker' : 'gratelet'];
       armed = true; J.visitAt(D.Re.t); J.visitAt(D.Re.t, m.id, partner.id);   // the pair, and its time now
-      t0 = performance.now(); let away = false, awayAt = 0;   // watched until 5 s after they are 2 m out
-      while (performance.now() - t0 < 60000 && !hits.length && !(awayAt && performance.now() - awayAt > 5000)) { if (!away && Math.hypot(P.x - home.x, P.z - home.z) > 2) { away = true; awayAt = performance.now(); } await wait(50); }
+      // the windows are game seconds (a loaded machine runs the game slower than the wall clock), capped at three times as long on the wall
+      const gs = () => D.Re.t, within = (g0, w0, s) => gs() - g0 < s && performance.now() - w0 < s * 3000;
+      t0 = performance.now(); let g0 = gs(), away = false, awayAt = 0;   // watched until 5 s after they are 2 m out
+      while (within(g0, t0, 60) && !hits.length && !(awayAt && gs() - awayAt > 5)) { if (!away && Math.hypot(P.x - home.x, P.z - home.z) > 2) { away = true; awayAt = gs(); } await wait(50); }
       // a doorway the player stands in (the gazebo's) blocks the way out: then the player steps away and the owner must go
       let blocked = false;
-      if (!away && !hits.length) { blocked = true; D.At.position.set(30, D.At.position.y, 30); const t1 = performance.now(); while (performance.now() - t1 < 30000 && !hits.length && !away) { if (Math.hypot(P.x - home.x, P.z - home.z) > 2) away = true; await wait(50); } }
+      if (!away && !hits.length) { blocked = true; D.At.position.set(30, D.At.position.y, 30); const t1 = performance.now(), g1 = gs(); while (within(g1, t1, 30) && !hits.length && !away) { if (Math.hypot(P.x - home.x, P.z - home.z) > 2) away = true; await wait(50); } }
+      // a townsperson who never left: what held them (for the failure line)
+      const why = away ? null : { gameS: +(gs() - g0).toFixed(1), wallS: +((performance.now() - t0) / 1000).toFixed(1), visiting: !!m.visiting, busy: m.busy || null, held: !!m.held, near: !!m.nearPlayer, nearSince: m.nearSince, moving: !!m.moving, want: m.gcWant, stuckN: m.gcStuckN, blk: m.gcBlk, vbk: m.vbk, nav: m.gcNav ? m.gcNav.length : 0, visitNow: !!J.visits().now, dist: +Math.hypot(P.x - home.x, P.z - home.z).toFixed(2) };
       armed = false;
       const x = P.x, z = P.z; for (const k of ['x', 'z']) { delete P[k]; } P.x = x; P.z = z;
-      out.runs.push({ id: m.id, via: !!via, player: [+px.toFixed(2), +pz.toFixed(2)], away, blocked, hits });
+      out.runs.push({ id: m.id, via: !!via, player: [+px.toFixed(2), +pz.toFixed(2)], away, blocked, hits, why });
       D.At.position.set(30, D.At.position.y, 30);
     }
     return out;
@@ -48,7 +53,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   note(JSON.stringify(r.runs.map((x) => ({ id: x.id, via: x.via, away: x.away, blockedByPlayer: x.blocked, hits: x.hits.length }))));
   expect('every townsperson living in a kiosk (Mushroom, Fortizmo) and Gemtoe at the gazebo are checked', ['drifter', 'frog', 'p_gemtoe'].every((id) => r.owners.includes(id)), r.owners.join(', '));
   expect('no owner jumps more than 0.5 m in one step leaving home with the player in the way (never through a wall)', r.runs.every((x) => !x.hits.length), JSON.stringify(r.runs.filter((x) => x.hits.length)).slice(0, 600));
-  expect('every owner is on their way (more than 2 m from home) within 60 s, or within 30 s once the player steps out of their way', r.runs.every((x) => x.away), r.runs.filter((x) => !x.away).map((x) => x.id).join(', '));
+  expect('every owner is on their way (more than 2 m from home) within 60 s, or within 30 s once the player steps out of their way', r.runs.every((x) => x.away), JSON.stringify(r.runs.filter((x) => !x.away).map((x) => [x.id, x.why])).slice(0, 900));
   expect('no page errors', errors.length === 0, errors.slice(0, 3).join(' | '));
   await g.close(); console.log(failures.length ? `OWNER EXIT TEST FAILED (${failures.length})` : 'OWNER EXIT TEST PASSED'); process.exit(failures.length ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });
