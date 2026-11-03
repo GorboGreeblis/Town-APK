@@ -1608,6 +1608,19 @@ experiment, all on the multiview lead.
   alive and hidden throughout and came back with focus. System-side (the 4.0.21 run's three wakes had no Guardian
   involvement; the author: "I'm testing in low light", and the logcat shows the tracking cameras switching to their
   low-light mode at the wake, which makes relocalising the room hard); no game change; `HEADSET_DIAG.md` says what the black means and what brings the game back.
+- **test_recover.js waits for the walk after the reset** (4.0.22, tools only; T9): the test gave a townsperson put back
+  home 3 s to move again, but at home she stands until her next wander (3-7 s away, longer after a visit), so the check
+  failed by timing now and then ("movedAfter 0": the clean tier of 2026-11-03, the S21 run of 4.0.14, and the 4.0.21
+  runs that were read as S26's doing when it was reverted). The test now waits up to 15 s for the move. Under a loaded
+  machine the reset itself can miss its window as well: the game counts 30 failing frames and starts over after a 2 s
+  gap between them, so three solo runs beside the full tier failed at the reset ("recovered false"); the tier runs it
+  alone.
+- **test_stuck.js's trip dump names the company** (4.0.22, tools only; B79): the clean tier of 2026-11-03 caught the
+  frog's trips with their state for the first time: three at (-33.8..-32.5, 1.5..1.7), the kiosk's doorway, 2.2-4.2 m
+  from a home at x -35.3 (the bar corridor), no destination or a stale one, not visiting or hosting, the player 30 m
+  away. Put there by hand with the same home, the frog walks straight in and arrives (probe, session scratch), so the
+  stall needs company or a state the dump did not carry: it now adds the via step, the want and blocked counters, the
+  inside flag, the pattern, and every entity within 2.5 m with its distance and state.
 - **S28** (4.0.22; the two logs above): three changes.
   - **The warm-up uploads the originals of the merged multi-material meshes.** The group merger (`__gtMM`, 4.0.x)
     rewires a multi-material mesh whose groups share materials to a merged-index copy on its first draw, which is the
