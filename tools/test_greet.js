@@ -22,10 +22,11 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     const angTo = (e) => { const p = e.group.position; return Math.atan2(At.position.x - p.x, At.position.z - p.z); };
     const diff = (a, b) => { let d = (a - b) % (2 * Math.PI); if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; return Math.abs(d); };
     const tried = new Set();
+    // townsfolk walking outside any kiosk or bar are chosen (inside one the player has no open spot 2 m away)
     for (let k = 0; k < 3; k++) {
       // a townsperson walking on their own (not busy, not visiting, not a gazer), the player put 2 m ahead of them
       let e = null; const t0 = performance.now();
-      while (!e && performance.now() - t0 < 60000) { e = D.It.all.find((h) => h.kind && h.def && !tried.has(h) && h.moving && !h.busy && !h.visiting && !(h.def.gazeUp) && h.group.visible); if (!e) await wait(250); }
+      while (!e && performance.now() - t0 < 60000) { e = D.It.all.find((h) => h.kind && h.def && !tried.has(h) && h.moving && !h.busy && !h.visiting && !(h.def.gazeUp) && h.group.visible && !(D.F && D.F.buildings && D.F.buildings.some((B) => D.F.inHull(B, h.group.position.x, h.group.position.z)))); if (!e) await wait(250); }
       if (!e) break; tried.add(e);
       const p = e.group.position, yaw = e.group.rotation.y;
       // the player is put 2 m ahead and kept on that spot on every tick (a single move can be undone by the next head

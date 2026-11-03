@@ -1,7 +1,10 @@
-// The Event's pizza boxes fade out at its end (standard tier; A42; the author: "Please ensure that pizza boxes on the
+// The Event's pizza boxes fade in at its start and out at its end (standard tier; A42; S34, the author: "Please
+// ensure that when an Event is started with Snacks: Pizza boxes fade in at the start of the Event and then fade out at
+// the end of the Event"; A42: the author: "Please ensure that pizza boxes on the
 // ground fade out at the end of the Event. Pizza boxes currently pop out instead"). An Event is started with Snacks
 // (and the Stone and Seeds); once its boxes are out it is ended, and the boxes are watched every 100 ms:
 //   - the boxes are out during the Event (the ring of stacks, and Anomalee's open box);
+//   - at the start they fade in (S34): from near nothing to opaque over more than a second, then they are batched;
 //   - at the end they fade: their opacity steps down over more than a second (no frame where they go from fully
 //     shown to gone), then they are removed and their materials are back to opaque;
 //   - nothing else fades with them (Nextessa's box keeps its own materials: the Event's boxes have their own copies);
@@ -25,8 +28,13 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     D.oe.open(); await wait(400);
     const y = ((D._t.state && D._t.state.items) || []).find((i) => i.label === 'Yes'); if (y) y.onClick();
     let t0 = performance.now(); while (!D.me.active && performance.now() - t0 < 30000) await wait(100);
-    const PZ = window.__gtPZ; t0 = performance.now(); while (PZ.count() === 0 && performance.now() - t0 < 120000) await wait(200);
-    const out = { started: D.me.active, boxes: PZ.count() };
+    const PZ = window.__gtPZ; t0 = performance.now(); while (PZ.count() === 0 && performance.now() - t0 < 120000) await wait(20);
+    // S34: the boxes fade in at the start: their materials' opacity from the moment they appear, every 100 ms
+    const fin = []; { const E0 = window.__gtPZE, m0 = new Set(); E0.groups().forEach((gr) => gr.traverse((o) => { if (o.isMesh) [].concat(o.material).forEach((x) => m0.add(x)); }));
+      const t1 = performance.now(); while (performance.now() - t1 < 3000) { const op = Math.min(...[...m0].map((m) => m.opacity)); fin.push([Math.round(performance.now() - t1), +op.toFixed(2)]); await wait(100); }
+      const batched = []; E0.groups()[0].traverse((o) => { if (o.gcB) batched.push(o); });
+      fin.restored = [...m0].every((m) => m.opacity === 1 && m.transparent === false); fin.batched = batched.length; }
+    const out = { started: D.me.active, boxes: PZ.count(), fin, finRestored: fin.restored, finBatched: fin.batched };
     // the boxes' meshes and the materials they draw with (the hook: the Event's box groups and the fade)
     const E = window.__gtPZE, meshes = []; E.groups().forEach((gr) => gr.traverse((o) => { if (o.isMesh) meshes.push(o); }));
     const mats = new Set(); meshes.forEach((m) => [].concat(m.material).forEach((x) => mats.add(x)));
@@ -45,6 +53,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   const goneAt = (r.trail.find(([, n]) => n === 0) || [null])[0];
   expect('the Event\'s pizza boxes are out during the Event', r.started && r.boxes > 0, `${r.boxes} box groups`);
   expect('the Event\'s boxes draw with their own copies of the materials (nothing else fades with them)', r.ownCopies === true, String(r.ownCopies));
+  const rising = (r.fin || []).filter(([, op]) => op > 0.02 && op < 0.98);
+  expect('S34: with Snacks the boxes fade in at the start (opacity rising from near nothing over more than a second)', r.fin && r.fin.length && r.fin[0][1] < 0.3 && rising.length >= 8 && r.fin[r.fin.length - 1][1] === 1, JSON.stringify(r.fin).slice(0, 400));
+  expect('S34: after the fade in their materials are opaque again and the boxes are batched (as before S34)', r.finRestored === true && r.finBatched > 0, JSON.stringify({ restored: r.finRestored, batched: r.finBatched }));
   expect('at the end they fade out (opacity stepping down over more than a second), then they are removed', r.ended && fading.length >= 8 && goneAt !== null && goneAt >= 1000, JSON.stringify(r.trail.slice(0, 24)));
   expect('their materials are opaque again afterwards', r.restored, '');
   expect('no shader program compiled for the fade', r.progs === 0, String(r.progs));

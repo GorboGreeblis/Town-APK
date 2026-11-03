@@ -1823,6 +1823,36 @@ and all fixes for bugs listed above"):
     show; the cause has not been found in the game.
   - `test_s33.js` (new, standard tier) checks each of these; `test_flashlog.js` checks the clear colour outdoors and in
     the Cave and still checks, with the clear forced black, that the sky sphere covers the view.
+- **S34, the author's flash log 1b7d04a9 and full log 7968f2fc** (4.0.28; "1 flash was observed during the latest
+run"; "please fully analyze the above logs"; the run was on 4.0.25 or 4.0.26, 11 minutes, one Event):
+  - **B93 fixed: a leftover of A50.** "[camera] ReferenceError: Ot is not defined", about 170 times in the run: A50
+    removed the controller-pulse helper but left one call, in the wrist and menu ray's hover (a pulse each time the ray
+    moved onto a new button), so every new hover threw. It sat at the very end of the camera step, so each throw only
+    skipped the rest of that frame's hover checks (the dialogue's and the panel's), and the error log filled. The call
+    is gone. `test_freevars.js` (new, every tier, quick included) resolves every script's scopes and fails on any name
+    no scope declares; it finds this one on 4.0.26 and nothing else on 4.0.28. No test had hovered a button in VR.
+  - **The mark (B46).** At 192.7 s, by the Portal as Nextessa left, after three snap turns at -6.6 to -5.8 s (the view
+    went from 148 to 235 draw calls) and a flint pickup at -1.6 s. The recorder found nothing again: no late frame
+    (207 in 3 s), no GL error, no undrawn or doubled frame, no head-pose loss, no gap, nothing near the eyes. The
+    headset's own frame lines show the five seconds before it as the heaviest stretch of the run outside the Event:
+    with Nextessa speaking, the compositor shown 67-70 of 72 frames a second, 3-9 stale frames a second (the runtime
+    showing an older frame), the predicted latency up from 33 to 44 ms and the GPU 62-68% busy against 36-43% before.
+    Stale frames as many or more came often with no flash (11 at 14:02:50, 10 at 14:02:52), so they are not the cause
+    on their own; the system log has no GPU fault, crash, memory pressure or XR error at any time.
+  - **The swapchain line could not see a repeat.** S29's "same swapchain image twice" read 206 of 207: this browser
+    hands one texture object per layer every frame, so the count is every frame by nature. The line now says so
+    ("every frame (this browser hands one texture object per layer, so a repeat cannot be seen here)") instead of a
+    number that reads as a fault.
+  - The frame rate held the floor (none under 60): town median 71.75 (lowest 64.9), Event median 70.55 (lowest 63.4),
+    against 71.9 and 71.6 on 4.0.21. The run's five geometry holds were the batches S33 now builds after the frame.
+  - **A51: the Event's pizza boxes fade in** (the author: "Please ensure that when an Event is started with Snacks:
+    Pizza boxes fade in at the start of the Event and then fade out at the end of the Event"). They popped in; the
+    ring of stacks now fades in over 1.6 s as the Event starts, and Anomalee's open box fades in the same way when she
+    sets it down mid-Event; the fade out at the end (A42) is unchanged and takes over from a fade-in still running. The
+    served box has its own box and logo materials (copies made while loading) so its fade never touches the ring's. A
+    group is batched when its fade-in ends (the batcher leaves see-through materials out, so a group batched mid-fade
+    would stay unbatched all Event). No shader is compiled for either fade. `test_pizza_fade.js` checks the fade in, the
+    batching after it, and the fade out.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures

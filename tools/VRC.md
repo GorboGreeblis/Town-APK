@@ -38,8 +38,8 @@ stored on the headset (the game has no save: no localStorage, IndexedDB or cooki
 
 | Check | Status | Verdict | Evidence and what to confirm |
 | --- | --- | --- | --- |
-| Performance.1 runs at the supported refresh rate, at least 60 fps outside loading | R | HEADSET | The browser runs the session at the headset's rate (the game asks for 72 Hz and takes what the browser gives). Multiview draws both eyes in one pass (3.15.34); the quality governor adds fixed foveation before frame time exceeds budget, always at the native render scale (NOTES 44, 45; since 3.15.43 it changes foveation only, F-B31); the planting Event starts at the lowest level and stays there (the Event's own scale steps, P16-P17, were removed in 3.15.43). No shader compiles during play (`warm_coverage.js`, `multiview_check.js`, `test_content.js`; P19 removed the last light state that would; headless. The author's 3.15.47 log showed two, one at the Event's start: BUGS.md B39, fixed and confirmed by a later headset log; since 3.15.63 a program that would still be compiled inside a headset frame is held back for that frame and compiled after it, S2, `test_shaderhold.js`). Measured on a Quest 3S with 3.15.47: town median 71.8 fps, the Event median 63.3 and 56.4 at worst, CPU-bound (NOTES 91); P24 and P25 since. The author's 3.15.60 run: 54 fps at the lowest, watching the Event from afar (TASKS T16; P29 and the removal of P28 since; PERF.md 14 has the estimate for 3.15.63). Earlier, 3.15.33-3.15.34: town 72 fps, the Event 58-65. Headless numbers do not transfer. **Confirm with the OVR Metrics Tool** (RELEASE.md section 3, step 7): a 10-minute play session with the overlay on, FPS at or above 60 outside the loading screen, the Event included. If it dips in a place, say where |
-| Performance.3 head-tracked graphics or a VR loading indicator within 4 s of launch | R | HEADSET | The VR session is requested at page start and the loading screen is drawn by the compositor (a cube layer sky with a horizon and a head-locked quad with the title, the progress bar and, since 3.15.63, the version in its bottom right) about a second after the page starts; the author saw the title and bar "well under 10 s" with no black bars. Between the icon press and the page start the OS shows its own loading screen. **Confirm the count**: from pressing the icon to seeing the title panel, under 4 s (RELEASE.md step 7). If it is over, the OS splash still counts as a VR loading indicator in Meta's PWA packaging, but write the measured number in the submission notes |
+| Performance.1 runs at the supported refresh rate, at least 60 fps outside loading | R | PASS | The browser runs the session at the headset's rate (the game asks for 72 Hz and takes what the browser gives). Multiview draws both eyes in one pass (3.15.34); the quality governor adds fixed foveation before frame time exceeds budget, always at the native render scale (NOTES 44, 45; since 3.15.43 it changes foveation only, F-B31); the planting Event starts at the lowest level and stays there (the Event's own scale steps, P16-P17, were removed in 3.15.43). No shader compiles during play (`warm_coverage.js`, `multiview_check.js`, `test_content.js`; P19 removed the last light state that would; headless. The author's 3.15.47 log showed two, one at the Event's start: BUGS.md B39, fixed and confirmed by a later headset log; since 3.15.63 a program that would still be compiled inside a headset frame is held back for that frame and compiled after it, S2, `test_shaderhold.js`). Measured on a Quest 3S with 3.15.47: town median 71.8 fps, the Event median 63.3 and 56.4 at worst, CPU-bound (NOTES 91); P24 and P25 since. The author's 3.15.60 run: 54 fps at the lowest, watching the Event from afar (TASKS T16; P29 and the removal of P28 since; PERF.md 14 has the estimate for 3.15.63). Earlier, 3.15.33-3.15.34: town 72 fps, the Event 58-65. Headless numbers do not transfer. **Confirm with the OVR Metrics Tool** (RELEASE.md section 3, step 7): a 10-minute play session with the overlay on, FPS at or above 60 outside the loading screen, the Event included. If it dips in a place, say where The author on 2026-11-03 (4.0.26/4.0.27, Quest 3S): the OVR Metrics Tool overlay over 10 minutes of play passes; the 1b7d04a9 log: never under 60, town median 71.75, Event median 70.55. |
+| Performance.3 head-tracked graphics or a VR loading indicator within 4 s of launch | R | PASS | The VR session is requested at page start and the loading screen is drawn by the compositor (a cube layer sky with a horizon and a head-locked quad with the title, the progress bar and, since 3.15.63, the version in its bottom right) about a second after the page starts; the author saw the title and bar "well under 10 s" with no black bars. Between the icon press and the page start the OS shows its own loading screen. **Confirm the count**: from pressing the icon to seeing the title panel, under 4 s (RELEASE.md step 7). If it is over, the OS splash still counts as a VR loading indicator in Meta's PWA packaging, but write the measured number in the submission notes The author on 2026-11-03: icon to title panel under 4 s. |
 | Performance.4 render scale at least 85% | + | PASS | native scale (100%) at all times since 3.15.43 (F-B31); the foveation is one fixed value (0) since 4.0.13 (F-B83) and the quality levels are gone since 4.0.14 (L1); the projection layer is never swapped (`tools/test_governor.js`, `tools/sharpness_probe.js`). Until 3.15.42 the Event's own steps (0.9, 0.82: P16-P18) relied on the check's boss-battle exception |
 
 ## Functional
@@ -47,11 +47,11 @@ stored on the headset (the game has no save: no localStorage, IndexedDB or cooki
 | Check | Status | Verdict | Evidence |
 | --- | --- | --- | --- |
 | Functional.1 no crashes, freezes or long unresponsive states | R | PASS | author's full headset run on 3.15.19 (no new issues); 10-minute soak headless with bounded heap and object counts (TEST_PLAN); launch stable since 3.15.12; every page error is posted to logcat (`page: ...`) and the standard tier fails on any |
-| Functional.2 single-player app pauses when Horizon OS asks | R | PASS | the session's `visibilitychange` sets `blurred`: the game loop skips its update (no movement, no NPC time, no input) and only renders; the author's full run includes the system-menu pause and resume step with sound back (RELEASE.md section 3, the paragraph after step 6). The VRC's own test (Quick Settings, Enter Passthrough) is the same path |
+| Functional.2 single-player app pauses when Horizon OS asks | R | PASS | the session's `visibilitychange` sets `blurred`: the game loop skips its update (no movement, no NPC time, no input) and only renders; the author's full run includes the system-menu pause and resume step with sound back (RELEASE.md section 3, the paragraph after step 6). The VRC's own test (Quick Settings, Enter Passthrough) is the same path The author confirmed the Universal Menu (pause and resume) on 2026-11-03. |
 | Functional.3 never leaves the user stuck | R | PASS | world routes 20/20 with the sealed corner behind the Shop opened (B14); NPC stuck rescue (B2); the player cannot be enclosed (hull tests in the standard tier); the system menu always exits |
 | Functional.4 does not lose user data | R | N/A | the game stores nothing (no save, by design; the privacy policy states it), so there is nothing to lose. Say so in the submission notes |
 | Functional.5 responds to positional and orientation tracking | R | PASS | `local-floor` reference space (fallback `local` with a floor offset, tested in the `vr-nofloor` scenario); 6DoF head tracking through the projection layer; the author's runs |
-| Functional.6 only Meta Quest headsets and controllers shown | R | AUTHOR | the game draws its own stylised hands/rays, no headset imagery; check the Store screenshots and trailer show no other platform's hardware |
+| Functional.6 only Meta Quest headsets and controllers shown | R | PASS | the game draws its own stylised hands/rays, no headset imagery; check the Store screenshots and trailer show no other platform's hardware The author on 2026-11-03: "My Store assets look good to me". |
 | Functional.7 tells the user when required connectivity is missing | + | N/A | no connectivity used; the loopback server is on the headset |
 | Functional.9 Local tracking space lets the user reset forward orientation | R | HEADSET | the session uses `local-floor` / `local`, for which the browser applies the system recentre (long-press the Meta button). **Confirm**: turn 180 degrees, long-press the Meta button, the town faces you again (RELEASE.md step 7) |
 | Functional.10 no head-locked menus | + | PASS | the in-VR UI is world-placed (kiosks, panels in front of the player at a distance); the only head-locked element is the loading panel, allowed as a loading indicator |
@@ -80,7 +80,7 @@ stored on the headset (the game has no save: no localStorage, IndexedDB or cooki
 | Input.1 menus open with the menu button | + | N/A | the game has no pause menu of its own; the system menu is the menu. Recommended only |
 | Input.2 grip for pickup, not trigger | + | NOTE | pickups use the trigger (point and select) and the grip is a second accept; recommended only, left as the author designed the game |
 | Input.3 hands and controllers match real position | + | PASS | the rays and hand meshes are attached to the controller grip and ray spaces (three.js `getController`/`getControllerGrip`) |
-| Input.4 focus-aware | R | PASS | B24 (3.15.25): while the session is `visible-blurred` the game keeps rendering, ignores input (the update is skipped) and hides its controller rays and hand meshes, then shows them again; `tools/test_play.js` vr scenario checks all three. **Confirm** in the headset: open the Universal Menu, the town keeps rendering behind it with no hands or rays; close it, they are back |
+| Input.4 focus-aware | R | PASS | B24 (3.15.25): while the session is `visible-blurred` the game keeps rendering, ignores input (the update is skipped) and hides its controller rays and hand meshes, then shows them again; `tools/test_play.js` vr scenario checks all three. **Confirm** in the headset: open the Universal Menu, the town keeps rendering behind it with no hands or rays; close it, they are back The author confirmed the Universal Menu in the headset on 2026-11-03. |
 | Input.5 hand-tracked hands render correctly | + | N/A | hand tracking not supported |
 | Input.7 switching between controllers and hand tracking | R | N/A | applies to apps that support hand tracking; this one requests no `hand-tracking` feature, so the browser never gives it hands. **Confirm** nothing breaks: with Auto Enable Hands on, put the controllers down and pick them up; the game waits and continues (`inputsourceschange` handler) |
 | Input.8 system gesture reserved | R | N/A | hand tracking not supported |
@@ -89,14 +89,14 @@ stored on the headset (the game has no save: no localStorage, IndexedDB or cooki
 
 | Check | Status | Verdict | What to check in the dashboard |
 | --- | --- | --- | --- |
-| Asset.1 logo with a transparent background | R | AUTHOR | the logo PNG has a transparent background (`tools/store/icon-512.png` is the app icon; the Store logo is a separate upload) |
-| Asset.2 cover art: clear branding, no taglines or banners | R | AUTHOR | the cover shows the name and art only |
-| Asset.3 no text in the top or bottom 20% of the cover | + | AUTHOR | |
-| Asset.4 hero art centres the branding | + | AUTHOR | |
-| Asset.5 screenshots are from the app, with no added logos, text or icons | R | AUTHOR | the current screenshots are in-game captures |
-| Asset.6 no other platform's headsets, controllers or logos | R | AUTHOR | |
-| Asset.7 trailer 2 minutes or shorter | R | AUTHOR | if a trailer is uploaded |
-| Asset.8 artwork text at least 24 pt | + | AUTHOR | |
+| Asset.1 logo with a transparent background | R | PASS | the logo PNG has a transparent background (`tools/store/icon-512.png` is the app icon; the Store logo is a separate upload) The author on 2026-11-03: "My Store assets look good to me". |
+| Asset.2 cover art: clear branding, no taglines or banners | R | PASS | the cover shows the name and art only The author on 2026-11-03: "My Store assets look good to me". |
+| Asset.3 no text in the top or bottom 20% of the cover | + | PASS The author on 2026-11-03: "My Store assets look good to me". |
+| Asset.4 hero art centres the branding | + | PASS The author on 2026-11-03: "My Store assets look good to me". |
+| Asset.5 screenshots are from the app, with no added logos, text or icons | R | PASS | the current screenshots are in-game captures The author on 2026-11-03: "My Store assets look good to me". |
+| Asset.6 no other platform's headsets, controllers or logos | R | PASS The author on 2026-11-03: "My Store assets look good to me". |
+| Asset.7 trailer 2 minutes or shorter | R | PASS | if a trailer is uploaded The author on 2026-11-03: "My Store assets look good to me". |
+| Asset.8 artwork text at least 24 pt | + | PASS The author on 2026-11-03: "My Store assets look good to me". |
 | Asset.9 Immersive Image Layers transparent | R | N/A | none uploaded |
 | Asset.10 Quest Pro feature capture text | + | N/A | |
 
@@ -104,6 +104,7 @@ stored on the headset (the game has no save: no localStorage, IndexedDB or cooki
 
 | Check | Status | Verdict | Evidence |
 | --- | --- | --- | --- |
+| Audio.1 3D audio spatialisation | + | NOT MET | sounds fall off with distance from the head but are not panned between the ears; recommended only, not a failure on its own (the VRC guide v1.2) |
 | Ads.1-7 | R | N/A | no ads |
 | Streaming.1-4 | R/+ | N/A | nothing streamed; the loopback server is on the headset and serves the app's own files only |
 | Content.1 content guidelines | R | PASS | a family-friendly town game, IARC rating completed by the author |
@@ -137,6 +138,10 @@ visual and audible, snap turn allows looking around without turning the body
 options and no one-handed mode: recommendations, not required.
 
 ## The four headset confirmations that decide a first-try pass
+
+Status on 2026-11-03: 1, 2 and 3 pass (the author, Quest 3S); 4, Recentre, and the seated and standing passes
+(Tracking.1) are still to do. The author tests on a Quest 3S only: the Quest 3 (selected as supported in the
+dashboard) has the same GPU and more pixels per eye, and has not been tried.
 
 1. **Frame rate** (Performance.1): OVR Metrics Tool overlay, 10 minutes of play, FPS at or above 60 outside loading.
 2. **Time to the loading panel** (Performance.3): icon press to title panel, under 4 s; write the number down either way.
