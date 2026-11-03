@@ -196,7 +196,9 @@ Since 3.15.57 (D3, the author: "let's try to make the logs more verbose"):
   loop; errors repeat at most five times per context, then `[context] N more errors` every 10 s; `rec frames (3 s)`'s
   `GL errors` counts only those within the 3 s, with the session total beside them.
 - Since 4.0.23 (S29): `rec frames (3 s): N, late N (worst -X ms@-t s), calls median C, tris median Tk, under 70%: ...,
-  same swapchain image twice: N, GL errors N (code@-t s ...)`: the layer path's health in the 3 s before the mark. A
+  same swapchain image twice: N, GL errors N (code@-t s ...)`: the layer path's health in the 3 s before the mark (on
+  Quest Browser the swapchain count is every frame by nature, one texture object per layer, and since 4.0.28 the line
+  says so). A
   flash of one flat colour (since 4.0.27 a muted green-grey outdoors and black in the Cave, S33; black everywhere
   before, S18; 4.0.24 alone left it uncleared) means the frame shown held no draw: a late frame (the GPU past the
   display time), a repeated swapchain image, or a GL error after the attach says where the draw was lost.

@@ -153,6 +153,10 @@ Read from the code and checked by the tests named; numbers are game seconds and 
 - **Anomalee in the Event.** Without Snacks she plants like everyone else; with them she sets her own open pizza box
   beside her (the logo on its lid) and eats a slice every 22 s instead of planting, leaving the last two (F-B49).
   `test_anomalee.js`.
+- **The Event's pizza boxes** (with Snacks): the ring of stacked boxes fades in over 1.6 s as the Event starts, and
+  Anomalee's open box fades in as she sets it down (A51); both fade out over 1.6 s at the Event's end (A42). Each fades
+  with its own copies of the box materials, so one never fades the other; a ring is batched once its fade-in is over.
+  `test_pizza_fade.js`.
 - **Backpacka at the pond.** While he drinks (his show's 16-40 s) the player cannot walk into him: player-only
   circles round his feet, body, neck and head (F-B37). `test_backpacka.js`.
 - **Doorway homes.** Four townsfolk have a doorway route home: Fortizmo's bar, the Mushroom's ramp, Gemtoe's gazebo

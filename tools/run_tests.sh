@@ -74,6 +74,7 @@ run "loopback server harness" "$ROOT/tools/test_server.sh"
 run "docs consistency (check_docs.py)" python3 -I "$ROOT/tools/check_docs.py"
 run "dialogue spell-check" sh -c "python3 '$ROOT/tools/spellcheck_dialogue.py' '$ROOT/tools/uncompressed.html' >/dev/null"
 run "tentacle bend is bit-identical to the original (P13)" node "$ROOT/tools/test_bend_exact.js" "$ASSET"
+run "no name used but never declared in any game script (a removed helper's leftover call, S34)" node "$ROOT/tools/test_freevars.js" "$ROOT/tools/uncompressed.html"
 if [ -f "$APK" ]; then run "APK store-rules check" "$ROOT/tools/check_apk.sh" "$APK"; else skip "APK store-rules check" "no APK built"; fi
 
 if [ "$TIER" != quick ]; then
