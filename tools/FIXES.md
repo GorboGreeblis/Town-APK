@@ -1463,7 +1463,7 @@ experiment, all on the multiview lead.
   - **The loading bar's step count** was 39 against 21 real boot steps, so the bar stopped at about half at the
     handover to the game; it is 21 now (B71).
   - Kept on purpose (fallbacks, experiment anchors, hooks with readers): the classic XRWebGLLayer loader and the
-    non-multiview path (the `nolayers`, `nomultiview`, `ovronly` experiments; headless tests without `GT_MULTIVIEW`),
+    non-multiview path (the `nomultiview` and `ovronly` experiments; headless tests without `GT_MULTIVIEW`),
     the multiview-incomplete fallback, the loader's retry, the game's own session request without `layers`, the
     `local` reference-space fallback, the draw fallback and frame checks (S18), the light record, the D2 B-mark.
 - **S21** (4.0.14; T19, S12 continued): the geometry warm-up (S12) draws every object once while loading and again at
@@ -1868,6 +1868,60 @@ frame already hands the game (no GL call added, RULES.md 28):
   in the session), layer image changes N (...; now viewports in WxH), view matrix faults N (N in the session)`.
   GPU timing per frame (timer queries) was offered and left out: it would add GL calls inside each frame, which
   RULES.md 28 forbids. `test_flashlog.js` checks the new line and that steady play has no image change or matrix fault.
+  The author's first log on 4.0.29 (29214c6c, a flash 189.7 s in): no layer image change and no view matrix fault in
+  the whole session, so neither caused it. The slots count read 19 near the flash and 470 in the session, too high:
+  its baseline is the shortest step seen, which came from the loader's 90 Hz (10.3 ms), so ordinary 72 Hz steps of
+  16 ms counted; the steps near the flash were 16 ms and one 23 ms, none a whole skipped slot (about 28 ms at 72 Hz).
+- **S36, the frame timeline and the slots baseline** (4.0.30; the author: "let's build 4.0.30"):
+  - **A frame timeline on each mark**: the last 150 frames (about 2 s), 15 to a line, `rec timeline (k of n, ...):
+    frame:display step ms/callback ms/draw calls` with S where a snap turn fell, P a pickup and ! a skipped slot, the
+    last frame's distance before the mark given. The flash's own frame can be found in it.
+  - **The slots baseline fixed**: the period is now the shortest display step in the last 90 frames (not since the
+    session began, which took the loader's 90 Hz), and a skip needs a step over 1.75 periods (close to a whole slot).
+  - **The author's snap-turn test** (log 95c052a2, 4.0.29, "one flash was observed while snap turning in place"; the log
+    holds two marks): turning in place with no pickups, two marks in about 55 s, after some 63 and 28 turns. Snap
+    turns alone bring the flash. Both marks clean in every record (no image change, no matrix fault, no step over 16 ms
+    near either, no error). Headless, the frame of each snap draws the new view whole (its draw calls are the next
+    frames' at once; eight snaps), so the game draws the turn correctly; the instant 30-degree jump of one frame is the
+    lead. The `snapspread` experiment (diagnosis only, RULES.md 22) spreads each snap over three frames (about 42 ms)
+    to test it in the headset.
+  - **The author on snapspread** (2026-11-03): "the snap turn is too jarring without a black screen between turns";
+    "It's also really hard to observe any flashes like this"; asked, the author said the release shows a brief black
+    screen at every snap turn, and no flash was seen with snapspread. The game draws nothing black at a snap (no blink,
+    fade or overlay: checked), so the black between turns comes after the game's frame, from the one-frame 30-degree
+    jump; the flashes are most likely the same black held longer. Two more diagnostic APKs: `snapspread2` (the snap
+    over two frames, about 28 ms) and `nolayers` (the release snap on the browser's plain WebXR layer, no projection
+    layer, to tell whether the projection layer path makes the black).
+  - **nolayers closed** (2026-11-03): the author's run (log 4d0d3716, Quest 3S; 75 snap turns, no mark): "It has
+    serious issues and we're not taking this route." Without layers the game falls back to the classic two-eye path
+    (no multiview: "multiview not decided yet ... layers false"), 56-67 fps of 72 in busy views and a loader held at
+    6-10 fps for about 12 s before the drop-in. The experiment is removed from `tools/experiment.py` and no build
+    tries the plain WebXR layer again: RULES.md 29, at the author's word ("Please note as a Rule that we will never
+    use a no layers build").
+  - **Ghosting on the spread snaps** (the author, 2026-11-03, `snapspread` and `snapspread2`): "some ghosting can be
+    seen during turns, turns are no longer appearing as clean to the user". Each in-between frame is shown, and
+    the display's persistence blends it with the next, so a spread snap reads as a smear rather than a cut; with
+    the three-frame spread found jarring, neither spread gives a clean turn.
+- **S37, the blink snap** (4.0.31; the author: "Is there no way to just rebuild snap turning to be cleaner and more
+  stable?", "Let's rebuild the snap turning", "let's weaken Rule 27 to allow for this"):
+  - **Why a blink**: the release snap turned the rig 30 degrees in one frame, first thing in the frame, and every record
+    showed that frame drawn whole; the headset still showed a brief black at every turn and, about once in 110 turns,
+    a flash. Spreading the turn over two or three frames removed the black but ghosted. A rebuild of the same instant
+    turn (on WebXR's own tracking space) would hand the headset the same picture, so it was not made. The blink
+    changes what the eye sees at the cut instead: the turn is made while the view is dark.
+  - **How**: a stick flick queues the turn (`Wo.req`); each frame `Wo.step` walks the blink `[.5, 1, 1, .6, .25]`
+    (one value a frame, about 70 ms at 72 Hz): half dark on the flick's own frame, the turn made on the next, fully
+    dark frame, one more dark frame, then back. The dark is the head guard's own black sphere (B47: on the camera,
+    drawn last over everything, its shader compiled while loading), which shows the darker of the wall fade and the
+    blink (`window.__gtBlink`, read by the guard's own loop): nothing new is made, compiled or uploaded, and no GL call is added (RULES.md 28). The turn itself is the
+    release's (`Wo`, about the head), and the snap count the recorder reads (`snap`, the S in `rec timeline`) is taken
+    on the turn's frame. A turn queued while something else set the rig's facing (VR entry, a scene) is dropped; VR
+    entry and exit end any blink; a blink not stepped for 250 ms is ignored, so a stalled update can never leave the
+    view dark. The snap gap (0.4 s) and the angle (30 degrees) are unchanged.
+  - **Rules**: RULES.md 27 relaxed by the author for this blink only; the no-full-screen-flash priority notes it as the
+    one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
+  - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
+    sphere at full dark and hidden after, and nothing compiled.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
@@ -2073,9 +2127,8 @@ Edits for the multiview experiment, in order. Three groups:
 
 ## Experiments (never in the release; `tools/experiment.py`, `tools/build_experiment.sh NAME`)
 
-- **nolayers**: No layers: the release requests the WebXR "layers" feature (compositor layers for the loading
-screen, projection layer for the game, NOTES 42, confirmed on the headset). This variant goes back
-to the plain projection-layer loader, to measure or diagnose.
+- **nolayers**: removed 2026-11-03 (closed by the author after the headset run, log 4d0d3716: the plain WebXR layer
+  forces the classic two-eye path and costs the frame rate; FIXES S36, RULES.md). In git history only.
 
 - **texcapture**: Texture capture: record every pre-renderable canvas painter's output during the boot (used by
 tools/prerender_textures.js, never shipped).

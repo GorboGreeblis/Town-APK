@@ -623,7 +623,7 @@ beyond the VR-entry fix.
     about 53 degrees of view): now 3.6 m away, 2.6 x 1.3 m (about 40 degrees),
     0.15 m below the eye line, in both the quad layer and the projection
     fallback. The `layers` feature is now in the release feature list; the
-    `nolayers` experiment flips it back for A/B comparisons. Also in 3.15.13:
+    `nolayers` experiment flipped it back for A/B comparisons (removed 2026-11-03). Also in 3.15.13:
     B16 (game fully loaded before drop-in) and the app label "GREEBLIS TOWN"
     (the Store listing name is typed in the dashboard separately).
 

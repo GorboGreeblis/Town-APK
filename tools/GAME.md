@@ -97,7 +97,8 @@ the game file itself since 3.15.43 (FIXES.md, entry edits: 9 blocks).
 
 - Left thumbstick: walk (dead-zone 0.15).
 - Right thumbstick left/right: snap turn by 30 degrees; the stick returns to centre between turns, and a turn within
-  0.4 s of the last is ignored (A1; 0.3 s before 3.15.59, A11).
+  0.4 s of the last is ignored (A1; 0.3 s before 3.15.59, A11). Since 4.0.31 each turn is made inside a short blink:
+  the view dims to black and back over five frames (about 70 ms), the turn on a fully dark frame (S37; RULES.md 27).
 - Trigger (`select`): interact / pick up / choose in menus; the pick cone and
   range are in `t.xr`.
 - Grip (`squeeze`): secondary action; both also wake the audio engine.

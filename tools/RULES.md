@@ -171,21 +171,30 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     a meeting, a menu press or the flash mark; the pulse helpers are gone (A50, 4.0.23) and `test_hud.js` checks that
     no haptic actuator is ever called.
 
-27. **No comfort vignette on the player's view, ever** (2026-11-03: "I never want a comfort vignette applied to the
-    user's view, for any reason"; the ring went in 4.0.4, A34): no darkening, fade, ring or tunnel on a snap turn, a
-    stick move, a teleport or anything else; snap turns only rotate the rig.
+27. **No comfort vignette on the player's view; the snap turn's blink is the one exception** (2026-11-03: "I never
+    want a comfort vignette applied to the user's view, for any reason"; the ring went in 4.0.4, A34; relaxed the same
+    day for the snap turn: "let's weaken Rule 27 to allow for this"): no ring, tunnel or edge darkening ever, and no
+    darkening or fade on a stick move, a teleport or anything else. The one exception is the snap turn's blink (S37,
+    4.0.31): the whole view dims to black for about 70 ms (five frames) and the turn is made on a dark frame.
+    Nothing else may reuse it, and it may not grow longer or partial (a vignette) without the author's word.
 
 28. **Nothing touches the GL context inside a headset frame but the frame's own draw** (2026-11-03, the author's
     stability ask): no upload, compile, readback, framebuffer switch or query inside a frame; the holds (F-B31, F-B51,
     S2), the opt-in light record (S18) and the sampled error read of S29 (one every 60 frames, at the frame's start)
     are the standing exceptions, and anything new waits for the gap between frames.
 
+29. **Never a no-layers build** (2026-11-03: "Please note as a Rule that we will never use a no layers build"; "It has
+    serious issues and we're not taking this route"): every build, release or experiment, requests the WebXR
+    `layers` feature and renders through the projection layer; no build drops it for the plain WebXR layer (the
+    removed `nolayers` experiment, FIXES S36, log 4d0d3716).
+
 ## Priorities
 
 - **Never below 60 fps on a Quest 3S and a Quest 3** (2026-10-30: "Tiny visual changes are ok to reach 60 fps.
   Never below 60 fps is the goal"); PERF.md 14.
 - **No full-screen flashes, ever** (the author, throughout): every flash found is a must-fix; the safeties S1 and S2
-  (FIXES) back the fixes up.
+  (FIXES) back the fixes up. The snap turn's blink (rule 27, S37) is the one deliberate dark frame, by the author's
+  word; any other dark or bright frame is a flash.
 - **Performance is the biggest blocker for the Store submission** (2026-10-28: "once all other tasks are completed,
   performance should be our focus"): after the open tasks, work goes to the frame rate (the Event on a Quest 3S).
 
@@ -204,6 +213,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 - Option 1 (no colour clear, S30, 4.0.24): taken out in 4.0.25 (2026-11-03, "The next build should not have the no clear
   addition"); the colour is cleared to black each frame (S18). Closed for good (2026-11-03, "Let's remove the no-clear
   option. The risk is too high. We can close this option out as well"): no build tries it again.
+- The plain WebXR layer (the `nolayers` experiment, no projection layer, no multiview): closed (2026-11-03, "Close out
+  the no layers build. It has serious issues and we're not taking this route"); the experiment is removed, and
+  rule 29 makes it standing: no build drops the `layers` feature.
 - A test build without the depth discard (P14, the layer's end): closed (2026-11-03, "'Test a build without the
   depth discard' close out this option"). The discard stays in every build; no experiment build drops it.
 - The Event's headroom by fading more scenery: closed (2026-11-03, "let's close out this option altogether. I don't

@@ -45,6 +45,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | --- | --- | --- |
 | Left stick walk with dead-zone, speed, collision with buildings (`F.solid`) and bodies (`uo`), park bounds | `test_input.js` (walking into a townsperson never overlaps; walking outward stays inside the park) | done |
 | Right stick snap turn 30°, no repeat while held | `test_input.js` | done |
+| The blink snap: the turn on a fully dark frame, the blink's sequence and end, nothing compiled (S37) | `test_input.js` | done |
 | Trigger/grip (`select`/`squeeze`): pick ray, pick range/cone, menu choice, UI buttons 4/5 | `test_input.js` (events only) | partial |
 | Controller mapping on real hardware (hand assignment; no haptics anywhere since 4.0.23, A50) | sideload | headset |
 
@@ -207,6 +208,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | The fourth pass's fixes: sprites and four more recompile conditions in the shader hold, a failing hold lets its object through, no multiview decision from the loader's WebGL1 context, batches made in play built after the frame and uploaded then, the eye hide wakes cold batches, the emotes' warm-up adds nothing again, the mark counter at minus infinity, the warm-up's GL errors read off, the loader released (S33) | `test_s33.js` (standard tier) | done (4.0.27) |
 | No name used but never declared in any game script: a removed helper's leftover call throws only when its path runs (S34: the hover's controller pulse, "Ot is not defined") | `test_freevars.js` (every tier, quick included) | done (4.0.28) |
 | The mark logs display slots skipped, layer image changes and view matrix faults; none of the last two in steady play (S35) | `test_flashlog.js` (standard tier) | done (4.0.29) |
+| The mark logs a frame timeline of the last frames, 15 to a line (S36) | `test_flashlog.js` (standard tier) | done (4.0.30) |
 | The frog walks home along the bar corridor without leaving through the doorway, however her home moves; no "no progress" trip (B79, S31) | `test_stuck.js` (standard tier) | done (4.0.25) |
 | The colour, depth and stencil are cleared each frame (S30's no-clear taken out in 4.0.25) and each headset frame flushes the context after the game's draw, before the layer's frame ends (S18) | `test_safeties.js` (standard tier) | done (4.0.25) |
 | The mark logs the layer path's line `rec frames (3 s)` (late frames, calls and triangle medians, repeated swapchain images, GL errors; S29) | `test_flashlog.js` (standard tier) | done (4.0.23) |

@@ -19,14 +19,6 @@ root = pathlib.Path(__file__).resolve().parent.parent
 EXPERIMENTS = {
     # The anchors are text of the minified game file (local names as the minifier gave them, NOTES 89): after an
     # edit to the game file, `python3 tools/experiment.py --check` (quick tier) shows any that no longer match.
-    # No layers: the release requests the WebXR "layers" feature (compositor
-    # layers for the loading screen, projection layer for the game, NOTES 42,
-    # confirmed on the headset). This variant goes back to the plain
-    # projection-layer loader, to measure or diagnose what the layers path costs.
-    "nolayers": [(
-        'optionalFeatures:["local-floor","bounded-floor","layers"]})}catch(e){return null}}function park(',
-        'optionalFeatures:["local-floor","bounded-floor"]})}catch(e){return null}}function park(',
-    )],
     # Texture capture: record every pre-renderable canvas painter's output during
     # the boot (used by tools/prerender_textures.js, never shipped).
     "texcapture": [(".tex={map:{},pr:{},n:{},on:!0},", ".tex={map:{},pr:{},n:{},on:!0,capture:[]},")],

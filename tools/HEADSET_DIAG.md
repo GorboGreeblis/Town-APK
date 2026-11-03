@@ -205,6 +205,10 @@ Since 3.15.57 (D3, the author: "let's try to make the logs more verbose"):
 The device in the `perf` lines (`dev=Quest_3`) comes from the browser's user agent; the author's Quest 3S reports
 itself as a Quest 3 there (log 1b7d04a9, 2026-11-03), so the per-device verdicts cannot tell the two apart.
 
+Since 4.0.30 (S36) each mark also prints `rec timeline (k of n, ...)` lines: the last 150 frames, each
+`frame:display step ms/callback ms/draw calls`, S where a snap turn fell, P a pickup, ! a skipped display slot. The
+flash is usually a few tenths of a second to a second before the mark.
+
 Since 4.0.29 (S35) each mark also prints `rec display (3 s): display slots skipped N (...) of a P ms period, layer
 image changes N (...; now ...), view matrix faults N`. Slots skipped at the flash mean the headset showed an older
 frame there; an image change or a matrix fault near it would point at the frame's setup; `layer image changed` and
