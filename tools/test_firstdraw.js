@@ -6,8 +6,8 @@
 // On the headset's path (multiview, rendering on), every buffer made inside a frame is counted while:
 //   - Nextessa is called, comes out of the portal and walks to the player (the player keeps near her);
 //   - she hands the pizza over; the Event starts and runs 2 minutes (its plants grow and are batched);
-// expected: no buffer made inside a frame; the game reports holding something back at least once, each object only
-// once (no object held frame after frame, which would leave it unseen); everything held back is on the GPU after its
+// expected: no buffer made inside a frame; anything held back is held once (since S33 the batches made in play are
+// uploaded as they are built, so the hold may have nothing to do; no object held frame after frame, which would leave it unseen); everything held back is on the GPU after its
 // frame; the originals of the meshes the multi-material group merger rewired are on the GPU from the warm-up (S28: a
 // fade reverts to them in play; the Library's rug box was held at the Event in two headset logs); no page errors.
 //
@@ -54,7 +54,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   const total = Object.values(r.inFrame).reduce((a, b) => a + b, 0);
   expect('Nextessa came and the Event ran with plants growing', r.came && r.event && r.plants >= 1, JSON.stringify({ came: r.came, event: r.event, plants: r.plants }));
   expect('no buffer made inside a headset frame (courier, hand-over, the Event)', total === 0, JSON.stringify(r.inFrame));
-  expect('new objects were held back for one frame and uploaded between frames', r.held.length >= 1, `${r.held.length} hold(s)`);
+  // since S33 (4.0.27) the batches made in play are uploaded as they are built, after the frame, so the hold may have
+  // nothing to do: what matters is that nothing new is drawn before it is on the GPU (no buffer made inside a frame)
+  expect('new objects are on the GPU before their first draw: held back for one frame, or uploaded as they were made (S33)', r.held.length >= 1 || (total === 0 && r.parts > 0), `${r.held.length} hold(s), ${total} buffer(s) in a frame`);
   expect('nothing held frame after frame (each hold is a new object; under 40 holds)', r.held.length < 40, `${r.held.length} hold(s): ${r.held.slice(0, 12).join(',')}`);
   expect('every object held back is on the GPU after its frame (vertices and indices; batches replaced since aside)', r.parts > 0 && r.uploaded === r.parts, `${r.uploaded} of ${r.parts}`);
   expect('S28: every merged multi-material mesh has its original shape on the GPU from the warm-up (a fade reverts to it in play)', r.merged && r.merged.n > 0 && r.merged.onGpu === r.merged.n, JSON.stringify(r.merged));
