@@ -202,7 +202,8 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
   options 2, 3, and 4"; "I don't want to try option 3 at any point" (the classic two-eye path stays closed for good);
   "2 and 4 may introduce other problems".
 - Option 1 (no colour clear, S30, 4.0.24): taken out in 4.0.25 (2026-11-03, "The next build should not have the no clear
-  addition"); the colour is cleared to black each frame (S18).
+  addition"); the colour is cleared to black each frame (S18). Closed for good (2026-11-03, "Let's remove the no-clear
+  option. The risk is too high. We can close this option out as well"): no build tries it again.
 - The Event's headroom by fading more scenery: closed (2026-11-03, "let's close out this option altogether. I don't
   want anything that will effect user experience negatively"); the measurement (FIXES S30) showed nothing to take
   without hiding what the player sees, and nothing that costs the player's view is taken for performance from here on.
