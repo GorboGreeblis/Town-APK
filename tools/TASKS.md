@@ -19,28 +19,24 @@ Worked around until the author can do them (the author, 2026-10-31).
 
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
-| T3 | Headset run of the latest build: 4.0.15 run on 2026-11-02 (log f57f19a2: no flashes, FPS passes, the dancers fine); next, 4.0.17 (the bigger HUD, the hands at entry, the second review's safeties) | open, author | `HEADSET_DIAG.md`, `RELEASE.md` sections 3 and 5 |
+| T3 | Headset run of the latest build: 4.0.21 run on 2026-11-02 (logs 550715df and 09ba968c: no flashes in 27 minutes with two Events, the floor held); next, 4.0.22 (the cap, the basket, the church doorway and cross, S28) | open, author | `HEADSET_DIAG.md`, `RELEASE.md` sections 3 and 5 |
 | T18 | Full pass on the final build (RULES.md 23), with `--resume`, and the Ordinals check on its compressed version (ordinals.com, ordiscan.com and Quest Browser) (the author: "Please treat this as the final build until I say otherwise"; "postpone the full pass until I can test in headset first") | the Ordinals check done on 4.0.9 (NOTES 100: all passed, both explorers' policies and the preview frame; the real Quest Browser on the headset is the author's); the full pass waiting on T3 | `TESTING.md`; the last finished full pass was 3.15.54 (NOTES 96) |
 | T4 | Store upload: the final build to the Alpha channel, then the age group (13+) on its build page (T16's frame rate now holds in the headset, 2026-10-31) | open, author; after T3 and T18 | `RELEASE.md` section 5; the listing, IARC rating, privacy page and supported devices are done |
-| T26 | The headset-confirmation backlog: confirmed by the author's 4.0.15 run (2026-11-02): F-B83 (no tiles at the edge of view), S18-S20 (no flashes), the FPS bar; still to confirm when convenient: A41 (the HUD on the watch, now bigger: A44), A42 (pizza boxes fade), A43 (the Ormstown parcel), P34 (no long frame at the Event's start: the log shows none) | open, author | VERSIONS.md 4.0.7-4.0.17 |
+| T26 | The headset-confirmation backlog: confirmed by the author's 4.0.15 run (2026-11-02): F-B83 (no tiles at the edge of view), S18-S20 (no flashes), the FPS bar; the 4.0.21 run (logs 550715df, 09ba968c): S23 (nothing held at entry), S8 (the goo safety fired, no flash), S25/L1; still to confirm when convenient: A41 (the HUD on the watch, now bigger: A44), A42 (pizza boxes fade), A43 (the Ormstown parcel), A45-A48 (4.0.22), P34 (the Event's start is still a 46 ms frame on the headset) | open, author | VERSIONS.md 4.0.7-4.0.17 |
 | T27 | Another full code review after this pass (the author, 2026-11-02): five reviews on 4.0.15 done 2026-11-02 (the entry script and layers shim, the three.js multiview patches, the engine side, the game logic, the leftovers): one high (B78), three medium (B80, B83, B84) and nine low findings; B78, B80, B81, B82 fixed in 4.0.17 (S24); the rest logged (B79, B83-B88) for T28; the leftovers found (a dead visit helper, write-only head-script fields, two diagnostic counters, stale doc wording) for 4.0.17 | done (2026-11-02) | FIXES S24; BUGS B78-B88 |
 
-## Resume point (4.0.20, 2026-11-02)
+## Resume point (4.0.22, 2026-11-03)
 
-- **Builds since the author's last headset run (4.0.15, 2026-11-02, log f57f19a2: no flashes, FPS passes, the dancers
-  fine):** 4.0.17 the HUD 10 cm wide (A44), the hands and watch built while loading (S23), the second code review's
-  safeties (S24: B78, B80-B82); 4.0.18 the point lights always visible (B83), `instancing` in the shader hold (B84),
-  the courier's clock under panels (B86), leftovers (L2); 4.0.19 the meeting's seek and the glyph cache (S26); 4.0.20
-  the shader hold's allocation (S27). PRs #47-#57 merged (#57 with 4.0.20); the branch restarts from main for the next change.
-- **The author** tests when they can: the bigger HUD and the hands at entry are the next things to look at (T3).
-- **Running or queued on the machine when this was written:** the full tier with coverage started on 4.0.17 and
-  continued on the 4.0.18 asset after the build landed mid-run (`tools/.runs/full_4.0.17.log`; its one failure so far,
-  the compressed check and the texture census's one 404, are the mid-run swaps of the copies and the pre-painted
-  textures by the 4.0.18 and 4.0.19 builds: both checks pass on the builds), then the dead-code census, the play census
-  and the content test alone (a queue script in `tools/.runs/`, session scratch). A clean full tier with coverage is chained behind it (`tools/.runs/full_4.0.19.log`, running on the 4.0.20 asset),
-  with no build during it; its census is the one to read (`dead_code_4.0.19.log`), then the three report tools alone.
-- **Next:** B79 when a trip carries its state, T19's last shape by the play
-  census, T24's tool re-runs alone (`fill_probe.js`, `event_cpu.js`, `occlusion_census.js`); then the full pass on the
+- **Builds since the author's last headset run (4.0.21, 2026-11-02, logs 550715df and 09ba968c: no flashes, the floor
+  held):** 4.0.22 the cap closed with a full-disc brim (A45), the basket over Garden Supplies' ramp gone (A46), the
+  church doorway's backing (A47), the cross gone (A48), S28 (the merger's originals uploaded while loading, the hold's
+  names, the no-progress margin 0.8 m). PRs #47-#58 merged (#58 with 4.0.21); 4.0.22 on the branch for the next PR.
+- **The author** tests when they can: the cap, the kiosk, the church doorway (T3); the headset confirmations in T26.
+- **Running or queued on the machine when this was written:** the clean full tier with coverage on the 4.0.22 asset
+  (`tools/.runs/full_4.0.22.log`; the tier on 4.0.21 was stopped for the build), then the dead-code census
+  (`dead_code_4.0.22.log`, T23's last part), the play census, the content test alone, the three report tools alone
+  (`fill_probe.js`, `event_cpu.js`, `occlusion_census.js`; T24) and a second solo content run. No build during it.
+- **Next:** read those results as they land (T9, T23, T24); B79 when a trip carries its state; then the full pass on the
   last build (T18) once the author's headset run (T3) has happened.
 
 ## Done
@@ -58,6 +54,7 @@ Worked around until the author can do them (the author, 2026-10-31).
 | D9 | Event performance: P14, P16-P18 (3.15.36-3.15.40; P16-P18 removed in 3.15.43); B27 (3.15.35, 3.15.39); closed by the author, reopened as T16 | 2026-10-27 |
 | D10 | Content, governor, HUD, greeting and warm-up coverage tests; P19 (3.15.41); standard and full tiers pass | 2026-10-28 |
 | D11 | Former T2 (safe release build), T5-T7, T11-T14 (performance and stability passes, the graphical pass, the soak): done across 3.15.11-3.15.41, recorded in TEST_PLAN.md and PERF.md | 2026-10-28 |
+| D28 | The author's asks of 2026-11-03 (A45 the cap, A46 the basket, A47 the church doorway, A48 the cross), the analysis of logs 550715df and 09ba968c, S28 (the merger's originals warmed, the hold's names, the no-progress margin), `test_scenery.js`; 4.0.22 | 2026-11-03 |
 | D27 | T19, S12 continued: the play census on 4.0.20 (2026-11-03) leaves three first-draw uploads in play, all between frames by the geometry hold (the Event's four 312-vertex shapes, a 148-vertex shape at the Speech's end, the Garden's 24-vertex box): a shape appears one frame late, nothing inside a frame; 13 buffers made in play against 26 on 4.0.11, no program, no texture. Closed as done; B54 keeps the three | 2026-11-03 |
 | D26 | T25, B49 explained: every float the jitter test caught was a text scene's gesture (the hop, the bow); the test skips scenes (4.0.14) | 2026-11-02 |
 | D25 | T22, the flashes' single-variable headset test (the `ovronly` and `nomultiview` experiment sessions): closed by the author without a run, "let's close out T22" (2026-11-02); the experiments stay buildable (`build_experiment.sh`) | 2026-11-02 |

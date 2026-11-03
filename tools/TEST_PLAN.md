@@ -133,7 +133,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Battle panels per dancer: title, stamina bar label, the three moves, "KING DINO on drums." | `test_content.js` | done |
 | The robin flies off when picked; the Ancient's talk line | `test_content.js` | done |
 | During the Event: each townsperson's gardening line, Fortizmo silent, no gifts, the Ancient's "Hello", Sparkakus's line, Backpacka comes | `test_content.js` | done |
-| Warm-up coverage: every lit material on show or built on first use (the Gem, Backpacka) has its shaders for each point-light state the game can reach (none, the Portal's, the bulb's); the Portal's light never on with the bulb's (P19, checked frame by frame) | `warm_coverage.js` (standard tier) | done (3.15.41) |
+| Warm-up coverage: every lit material on show or built on first use (the Gem, Backpacka) has its shaders for the game's one point-light state (both lights always visible since S25, driven by intensity); through the Portal and the bulb both lights stay visible every frame, the Portal's intensity is 0 while the bulb is lit (P19) and nothing is compiled | `warm_coverage.js` (standard tier) | done (3.15.41; one state since 4.0.21) |
 | Vignettes (the 90 PAIRS and the Ancient's 12) play as speech bubbles or Gree-mail tokens, counted and ended; the Ancient's only inside the church | `test_content.js` (a sample; all 102 with `--long`) | done |
 
 ## 10a. Graphical and performance pass (full tier)
@@ -202,6 +202,8 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Opened, the HUD lies on the watch face, centred, 10 cm wide (A44; 8 cm until 4.0.15), fully opaque (A41) | `test_watch.js` (standard tier) | done (4.0.8) |
 | Mama Gorbo's cap never clips her eye disks; it rests on her head (A36) | `test_cap.js` (standard tier); pictures: `shots.js --preset mama` (front, side, three-quarter, back, above, and from a standing player's eyes) | done (4.0.4; head through the cap checked since 4.0.7, F-B80) |
 | The Post Office's mail pile: five parcels, four painted labels, none floating or buried, labels facing out, the Ormstown parcel clear of the others and the stacks (A43) | `test_mailpile.js` (standard tier) | done (4.0.15) |
+| Mama Gorbo's cap closed underneath, its brim a full disc (A45); one hanging basket at Garden Supplies (A46); the church doorway's backing behind its arches (A47); no cross on the tower (A48) | `test_scenery.js` (standard tier); pictures: `shots.js --preset mama`, free views of the kiosk and the doorway | done (4.0.22) |
+| The originals of the meshes the multi-material group merger rewires are on the GPU from the warm-up, so a fade's revert uploads nothing in play (S28; the Library's rug box held at the Event in logs f57f19a2 and 550715df) | `test_firstdraw.js` (standard tier) | done (4.0.22) |
 | The flash record: the drawn picture's brightness every frame, XR frame health, no drawing without a head pose, a mark that never stalls (S15) | `test_flashlog.js` (standard tier) | done (4.0.7) |
 | The Event's pizza boxes fade out at its end, nothing else with them (A42) | `test_pizza_fade.js` (standard tier) | done (4.0.9) |
 | Backpacka's water (the drip from his mouth, the jets, the drops, the rainbow) seen against the Event's mist (F-B74) | `test_bp_water.js` (standard tier; pictures) | done (4.0.4) |
