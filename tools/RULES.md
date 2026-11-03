@@ -173,6 +173,11 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     user's view, for any reason"; the ring went in 4.0.4, A34): no darkening, fade, ring or tunnel on a snap turn, a
     stick move, a teleport or anything else; snap turns only rotate the rig.
 
+28. **Nothing touches the GL context inside a headset frame but the frame's own draw** (2026-11-03, the author's
+    stability ask): no upload, compile, readback, framebuffer switch or query inside a frame; the holds (F-B31, F-B51,
+    S2), the opt-in light record (S18) and the sampled error read of S29 (one every 60 frames, at the frame's start)
+    are the standing exceptions, and anything new waits for the gap between frames.
+
 ## Priorities
 
 - **Never below 60 fps on a Quest 3S and a Quest 3** (2026-10-30: "Tiny visual changes are ok to reach 60 fps.
@@ -192,4 +197,8 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 - P28, far characters posed every other frame: removed (2026-10-30, F-B56).
 - Hiding a lost frame's draw: of the four options put to the author on 2026-11-03 (no colour clear; MSAA 2 on the
   layer; the classic two-eye path; skipping a late frame), only the first goes ahead (4.0.24, S30): "let's close out
-  options 2, 3, and 4".
+  options 2, 3, and 4"; "I don't want to try option 3 at any point" (the classic two-eye path stays closed for good);
+  "2 and 4 may introduce other problems".
+- The Event's headroom by fading more scenery: closed (2026-11-03, "let's close out this option altogether. I don't
+  want anything that will effect user experience negatively"); the measurement (FIXES S30) showed nothing to take
+  without hiding what the player sees, and nothing that costs the player's view is taken for performance from here on.

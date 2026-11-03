@@ -40,6 +40,8 @@ function hooked(file) {
   // Objects declared in another scope than the hook point are tagged where they are declared (test copies only):
   // the quality governor and the vignettes. `window.__dbg.<name>` reads them through a getter.
   for (const [n, decl, v = n] of TAGGED) if (html.includes(decl)) html = html.replace(decl, decl.replace(`const ${v}=`, `const ${v}=window.__dbg_${n}=`));
+  // the minifier may fold the governor into a shared const statement (`const $e=...,Ge={ema:`), so its tag also takes that form
+  if (!html.includes('window.__dbg_Ge=')) html = html.replace(/([,;])Ge=\{ema:/, '$1Ge=window.__dbg_Ge={ema:');
   // A name declared after the hook point (still in its temporal dead zone there) is reached through a getter instead.
   const hook = 'window.__dbg={};' + HOOK_NAMES.map((n) => `try{window.__dbg.${n}=${n}}catch(e){try{Object.defineProperty(window.__dbg,"${n}",{get:function(){try{return ${n}}catch(_){}},configurable:true,enumerable:true})}catch(_){}}`).join('') + TAGGED.map(([n]) => `Object.defineProperty(window.__dbg,"${n}",{get:function(){return window.__dbg_${n}},configurable:true,enumerable:true});`).join('') + 'window.__dbg.t=window.__dbgT;window.__dbgReady=true;';
   return Buffer.from(html.replace(anchor, anchor + hook));

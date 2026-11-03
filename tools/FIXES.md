@@ -1670,6 +1670,30 @@ experiment, all on the multiview lead.
   3x on every file, 4.0.22 included: it reads the eye buffer every frame, which is why S18 made it opt-in and off on
   the headset, so the rule that it costs no frames was stale. The test now checks what matters: the record is off
   unless a test turns it on, and frames keep coming with it on.
+- **S30** (4.0.24; the author, on the dark flash: "we have tried many times and not found the cause, what about hiding
+  the symptom as a fix?"; of the four options put to them (no colour clear, MSAA 2 on the layer, the classic two-eye
+  path, skipping a late frame) "let's close out options 2, 3, and 4"): the colour buffer is no longer cleared each
+  frame (`autoClearColor` off; depth and stencil still cleared). The sky sphere covers every pixel, so nothing visible
+  changes: ten wide views rendered twice in a row in the same page, once with the clear and once without, differ by
+  about 100 pixels in 400,000 (0.03%), less than two renders with the clear differ from each other (about 300, the
+  grass, clouds and water moving between frames). A frame whose draw is lost on the way to the compositor now shows
+  that swapchain image's previous picture, about three frames old, instead of the clear (black since S18, the sky's
+  near-white before): on a still view nothing, on a snap turn a one-frame step back. S29's lines still report what
+  was lost. `RENDERING.md` section 3. Also from the same ask ("any other possible easy wins for stability?"): the
+  layer shim flushes the context right after the game's draw, before the layer's frame ends, so the frame's GPU
+  commands are submitted before the compositor can reach for the image (the browser flushes at frame end anyway;
+  this moves it ahead of the hand-over at no cost).
+  The third easy win asked for, more headroom in the Event's heaviest views by fading the far scenery earlier, has
+  nothing to give: the Event's far-object safeguard already fades every small prop beyond 26 m (31k triangles inside
+  that radius, 7k in its outer fifth), the batched town holds 387k triangles of which 369k lie within 42 m of the
+  centre and 18k beyond, and the outer town is behind the mist's own far detail; the heavy frames are the park itself,
+  so the only further cut would hide things the player sees (not taken; the author then closed the option altogether:
+  nothing that affects the player's experience negatively; RULES.md "Decisions that close an option").
+- **The harness tags the governor in its folded form** (4.0.24, tools only; T9): the harness exposes the governor to
+  tests by rewriting its declaration text (`const Ge={`); A50's removal of the pulse counters, which stood between
+  the batcher's box and the governor, let the minifier fold the two into one statement (`const $e=...,Ge={ema:`), so
+  the tag missed and every governor check failed with "Cannot read properties of undefined" (the 4.0.23 tier's one
+  real failure). The tag now takes that form as well.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
