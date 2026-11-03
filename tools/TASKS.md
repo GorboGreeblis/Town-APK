@@ -35,8 +35,9 @@ Worked around until the author can do them (the author, 2026-10-31).
   #47-#60 merged (#60 with 4.0.23); 4.0.24 (S30, no colour clear) is the next build, after the clean tier on 4.0.23.
 - **The author** tests when they can: the next flash's mark now prints `rec frames (3 s)` (S29); the basket side, the
   cap, the church doorway (T3).
-- **Running or queued on the machine when this was written:** the clean full tier with coverage on the 4.0.23 asset
-  (`tools/.runs/full_4.0.23.log`; the 4.0.22 tier was stopped at 35 passes for the build: its four failures were the
+- **Running or queued on the machine when this was written:** the full tier with coverage started on the 4.0.23 asset
+  (`tools/.runs/full_4.0.23.log`; the 4.0.24 build landed during it, so its later stages run on 4.0.24 and its census is
+  mixed, not the clean one; its "compressed version" failure is the game file edited for 4.0.24 during that check; the 4.0.22 tier was stopped at 35 passes for the build: its four failures were the
   content test's own waiting (fixed), the frog's trips with their state (B79, dump extended), Hennrick's model 0.46 m
   off for a moment in `test_jitter.js` (to rerun alone), and the recovery test's 3 s window (fixed)), then the
   dead-code census, the play census, the content test alone, the three report tools alone (T24) and a second content

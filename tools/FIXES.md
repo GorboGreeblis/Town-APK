@@ -1679,7 +1679,20 @@ experiment, all on the multiview lead.
   grass, clouds and water moving between frames). A frame whose draw is lost on the way to the compositor now shows
   that swapchain image's previous picture, about three frames old, instead of the clear (black since S18, the sky's
   near-white before): on a still view nothing, on a snap turn a one-frame step back. S29's lines still report what
-  was lost. `RENDERING.md` section 3.
+  was lost. `RENDERING.md` section 3. Also from the same ask ("any other possible easy wins for stability?"): the
+  layer shim flushes the context right after the game's draw, before the layer's frame ends, so the frame's GPU
+  commands are submitted before the compositor can reach for the image (the browser flushes at frame end anyway;
+  this moves it ahead of the hand-over at no cost).
+  The third easy win asked for, more headroom in the Event's heaviest views by fading the far scenery earlier, has
+  nothing to give: the Event's far-object safeguard already fades every small prop beyond 26 m (31k triangles inside
+  that radius, 7k in its outer fifth), the batched town holds 387k triangles of which 369k lie within 42 m of the
+  centre and 18k beyond, and the outer town is behind the mist's own far detail; the heavy frames are the park itself,
+  so the only further cut would hide things the player sees (not taken; RULES.md 28 is the rule kept instead).
+- **The harness tags the governor in its folded form** (4.0.24, tools only; T9): the harness exposes the governor to
+  tests by rewriting its declaration text (`const Ge={`); A50's removal of the pulse counters, which stood between
+  the batcher's box and the governor, let the minifier fold the two into one statement (`const $e=...,Ge={ema:`), so
+  the tag missed and every governor check failed with "Cannot read properties of undefined" (the 4.0.23 tier's one
+  real failure). The tag now takes that form as well.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
