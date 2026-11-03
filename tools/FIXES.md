@@ -1694,6 +1694,12 @@ experiment, all on the multiview lead.
   the batcher's box and the governor, let the minifier fold the two into one statement (`const $e=...,Ge={ema:`), so
   the tag missed and every governor check failed with "Cannot read properties of undefined" (the 4.0.23 tier's one
   real failure). The tag now takes that form as well.
+- **test_content.js re-places the player before Gooward's after-barrage check** (4.0.24, tools only; T9): the check
+  put the player beside Gooward once, then waited for the gift's dialogue to close before scanning; on a loaded
+  machine (the stage took 49 minutes beside the full tier and five audit reviewers) the dialogue closed late and
+  Gooward had wandered, so the scan found nobody ("after: false"). The barrage lock itself is 4 s of wall time and
+  ended on time. The check now puts the player beside him before each scan, for up to 3 s. The vignette fix of the
+  same test held in that run: 15 played, none refused.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures

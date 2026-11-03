@@ -133,8 +133,11 @@ const LONG = process.argv.includes('--long');
     beside(); await H.wait(300); const before = D.xe.current === e;
     await H.act(e, /^Give a blossom$/, 300); const g0 = e.giftAt || performance.now();
     let n = 0, hit = 0; while (performance.now() - g0 < 3600) { beside(); await H.wait(120); if (!D.qt.isOpen) { D.xe.scan(); n++; if (D.xe.current === e) hit++; } }   // the scan run here (it does not run while a dialogue is open)
-    while (performance.now() - g0 < 4300) await H.wait(100); beside(); await H.wait(300); while (D.qt.isOpen) await H.wait(100); D.xe.scan();
-    return { before, during: n, targeted: hit, after: D.xe.current === e };
+    // after the barrage (gcGooUntil, 4 s of wall time from the gift): the gift's dialogue may close late on a loaded machine and Gooward may
+    // wander meanwhile, so the player is put beside him again right before each scan, for up to 3 s
+    while (performance.now() - g0 < 4300) await H.wait(100); while (D.qt.isOpen) await H.wait(100);
+    let after = false; const t1 = performance.now(); while (!after && performance.now() - t1 < 3000) { beside(); await H.wait(150); if (!D.qt.isOpen) { D.xe.scan(); after = D.xe.current === e; } }
+    return { before, during: n, targeted: hit, after };
   });
   expect('gifts: after a Blossom, Gooward cannot be interacted with until his goo barrage is over, then can again', !gw.none && gw.before && gw.during >= 3 && gw.targeted === 0 && gw.after, JSON.stringify(gw));
   const phone1 = await page.evaluate(async () => { const H = window.__h; return await H.act(H.zone('phone'), /Call for pizza/); });
