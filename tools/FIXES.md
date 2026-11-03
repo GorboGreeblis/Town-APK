@@ -1885,6 +1885,13 @@ frame already hands the game (no GL call added, RULES.md 28):
     frames' at once; eight snaps), so the game draws the turn correctly; the instant 30-degree jump of one frame is the
     lead. The `snapspread` experiment (diagnosis only, RULES.md 22) spreads each snap over three frames (about 42 ms)
     to test it in the headset.
+  - **The author on snapspread** (2026-11-03): "the snap turn is too jarring without a black screen between turns";
+    "It's also really hard to observe any flashes like this"; asked, the author said the release shows a brief black
+    screen at every snap turn, and no flash was seen with snapspread. The game draws nothing black at a snap (no blink,
+    fade or overlay: checked), so the black between turns comes after the game's frame, from the one-frame 30-degree
+    jump; the flashes are most likely the same black held longer. Two more diagnostic APKs: `snapspread2` (the snap
+    over two frames, about 28 ms) and `nolayers` (the release snap on the browser's plain WebXR layer, no projection
+    layer, to tell whether the projection layer path makes the black).
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures

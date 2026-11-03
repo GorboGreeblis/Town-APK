@@ -50,6 +50,12 @@ EXPERIMENTS = {
         ("function Wo(t){Oo();const w=N.clone();", "function Wo(t){Wo.q=(Wo.q||0)+t,Wo.n=3}function WoX(t){Oo();const w=N.clone();"),
         ("_.update=function(t,D,N){if(_.calibrateHeight&&N)", "_.update=function(t,D,N){if(Wo.n>0){const a=Wo.q/Wo.n;Wo.q-=a,Wo.n--,WoX(a)}if(_.calibrateHeight&&N)"),
     ],
+    # Snap spread over two frames (S36): as snapspread, half the time (about 28 ms at 72 Hz); the author found the
+    # three-frame spread jarring ("too jarring without a black screen between turns").
+    "snapspread2": [
+        ("function Wo(t){Oo();const w=N.clone();", "function Wo(t){Wo.q=(Wo.q||0)+t,Wo.n=2}function WoX(t){Oo();const w=N.clone();"),
+        ("_.update=function(t,D,N){if(_.calibrateHeight&&N)", "_.update=function(t,D,N){if(Wo.n>0){const a=Wo.q/Wo.n;Wo.q-=a,Wo.n--,WoX(a)}if(_.calibrateHeight&&N)"),
+    ],
     "noeffects": [("gcEB.ready=!0,", "gcEB.ready=!0,Nt.sparkle=()=>{},Ut.at=()=>{},Ut.above=()=>{},")],
 }
 
