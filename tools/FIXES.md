@@ -1583,6 +1583,17 @@ experiment, all on the multiview lead.
   5 mm short of the first arch's face so no faces coincide). `test_scenery.js` casts a ray into the old notch.
 - **A48** (4.0.22; the author: "Please remove the gold cross from the top of the church tower"): the two gold boxes
   (20.5 m up) are gone; the stone cap at 18.1 m tops the tower. `test_scenery.js` casts a ray down the tower's axis.
+- **A49** (4.0.23; the author: "Please move the remaining hanging basket plant to the opposite side of the Garden
+  Supplies kiosk. From the player's perspective: from the right to the left"): A46 took the kiosk's left basket (its
+  local -x side) for the right one: facing the kiosk, the player looks along the kiosk's -z, so local +x is on the
+  player's right, and the basket Zollod clipped into was the +x one. The basket is on the -x side now (the player's
+  left), with the colours it had there, and the +x one is gone. `test_scenery.js` casts its rays accordingly.
+- **A50** (4.0.23; the author: "Please remove controller vibration from the game altogether"; "I don't want to use
+  controller vibration in any part of the game", asked while looking at the flash pattern around pickups): every haptic
+  pulse is gone: both controllers on a Blossom gained (0.3, 35 ms) and on someone new met (0.5, 70 ms), the pointing
+  controller on a menu press (0.25, 20 ms) and on a world pick (0.3, 30 ms), the right controller on the flash mark
+  (0.5, 60 ms); the pulse helpers and the counts kept for them are removed. RULES.md 26; `test_hud.js` checks no
+  actuator is ever called.
 - **The author's logs 550715df (the run) and 09ba968c (the full logcat)** (4.0.21, 2026-11-02, Quest 3, 27 minutes
   with two Events, three dance battles, the Gem scene, the courier, the Cave and 278 snap turns; the author: "no
   flashes were observed during this last run"): no mark, no flash record, no compile, no layer swap, no upload inside
@@ -1600,6 +1611,27 @@ experiment, all on the multiview lead.
   (it starts one every 18-28 s, 8 s long), so a burst of refusals ("HNMUt refused, MUKDt refused, ...", 12 of 15 in the
   clean tier of 2026-11-03, 4 in a solo run on 2026-11-02) came whenever the test's turn fell inside one. The test now
   waits for no exchange to be playing as well, tries once more if refused, and notes how many first tries were refused.
+- **B89 explained** (4.0.22; the author's logs 86dfef83 and d4ee8f89, 2026-11-02 23:28; "I took off my headset, let it
+  idle, and then put it back on: I was then stuck on a black screen", later "now the game is back"): at the wake the
+  game's session resumed and drew a frame (71 fps), then the system's Guardian dialog took immersive focus (the game
+  hidden), its process died 0.4 s later and the Guardian service failed to find its room anchors every second from then
+  on ("ANCHOR_QUERY_FAILED, dialog"), so the headset showed nothing until the boundary was re-established; the game was
+  alive and hidden throughout and came back with focus. System-side (the 4.0.21 run's three wakes had no Guardian
+  involvement; the author: "I'm testing in low light", and the logcat shows the tracking cameras switching to their
+  low-light mode at the wake, which makes relocalising the room hard); no game change; `HEADSET_DIAG.md` says what the black means and what brings the game back.
+- **test_recover.js waits for the walk after the reset** (4.0.22, tools only; T9): the test gave a townsperson put back
+  home 3 s to move again, but at home she stands until her next wander (3-7 s away, longer after a visit), so the check
+  failed by timing now and then ("movedAfter 0": the clean tier of 2026-11-03, the S21 run of 4.0.14, and the 4.0.21
+  runs that were read as S26's doing when it was reverted). The test now waits up to 15 s for the move. Under a loaded
+  machine the reset itself can miss its window as well: the game counts 30 failing frames and starts over after a 2 s
+  gap between them, so three solo runs beside the full tier failed at the reset ("recovered false"); the tier runs it
+  alone.
+- **test_stuck.js's trip dump names the company** (4.0.22, tools only; B79): the clean tier of 2026-11-03 caught the
+  frog's trips with their state for the first time: three at (-33.8..-32.5, 1.5..1.7), the kiosk's doorway, 2.2-4.2 m
+  from a home at x -35.3 (the bar corridor), no destination or a stale one, not visiting or hosting, the player 30 m
+  away. Put there by hand with the same home, the frog walks straight in and arrives (probe, session scratch), so the
+  stall needs company or a state the dump did not carry: it now adds the via step, the want and blocked counters, the
+  inside flag, the pattern, and every entity within 2.5 m with its distance and state.
 - **S28** (4.0.22; the two logs above): three changes.
   - **The warm-up uploads the originals of the merged multi-material meshes.** The group merger (`__gtMM`, 4.0.x)
     rewires a multi-material mesh whose groups share materials to a merged-index copy on its first draw, which is the
@@ -1612,6 +1644,32 @@ experiment, all on the multiview lead.
     scene's shape in log 550715df ("undefined #ffffff r0.16m at 8.0m") could not be told apart.
   - **The no-progress check leaves walkers within 0.8 m of their mark alone** (was 0.5 m): the log's "frog 0.5 m from
     its target for 5 s" counted a walker standing at its mark toward the rescue's teleport.
+- **S29** (4.0.23; the author's log 99bf1cc9 on 4.0.22, "one flash was observed during this run"; the mark at 966.5 s by
+  the gazebo, seven snap turns in the 8 s before it, a Blossom pickup 2 s before it; the author: the flash "seemed to
+  change in color", not white): the recorder found nothing in the frames (draw calls and triangles steady, no hold,
+  compile, swap, gap, lost pose, undrawn or doubled frame, nothing within 0.35 m of the eyes; the runtime's second:
+  App 8.4 ms, one stale frame, no tear). A dark flash with S18's black clear colour means the frame on the display
+  held the clear only: the game drew, but what it drew was not what was shown, so the loss lies on the layer path
+  between the page and the compositor (the drawing into an image other than the one shown, or the image taken before
+  the GPU finished it). The recorder now watches that path: the layer shim keeps the identity of the swapchain image
+  it attaches each frame and counts a repeat ("same swapchain image twice"), reads the GL error every eighth frame
+  right after the attach (a failed attach would leave the previous image bound and show the new one cleared), and
+  takes the slack to the frame's predicted display time when the layer's frame ends; the flight recorder stores the
+  slack and the triangles per frame and the mark prints `rec frames (3 s): N, late N (worst -X ms@-t s), calls median,
+  tris median, under 70%: ..., same swapchain image twice: N, GL errors N (...)`. B46 open again until a mark says
+  which. The author's pattern ("around these flashes and snap turning and pickups") holds across the logs: of 19
+  marks with an event trail, 13 had a snap turn within 6 s, 11 a pickup, 9 both (the others: the courier, Event
+  starts, Cave exits, all held since); a snap only rotates the rig and a pickup pulses, plays and redraws the HUD
+  between frames, so neither names the frame that is lost; the new lines are meant to. `test_safeties.js` and `test_flashlog.js` pass with it (the flash-log test's frame-rate comparison fails
+  beside the full tier and passes alone).
+- **test_flashlog.js measures the light record's cost once the rate is steady** (4.0.23, tools only; T9): the test
+  counted frames for 3 s with the record on and 3 s with it off right after its first checks, while the entry's
+  warm-ups and first draws still stall for a few seconds; the stall landed in one window or the other (on 4.0.22 the
+  "off" window got 23 frames, on 4.0.23 the "on" window 76 against 180, and removing any one unrelated S29 line moved
+  it back). Measured once the rate is steady (two 1 s windows within 15% of each other, up to 20 s) the record costs
+  3x on every file, 4.0.22 included: it reads the eye buffer every frame, which is why S18 made it opt-in and off on
+  the headset, so the rule that it costs no frames was stale. The test now checks what matters: the record is off
+  unless a test turns it on, and frames keep coming with it on.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures

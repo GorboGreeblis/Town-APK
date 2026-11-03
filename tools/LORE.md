@@ -728,7 +728,7 @@ Outside the fence:
 | --- | --- | --- | --- |
 | POST OFFICE | blue `#33508f` / navy `#22325a` | pink `#e276a0` | A mound of 2,300 letters behind the counter (seven paper tints, some stamped red or blue) on which Somlet sleeps; a 6 x 4 pigeonhole wall full of letters; parcels in kraft paper. |
 | SHERIFF'S | brown `#8a5a3a` / `#6a3a1a` | red `#b82822` with nine white spots per slope: a mushroom cap | Taller by 1 m; the desk 1.545 m up with Mushroom's wooden ramp at its left end (1.77 m wide, A13; F-B39); a gold six-point star on the back wall; WANTED posters; clusters of toadstools on the corners and the counter, two big red ones in front, a giant one at the side, twelve more on the roof (A14); an orange flag with a red mushroom emblem 10.5 m up. |
-| GARDEN SUPPLIES | green `#6f8f5a` / `#2f5a2a` | rust `#a85c3a` | Potted plants, seed trays, two glass jars each holding a strange rooted specimen; one hanging basket at the left of the front (the one over the ramp went in 4.0.22, A46: Zollod clipped into it leaving). |
+| GARDEN SUPPLIES | green `#6f8f5a` / `#2f5a2a` | rust `#a85c3a` | Potted plants, seed trays, two glass jars each holding a strange rooted specimen; one hanging basket at the player's left of the front (the right one went in 4.0.22-4.0.23, A46 and A49: Zollod clipped into it leaving). |
 | GOOWARD'S GALLERY | cream `#e8e0cc` / plum `#3a2a5a` | purple `#584284` | Wider (8.4 m) and taller by 1 m, no counter; the painting in its gold frame; paint cans in five colours, some tipped over; 58 paint splats on the floor; brushes; two easels with small landscapes. |
 
 - **The Library** (`buildLibrary`): open to the sky, no walls or roof: eight bookcases on a large Persian rug

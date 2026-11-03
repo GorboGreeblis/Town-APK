@@ -37,8 +37,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const t0 = performance.now(); while (bad && performance.now() - t0 < 5000) await new Promise((res) => requestAnimationFrame(res));
     const atRecovery = home(b);
     delete b.busy; b.busy = busy0 === undefined ? null : null;
-    const p0 = b.group.position.clone(), e0 = D.Re.errors; await wait(3000);
-    out.failing = { id: b.id, recovered: !bad, s: +((performance.now() - t0) / 1000).toFixed(1), home: +atRecovery.toFixed(2), errorsAfter: D.Re.errors - e0, movedAfter: +b.group.position.distanceTo(p0).toFixed(2), log: logs.some((s) => /put back home \(its update kept failing\)/.test(s)) };
+    // put back home she stands until her next wander (3-7 s away, or longer after a visit), so the move is waited for, up to 15 s
+    const p0 = b.group.position.clone(), e0 = D.Re.errors, t2 = performance.now(); while (b.group.position.distanceTo(p0) < 0.2 && performance.now() - t2 < 15000) await wait(100);
+    out.failing = { id: b.id, recovered: !bad, s: +((performance.now() - t0) / 1000).toFixed(1), home: +atRecovery.toFixed(2), errorsAfter: D.Re.errors - e0, movedAfter: +b.group.position.distanceTo(p0).toFixed(2), movedIn: +((performance.now() - t2) / 1000).toFixed(1), log: logs.some((s) => /put back home \(its update kept failing\)/.test(s)) };
     // 3. the batcher's pass failing every frame
     const R = O.render; let frames = 0, calls = 0; O.render = function () { const x = R.apply(this, arguments); frames++; calls += O.info.render.calls; return x; };
     const n0 = D.gcEB.list.length; D.gcEB.list[0].P = null;

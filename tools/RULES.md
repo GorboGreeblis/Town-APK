@@ -164,6 +164,15 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     removed before the final build ... the game must be fully tested after its removal"): the census
     found one unused function (`plantShow`, removed in 3.15.63, FIXES R8); the full tier runs on the final build.
 
+26. **No controller vibration anywhere in the game** (2026-11-03: "Please remove controller vibration from the game
+    altogether"; "I don't want to use controller vibration in any part of the game"): no haptic pulse on a pickup,
+    a meeting, a menu press or the flash mark; the pulse helpers are gone (A50, 4.0.23) and `test_hud.js` checks that
+    no haptic actuator is ever called.
+
+27. **No comfort vignette on the player's view, ever** (2026-11-03: "I never want a comfort vignette applied to the
+    user's view, for any reason"; the ring went in 4.0.4, A34): no darkening, fade, ring or tunnel on a snap turn, a
+    stick move, a teleport or anything else; snap turns only rotate the rig.
+
 ## Priorities
 
 - **Never below 60 fps on a Quest 3S and a Quest 3** (2026-10-30: "Tiny visual changes are ok to reach 60 fps.
@@ -181,3 +190,6 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 - The randomness decision list: closed (2026-10-29, RANDOMNESS.md; FIXES R4-R6).
 - The Garden stays flat (2026-10-30: "regardless of anything else we will be keeping the flat version"; F-B57).
 - P28, far characters posed every other frame: removed (2026-10-30, F-B56).
+- Hiding a lost frame's draw: of the four options put to the author on 2026-11-03 (no colour clear; MSAA 2 on the
+  layer; the classic two-eye path; skipping a late frame), only the first goes ahead (4.0.24, S30): "let's close out
+  options 2, 3, and 4".
