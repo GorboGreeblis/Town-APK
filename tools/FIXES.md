@@ -1680,9 +1680,11 @@ experiment, all on the multiview lead.
   that swapchain image's previous picture, about three frames old, instead of the clear (black since S18, the sky's
   near-white before): on a still view nothing, on a snap turn a one-frame step back. S29's lines still report what
   was lost. `RENDERING.md` section 3. Also from the same ask ("any other possible easy wins for stability?"): the
-  layer shim flushes the context right after the game's draw, before the layer's frame ends, so the frame's GPU
-  commands are submitted before the compositor can reach for the image (the browser flushes at frame end anyway;
-  this moves it ahead of the hand-over at no cost).
+  layer shim flushes the context right after the game's draw, before the layer's frame ends. Correction (found in the
+  tools pass that followed): the layer's `end` has flushed after the draw, and after the non-MSAA blit, since S18, so
+  this second flush adds nothing; it comes out with the next game change (T29), and the flush the author approved
+  stays as the one in `end`. `test_safeties.js`'s S30 check (a flush inside each frame after the draw) holds with
+  either.
   The third easy win asked for, more headroom in the Event's heaviest views by fading the far scenery earlier, has
   nothing to give: the Event's far-object safeguard already fades every small prop beyond 26 m (31k triangles inside
   that radius, 7k in its outer fifth), the batched town holds 387k triangles of which 369k lie within 42 m of the
@@ -1700,6 +1702,14 @@ experiment, all on the multiview lead.
   Gooward had wandered, so the scan found nobody ("after: false"). The barrage lock itself is 4 s of wall time and
   ended on time. The check now puts the player beside him before each scan, for up to 3 s. The vignette fix of the
   same test held in that run: 15 played, none refused.
+- **Tests for 4.0.23-4.0.24 and the fake headset brought to the headset's timing** (4.0.24, tools only; the author:
+  "Please ensure that all tools, documentation, and test cases reflect the current build"): `test_safeties.js` checks
+  S30 (no colour clear, depth and stencil still cleared; a flush inside each headset frame after the game's draw);
+  `test_flashlog.js` checks the mark's `rec frames (3 s)` line (S29) and words its sky check for S30; the fake
+  headset's frames now predict their display time two frames ahead of their start, as the runtime does (it used the
+  frame's start, so S29's "late" counted every frame under the fake); its one projection texture is documented as
+  counting every frame in "same swapchain image twice". The pixel-reading tools were checked against S30: each either
+  clears explicitly (`fill_probe.js`, `overdraw_probe.js`) or renders whole scenes the sky or a marker covers.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures

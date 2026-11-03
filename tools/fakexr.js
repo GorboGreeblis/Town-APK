@@ -83,7 +83,9 @@
     }
   }
   class Frame {
-    constructor(session) { this.session = session; this.predictedDisplayTime = performance.now(); }
+    // the time the frame will reach the display: the real runtime predicts about two frames ahead of the frame's start
+    // (the S29 slack is measured against it), so the fake does the same at 72 Hz
+    constructor(session) { this.session = session; this.predictedDisplayTime = performance.now() + 2000 / 72; }
     getViewerPose() {
       if (S.noPose > 0) { S.noPose--; return null; }   // tracking lost for a frame (test_flashlog.js)
       const v = [new View('left', this.session), new View('right', this.session)];
