@@ -41,7 +41,7 @@ Worked around until the author can do them (the author, 2026-10-31).
   and the slots baseline; the author's snap-turn test brought two flashes in 55 s of turning in place, and the
   `snapspread` experiment tests the one-frame jump; the spread snaps ghost in the headset, and `nolayers` was closed
   by the author (removed). 4.0.31 (S37): the blink snap (RULES.md 27 relaxed for it), rule 29 (never a no-layers
-  build), the spread experiments removed. PRs #47-#65 merged.
+  build), the spread experiments removed. 4.0.32 (S38): six stability safeties. PRs #47-#66 merged.
 - **Closed by the author on 2026-11-03:** no-clear (for good) and a test build without the depth discard. The other two
   flash options (B91's gaps, a softer clear colour) went into 4.0.27 at the author's word. Open bugs: B46 only.
 - **The author** tests when they can: the next flash's mark prints `rec frames (3 s)` (S29); the basket side; entering

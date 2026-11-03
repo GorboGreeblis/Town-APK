@@ -6,6 +6,7 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 
 | Version | versionCode | What changed | Headset |
 | --- | --- | --- | --- |
+| 4.0.32 | 101 | **S38**: six stability safeties (the stick cleared at the update's start, the eye hide caught before the draw, the scene hold cleared after 60 s with no dialogue, the Event's end not held by its ending show, a non-number step skipped, VR exit always ends presenting); `test_s38.js`. With all of 4.0.31 (the blink snap). | not yet run |
 | 4.0.31 | 100 | **S37**: the blink snap: each snap turn is made inside a short blink (the view dims to black and back over five frames, about 70 ms; the turn on a fully dark frame), on the head guard's sphere, nothing new made; RULES.md 27 relaxed for it by the author. Rule 29 (never a no-layers build); the `nolayers`, `snapspread` and `snapspread2` experiments removed. | not yet run |
 | 4.0.30 | 99 | **S36**: a frame timeline of the last 150 frames on each mark (display step, callback time, draw calls, snap turns, pickups, skipped slots); the skipped-slot baseline from the last 90 frames. The `snapspread` experiment APK for the snap-turn lead. | not yet run |
 | 4.0.29 | 98 | **S35**: the flash record gains display slots skipped (from each frame's predicted display time), layer image size changes and view matrix faults, in a new `rec display (3 s)` line on each mark; no GL call added. With all of 4.0.28. | not yet run |

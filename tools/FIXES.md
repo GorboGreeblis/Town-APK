@@ -1922,6 +1922,37 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **S38, the stability safeties** (4.0.32; the author: "Please analyze the game file for any other easy and safe
+  stability safeties"). A read of the whole game file for guards that keep the game going after an unexpected fault
+  without changing normal play; six found, each fault injected headless and the guard proven (`test_s38.js`):
+  - **The stick cleared first**: the player's update cleared the stick value only part way in, after the height
+    calibration, the frame timing and the hand meshes; an update failing before that every frame kept walking the
+    player on the last stick value (4.6 m in 1.5 s, injected). It is now cleared at the update's start.
+  - **The eye hide caught before the draw**: the head-inside-object hide ran outside the draw's own try, so a throw
+    there skipped the draw (the fallback drew), left hidden characters hidden, and counted as a render failure, which
+    steps the safe mode down for the session (still groups, then batching off: level 0 to 2-3 in 1.5 s, injected).
+    It is now caught and logged as "eye-hide", and the frame draws as before.
+  - **The scene hold's limit**: the Gem scene's hold (`Bulb.hold`) is cleared only by the Speech's dialogue; if the
+    assembly between them failed, every interaction stayed refused for the session. The 1 s audit now clears a hold
+    left on for 60 game seconds with no dialogue open, logged ("recovery: the scene hold stayed on 60 s with no
+    dialogue open: cleared"); in play it is never on that long without a dialogue (about 16 s at most).
+  - **The Event's end not held by its show**: the Event waits for Backpacka's ending show to finish; a show whose
+    update failed every frame would keep the Event going for ever (its own failure count does not see it). It now
+    ends at most 60 s past its time, logged ("recovery: the Event's ending show stayed busy 60 s past its time:
+    ended"); in play the show ends about 20 s before the Event's time.
+  - **A non-number step skipped**: a non-number head direction for one frame with the stick held made the player's
+    position not a number, which the safety then answered by sending the player to the spawn point; the step is now
+    skipped instead.
+  - **VR exit always ends presenting**: the exit's clean-up had no guard, so a throw part way (the Event's far fade,
+    a UI mesh) left the game "presenting" with no session, and VR could not be entered again until a reload. The
+    clean-up's end (presenting off, the stick cleared, the renderer's XR off) now runs whatever happens before it.
+  - Looked at and left (already guarded): saved data (the game keeps none), audio (resumed on every focus and
+    visibility change; the music clocks re-anchor), frame times (clamped), timers (cleared or one-shot), the screen
+    stack (the base never popped), gamepads without axes, the rig drift, the Event in the Cave, lists that grow
+    (capped or cleared each frame). No GL call added (RULES.md 28), nothing made in play.
+  - `test_recover.js`: its failing-townsperson and failing-batcher checks waited fixed times (5 s, 1.5 s), so on a
+    starved machine too few frames came (seen on 4.0.31 and 4.0.32: 5.3 s with no recovery; 1 frame after the step
+    down); both now count frames (B53), with a wall-clock limit only as a backstop.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
