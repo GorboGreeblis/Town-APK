@@ -34,7 +34,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     b.group.position.set(b.home.x + 6, 0, b.home.z + 6);
     let bad = true; const busy0 = b.busy;
     Object.defineProperty(b, 'busy', { get() { if (bad) throw new Error('injected fault'); return null; }, set() { bad = false; }, configurable: true });
-    const t0 = performance.now(); while (bad && performance.now() - t0 < 5000) await new Promise((res) => requestAnimationFrame(res));
+    const t0 = performance.now(); while (bad && performance.now() - t0 < 30000) await new Promise((res) => requestAnimationFrame(res));   // its 30 failing frames counted, not timed (B53)
     const atRecovery = home(b);
     delete b.busy; b.busy = busy0 === undefined ? null : null;
     // put back home she stands until her next wander (3-7 s away, or longer after a visit), so the move is waited for, up to 15 s
@@ -45,8 +45,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const n0 = D.gcEB.list.length; D.gcEB.list[0].P = null;
     const t1 = performance.now(); while (!logs.some((s) => /recovery: batcher kept failing; step 2/.test(s)) && performance.now() - t1 < 8000) await wait(50);
     const step2 = logs.some((s) => /recovery: batcher kept failing; step 2/.test(s)), step1 = logs.some((s) => /recovery: batcher kept failing; step 1/.test(s));
-    frames = calls = 0; const e1 = D.Re.errors; await wait(1500);
-    out.batcher = { batches: n0, step1, step2, s: +((performance.now() - t1) / 1000 - 1.5).toFixed(1), framesAfter: frames, drawsAfter: Math.round(calls / Math.max(1, frames)), errorsAfter: D.Re.errors - e1, left: D.gcEB.list.length, off: !!D.gcEB.off, mv: !!(window.__gtXR && window.__gtXR.mvActive) };
+    frames = calls = 0; const e1 = D.Re.errors; { const t3 = performance.now(); while (frames < 30 && performance.now() - t3 < 20000) await wait(50); }   // counted, not timed (B53)
+    out.batcher = { batches: n0, step1, step2, s: +((performance.now() - t1) / 1000).toFixed(1), framesAfter: frames, drawsAfter: Math.round(calls / Math.max(1, frames)), errorsAfter: D.Re.errors - e1, left: D.gcEB.list.length, off: !!D.gcEB.off, mv: !!(window.__gtXR && window.__gtXR.mvActive) };
     O.render = R;
     out.logs = logs.filter((s) => /^recovery:/.test(s));
     return out;
