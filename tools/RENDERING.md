@@ -60,8 +60,10 @@ that keep it fast and flash-free, each with the test that enforces it. Details a
      new shader program is held and its program compiled after the frame (S2, `shader held for one frame`); a
      character the player's head is inside is hidden for the frame (S1, `head inside N character(s)`), and a
      draw hook that throws is logged and skipped rather than ending the frame (S1, `[draw hook]`).
-   - **The clear.** The frame's colour, depth and stencil are cleared each frame, the colour to black (S18: a lost
-     draw shows black, not the sky's near-white); 4.0.24's no-clear (S30) was taken out in 4.0.25 (B90). The layer's
+   - **The clear.** The frame's colour, depth and stencil are cleared each frame. The colour is a muted ground green
+     outdoors (#6f8a78) and black in the Cave (S33, 4.0.27; black everywhere from S18 to 4.0.26, the sky's near-white
+     before that): the sky sphere covers every pixel, and a lost draw would show a flat tone close to the scene's
+     brightness. 4.0.24's no-clear (S30) was taken out in 4.0.25 (B90) and is closed for good. The layer's
      `end` flushes the context after the draw (S18), so the frame's commands are submitted before the hand-over.
    - **Draw.** three.js draws each object once with the left camera. Multiview programs pick each eye's
      matrices by `gl_ViewID_OVR`. The left eye reads the uniforms three.js always uploads; the right eye
