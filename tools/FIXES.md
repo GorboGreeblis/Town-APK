@@ -1760,6 +1760,20 @@ experiment, all on the multiview lead.
     left from L1; three unused stone materials made while loading the pond.
   Not changed, for the author: B90 (S30's possible per-frame GPU load and unproven benefit: a headset measurement
   decides); B91 (latent gaps with no trigger today).
+- **S32, the 4.0.25 final pass's findings** (4.0.26; T18, the author: "Until I say otherwise: treat this as if it were
+the final build"):
+  - **B92 fixed: a townsperson's greeting is reset while they are busy too.** The reset after the player has been more
+    than 6 m away (`greetClear`) ran after the busy return in the townsperson's update, so a task taken up while the
+    player was away kept the old greeting time and, on the next approach, they walked on instead of stopping
+    (`test_greet.js`, Mama Gorbo). The reset now runs first, every frame, whatever the townsperson is doing; nothing
+    else changes (a busy townsperson is still never held for a greeting).
+  - **Test fixes from the same pass** (no game change): `test_owner_exit.js` counts its windows in game seconds with a
+    wall cap, and a run where the machine starved the game clock (frames over 1 s count 1/60 s; one run gave 4.9 game
+    seconds in 273 wall seconds) says so instead of reading as a stuck owner (Gemtoe at the gazebo, which left in every
+    run alone on 4.0.24 and 4.0.25); `test_greet.js` records the distance kept and the task when the reset is missed.
+    The flash log's 29 ms dump stall came with the machine loaded by those reruns (rerun alone on 4.0.26).
+  - The 4.0.25 full tier with coverage ran past its 16000 s limit in the text-scene test (about 66 minutes under
+    coverage and load, 13-18 minutes before); the final pass moves to 4.0.26 with a longer limit.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
