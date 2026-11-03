@@ -1868,6 +1868,10 @@ frame already hands the game (no GL call added, RULES.md 28):
   in the session), layer image changes N (...; now viewports in WxH), view matrix faults N (N in the session)`.
   GPU timing per frame (timer queries) was offered and left out: it would add GL calls inside each frame, which
   RULES.md 28 forbids. `test_flashlog.js` checks the new line and that steady play has no image change or matrix fault.
+  The author's first log on 4.0.29 (29214c6c, a flash 189.7 s in): no layer image change and no view matrix fault in
+  the whole session, so neither caused it. The slots count read 19 near the flash and 470 in the session, too high:
+  its baseline is the shortest step seen, which came from the loader's 90 Hz (10.3 ms), so ordinary 72 Hz steps of
+  16 ms counted; the steps near the flash were 16 ms and one 23 ms, none a whole skipped slot (about 28 ms at 72 Hz).
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
