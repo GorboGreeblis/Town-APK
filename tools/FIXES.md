@@ -1872,6 +1872,19 @@ frame already hands the game (no GL call added, RULES.md 28):
   the whole session, so neither caused it. The slots count read 19 near the flash and 470 in the session, too high:
   its baseline is the shortest step seen, which came from the loader's 90 Hz (10.3 ms), so ordinary 72 Hz steps of
   16 ms counted; the steps near the flash were 16 ms and one 23 ms, none a whole skipped slot (about 28 ms at 72 Hz).
+- **S36, the frame timeline and the slots baseline** (4.0.30; the author: "let's build 4.0.30"):
+  - **A frame timeline on each mark**: the last 150 frames (about 2 s), 15 to a line, `rec timeline (k of n, ...):
+    frame:display step ms/callback ms/draw calls` with S where a snap turn fell, P a pickup and ! a skipped slot, the
+    last frame's distance before the mark given. The flash's own frame can be found in it.
+  - **The slots baseline fixed**: the period is now the shortest display step in the last 90 frames (not since the
+    session began, which took the loader's 90 Hz), and a skip needs a step over 1.75 periods (close to a whole slot).
+  - **The author's snap-turn test** (log 95c052a2, 4.0.29, "one flash was observed while snap turning in place"; the log
+    holds two marks): turning in place with no pickups, two marks in about 55 s, after some 63 and 28 turns. Snap
+    turns alone bring the flash. Both marks clean in every record (no image change, no matrix fault, no step over 16 ms
+    near either, no error). Headless, the frame of each snap draws the new view whole (its draw calls are the next
+    frames' at once; eight snaps), so the game draws the turn correctly; the instant 30-degree jump of one frame is the
+    lead. The `snapspread` experiment (diagnosis only, RULES.md 22) spreads each snap over three frames (about 42 ms)
+    to test it in the headset.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
