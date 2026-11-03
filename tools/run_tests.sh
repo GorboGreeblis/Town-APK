@@ -81,7 +81,7 @@ if [ "$TIER" != quick ]; then
   run "runtime play (2D loop + fake VR session), ${PLAY_S}s" node "$ROOT/tools/test_play.js" "$ASSET" all "$PLAY_S"
   run "multiview: each eye matches the classic path, half the draw calls; no frame hazard or compile during play" node "$ROOT/tools/multiview_check.js" "$ASSET"
   run "uniform budget: every shader fits a Quest 3S's GPU limits (multiview and classic)" node "$ROOT/tools/uniform_budget.js" "$ASSET"
-  run "warm-up coverage: every lit material has its shaders for every light state the game can reach (P19 frame check)" node "$ROOT/tools/warm_coverage.js" "$ASSET"
+  run "warm-up coverage: every lit material has its shaders for the game's one light state (S25); both point lights visible every frame, P19 as intensity" node "$ROOT/tools/warm_coverage.js" "$ASSET"
   run "standalone: the game runs on its own (nothing from the web, no extras); every pre-painted texture in tex/ is what the game paints (RULES.md 2)" node "$ROOT/tools/test_standalone.js" "$ASSET"
   run "compressed version: works as a Bitcoin ordinal (alone, under the ordinal content policy; unpacks, boots, enters VR) (RULES.md 20)" node "$ROOT/tools/test_compressed.js"
   run "the Event's first start: no texture, framebuffer or pixel work or shader compile inside a frame, no layer swap (F-B33)" node "$ROOT/tools/event_start_check.js" "$ASSET"

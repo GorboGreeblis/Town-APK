@@ -1547,6 +1547,15 @@ experiment, all on the multiview lead.
   closed by design. Kept from 4.0.19 (B85): the emotes' glyph cache keeps up to 160 glyph-and-colour textures before
   evicting any (40 before), so a session's emotes and scene tokens (about 30 pairs) are painted once each and never
   disposed and remade in play; a first use still paints its 64 x 64 canvas, uploaded between frames by the texture hold.
+- **warm_coverage.js caught up with S25** (4.0.21, tools only; T9, found by the clean full tier of 2026-11-03, its one
+  failure): the check still toggled the two point lights' `visible` to compile the scene in four light states (none, the
+  Portal's, the bulb's, both) and failed every lit material missing a program for the states without a light, and it
+  still required that no frame had both lights visible (P19). Since S25 (4.0.18) both lights are always visible and their
+  intensity drives them, so the game has one light state (both counted) and compiles it while loading; the states the
+  check made cannot happen in play. It now compiles the one state, requires both lights visible all the way up at boot
+  and in every frame through the Portal opening, the bulb held lit and both closing, the Portal's intensity 0 while the
+  bulb is lit (P19 as an intensity) and back after, and no program compiled through the sequence. Passes on 4.0.21; the
+  game is unchanged.
 - **S27** (4.0.20; T28, B88): the shader hold's per-object check no longer makes a one-element array for every
   frustum-visible mesh every frame (a single material is checked directly); the other small per-frame allocations
   the review listed (the walkers' vectors, the courier's step, the HUD's arrays while open) stay: no defect, GC pressure

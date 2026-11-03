@@ -133,7 +133,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Battle panels per dancer: title, stamina bar label, the three moves, "KING DINO on drums." | `test_content.js` | done |
 | The robin flies off when picked; the Ancient's talk line | `test_content.js` | done |
 | During the Event: each townsperson's gardening line, Fortizmo silent, no gifts, the Ancient's "Hello", Sparkakus's line, Backpacka comes | `test_content.js` | done |
-| Warm-up coverage: every lit material on show or built on first use (the Gem, Backpacka) has its shaders for each point-light state the game can reach (none, the Portal's, the bulb's); the Portal's light never on with the bulb's (P19, checked frame by frame) | `warm_coverage.js` (standard tier) | done (3.15.41) |
+| Warm-up coverage: every lit material on show or built on first use (the Gem, Backpacka) has its shaders for the game's one point-light state (both lights always visible since S25, driven by intensity); through the Portal and the bulb both lights stay visible every frame, the Portal's intensity is 0 while the bulb is lit (P19) and nothing is compiled | `warm_coverage.js` (standard tier) | done (3.15.41; one state since 4.0.21) |
 | Vignettes (the 90 PAIRS and the Ancient's 12) play as speech bubbles or Gree-mail tokens, counted and ended; the Ancient's only inside the church | `test_content.js` (a sample; all 102 with `--long`) | done |
 
 ## 10a. Graphical and performance pass (full tier)
