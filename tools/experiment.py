@@ -19,14 +19,6 @@ root = pathlib.Path(__file__).resolve().parent.parent
 EXPERIMENTS = {
     # The anchors are text of the minified game file (local names as the minifier gave them, NOTES 89): after an
     # edit to the game file, `python3 tools/experiment.py --check` (quick tier) shows any that no longer match.
-    # No layers: the release requests the WebXR "layers" feature (compositor
-    # layers for the loading screen, projection layer for the game, NOTES 42,
-    # confirmed on the headset). This variant goes back to the plain
-    # projection-layer loader, to measure or diagnose what the layers path costs.
-    "nolayers": [(
-        'optionalFeatures:["local-floor","bounded-floor","layers"]})}catch(e){return null}}function park(',
-        'optionalFeatures:["local-floor","bounded-floor"]})}catch(e){return null}}function park(',
-    )],
     # Texture capture: record every pre-renderable canvas painter's output during
     # the boot (used by tools/prerender_textures.js, never shipped).
     "texcapture": [(".tex={map:{},pr:{},n:{},on:!0},", ".tex={map:{},pr:{},n:{},on:!0,capture:[]},")],
@@ -42,7 +34,6 @@ EXPERIMENTS = {
     # Draw every mesh individually: no gcEB batches, no custom vertex shader.
     "nobatch": [("const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[]};",
                  "const gcEB={list:[],mats:new WeakMap,geos:new WeakMap,root:null,N:32,f:0,tmp:[],off:!0};")],
-    # No pickup effects: no sparkle particles, no floating labels, no HUD/label texture churn from pickups.
     # Snap spread (S36, the snap-turn lead): the release turns the rig 30 degrees in one frame; this variant spreads each
     # snap over the next three frames (about 42 ms at 72 Hz), to learn in the headset whether the one-frame jump is what
     # the flashes follow (the author's snap-turn test, log 95c052a2: two marks in 55 s of turning in place).
@@ -56,6 +47,7 @@ EXPERIMENTS = {
         ("function Wo(t){Oo();const w=N.clone();", "function Wo(t){Wo.q=(Wo.q||0)+t,Wo.n=2}function WoX(t){Oo();const w=N.clone();"),
         ("_.update=function(t,D,N){if(_.calibrateHeight&&N)", "_.update=function(t,D,N){if(Wo.n>0){const a=Wo.q/Wo.n;Wo.q-=a,Wo.n--,WoX(a)}if(_.calibrateHeight&&N)"),
     ],
+    # No pickup effects: no sparkle particles, no floating labels, no HUD/label texture churn from pickups.
     "noeffects": [("gcEB.ready=!0,", "gcEB.ready=!0,Nt.sparkle=()=>{},Ut.at=()=>{},Ut.above=()=>{},")],
 }
 

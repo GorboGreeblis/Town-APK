@@ -1463,7 +1463,7 @@ experiment, all on the multiview lead.
   - **The loading bar's step count** was 39 against 21 real boot steps, so the bar stopped at about half at the
     handover to the game; it is 21 now (B71).
   - Kept on purpose (fallbacks, experiment anchors, hooks with readers): the classic XRWebGLLayer loader and the
-    non-multiview path (the `nolayers`, `nomultiview`, `ovronly` experiments; headless tests without `GT_MULTIVIEW`),
+    non-multiview path (the `nomultiview` and `ovronly` experiments; headless tests without `GT_MULTIVIEW`),
     the multiview-incomplete fallback, the loader's retry, the game's own session request without `layers`, the
     `local` reference-space fallback, the draw fallback and frame checks (S18), the light record, the D2 B-mark.
 - **S21** (4.0.14; T19, S12 continued): the geometry warm-up (S12) draws every object once while loading and again at
@@ -1892,6 +1892,15 @@ frame already hands the game (no GL call added, RULES.md 28):
     jump; the flashes are most likely the same black held longer. Two more diagnostic APKs: `snapspread2` (the snap
     over two frames, about 28 ms) and `nolayers` (the release snap on the browser's plain WebXR layer, no projection
     layer, to tell whether the projection layer path makes the black).
+  - **nolayers closed** (2026-11-03): the author's run (log 4d0d3716, Quest 3S; 75 snap turns, no mark): "It has
+    serious issues and we're not taking this route." Without layers the game falls back to the classic two-eye path
+    (no multiview: "multiview not decided yet ... layers false"), 56-67 fps of 72 in busy views and a loader held at
+    6-10 fps for about 12 s before the drop-in. The experiment is removed from `tools/experiment.py` and no build
+    tries the plain WebXR layer again (RULES.md).
+  - **Ghosting on the spread snaps** (the author, 2026-11-03, `snapspread` and `snapspread2`): "some ghosting can be
+    seen during turns, turns are no longer appearing as clean to the user". Each in-between frame is shown, and
+    the display's persistence blends it with the next, so a spread snap reads as a smear rather than a cut; with
+    the three-frame spread found jarring, neither spread gives a clean turn.
 - **B49 explained** (4.0.14; T25, the author: "Please also work through B49"): `test_jitter.js` reported Gooward 0.48-0.50 m
   and Mama Gorbo 0.34 m "floating" against their character about two minutes in; every reproduction (three runs on
   2026-11-02, two failing) carries `vig: true` at the worst float: the character was in a text scene, whose gestures
@@ -2097,9 +2106,8 @@ Edits for the multiview experiment, in order. Three groups:
 
 ## Experiments (never in the release; `tools/experiment.py`, `tools/build_experiment.sh NAME`)
 
-- **nolayers**: No layers: the release requests the WebXR "layers" feature (compositor layers for the loading
-screen, projection layer for the game, NOTES 42, confirmed on the headset). This variant goes back
-to the plain projection-layer loader, to measure or diagnose.
+- **nolayers**: removed 2026-11-03 (closed by the author after the headset run, log 4d0d3716: the plain WebXR layer
+  forces the classic two-eye path and costs the frame rate; FIXES S36, RULES.md). In git history only.
 
 - **texcapture**: Texture capture: record every pre-renderable canvas painter's output during the boot (used by
 tools/prerender_textures.js, never shipped).

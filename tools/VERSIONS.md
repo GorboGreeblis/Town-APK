@@ -109,8 +109,8 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 Diagnostic APKs (`tools/build_experiment.sh NAME`, same package and version as
 the release, never uploaded; since RULES.md 22 for measurement only, never to try a
 change, where they were once A/B builds). Current variants (`python3 tools/experiment.py --list`):
-`nolayers` (the plain projection-layer loader), `nomultiview` (the classic path), `nobatch`, `noeffects`, and `texcapture` (used by
+`nomultiview` (the classic path), `ovronly`, `nobatch`, `noeffects`, `snapspread`, `snapspread2`, and `texcapture` (used by
 `prerender_textures.js`, never built as an APK). Earlier ones, in git history only:
-`flashlog` (removed 2026-10-29; its B mark is in the release since D2, 3.15.48), `layers` (became the release in 3.15.13), `multiview` (became the release in
+`nolayers` (removed 2026-11-03, closed by the author), `flashlog` (removed 2026-10-29; its B mark is in the release since D2, 3.15.48), `layers` (became the release in 3.15.13), `multiview` (became the release in
 3.15.34), `sharp` (retired; its setting became the adaptive scale), `native`,
 `directrequest`, `keepalive`, `nogovernor` (dropped in 3.15.43).
