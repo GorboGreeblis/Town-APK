@@ -1922,6 +1922,58 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.40, S40: the fourth full code audit** (the author: "Before the final pass: Please perform a full code review /
+  audit"): five parallel reviews of the beautified 4.0.39 file (the entry script and layer shim, the three.js patches,
+  the engine side, the game logic, the leftovers), each finding checked against the code before a fix. Fixed:
+  - **Menus never stood on the 4.0.38 head top** (the logic review): the 4.0.38 fix changed the head-top function, but
+    the menus measured each mesh's bounding box themselves, so Mama Gorbo's still floated 0.8 m high (only Nextessa's
+    pizza box used the new function; `test_world.js` checked the function, not the menus). The menus now stand on the
+    highest visible vertex (held items left out, as the menus always did), measured once for every character while
+    loading, never in a frame.
+  - **4.0.39's minification dissolved `shopText` and `gemTrade`** (the leftovers review): with top-level names in play,
+    terser's property hoisting split the two text objects into loose names, and `test_textfit.js` (full tier) reads
+    them whole. The game file was minified again from 4.0.38's with hoisting off; `minify_game.js` now stops if a kept
+    name is no longer declared after minifying.
+  - **Nextessa's walk threw inside the church** (the logic review; since B86's fix): while a dialogue or panel was open,
+    her routed walk added to a constant (a TypeError every frame, logged as `[pizza]`); and her give-up clock kept
+    running under dialogues and panels, so a long shop visit or dance battle after a call could send her home with the
+    pizza (what B86 had fixed). The clock now pauses whenever the game is not in play, and the walk step only waits.
+  - **An Event without Seeds faded the Garden's flowers** (the logic review): in a later Event without Seeds the flowers
+    from an earlier one faded out, took new colours and grew back when Backpacka sprayed, against "no flowers grow"
+    (the author). The fade and Backpacka's watering now need the Seeds.
+  - **The romp's jingle looped on when the romp paused** (the engine and logic reviews): the riff checked only that the
+    romp existed, and the romp does not advance while the headset menu is up, after leaving VR or while the headset
+    sleeps; it stops now when VR is left, blurred or hidden.
+  - **Hidden birds could be picked** (the logic review): the pick tested only the mesh's own visibility, so a bird away
+    from its branch, or the park's birds faded out in an Event, still took the ray (a tweet and an invisible flight);
+    any hidden parent now skips it.
+  - **Gooward took a second Blossom during his goo barrage in VR** (the logic review): the ray pick skipped the
+    barrage's lock that the flat-screen pick honoured; it honours it now.
+  - **The light record's set-up reset GL state behind three.js** (the entry review): at the first VR entry it cleared to
+    transparent black and left the texture unit and framebuffer unbound, while three.js's cache still held the game's
+    green clear colour and its own texture; every VR frame then cleared to black (S33's softer clear colour lost) until
+    the Cave changed the colour, and a texture upload could go to the wrong binding. The set-up no longer clears (new
+    texture storage is zero-filled) and puts both bindings back.
+  - **A failed re-entry left its session running** (the entry review): the failure path worked on the first, ended
+    session, so a throw during a second VR entry left the new one open with nothing to end it; it is ended now.
+  - **The web path's multiview** (the entry review): in Quest Browser (index.html, the ordinal) the shaders are built
+    before any session, without multiview; the session then turned it on, recompiling every program during play and
+    sizing the batches' uniforms for the classic path. Multiview stays off for a session whose shaders were built
+    without it (`multiview not used: ...` in the log); the APK decides it with the parked session, as before.
+  - Smaller: notes are counted as started only when the audio is running; the mark's dump runs just after the frame
+    (it was timed into the frame after the press); display gaps over 500 ms (after a sleep or a hidden spell) are not
+    counted as skipped slots; a program compiled between frames reads its attributes then, not in its first frame
+    (RULES.md 28); the game's own session request (only if the entry script's throws) asks for layers (RULES.md 29);
+    leftovers removed: `JGP.eventMove` and `xe.lastPick` (written, never read) and the pickups' regrow rescale.
+  - **The head guard** (the engine review): at 3 cm it starts inside the camera's near plane (0.15 m), so leaning 5-15
+    cm from a wall can show through it; the author chose to keep 3 cm ("Keep 4.0.39").
+  - **Recorded, not changed** (low or latent): the three.js holds short-circuiting each other and a thrown render not
+    unwinding its render state (only after an S19 fallback); the right eye's matrices if a session ever reports other
+    than two views; spot lights and clipping planes not moved per eye (none in the game); the projection layer replaced
+    on the entry's retry or the local-floor fallback; textures repainted in flat mode uploaded in the first headset
+    frame; the loader kept for the page's life (B96's policy); per-frame strings in the recorder; the dead dispose
+    function `P()`, five unread fields on `JGP.slug`, `userData.gemPiece`, `JGP.jazz.tap`, the scan texture painted
+    twice (all harmless).
 - **4.0.39**:
   - **Minification, as far as it safely goes** (the author: "As much as possible: Please apply Minification to the game
     code"): the game file was already fully minified (terser, local names shortened, two compression passes, the HTML's
