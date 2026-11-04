@@ -685,7 +685,7 @@ outside it is scenery, seen and never entered (FIXES A4).
 | Place | What the game says or shows |
 | --- | --- |
 | FIRST BANK OF GREEBLIS | Kept by Gemtoe: "A useful talent for the keeper of the First Bank of Greeblis." |
-| Mistergummery's | A drive-in diner with a teal M, the logo on Mama Gorbo's cap (A36). |
+| Mistergummery's | A drive-in diner with a teal M, the logo on Mama Gorbo's cap (A36). Mistergummery is Montgummery's father (the author's answer 16). |
 | The Gooburger | Mama Gorbo's "local fast food joint"; a giant burger on a pole. |
 | King Dino's billboard | "A Prehistoric Era in Jazz!"; "Let King Dino take you / to the Jurassic / Greeblis Park!"; painted by Gooward. |
 | The Field Office | Hennrick's office in the far past (the author): a trailer with a sheriff's star and a flying saucer, a dish. |
@@ -930,6 +930,8 @@ What the models have in common, as built:
   comes through the Portal when called for pizza and goes back through it (`kind: "courier"`, `pk_nextessa`).
 
 #### Montgummery
+- **Family**: his father is Mistergummery, of the drive-in diner Mistergummery's outside the fence (the
+  author's answer 16).
 - **Body**: a dark rounded tape-like torso (superellipsoid) under a transparent shell of scrolling code, high-top
   boots with laces, a cable tail, four-fingered hands, a big CRT head with a control strip.
 - **Palette**: dark green-black body (`#1d2a23`), cyan code and boots with orange toes, a purple screen.
@@ -1337,7 +1339,7 @@ it wears (the author's answer 15; the game itself names no owner):
 
 | Where (x, z) | 3.15.44 name | What it is and how it looks |
 | --- | --- | --- |
-| 65, -27 | `MISTERGUMMERYS` | A drive-in diner: a red and cream building 13 x 9 m under a red mansard roof with a teal band, two "Mistergummery's" signs, teal double arches 12 m high, a parking lot with teal bollards, a MENU board, a drive-through speaker, two umbrella tables and a little playground. *(inference: named after Montgummery)* |
+| 65, -27 | `MISTERGUMMERYS` | A drive-in diner: a red and cream building 13 x 9 m under a red mansard roof with a teal band, two "Mistergummery's" signs, teal double arches 12 m high, a parking lot with teal bollards, a MENU board, a drive-through speaker, two umbrella tables and a little playground. Mistergummery is Montgummery's father (the author's answer 16). |
 | 52.6, -10.8 | `STORE` | Crimson (`#8a2a2a`) with gold lintels and iron bars over its windows, gold balance scales on its band, purple crystals on the parapet and a bracket sign with a purple gem. *(inference: Gemtoe's; the painting's "avarice")* |
 | 52.6, -0.5 | `FRONTIER` | A barber's: pale blue, navy, a barber's pole. |
 | 52.6, 9.8 | `STORE` | A theatre: a marquee with 28 bulbs whose bill shows a purple-to-orange plume, a teal crown, crossed drumsticks and a yellow dinosaur head; a tall sign with four stars; a searchlight on the roof. *(inference: billing King Dino)* |
@@ -1713,7 +1715,7 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 | The church, its glass, the Cave | `"church"` (`CHURCH`, `lancet`, `paintTravelerWindow`, `paintGardenWindow`, `stainedKit`), `id:"slug"` |
 | Night glow, the UFO, the Speech's bulb | `.emissive.setRGB(.95*` (the lit windows; `BIN.lit` in 3.15.44), `JGP.ufoNow`, `Bulb.start` |
 
-## The author's answers (2026-10-28; 9 to 15 added 2026-11-04)
+## The author's answers (2026-10-28; 9 to 16 added 2026-11-04)
 
 1. **Mama W** is a name for Mama Gorbo.
 2. **Flint** and the code's acorns are the same thing; flint is the game's word.
@@ -1739,6 +1741,7 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 15. **Three guesses confirmed** (2026-11-04): the roped-off dark ring with floodlights outside the town is a UFO
     landing site; the slug with eye stalks in Gooward's painting is the Ancient; each outer-ring house belongs to the
     townsperson whose colours it wears.
+16. **Mistergummery** (of the drive-in diner, Mistergummery's) is Montgummery's father (2026-11-04).
 
 ## Left open on purpose
 
