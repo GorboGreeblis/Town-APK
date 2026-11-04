@@ -6,6 +6,7 @@
  *   - right stick sideways snap-turns the view by t.xr.snapAngle once per
  *     deflection (no repeat while held), and again after re-centering; at most one turn per t.xr.snapGap
  *     (0.4 s since 3.15.59, A11): a flick let go inside the gap is dropped, one still held when it ends turns once
+ *   - Sparkakus's romp keeps him above the floor and out of the Library's shelves (A57)
  *   - the snap turn is instant (4.0.35: the blink of S37 taken out): the turn on the flick's frame, the view never dims
  *   - trigger (select) and grip (squeeze) events do not throw
  *   - the player cannot walk through a building hull
@@ -118,6 +119,21 @@ const file = process.argv[2];
     return { turned: +Math.abs(Math.atan2(Math.sin(d), Math.cos(d))).toFixed(3), framesToTurn, dark, blink: typeof window.__gtBlink };
   });
   expect('the snap turn is instant (made within the flick\'s first frames) and the view never dims (no blink, 4.0.35)', it.turned > 0.45 && it.framesToTurn >= 0 && it.framesToTurn <= 2 && it.dark === 0 && it.blink === 'undefined', JSON.stringify(it));
+
+  mark('romp');
+  // Sparkakus's romp (A57, 4.0.36; the author: "he does not clip into the ground and into bookshelves when doing his
+  // romp"): through the whole romp his lowest point stays above the floor and his body overlaps none of the Library's
+  // shelf books
+  const romp = await page.evaluate(async () => {
+    const D = window.__dbg, st = D.st, T = window.THREE; if (!st.atHome()) return { error: 'not home' };
+    const sp = st.group, lib = sp.parent, obs = []; lib.updateMatrixWorld(true);
+    lib.traverse((m) => { if (!m.isMesh) return; for (let p = m; p; p = p.parent) if (p === sp) return; const b = new T.Box3().setFromObject(m); if (b.isEmpty() || b.max.y - b.min.y < 0.4 || b.max.y < 0.5 || (b.max.x - b.min.x > 8 && b.max.z - b.min.z > 8)) return; obs.push(b); });
+    let low = 1e9, hit = 0, k = 0; const bb = new T.Box3(); st.romp(() => {}, () => {}); const t0 = performance.now();
+    while (st.romping() && performance.now() - t0 < 90000) { await new Promise((r) => requestAnimationFrame(r)); if (++k % 3) continue; sp.updateMatrixWorld(true); bb.setFromObject(sp); low = Math.min(low, bb.min.y);
+      for (const o of obs) { const ix = Math.min(bb.max.x - 0.1, o.max.x) - Math.max(bb.min.x + 0.1, o.min.x), iz = Math.min(bb.max.z - 0.1, o.max.z) - Math.max(bb.min.z + 0.1, o.min.z), iy = Math.min(bb.max.y, o.max.y) - Math.max(bb.min.y, o.min.y); if (ix > 0.02 && iz > 0.02 && iy > 0) hit = Math.max(hit, Math.min(ix, iz)); } }
+    return { low: +low.toFixed(3), hit: +hit.toFixed(2), done: !st.romping() };
+  });
+  expect('A57: Sparkakus\'s romp keeps him above the floor and out of the Library\'s shelves', !romp.error && romp.done && romp.low > 0 && romp.hit === 0, JSON.stringify(romp));
 
   mark('select');
   // Select / squeeze events.

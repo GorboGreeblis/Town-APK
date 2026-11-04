@@ -4,7 +4,7 @@
 //   - the mist bank beyond the fence (A4) rolls in to full within 31 s of the start (30 s since 3.15.62, A16) and back
 //     out to nothing after the end; the scene's mist (everything beyond the fence fogged by where it stands, A9)
 //     follows the bank's own strength and is exactly 0 after the Event;
-//   - the clouds (all 14, every one checked) and every Blossom and Flint (A5) fade out at the start and in at the end:
+//   - the clouds (all 24, every one checked) and every Blossom and Flint (A5) fade out at the start and in at the end:
 //     none shows in the middle of the Event, all are back in full after; an object is hidden only
 //     once its opacity is down to 0, and comes back at 0;
 //   - a UFO already flying when the Event starts (A6) leaves by its normal exit path: it is hidden only far out
@@ -75,7 +75,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('the mist is at full within 31 s of the start (30 s since 3.15.62, A16)', a.mist7 >= 0.99 && b.mist7 >= 0.99, `${a.mist7}, ${b.mist7}`);
   expect('the scene\'s mist follows the bank (within 0.02) and is 0 after the Event', [a, b].every((e) => e.fogOff < 0.02 && e.endFog === 0), JSON.stringify([a, b].map((e) => [e.fogOff, e.endFog])));
   expect('nothing pops: clouds, Blossoms, Flint and the UFO are hidden only once faded out and shown at 0', r.nPops === 0, r.pops.join(' | '));
-  expect(`every cloud (${r.clouds}) is hidden in the middle of the Event (mist full) and back in full after each Event`, r.clouds >= 14 && [a, b].every((e) => (e.cloudsShownAtFull || 0) === 0 && e.endCloudsShown === r.clouds), JSON.stringify([a, b].map((e) => [e.cloudsShownAtFull, e.endCloudsShown])));
+  expect(`every cloud (${r.clouds}) is hidden in the middle of the Event (mist full) and back in full after each Event`, r.clouds >= 24 && [a, b].every((e) => (e.cloudsShownAtFull || 0) === 0 && e.endCloudsShown === r.clouds), JSON.stringify([a, b].map((e) => [e.cloudsShownAtFull, e.endCloudsShown])));
   expect('no UFO appears during the Event', r.ufoDuring === 0, String(r.ufoDuring));
   expect('after each Event the mist is gone and the clouds and pickups are back in full', [a, b].every((e) => e.endMist === 0 && e.endClouds >= 0.999 && e.endPickups === r.nPickups), JSON.stringify(r.out));
   expect('Backpacka is switched off only inside the mist (10 m or more beyond the fence, mist at full)', r.bp.length >= 1 && r.bp.every((x) => x.bpOff >= 10 && x.mist >= 0.99), JSON.stringify(r.bp));
