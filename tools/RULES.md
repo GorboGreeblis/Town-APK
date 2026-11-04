@@ -216,6 +216,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 - The plain WebXR layer (the `nolayers` experiment, no projection layer, no multiview): closed (2026-11-03, "Close out
   the no layers build. It has serious issues and we're not taking this route"); the experiment is removed, and
   rule 29 makes it standing: no build drops the `layers` feature.
+- Releasing the loader (its layers destroyed, its context lost) during a session: reverted for good (B96, 4.0.34): it
+  left the browser re-making the destroyed layers' swapchains after the headset slept until the memory ran out. The
+  loader stays whole for the session; no layer is destroyed and no context lost while a session runs.
 - A test build without the depth discard (P14, the layer's end): closed (2026-11-03, "'Test a build without the
   depth discard' close out this option"). The discard stays in every build; no experiment build drops it.
 - The Event's headroom by fading more scenery: closed (2026-11-03, "let's close out this option altogether. I don't

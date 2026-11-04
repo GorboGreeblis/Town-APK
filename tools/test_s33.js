@@ -9,8 +9,8 @@
 //     shape uploaded then (nothing uploaded inside a frame, the batch on the GPU before its first draw);
 //   - B73: hiding an object for the head inside it wakes its cold batches, so the hide is honoured that frame;
 //   - B74: the emotes' warm-up run again adds no sprite, material or mesh;
-//   - B75: the loader's layers, program, buffer, texture and context are released after the game has held the
-//     session for 10 s (logged once), and the game keeps drawing;
+//   - B75 reverted (B96, 4.0.34): the loader's layers and context are never released (the release left the browser
+//     re-creating the destroyed layers' swapchains after the headset slept: memory exhausted); the game keeps drawing;
 //   - B76: with the draw-nothing marks turned off by the recovery step, the mark counter stays at minus infinity
 //     whatever counts it up, so it can never meet an old mark;
 //   - B77: the geometry warm-up run in VR leaves no GL error behind for the error watch to count in play: its draw
@@ -68,8 +68,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       let meets = 0; C.traverse((x) => { if (x.gcND === O.gcNDv) meets++; }); out.nd = { v: String(O.gcNDv), meets }; O.gcNDv = keep; window.gcND = keepND; }
     // B77: the geometry warm-up in VR, between frames
     { const gl = O.getContext(); await wait(0); while (X.xrFrameOpen) await wait(5); let k = 0; while (gl.getError() && k++ < 16); const l0 = logs.length; window.__gtGeoWarm('test'); out.glErr = gl.getError(); out.glErrBefore = k; out.warmLog = logs.slice(l0).some((l) => /geometry warm-up: its draw into the layer's framebuffer raised \d+ GL error/.test(l)) || (window.__gcWarmErr || 0) > 3; await nf(3); }
-    // B75: the loader released once the game has held the session for 10 s
-    { const t0 = performance.now(); while (!logs.some((l) => /loader released/.test(l)) && performance.now() - t0 < 16000) await wait(250);
+    // B75 reverted (B96): 16 s after the game holds the session the loader is still whole (no release)
+    { const t0 = performance.now(); while (performance.now() - t0 < 16000) await wait(250);
       const f0 = frames; await wait(1500); out.loader = { parked: !!X.taken, released: logs.filter((l) => /loader released/.test(l)).length, framesAfter: frames - f0 }; }
     out.hazards = H.total || 0;
     return out;
@@ -85,7 +85,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('B74: the emotes\' warm-up run again adds no sprite, mesh or material', JSON.stringify(r.warm.before) === JSON.stringify(r.warm.after), JSON.stringify(r.warm));
   expect('B76: with the marks off, the mark counter stays at minus infinity and meets no mark', r.nd.v === '-Infinity' && r.nd.meets === 0, JSON.stringify(r.nd));
   expect('B77: the geometry warm-up in VR leaves no GL error behind, and logs the ones its draw raised', r.glErr === 0 && r.warmLog, JSON.stringify({ glErr: r.glErr, logged: r.warmLog }));
-  expect('B75: the loader is released once, 10 s after the game holds the session, and the game keeps drawing', r.loader.released === 1 && r.loader.framesAfter > 10, JSON.stringify(r.loader));
+  expect('B75 reverted (B96): the loader is never released (no layer destroyed, no context lost) and the game keeps drawing', r.loader.released === 0 && r.loader.framesAfter > 10, JSON.stringify(r.loader));
   // the two throw cases above are let through to draw and so compile or upload inside a frame by design; the harness's
   // frame-hazard warning for them is expected
   expect('no page errors', errors.length === 0, errors.slice(0, 3).join(' | '));
