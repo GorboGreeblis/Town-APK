@@ -58,6 +58,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | A flash mark logs the pointing and pickup fades (3 s) and the frames after the press (B46) | `test_flashlog.js` | done (4.0.38) |
 | The Portal's swirl fades with the Portal; it waits while Nextessa is through it | `test_portal_fade.js` (standard tier) | done (4.0.38) |
 | Every menu stands the same distance above its character's highest point (Mama Gorbo's cap) | `test_world.js` | done (4.0.38) |
+| The head guard shows in a wall but not 10 cm from one | `test_safeties.js` | done (4.0.38) |
 | A flash mark logs the head guard line (B46 reopened, 4.0.35) | `test_flashlog.js` | done (4.0.35) |
 | Trigger/grip (`select`/`squeeze`): pick ray, pick range/cone, menu choice, UI buttons 4/5 | `test_input.js` (events only) | partial |
 | Controller mapping on real hardware (hand assignment; no haptics anywhere since 4.0.23, A50) | sideload | headset |

@@ -1922,6 +1922,22 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.39**:
+  - **Minification, as far as it safely goes** (the author: "As much as possible: Please apply Minification to the game
+    code"): the game file was already fully minified (terser, local names shortened, two compression passes, the HTML's
+    whitespace gone). Measured on the game script (806 KB): strings 87 KB (the dialogue, the panels, the logs' lines),
+    numbers 102 KB, names 351 KB, punctuation 259 KB; of the names, the properties are almost all three.js's and the
+    canvas's (`position`, `forEach`, `fillStyle`, ...) and cannot be renamed; the game's own properties come to 1.7 KB.
+    Now the game script's top-level names are shortened too (those another script or a tool names keep theirs) and
+    compression runs three passes: 1336 bytes smaller (1134756 > 1133420). terser's unsafe options (float maths,
+    functions turned into arrows) would save about 1 KB more and are left out as a change of behaviour. The build's
+    minify identity check passes (the same world, object for object). `minify_game.js`.
+  - **The head guard shows far less** (the author: "Let's try to limit how much the head guard actually appears. Less is
+    better"): the black sphere that dims the view as the head goes into a wall began 0.2 m before a building part and
+    was full at 0.08 m; it now begins 3 cm from the part and is full 5 cm inside it. Of the spots a player can walk to
+    (sampled every 0.25 m, heads from 1 to 3.1 m), 161 dimmed the view before; 24 now (by the Sheriff's desk and the
+    Gallery), and none by the church, the Juice stand, the Shop or the Post Office. `test_safeties.js` checks it shows in
+    a wall and does not show 10 cm from one.
 - **4.0.38**:
   - **A62, a jingle for the romp** (the author: "Please add a jingle that plays during Sparkakus' romp (after being given
     a Blossom) animation (only)"; "make this a guitar sounding synth jingle"): a plucked-guitar voice (a sawtooth and a

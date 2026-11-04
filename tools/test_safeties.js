@@ -7,7 +7,7 @@
 //   - an object whose per-object draw hook throws does not stop the frame: the frame's draw calls stay what they were
 //     without it (three.js would otherwise draw nothing after it), the error is logged once for that object (not
 //     every frame), and frames keep coming;
-//   - the head guard (the view dims to black as the head goes into a wall) shows there and compiles no shader the first
+//   - the head guard (the view dims to black as the head goes into a wall; since 4.0.38 only from 3 cm out, none 10 cm out) shows there and compiles no shader the first
 //     time (B47: it rides on the camera, which joins the scene only at VR entry, so the loading warm-up never reached it;
 //     its shader is now compiled at VR entry);
 //   - no page errors but the injected one.
@@ -73,10 +73,13 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     // 4. the head guard (the view dims to black as the head goes into a wall; B47): its shader is compiled while loading,
     //    so the first time it shows nothing is compiled
     { const HG = D.JGP.headGuard, F = D.F, p0 = O.info.programs.length; let at = null;
-      // a point at a wall: the guard's own distance to the nearest building part, within 5 cm
-      for (const b of F.buildings) { for (let k = 0; k <= 40 && !at; k++) { const w = F.world(b, b.hull[0] + (b.hull[2] - b.hull[0]) * k / 40, b.hull[1]); const d = HG.sdist(w[0], 1.6, w[1]); if (d > -0.05 && d < 0.05) at = new T.Vector3(w[0], 1.6, w[1]); } if (at) break; }
+      // a point in a wall: the guard's own distance to the nearest building part between 5 cm in and 1 cm out; and one
+      // 10 cm out, where it must not show (4.0.38, the author: "limit how much the head guard actually appears")
+      let near = null;
+      for (const b of F.buildings) { for (let k = 0; k <= 40 && !(at && near); k++) { const w = F.world(b, b.hull[0] + (b.hull[2] - b.hull[0]) * k / 40, b.hull[1]); const d = HG.sdist(w[0], 1.6, w[1]); if (!at && d > -0.05 && d < 0.01) at = new T.Vector3(w[0], 1.6, w[1]); for (let s = 0.05; s < 0.4 && !near; s += 0.01) { const d2 = HG.sdist(w[0], 1.6, w[1] - s); if (d2 > 0.09 && d2 < 0.12) near = new T.Vector3(w[0], 1.6, w[1] - s); } } if (at && near) break; }
+      let nearShown = 0; if (near) { HG.at = near; for (let k = 0; k < 20; k++) { await wait(30); if (HG.mesh && HG.mesh.visible) nearShown++; } HG.at = null; await wait(300); }
       HG.at = at; let shown = 0; for (let k = 0; k < 40; k++) { await wait(30); if (HG.mesh && HG.mesh.visible) shown++; } HG.at = null; await wait(300);
-      out.guard = { at: at && at.toArray().map((v) => +v.toFixed(2)), mesh: !!HG.mesh, shown, level: +HG.level().toFixed(2), newPrograms: O.info.programs.length - p0, hiddenAfter: HG.mesh ? !HG.mesh.visible : null }; }
+      out.guard = { at: at && at.toArray().map((v) => +v.toFixed(2)), near: near && near.toArray().map((v) => +v.toFixed(2)), nearShown, mesh: !!HG.mesh, shown, level: +HG.level().toFixed(2), newPrograms: O.info.programs.length - p0, hiddenAfter: HG.mesh ? !HG.mesh.visible : null }; }
     // 5. the audit's safeties (S19, S20): the layer's begin() throwing once does not kill the frame loop or leave the
     //    frame flagged open; a draw that throws inside three.js leaves the frame uncounted, so the fallback draw runs;
     //    a lights change is seen by the shader hold (compiled between frames, none in play); the hand meshes are built
@@ -113,6 +116,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   await g.close();
   note(JSON.stringify(r));
   expect('the head guard shows as the head goes into a wall, and compiles no shader then (its shader is compiled at VR entry; B47)', r.guard && r.guard.mesh && r.guard.shown > 0 && r.guard.newPrograms === 0, JSON.stringify(r.guard));
+  expect('4.0.38: the head guard does not show 10 cm from a wall (it starts 3 cm out, full dark 5 cm in)', r.guard && r.guard.near && r.guard.nearShown === 0, JSON.stringify({ near: r.guard && r.guard.near, nearShown: r.guard && r.guard.nearShown }));
   expect('the head inside a character hides it for the frame (logged)', r.head.logged >= 1, JSON.stringify(r.head));
   expect('the character is visible between frames and after', r.head.betweenHidden === 0 && r.head.visibleAfter, JSON.stringify(r.head));
   expect('the head inside a Garden flower leaves it drawn (S6 revised: flowers never vanish when walked into)', r.flower && r.flower.drawn > 10 && r.flower.hiddenDrawn === 0 && r.flower.between === 0 && r.flower.visibleAfter, JSON.stringify(r.flower));
