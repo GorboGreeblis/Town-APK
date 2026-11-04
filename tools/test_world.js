@@ -6,6 +6,8 @@
  *             hull and ends at the target.
  *   hulls     over a sampling window no NPC stands inside a building hull it
  *             does not belong to, and none leaves the park bounds.
+ *   spots     the pickup spawn picker never puts a Blossom or Flint inside a
+ *             building, the Gazebo or a kiosk (B95)
  *   pickups   walking the player onto a blossom and an acorn increments the
  *             counters and the item regrows after its timer.
  *   watchdog  an NPC displaced from its post is sent home by the away
@@ -122,6 +124,20 @@ const SAMPLE_S = Number(process.argv[3] || 40);
     expect(`${name}: walking onto it picks it up (+1)`, r && r.took === 1 && r.taken, JSON.stringify(r));
     expect(`${name}: regrows after ${r && r.regrowS}s`, r && r.regrew, r && `${r.regrowWaitS}s`);
   }
+
+  // ---- pickup spots never inside a kiosk (B95, 4.0.33; the author: "Flint and Blossoms should never spawn within any
+  //      kiosk"; a Blossom was seen on the Gazebo's inner edge): 4000 spots from the spawn picker, none inside a building
+  //      hull, the Gazebo's octagon (radius 3.3 m, plus a margin) or any kiosk's area (the phone booth, the portal)
+  const spots = await page.evaluate(() => {
+    const D = window.__dbg, F = D.F, E = D.E, go = window.__gtPickSpot, out = { n: 0, hull: 0, gazebo: 0, kiosk: 0, ex: [] };
+    if (!go) return { error: 'no picker' };
+    const kiosks = E.list.filter((e) => e.tag === 'phone' || e.tag === 'portal');
+    for (let k = 0; k < 4000; k++) { const p = go(null, []); if (!p) continue; out.n++;
+      const h = F.buildings.some((b) => F.inHull(b, p.x, p.z, 0)), gz = F.gzAt && Math.hypot(p.x - F.gzAt[0], p.z - F.gzAt[1]) < 3.6, kk = kiosks.some((e) => Math.hypot(p.x - e.x, p.z - e.z) < e.r);
+      if (h) out.hull++; if (gz) out.gazebo++; if (kk) out.kiosk++; if ((h || gz || kk) && out.ex.length < 4) out.ex.push([+p.x.toFixed(1), +p.z.toFixed(1)]); }
+    return out;
+  });
+  expect('B95: no Blossom or Flint spot inside a building, the Gazebo or a kiosk (4000 spots)', !spots.error && spots.n > 3000 && spots.hull === 0 && spots.gazebo === 0 && spots.kiosk === 0, JSON.stringify(spots));
 
   // ---- away watchdog on a posted NPC (Zollod at Garden Supplies, id cutebex)
   const wd = await page.evaluate(async () => {
