@@ -57,6 +57,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Sparkakus's romp plays its guitar jingle through the romp and stops with it (A62) | `test_input.js` | done (4.0.38) |
 | A flash mark logs the pointing and pickup fades (3 s) and the frames after the press (B46) | `test_flashlog.js` | done (4.0.38) |
 | The Portal's swirl fades with the Portal; it waits while Nextessa is through it | `test_portal_fade.js` (standard tier) | done (4.0.38) |
+| Nothing reaches the GPU for the first time in the Speech or an Event with the Snacks (the glue band's merged copy built at load; the pizza batches' shapes kept and reused) (S42) | `test_play_uploads.js` (standard tier) | done (4.0.46) |
 | Coming back from the system menu never stalls the game: no texture check on the menu's return (nothing read back); from hidden the check still repaints a blanked canvas (B99) | `test_menu_return.js` (standard tier) | done (4.0.45) |
 | Every interaction (every menu option of every character and place) in four states: no error, no soft-lock, no negative counter | `test_interactions.js` (standard tier) | done (4.0.40) |
 | Every menu, opened with the controller, stands the same angle above its character's highest point | `test_interactions.js` | done (4.0.40) |

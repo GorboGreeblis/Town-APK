@@ -108,6 +108,7 @@ only the launcher creates, and the log from section 2 is the key.
 
 | Build | Browser line | Meaning | Fix |
 |---|---|---|---|
+| 4.0.43, 4.0.45 | `geometry held for one frame: 1 object(s) uploaded between frames: mesh of 148 vertices #ffffff` in the Speech; the census's `buffers 21` at an Event with the Snacks | two shapes built in play (the glue band's merged copy, the pizza batches), uploaded safely between frames (B100) | 4.0.46: both made at load; the held line now names its owner (`of <id>`, `in scene child #n`) |
 | 4.0.43 | `xr visibility visible`, then `frame gap ~2400 ms before frame N` about 0.4 s later; `VrApi` `Stale2/5/10/max=.../30-35` in the same second | no new frame for 0.4 s after each return from the Universal Menu (the texture check ran inside the return); a flash as the sound resumed (B99) | 4.0.45: the menu's return skips the check; look for `back from the system menu: no texture check (...)` and the next frame within a frame or two of `xr visibility visible` |
 | 3.15.2/3.15.3 | `cr_OriginVerifier: Verification failed for http://127.0.0.1:17777 as not https or localhost` | numeric loopback is not a trusted origin | 3.15.4 addresses the game as `http://localhost:17777/` |
 | 3.15.6 diag | `GreeblisServer: page: m=requestSession called ... activation=false` then `presentRequested`, `enterVR`, `requestSession OK`, frames | a page-initiated request is accepted without activation; the wait for `sessiongranted` was the bug | 3.15.7: request at page start + sliced boot + in-VR loading screen |
