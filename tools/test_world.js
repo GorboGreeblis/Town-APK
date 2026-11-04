@@ -170,7 +170,7 @@ const SAMPLE_S = Number(process.argv[3] || 40);
     const D = window.__dbg, T = window.THREE, v = new T.Vector3(), out = {};
     if (typeof D.Ke !== 'function') return { error: 'no head-top hook' };
     for (const e of D.It.all) { if (!e.group || !e.id) continue; e.group.updateMatrixWorld(true); let top = -Infinity;
-      e.group.traverse((o) => { if (!o.isMesh || o.isInstancedMesh || !o.geometry || !o.geometry.attributes.position) return; for (let p = o; p && p !== e.group; p = p.parent) if (!p.visible) return; const a = o.geometry.attributes.position; for (let k = 0; k < a.count; k++) { v.fromBufferAttribute(a, k).applyMatrix4(o.matrixWorld); if (v.y > top) top = v.y; } });
+      e.group.traverse((o) => { if (!o.isMesh || o.isInstancedMesh || !o.geometry || !o.geometry.attributes.position) return; for (let p = o; p && p !== e.group; p = p.parent) if (!p.visible || p.userData.notModel) return; const a = o.geometry.attributes.position; for (let k = 0; k < a.count; k++) { v.fromBufferAttribute(a, k).applyMatrix4(o.matrixWorld); if (v.y > top) top = v.y; } });
       const want = (top - e.group.position.y) / (e.group.scale.y || 1) - 0.07; out[e.id] = +(D.Ke(e) - want).toFixed(2); }
     return out;
   });

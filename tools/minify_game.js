@@ -38,7 +38,9 @@ function gameOptions(code, others) {
   }
   const tools = toolsText(), word = (n) => new RegExp('(^|[^\\w$])' + n.replace(/\$/g, '\\$') + '($|[^\\w$])');
   const keep = [...top].filter((n) => word(n).test(others) || (n.length > 2 && word(n).test(tools)));
-  return { ...OPTIONS, toplevel: true, compress: { ...OPTIONS.compress, toplevel: true }, mangle: { reserved: [...new Set([...RESERVED, ...keep])], toplevel: true } };
+  // hoist_props off: with top-level names in play it splits an object such as shopText or gemTrade into loose names,
+  // and the tests read those objects whole (4.0.39's audit: test_textfit.js lost both)
+  return { ...OPTIONS, toplevel: true, compress: { ...OPTIONS.compress, toplevel: true, hoist_props: false }, mangle: { reserved: [...new Set([...RESERVED, ...keep])], toplevel: true } };
 }
 
 async function minifyHtml(html) {
@@ -49,6 +51,8 @@ async function minifyHtml(html) {
   for (const m of all) {
     const game = /^\s*"use strict";window\.__jgpBlocked/.test(m[2]);
     const r = await minify(m[2], game ? gameOptions(m[2], all.filter((x) => x !== m).map((x) => x[2]).join('\n')) : OPTIONS);
+    // a kept name that was declared before must still be declared after (the tests and tools find the game by them)
+    if (game) for (const n of RESERVED) { const d = new RegExp('(?:const|let|var|function|,)\\s*' + n.replace(/\$/g, '\\$') + '\\s*[=(]'); if (d.test(m[2]) && !d.test(r.code)) throw new Error('minify: the kept name ' + n + ' is no longer declared (a compress option dissolved it)'); }
     out += outer(html.slice(at, m.index)) + `<script${m[1]}>${r.code}</script>`; at = m.index + m[0].length;
   }
   return out + outer(html.slice(at));
