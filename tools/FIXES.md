@@ -2054,11 +2054,13 @@ frame already hands the game (no GL call added, RULES.md 28):
   - **A60, a tweet tweet for the birds** (the author: "Add a tweet tweet sound effect for interacting with either
     bird"): picking the robin or the cardinal plays two quick high chirps (three rising sine notes each, 2.6-3.75 kHz,
     soft) as it flies off; a pick while it is away plays nothing. Synthesised like every sound (one oscillator and gain
-    per note, freed at its end). `test_world.js` checks one tweet per pick.
+    per note, freed at its end). `test_world.js` checks one tweet per pick. Confirmed by the author in the headset
+    (2026-11-04: "these sound good to me").
   - **A61, the shyness book's sound** (the author: "Add a special sound effect for picking up the Overcoming Shyness
     book"): taking OVERCOMING SHYNESS from the Library played the plain pickup notes; it now plays its own: a quick
     riffle of five soft page ticks, a rising sine chime (G major seventh, five notes) and a soft held bell on top,
-    about 1.4 s, quiet like the rest. `test_world.js` checks it plays once, and the pickup sound does not.
+    about 1.4 s, quiet like the rest. `test_world.js` checks it plays once, and the pickup sound does not. Confirmed by
+    the author in the headset (2026-11-04).
   - **B46 noted**: the author's latest flash was "a white / bright flash", "seemingly the whole screen but also very
     quick" (the earlier ones read as dark). Nothing the game draws can whiten the whole view: the only full-view
     object is the head guard, which is black. Log 47ab0c91 (4.0.36, one mark): every frame drawn, no layer change, no
