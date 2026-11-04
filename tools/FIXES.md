@@ -1922,6 +1922,21 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **B95, pickups inside the Gazebo** (4.0.33; the author: "Blossoms can spawn inside the Gazebo. Flint and Blossoms
+  should never spawn within any kiosk. A Blossom was observed in the inner edge of the Gazebo"): the spawn picker kept
+  pickups out of building hulls (0.8 m margin), solid circles and the kiosk areas (the phone booth, the portal), but
+  the Gazebo has no hull: only its posts and seven wall sides are solid circles and its middle a 2.4 m "still" area,
+  so the ring between them (2.7-3.3 m from its centre) was open. Pickups now keep 4.1 m from the Gazebo's centre (its
+  3.3 m octagon plus the 0.8 m margin the hulls get). `test_world.js` samples 4000 spots from the picker
+  (`window.__gtPickSpot`): none inside a hull, the Gazebo or a kiosk area.
+- **A52, the Ancient larger and more detailed** (4.0.33; the author: "Please make the Ancient's model a little larger
+  and make its textures a little more detailed"): the body (core, mantle, head and eye stalks) 15% larger about its
+  ground point, in the build and in its idle breathing; its solid radius 0.9 > 1.0 m and its meeting radius 1.4 >
+  1.6 m (visitors stand 1.9 m plus their radius from its axis, clear of the 1.45 m half-width). Its skin and bump
+  textures are painted at 1024 x 256 (were 512 x 128) with finer pores, creases, scratches and sheen streaks over the
+  same pattern; pre-painted at the build like every texture (nothing made in play). Pictures before and after in
+  `tools/.runs/shots/ancient_before_after.png`.
+- **B46 closed** (2026-11-03, the author: "We can close out the flashes issue now"): after the blink snap (S37, 4.0.31).
 - **S38, the stability safeties** (4.0.32; the author: "Please analyze the game file for any other easy and safe
   stability safeties"). A read of the whole game file for guards that keep the game going after an unexpected fault
   without changing normal play; six found, each fault injected headless and the guard proven (`test_s38.js`):
