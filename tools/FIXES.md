@@ -1968,7 +1968,7 @@ frame already hands the game (no GL call added, RULES.md 28):
     (RULES.md 28); the game's own session request (only if the entry script's throws) asks for layers (RULES.md 29);
     leftovers removed: `JGP.eventMove` and `xe.lastPick` (written, never read) and the pickups' regrow rescale.
   - **The head guard** (the engine review): at 3 cm it starts inside the camera's near plane (0.15 m), so leaning 5-15
-    cm from a wall can show through it; the author chose to keep 3 cm ("Keep 4.0.39").
+    cm from a wall can show through it; the author chose to keep 3 cm ("Keep 4.0.39") and closed it as not a bug.
   - **Recorded, not changed** (low or latent): the three.js holds short-circuiting each other and a thrown render not
     unwinding its render state (only after an S19 fallback); the right eye's matrices if a session ever reports other
     than two views; spot lights and clipping planes not moved per eye (none in the game); the projection layer replaced
