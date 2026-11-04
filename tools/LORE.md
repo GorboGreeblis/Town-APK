@@ -811,12 +811,12 @@ What the models have in common, as built:
 #### Somlet
 - **Body**: a floating felt cushion (superellipsoid, `.82 x .76 x .72`) with 16 bumps, two floating three-sphere hands,
   seven thin branching tentacles hanging below; no legs.
-- **Palette**: cream felt (`#f2e4b4`), a navy postman's cap with white piping, a black visor and a gold envelope
+- **Palette**: cream felt (`#f2e4b4`; she has always been cream, the author, 2026-11-04), a navy postman's cap with white piping, a black visor and a gold envelope
   badge; plum tentacles.
 - **Face**: asleep by default: felt lids with lashes and creases, under-eye bags, a brow; a hidden open eye that
   eases in when the player gives her a gift. A small "o" mouth that breathes and talks.
 - **Motion**: hovering, breathing, three "Z" sprites rising from her; when she is at home and idle she slowly rolls
-  onto her side to lie down. Each frame his tentacles curl themselves out of the ground.
+  onto her side to lie down. Each frame her tentacles curl themselves out of the ground.
 
 #### Mushroom
 - **Body**: a lathe stem (about 1.1 across) under a broad, flat cap (about 2.5 across) with 60 gills, a scalloped
