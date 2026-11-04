@@ -6,6 +6,7 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 
 | Version | versionCode | What changed | Headset |
 | --- | --- | --- | --- |
+| 4.0.43 | 112 | Ollaag flies the UFO (A63): his poster's look in place of the green alien, facing the way the saucer flies while it spins. | not yet run |
 | 4.0.42 | 111 | `JGP.slug.core` restored (a test reads it); otherwise as 4.0.41. | not yet run |
 | 4.0.41 | 110 | **Every game sound restored** (silent in 4.0.40: a counter read before its declaration in each note); the audit's low items fixed (the three.js holds, render unwinding, multiview views, controller matrices, upload checks; the entry's layer reuse, the fallback after the frame, flat-mode textures at entry, the loader's context released; the head guard's level, pickups near the eyes, no per-frame arrays, leftovers). | not yet run |
 | 4.0.40 | 109 | **S40**, the fourth code audit: the menus on the measured head top (Mama Gorbo's), `shopText`/`gemTrade` kept whole by the minifier, Nextessa's walk and give-up clock under dialogues, no flower fade or watering without Seeds, the romp's jingle stops when VR does, hidden birds and Gooward mid-barrage not pickable, the VR clear colour and bindings kept, a failed re-entry ended, the web path's multiview kept off, smaller fixes and leftovers. | not yet run |

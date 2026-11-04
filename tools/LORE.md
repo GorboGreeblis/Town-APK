@@ -4,7 +4,8 @@ Compiled strictly from the game's own text, data and pictures in the game file, 
 (4.0.34; the root `index.html` is a byte copy of it). Of the fixes in FIXES.md only A2 (Gemtoe's seventh talk
 line, 3.15.53) adds story text; the rest change looks and staging, which this Bible follows where they touch the
 lore. Lines are quoted as written. Anything not stated by the game is marked *(inference)*. Gaps are listed at the
-end so the author can fill them.
+end so the author can fill them. Every inference made up to 2026-11-04 has since been confirmed by the author and is
+marked *(confirmed)* instead (the author's answers below); a new guess is marked *(inference)* again until answered.
 
 > **Naming rule (author):** the names the game shows are the canon. The code's
 > identifiers are leftovers from earlier games and prove nothing: `acorns` is
@@ -39,7 +40,7 @@ Dino's drum kit, the juice bar's furniture, the Library's bookcases, books, cove
 phone booth and the Portal, Backpacka's water and rainbow, the fade groups (A26, the Portal in 4.0.38) and pickups
 fading in place (A56). Every creature is broken down too ("Every creature (inventory)"), with new entries for the
 UFO's pilot and the faces in pictures; Sparkakus's romp (A57, A62), Gooward's barrage (A39), the Ancient's breathing
-organ (A53), the birds' flight (A54) and Nextessa filled in; corrected: there are eight WANTED posters of six kinds
+organ (A53), the birds' flight (A54) and Nextessa filled in; corrected: there are eight WANTED posters of seven designs
 (adding the saucer, the rabbit, the girl, the stranger and Ollaag), and Somlet is she in her design entry too.
 
 ## The world
@@ -67,11 +68,13 @@ organ (A53), the birds' flight (A54) and Nextessa filled in; corrected: there ar
   a church (the Ancient's home, below), a pond and the billboard.
 - **The billboard:** "A Prehistoric Era in Jazz!", with a banner: "Let King
   Dino take you / to the Jurassic / Greeblis Park!"
-- **WANTED posters:** eight on the Sheriff's back wall, six kinds: an alien face (twice), a flying saucer, a goo
+- **WANTED posters:** eight on the Sheriff's back wall, seven designs: an alien face (twice), a flying saucer, a goo
   creature named **GLOOPERNAUGHT**, a rabbit in a uniform, a girl in a yellow flowered dress, a blond stranger in a
   brown jacket, and a pointed-eared figure in a blue robe named **Ollaag**; each "WANTED" above and "REWARD" below
-  (looks in "Creature design and style", "Faces in pictures"). *(inference: the alien is how the Sheriff pictures the
-  Human he is hunting; the girl, the code's `visitor`, has the player's hair, freckles and dress.)*
+  (looks in "Creature design and style", "Faces in pictures"). The girl (the code's `visitor`) is the player's avatar (the
+  author, 2026-11-04). The posters show several aliens, two of them humans (the author's answer 11 below); the grey
+  alien is one of the aliens in its own right, not a picture of the Human: the grey aliens are members of the Alien
+  Alliance (the author's answer 12). The two humans are the girl and the blond stranger (the author's answer 14).
 - **The robin and the cardinal:** a robin and a cardinal perch on the park's two big trees beside the church (the
   robin moved there in 4.0.3, A30; the cardinal and its tree came in 4.0.4, A37, A38), the cardinal turned to face the
   robin (4.0.7, A40); pick either ("Robin", "Cardinal") and it flies off and comes back. A robin and a cardinal also
@@ -110,6 +113,11 @@ organ (A53), the birds' flight (A54) and Nextessa filled in; corrected: there ar
   Fortizmo's bar and watches Sparkakus's books. Faced with the Ancient, the
   Sheriff can only stammer: "Th-the Consortium will be informed." The Consortium is run by Maltoe and
   Mushroom (the author, 2026-10-28).
+- **The Alien Alliance.** The group of all the other alien factions, led by **Ollaag**, who is the one flying round
+  in the UFO; the Alliance is in conflict with the Consortium (the author, 2026-11-04). At least four alien races
+  belong to it, and the aliens on the Sheriff's WANTED posters stand for its factions (the author, 2026-11-04): the
+  grey aliens (two posters), Ollaag's own kind (Ollaag's poster), GLOOPERNAUGHT's goo kind and the uniformed rabbit's
+  kind.
 - **Gree-mail.** "When you see creatures exchanging symbols, that’s
   Gree-mail." (Glyph)
 - **The player** is "Human", a visitor the Sheriff is hunting ("Mont will
@@ -151,7 +159,7 @@ The one character who is not on the town's cast list, and the one the others def
 | Mama Gorbo | "Mother of goo. You carry so much love." | "Oh! Aren't you a sweet one, dear." |
 | Sparkakus | "Librarian. Your texts are missing a page." | "...Which page? I must know." |
 
-*(inference: the Ancient is one of the Ancients, returned ("I have returned", "the one reborn"); it
+*(confirmed: the Ancient is one of the Ancients, returned ("I have returned", "the one reborn"); it
 claims to be older than writing ("I was the first symbol") and to have made some of the townsfolk
 ("You were made with love", "You were made to learn"). It is **not** the Originator Anomalee talks
 about (the author, 2026-10-28).)*
@@ -165,16 +173,16 @@ into a dark, stormy right edge. The code's own drawing positions place each moti
 are the code's.
 
 **Left panel: the deep past (dark, starry).**
-- The **Great Sphinx**, lying down, with a teal gem floating just above its head *(inference: its
+- The **Great Sphinx**, lying down, with a teal gem floating just above its head *(confirmed: its
   missing Eye)* (`riddle`).
-- A glowing orange sphere laced with gold circuit lines, above the Sphinx *(inference: the Computer
+- A glowing orange sphere laced with gold circuit lines, above the Sphinx *(confirmed: the Computer
   Core)* (`core`).
 - A fan of golden rays opening around a bright point at the panel's edge.
 - A faint dinosaur outline on the horizon (`theropod`), a plug (`plug`) and a seed (`seed`).
 - Teal hexagon figures, the **Synthetics** (`synth`, three of them), with a crystal shard (`shard`) and
   an organic shape (`organic`).
 - Gold circuit traces run along the ground across the whole bottom of the painting.
-- At the bottom: a long, dark **slug with eye stalks** *(inference: the Ancient)*. A golden thread runs
+- At the bottom: a long, dark **slug with eye stalks**: the Ancient (the author's answer 15). A golden thread runs
   from it to a glowing gold point in the far corner (`dot`).
 
 **Centre panel: the present (warm light).**
@@ -184,10 +192,11 @@ are the code's.
 - A picket fence, Gemtoe's gazebo, a booth, and the **garden**: concentric rows round the Summoning
   Pillar.
 - **A girl in a yellow dress with a red ponytail**, seen from behind at the bottom centre, looking at it
-  all (the code calls her the `visitor`). *(inference: the Human, the player, who can buy a Sun Dress.)*
+  all (the code calls her the `visitor`, as on the WANTED poster, where she is the player's avatar, the author,
+  2026-11-04) *(confirmed: here too the Human, who can buy a Sun Dress)*.
 - Under the garden, a cut-away of the ground: coloured layers of earth with a fossil jaw and a small halo
-  in them *(inference: the record of the ages under the town)*.
-- A pair of goo splats, pink and cyan, side by side *(inference: Mama Gorbo and Gooward, "Love at first
+  in them *(confirmed: the record of the ages under the town)*.
+- A pair of goo splats, pink and cyan, side by side *(confirmed: Mama Gorbo and Gooward, "Love at first
   splat")* (`splatPair`).
 - A goo burger in a teal ring (`burger`), butterflies, a glass of juice, the pond, mail, curios, a
   botanical sprig, a light bulb and a glue bottle, seeds, flint, paw prints, Blossoms.
@@ -196,11 +205,11 @@ are the code's.
   all three panels.
 
 **Right panel: the edge (storm).**
-- A huge **red mushroom cap with an eye** looming at the top, a star on its brim *(inference: the
+- A huge **red mushroom cap with an eye** looming at the top, a star on its brim *(confirmed: the
   Sheriff)* (`mushroom`), with a small figure the code calls the `mayor` beneath it: the mayor is Montgummery in the near
   future (the author, 2026-10-28).
 - From the cap, faint dotted lines run to nine of the townsfolk: Sparkakus, Gemtoe, Gooward, Glyph, King
-  Dino, Somlet, Montgummery, Anomalee, Zollod *(inference: the Sheriff watching them; Mama Gorbo,
+  Dino, Somlet, Montgummery, Anomalee, Zollod *(confirmed: the Sheriff watching them; Mama Gorbo,
   Etcher, Fortizmo, Nextessa and Hennrick are not on it)*.
 - **The Portal**, a blue, starry doorway with a flower in it.
 - A pizza (Nextessa's place on the painting), a UFO with a ring of lights, a satellite dish, a dark
@@ -335,8 +344,9 @@ editions.") and the Ancient texts.
 - **Mama Gorbo and Gooward's meeting**: every 20-40 s they walk to each other, face each other and trade goo arcs
   with a "blorp" and pink hearts. A Blossom to Gooward ("GOOMP") turns his goo on the Human: eight volleys that
   splat on the view, and he cannot be spoken to until it is over (A39).
-- **The UFO**: a saucer with a green alien inside crosses the sky every 600 s, hovers and leaves (never in the
-  Event, A6) *(inference: the "UFO sightings" the Sheriff investigates)*.
+- **The UFO**: a saucer with Ollaag inside (A63, 4.0.43) crosses the sky every 600 s, hovers and leaves (never in the
+  Event, A6). Ollaag, the leader of the Alien Alliance, is the one who flies round in it (the author, 2026-11-04)
+  *(confirmed: the "UFO sightings" the Sheriff investigates)*.
 
 ## A session, from the first visit to the Event
 
@@ -664,23 +674,23 @@ outside it is scenery, seen and never entered (FIXES A4).
 | The dance floor | Etcher, Glyph, Montgummery | A purple night-club floor in the daylit park; the dance battles, "KING DINO on drums.", where Etcher's tentacles etch every step. |
 | Gemtoe's Gazebo | Gemtoe | An octagon with gold coins on its floor; a kiosk "in all regards" (the author, P33): it fades with the kiosks in the Event, its seven railed sides are walls and its doorway open to anyone (F-B65), and no Blossom or flint ever spawns inside it (B95, 4.0.33). The Gem trade happens here. |
 | The church, and the Cave inside | The Ancient; its visitors | A secret room, entered through the west wall where it is marked with a red X. Only the Ancient's twelve exchanges play inside, and only they. |
-| The Window | Anomalee, below it | The church's front stained-glass window *(inference: "The church and the Cave" below)*: "The WINDOW REMEMBERS the TRAVELER." |
+| The Window | Anomalee, below it | The church's front stained-glass window *(confirmed: "The church and the Cave" below)*: "The WINDOW REMEMBERS the TRAVELER." |
 | The Portal | Hennrick roams round it | A stone gateway between eras, locked by the Consortium; it opens (a blue swirl) when the courier comes through. |
 | The TELEPHONE | (the Human) | "Call for pizza"; without the bribe, the PHONE box says "*connection to the Portal seems blocked*". Counts as a kiosk in the Event (A27). |
 | The pond | Backpacka, in the Event | Still water with stones round it (A33: no ripples or glow since 4.0.4). Backpacka drinks here. |
 | The two big trees by the church | The robin; the cardinal | The robin on the tree at (-16, 37) (A30), the cardinal on the one to its right (A37, A38), turned toward the robin (A40). Picked ("Robin", "Cardinal"), each flies off and returns. |
 
-**In the town outside the fence** (scenery; names from the signs, or *(inference)* from colours and objects, as in
+**In the town outside the fence** (scenery; names from the signs, or from colours and objects *(confirmed)*, as in
 "The rest of the town" below)
 
 | Place | What the game says or shows |
 | --- | --- |
 | FIRST BANK OF GREEBLIS | Kept by Gemtoe: "A useful talent for the keeper of the First Bank of Greeblis." |
-| Mistergummery's | A drive-in diner with a teal M, the logo on Mama Gorbo's cap (A36). |
+| Mistergummery's | A drive-in diner with a teal M, the logo on Mama Gorbo's cap (A36). Mistergummery is Montgummery's father (the author's answer 16). |
 | The Gooburger | Mama Gorbo's "local fast food joint"; a giant burger on a pole. |
 | King Dino's billboard | "A Prehistoric Era in Jazz!"; "Let King Dino take you / to the Jurassic / Greeblis Park!"; painted by Gooward. |
 | The Field Office | Hennrick's office in the far past (the author): a trailer with a sheriff's star and a flying saucer, a dish. |
-| The outer-ring houses | Eight houses, each in one townsperson's colours *(inference)*. |
+| The outer-ring houses | Eight houses, each belonging to the townsperson whose colours it wears (the author's answer 15). |
 | The courthouse, school (with the Backpacka mural), fire station, hotel, gas station, video shop, curio shop with a sphinx, glasshouses, water tower, a roped-off landing ring, a fenced crystal patch | Scenery only; no words beyond the pictures. |
 
 **Named but never shown**: Greeblis City (Hennrick's era, "the towers of Greeblis City reach the clouds"); the
@@ -714,7 +724,8 @@ The words of the game's own interface, in the order the player meets them (the l
 How the characters look and the visual language they share, as built in the game file (moved here from
 CREATURES.md in 3.15.57, the author's request; how the models are constructed, the shared kit and the code names
 stay in CREATURES.md). Numbers are the code's own (metres, radians, seconds; `sin(2.1t)` means a sine of 2.1
-radians per second). Anything the code does not state is marked *(inference)*. The author's rule (RULES.md 7): the
+radians per second). Anything the code does not state is marked *(inference)*, or *(confirmed)* once the author has
+confirmed it. The author's rule (RULES.md 7): the
 designs are final; fixes must not change how anyone looks, and new looks are the author's call.
 
 ### The house style
@@ -802,12 +813,12 @@ What the models have in common, as built:
 #### Somlet
 - **Body**: a floating felt cushion (superellipsoid, `.82 x .76 x .72`) with 16 bumps, two floating three-sphere hands,
   seven thin branching tentacles hanging below; no legs.
-- **Palette**: cream felt (`#f2e4b4`), a navy postman's cap with white piping, a black visor and a gold envelope
+- **Palette**: cream felt (`#f2e4b4`; she has always been cream, the author, 2026-11-04), a navy postman's cap with white piping, a black visor and a gold envelope
   badge; plum tentacles.
 - **Face**: asleep by default: felt lids with lashes and creases, under-eye bags, a brow; a hidden open eye that
   eases in when the player gives her a gift. A small "o" mouth that breathes and talks.
 - **Motion**: hovering, breathing, three "Z" sprites rising from her; when she is at home and idle she slowly rolls
-  onto her side to lie down. Each frame his tentacles curl themselves out of the ground.
+  onto her side to lie down. Each frame her tentacles curl themselves out of the ground.
 
 #### Mushroom
 - **Body**: a lathe stem (about 1.1 across) under a broad, flat cap (about 2.5 across) with 60 gills, a scalloped
@@ -847,7 +858,8 @@ What the models have in common, as built:
   curling tails that stand in for legs and each cradle a gem; two pairs of fanned wings; a round feathered head with
   a hooked parrot bill.
 - **Palette**: reds (`#b8282e` and its shades) with a yellow-orange crest; amber eyes; purple gems with yellow
-  sparkles. *(inference: the palette variable is still named `teal`, so the model was once teal.)*
+  sparkles. She has always been red (the author, 2026-11-04); the code's name `teal` for her red is only a leftover
+  name.
 - **Face**: side-set amber eyes with slit pupils and feathered lids, scaly brows, a beak that opens while she talks.
 - **Motion**: hovers (a little above the ground, on purpose: the author, 2026-10-30), the head looks about, the wings flap faster when she moves, the sparkles twinkle.
 - **Tie** (3.15.57, the author: "a neck tie. no shirt, just a tie"): a knot under the bill and a pointed blade down
@@ -921,6 +933,8 @@ What the models have in common, as built:
   comes through the Portal when called for pizza and goes back through it (`kind: "courier"`, `pk_nextessa`).
 
 #### Montgummery
+- **Family**: his father is Mistergummery, of the drive-in diner Mistergummery's outside the fence (the
+  author's answer 16).
 - **Body**: a dark rounded tape-like torso (superellipsoid) under a transparent shell of scrolling code, high-top
   boots with laces, a cable tail, four-fingered hands, a big CRT head with a control strip.
 - **Palette**: dark green-black body (`#1d2a23`), cyan code and boots with orange toes, a purple screen.
@@ -978,13 +992,20 @@ What the models have in common, as built:
   frog-faced shoes) and the Sun Dress (the dress map swapped for suns on sky blue, with an orange hem).
 
 #### The UFO's pilot
-- **Who**: the green alien seen in the UFO's glass dome every 600 s ("The sky" under "Nature and set dressing"); the
-  game gives them no name and no lines.
-- **Body**: a round green head (`#7ad85a`, a little taller than wide) on a short tapered green body, seated in the
-  middle of the saucer under a pale cyan glass dome (45% see-through); two thin antennae ending in glowing yellow
-  balls. Matte clay (shininess 50).
-- **Face**: two large glossy black eyes, tall and tilted outward; no mouth.
-- **Motion**: none of its own; it rides the saucer across the sky, hovering and leaving with it.
+- **Who**: Ollaag, the leader of the Alien Alliance, is the one who flies round in the UFO (the author, 2026-11-04);
+  the game gives the pilot no lines. Since 4.0.43 (A63; the author: "Please update this model to be Ollaag instead")
+  the model in the dome is Ollaag as his WANTED poster paints him; until then it was a small green alien (`#7ad85a`)
+  with two antennae tipped in yellow and big black eyes.
+- **Body**: seated in the middle of the saucer under a pale cyan glass dome (45% see-through), about 1.2 m tall from
+  the deck to the top of his head. A blue robe (`#3a64b4`, a cone widening to the deck) with rounded shoulders, two
+  dark navy collar points (`#26478a`) and five gold diamond studs (`#e8c040`), one at the throat and two each side of
+  the chest; a navy belt with four gold checks across the front. He holds a sage tablet (`#b4c2ae`) tilted up in both
+  tan hands at his chest. 31 parts, all made at load; matte clay.
+- **Face**: a tan head (`#d2bc90`, a little taller than wide) on a short neck; long flat ears pointing out to the sides
+  and a little up; heavy dark brows (`#4a3820`) slanting down to the middle, two forehead lines (`#8a7048`); brown eye
+  sockets (`#6a5434`) with small glossy black pupils; a small pointed nose and a thin straight mouth.
+- **Motion**: none of his own; he rides the saucer across the sky, hovering and leaving with it. The saucer spins
+  under him (2.2 radians a second) but he is turned against the spin, so he always faces the way it flies.
 - **The saucer** (for scale): a chrome hull about 8 m across (`#a8aeb8`) under a grey upper deck, two dark raised
   rings and a dark rim, eight warm window lights, 18 rim bulbs cycling red, yellow and cyan, three round dark pods
   underneath and a pale green glowing disc (`#9affb0`) in its belly.
@@ -998,11 +1019,15 @@ Creatures that exist only as paint, for completeness; none moves.
   bubbles; *the rabbit* (`rabbit`), brown with long pink-lined ears, a white muzzle, pink nose and whiskers, in a navy
   coat with gold epaulettes and buttons, red collar tabs and a wide navy hat edged in gold with a red, white and blue
   rosette; *the girl* (`visitor`), fair skin with freckles and a small smile, red-orange hair with a pigtail and a navy
-  bow, and a yellow dress with white flowers *(inference: the player)*; *the stranger* (`stranger`), fair skin, swept
+  bow, and a yellow dress with white flowers: the player's avatar (the author, 2026-11-04); *the stranger* (`stranger`), fair skin, swept
   blond hair, a gold earring, a brown jacket over a sage shirt and white collar; *Ollaag* (`olag`), tan skin, ears
   pointing out to the sides, heavy brows and forehead lines, a blue robe with dark collar points and gold diamond
-  studs, a gold-and-navy checked belt, holding a sage tablet. Who they are is not told: GLOOPERNAUGHT has a backstory this game
-  does not tell (the author's answer 4 below); Ollaag is not among the names the author has answered for.
+  studs, a gold-and-navy checked belt, holding a sage tablet. They are several aliens, two of them humans (the
+  author's answer 11 below): the girl and the blond stranger (answer 14). The aliens stand for the Alien Alliance's
+  factions, at least four races (the author's answers 12 and 13 below): the grey aliens, Ollaag's kind, GLOOPERNAUGHT's
+  goo kind and the rabbit's kind. The grey aliens are not the Sheriff's picture of the Human (an earlier guess here). Who they are is not told: GLOOPERNAUGHT has a backstory this game
+  does not tell (the author's answer 4 below); Ollaag is the leader of the Alien Alliance, which is in conflict with the
+  Consortium, and is the one who flies round in the UFO (the author's answer 9 below).
 - **Gooward's painting**: its creatures and motifs (`cubeJar`, `glitch`, `paisley`, `water`, `mise`, the butterflies,
   a robin) are in "The gallery painting".
 - **The school mural**: Backpacka over a meadow, and a duck on the pond ("Pictures in the town").
@@ -1073,7 +1098,8 @@ How the world is built and how it looks, read from the game file (`tools/uncompr
 colours as hex). Most buildings carry no name, so the building names below are the 3.15.44 builders' code names
 (`git show 21596f1:tools/uncompressed.html`: `STORE`, `FRONTIER`, `HOUSE`, `COURTHOUSE` and so on; minified since
 3.15.45, FIXES R2): hints in the sense of the naming rule at the top, not canon, and the source of the building names in
-"The world" above. Whom a building seems to belong to is never stated by the code and is marked *(inference)*, as is
+"The world" above. Whom a building seems to belong to is never stated by the code and is marked *(inference)*, or *(confirmed)* once the
+author has confirmed it (all of them, 2026-11-04), as is
 anything else the code does not state. Directions follow the docs: +z is north and +x east (Backpacka leaves "over the
 north-west fence" toward x -62, z 72, FIXES A7); the code itself calls the park's +z edge `parkSouth`.
 
@@ -1119,7 +1145,7 @@ What the environment has in common, as built:
   Gemtoe's Gazebo, JUICE BAR, TELEPHONE, MENU, STOP, King Dino's billboard and its banner, the WANTED posters.
 - **The cast lives in the colours.** The outer town repeats the townsfolk's signature colours and belongings: a row
   of houses each in one character's colours, shops built round their trades, a water tower in Mama Gorbo's peach.
-  *(inference: no building is labelled with a name; the matches are colour for colour, below.)*
+  No building is labelled with a name; the houses' owners go colour for colour, below (the author's answer 15).
 - **Faceted nature, smooth people.** Tree crowns, rocks, pebbles and flint are polyhedra (icosahedra and
   dodecahedra) whose faces shade flat, so nature reads as cut facets beside the smooth, clay-like characters.
 - **Iron, cream and stone as the frame.** Dark iron (`#1e2226`) for the fence, lamp posts, railings and balconies;
@@ -1171,7 +1197,7 @@ Garden at the origin. Inside it:
   0.32 m on two rails (0.18 and 0.9 m up), a post every 3.2 m with a pyramid cap, and brick pillars (`#9a4a36`, 1.3 m,
   stone caps, iron balls) at the four corners and the middle of the north side. Beyond 18-28 m the modelled pickets
   fade out and a flat strip draws the same bars and rails as a pattern, averaged over each pixel
-  (`GB_FENCE_FAR`) *(inference: so that far railings do not shimmer)*.
+  (`GB_FENCE_FAR`), so that far railings do not shimmer (the author, 2026-11-04).
 
 Outside the fence:
 
@@ -1189,7 +1215,7 @@ Outside the fence:
 - **The ground.** One plane 640 m square, finer near the town (5 m cells out to 160 m, 40 m beyond), its vertex colours
   mottled between `#4a7a2c` and `#3e6a26` out to 140 m and olive (`#7a8a4c`) beyond, under the KIT grass texture
   tiled every 5.8 m. The fog and the sky's horizon share one colour, so the land fades into the sky without a line.
-- **The painting's town** *(inference)*. The miniature town on the horizon of Gooward's painting ("The gallery
+- **The painting's town** *(confirmed)*. The miniature town on the horizon of Gooward's painting ("The gallery
   painting" above: a bank, a barber's, a tower, a greenhouse, a lightning bolt, the courthouse, a marquee, televisions,
   a milkshake, an ice-cream cone, "avarice", a family tree, a weather vane, the church) is this outer town, building
   for building (below).
@@ -1299,9 +1325,10 @@ The town outside is made from a handful of builders that share proportions, so t
 #### The outer-ring houses
 
 The eight houses on the north side differ in their colours, roofs, porches and yards, and each pair of colours is a
-townsperson's (the signature colours in CREATURES.md section 1) *(inference: whose house is whose is not stated)*:
+townsperson's (the signature colours in CREATURES.md section 1). Each house belongs to the townsperson whose colours
+it wears (the author's answer 15; the game itself names no owner):
 
-| x | Walls / roof / door / shutters | Porch and yard | Whose *(inference)* |
+| x | Walls / roof / door / shutters | Porch and yard | Whose (answer 15) |
 | --- | --- | --- | --- |
 | -82 | yellow `#f2d84a` / teal / teal `#38b8b0` / teal | A teal crown on the roof; a red drum and a gold cymbal; three stacks of gold coins; a mug of carrot juice | King Dino |
 | -64 | blue `#2c4cc0` / navy / yellow `#f2c21a` / pink | A band of painted vines; daffodils; a reading chair with an open book; a bone; a pile of books | Sparkakus |
@@ -1316,32 +1343,32 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
 
 | Where (x, z) | 3.15.44 name | What it is and how it looks |
 | --- | --- | --- |
-| 65, -27 | `MISTERGUMMERYS` | A drive-in diner: a red and cream building 13 x 9 m under a red mansard roof with a teal band, two "Mistergummery's" signs, teal double arches 12 m high, a parking lot with teal bollards, a MENU board, a drive-through speaker, two umbrella tables and a little playground. *(inference: named after Montgummery)* |
-| 52.6, -10.8 | `STORE` | Crimson (`#8a2a2a`) with gold lintels and iron bars over its windows, gold balance scales on its band, purple crystals on the parapet and a bracket sign with a purple gem. *(inference: Gemtoe's; the painting's "avarice")* |
+| 65, -27 | `MISTERGUMMERYS` | A drive-in diner: a red and cream building 13 x 9 m under a red mansard roof with a teal band, two "Mistergummery's" signs, teal double arches 12 m high, a parking lot with teal bollards, a MENU board, a drive-through speaker, two umbrella tables and a little playground. Mistergummery is Montgummery's father (the author's answer 16). |
+| 52.6, -10.8 | `STORE` | Crimson (`#8a2a2a`) with gold lintels and iron bars over its windows, gold balance scales on its band, purple crystals on the parapet and a bracket sign with a purple gem. *(confirmed: Gemtoe's; the painting's "avarice")* |
 | 52.6, -0.5 | `FRONTIER` | A barber's: pale blue, navy, a barber's pole. |
-| 52.6, 9.8 | `STORE` | A theatre: a marquee with 28 bulbs whose bill shows a purple-to-orange plume, a teal crown, crossed drumsticks and a yellow dinosaur head; a tall sign with four stars; a searchlight on the roof. *(inference: billing King Dino)* |
+| 52.6, 9.8 | `STORE` | A theatre: a marquee with 28 bulbs whose bill shows a purple-to-orange plume, a teal crown, crossed drumsticks and a yellow dinosaur head; a tall sign with four stars; a searchlight on the roof. *(confirmed: billing King Dino)* |
 | 52.6, 21.2 | `STORE` | A giant goo milkshake on the roof (cream cup, pink whip, a cyan cherry, a straw, four coloured drips). |
-| 52.6, 32 | `STORE` | Blue, navy and gold: gold scrolls set with teal and pink gems, a purple glyph tile, plates along the front, three-clawed prints on the pavement. *(inference: Glyph's)* |
-| 52.6, 43.3 | `STORE` | Terracotta with a blue door (`#2c4cc0`): a family tree in a gold ring, daffodil planters. *(inference: Sparkakus's genealogical society; the painting's "lineage")* |
+| 52.6, 32 | `STORE` | Blue, navy and gold: gold scrolls set with teal and pink gems, a purple glyph tile, plates along the front, three-clawed prints on the pavement. *(confirmed: Glyph's)* |
+| 52.6, 43.3 | `STORE` | Terracotta with a blue door (`#2c4cc0`): a family tree in a gold ring, daffodil planters. *(confirmed: Sparkakus's genealogical society; the painting's "lineage")* |
 | -52.6, 42 | `BANK` | FIRST BANK OF GREEBLIS (kept by Gemtoe): pale stone, steps, four columns 6.6 m tall, an entablature with its name, a pediment. |
 | -52.6, 28.1 | `STORE` | A greengrocer: crates of produce with Blossom labels, a giant carrot on the roof, a teal watering can. |
 | -52.6, 15.9 | `FRONTIER` | Ice cream: butter yellow, pink awning and shutters, a winged cone on its band, a three-scoop cone on the roof. |
-| -52.6, 3.7 | `STORE` | Grey-blue stone, mint trim (`#9ee09a`), blue lintels: etched tiles, a green gem, purple tentacle sculptures on the parapet, etched tablets and a chisel at the door. *(inference: Etcher's)* |
-| -52.6, -8.5 | `STORE` | Brown: a stone sphinx lying at the door, its two eyes unlike (one dark, one plain stone), and an urn. *(inference: a curio shop, and the Great Sphinx with its missing Eye)* |
+| -52.6, 3.7 | `STORE` | Grey-blue stone, mint trim (`#9ee09a`), blue lintels: etched tiles, a green gem, purple tentacle sculptures on the parapet, etched tablets and a chisel at the door. *(confirmed: Etcher's)* |
+| -52.6, -8.5 | `STORE` | Brown: a stone sphinx lying at the door, its two eyes unlike (one dark, one plain stone), and an urn. *(confirmed: a curio shop, and the Great Sphinx with its missing Eye)* |
 | -52.6, -20.1 | `FRONTIER` | A florist: green with red shutters, a giant Blossom on the roof, Blossom beds. |
 | -52.6, -31.8 | `STORE` | TV repair: a television and a wrench on its band, an aerial, three stacked televisions with magenta screens, a workbench. |
 | 0, -62 | `COURTHOUSE` | Brick (`#a8503a`), 28 x 20 x 12.5 m, stone bands, a portico of four 9 m columns under a pediment, hedges, flower beds and a topiary dinosaur; a clock tower with four faces (Roman numerals, hands at about six past ten) and a green dome (`#5aa890`) with a gold ball 29.9 m up, the tallest point in town. |
 | 29, -58 | `FIRE_STATION` | Brick (`#b04a32`): one closed bay door, one open bay with a red fire engine, a 14 m hose tower with a siren and a weather vane (a compass cross and a teal, long-necked, winged figure). |
 | 43, -62 | `HOTEL` | Buff brick, two iron balconies, a wooden water tank on the roof, a brass luggage trolley. |
 | -22, -64.5 | `SCHOOL` | Red clapboard (`#a8382e`), a cupola with a bell, a swing set, and the town mural on its side (below). |
-| 72, -62 | `GAS_STATION` | White with a teal band (`#55b8c6`), two pumps with cyan lamps, a lightning-bolt sign. *(inference: an electric charging station)* |
-| 56, -60 | `STORE` | VHS tapes on its band (the last one bitten), a VHS tape and a screen with Montgummery's face on the roof, a return box. *(inference: a video shop)* |
-| -70, -38 / -70, -55 | `STORE` | A pink ice-cream parlour (a cone and sundae glasses on its front, a giant three-scoop cone on the roof); a maroon block with five iron balconies, a roof tank and a luggage trolley *(inference: an inn)*. |
+| 72, -62 | `GAS_STATION` | White with a teal band (`#55b8c6`), two pumps with cyan lamps, a lightning-bolt sign. *(confirmed: an electric charging station)* |
+| 56, -60 | `STORE` | VHS tapes on its band (the last one bitten), a VHS tape and a screen with Montgummery's face on the roof, a return box. *(confirmed: a video shop)* |
+| -70, -38 / -70, -55 | `STORE` | A pink ice-cream parlour (a cone and sundae glasses on its front, a giant three-scoop cone on the roof); a maroon block with five iron balconies, a roof tank and a luggage trolley *(confirmed: an inn)*. |
 | 84, -4 | `WATER_TOWER` | 20 m steel legs; a peach tank (`#ff9f5c`, Mama Gorbo's colour) with a lime band, a lime goo ring and goo drips in cyan, magenta, purple and green. |
-| 78, -38 | `GOOBURGER` | A giant burger on a 10 m pole. *(inference: Mama Gorbo's Gooburger, as a roadside sign)* |
+| 78, -38 | `GOOBURGER` | A giant burger on a 10 m pole. *(confirmed: Mama Gorbo's Gooburger, as a roadside sign)* |
 | -55, -55 | `BILLBOARD` | King Dino's billboard (below). |
 | -33.5, 73.5 | `FIELD_OFFICE` | A grey trailer with a sheriff's star and a flying saucer on its front, and a satellite dish on a 12 m mast. (Hennrick's office in the far past, the author.) |
-| -29, 85 | (none) | A dark ring 7.4 m across, roped off by orange stakes and yellow tape, with two floodlights. *(inference: a UFO landing site)* |
+| -29, 85 | (none) | A dark ring 7.4 m across, roped off by orange stakes and yellow tape, with two floodlights: a UFO landing site (the author's answer 15). |
 | 15, 94 / 40, 96 | `NURSERY` / (none) | Two glasshouses, each with a giant flower (about 9 m and 18 m tall) growing up through its roof; the nursery's roof has broken panes round the stem, potted plants at its door and a potting bench. |
 | -33, 96 | (none) | Six purple crystals 2.2-5.2 m tall inside a ring of posts and wire, a sign with a gold padlock. |
 
@@ -1407,7 +1434,7 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
 - **Stars** (`gcRnd("stars")`): 700 points at least 4.6 degrees above the horizon, white, 1.6 px; they show only as
   the world dims.
 - **The UFO** (`JGP.ufoNow`): a chrome saucer about 8 m across with 18 rim bulbs cycling red, yellow and cyan, a glass
-  dome and a green alien inside; every 600 s it crosses the sky 35-48 m up, hovers and leaves. None starts during the
+  dome and Ollaag inside (until 4.0.43 a green alien); every 600 s it crosses the sky 35-48 m up, hovers and leaves. None starts during the
   Event (A6).
 - **What is seeded** (the same on every launch): textures, windows, trees, tufts, pond stones, the Garden's ground, the
   Cave's stones, the kiosks' dressing, clouds, stars, the mist. **What is random** by the author's word: where Blossoms
@@ -1509,8 +1536,8 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   halo of gold rays, holding a glowing screen, a cable from it plugged into the ground, descending in a beam of light
   from a starry indigo sky over a dark town with lit windows and burning cracks. Each side window (2.6 m wide, from
   1.7 m up; `paintGardenWindow`, mirrored on the other side) shows a robed figure standing in a flower garden under the
-  sun beside a peach goo-shape with two octagonal purple lenses, a lime tube and pins marked "AP" and "IP". *(inference:
-  Mama Gorbo; and the front window is likely the Window Anomalee stares up at, "The WINDOW REMEMBERS the TRAVELER": she
+  sun beside a peach goo-shape with two octagonal purple lenses, a lime tube and pins marked "AP" and "IP". *(confirmed:
+  Mama Gorbo; and the front window is the Window Anomalee stares up at, "The WINDOW REMEMBERS the TRAVELER": she
   gazes up at the church when idle. What the Window remembers stays open, the author.)*
 - **The way in**: two red strokes crossed into an X (`#b3261e`) on the west wall, just under its stained-glass window,
   mark a 2.6 m stretch of wall the player can walk through; everyone else meets the whole wall (the author: the church
@@ -1533,13 +1560,13 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
 - **The school mural** (`"mural"` in the sign atlas; 11 x 4.3 m on the school's side in a gold frame): a painterly
   scene of brush strokes and dabs under a soft vignette: a blue sky with the sun and clouds, a rainbow, two ranges of
   hills, a pond with a duck, flowers along the bottom, and Backpacka standing over the meadow, tan and mottled with
-  coloured patches, green leaf wings raised, water dripping from his mouth and arcing from his four feet *(inference:
+  coloured patches, green leaf wings raised, water dripping from his mouth and arcing from his four feet *(confirmed:
   the Event's set piece)*. The author kept it as it was when a sharper version was tried: "it was fine as it was"
   (NOTES 48).
 - **King Dino's billboard** (-55, -55): the painted panel (10 x 5 m, 10 m up, "A Prehistoric Era in Jazz!") on two
   poles with a catwalk and two lamps, the cloth banner ("Let King Dino take you / to the Jurassic / Greeblis Park!")
   draped below it on ropes, a ladder against it, and three paint cans (cyan, pink, lime) with spills and a brush at its
-  foot *(inference: Gooward's tools; King Dino: "Gooward, that wild cat painted my billboard!")*.
+  foot *(confirmed: Gooward's tools; King Dino: "Gooward, that wild cat painted my billboard!")*.
 
 ### Every environmental element (inventory)
 
@@ -1648,7 +1675,7 @@ of A5.
 | The fog | 70-300 m | the horizon colour | darkens with the sky at dusk; the mist's colour follows it | A12 |
 | The clouds | 40-95 m out, 50-72 m up | 24, each three to five flattened white spheres with a grey underside | circle the town every 12-26 minutes; dimmed at night; hidden in the Event | A5, A24, A25, A55 |
 | The stars | above 4.6 degrees | 700 white points | show only as the world dims | R5 |
-| The UFO | crosses the sky 35-48 m up | a chrome saucer, rim bulbs cycling red, yellow and cyan, a glass dome, a green alien | every 600 s; none starts in the Event, one in flight leaves by its path | A6 |
+| The UFO | crosses the sky 35-48 m up | a chrome saucer, rim bulbs cycling red, yellow and cyan, a glass dome, Ollaag at the controls (A63) | every 600 s; none starts in the Event, one in flight leaves by its path | A6 |
 | Dusk | everywhere | the Speech's dimming to 70% of night | windows, lamps, the church glass and the TELEPHONE sign glow | |
 
 ### The author's decisions about the environment
@@ -1692,7 +1719,7 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 | The church, its glass, the Cave | `"church"` (`CHURCH`, `lancet`, `paintTravelerWindow`, `paintGardenWindow`, `stainedKit`), `id:"slug"` |
 | Night glow, the UFO, the Speech's bulb | `.emissive.setRGB(.95*` (the lit windows; `BIN.lit` in 3.15.44), `JGP.ufoNow`, `Bulb.start` |
 
-## The author's answers (2026-10-28)
+## The author's answers (2026-10-28; 9 to 17 added 2026-11-04)
 
 1. **Mama W** is a name for Mama Gorbo.
 2. **Flint** and the code's acorns are the same thing; flint is the game's word.
@@ -1704,6 +1731,28 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 6. **The Ancient** is not the Originator.
 7. **Backpacka:** where he comes from, and why Fortizmo composes for him, is not known.
 8. **The mayor** under the Sheriff's cap in the painting is Montgummery in the near future.
+9. **Ollaag** (2026-11-04) is the leader of the Alien Alliance, a group of all the other alien factions; he is the one
+   who flies around in the UFO; the Alien Alliance is in conflict with the Consortium.
+10. **The girl** on the WANTED poster (the code's `visitor`) is the player's avatar (2026-11-04).
+11. **The WANTED posters** show several aliens, two of them humans (2026-11-04). The grey alien face is not the
+    Sheriff's picture of the Human.
+12. **The grey aliens** on the WANTED posters are members of the Alien Alliance; at least four alien races belong to
+    the Alliance (2026-11-04).
+13. **The aliens on the WANTED posters** stand for the Alien Alliance's factions (2026-11-04): the grey aliens, Ollaag's
+    kind, GLOOPERNAUGHT's goo kind and the uniformed rabbit's kind.
+14. **The blond stranger** on the WANTED poster (the code's `stranger`) is the other human; the girl is the first
+    (2026-11-04).
+15. **Three guesses confirmed** (2026-11-04): the roped-off dark ring with floodlights outside the town is a UFO
+    landing site; the slug with eye stalks in Gooward's painting is the Ancient; each outer-ring house belongs to the
+    townsperson whose colours it wears.
+16. **Mistergummery** (of the drive-in diner, Mistergummery's) is Montgummery's father (2026-11-04).
+17. **Every other inference** in this Bible is correct (2026-11-04), now marked *(confirmed)*: among them the Ancient
+    as one of the Ancients returned; the painting's Eye, Computer Core, girl (the Human), record of the ages, goo
+    splats (Mama Gorbo and Gooward), mushroom cap (the Sheriff) and town; the UFO as the Sheriff's "UFO sightings";
+    the church's front window as the Window; Mama Gorbo on the side windows; the outer town's shops (Gemtoe's,
+    Glyph's, Etcher's, Sparkakus's genealogical society, the curio shop, King Dino's theatre bill, the charging
+    station, the video shop, the inn, the Gooburger sign); the school mural as the Event's set piece; Gooward's paint
+    cans at King Dino's billboard. Gemtoe and Somlet have always been red and cream.
 
 ## Left open on purpose
 
