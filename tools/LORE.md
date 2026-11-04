@@ -358,7 +358,8 @@ from the steps that need an earlier one, the order is the player's.
    designed for the Meta Quest Browser.", "Please open this file in the Quest Browser", "on your Meta Quest headset."
    and the version, under the title "-Greeblis Town-".
 2. **Arrival.** The Human stands at the park's west fence (-36.3, -20), by the dance floor and the JUICE BAR, with
-   King Dino drumming at 104 beats a minute. 32 Blossoms and 40 flint lie about the park and regrow 12 s after they
+   King Dino drumming a funk song at 98 beats a minute, a drum solo in the middle of its 2-minute round (A64, 4.0.45;
+   a swung jazz pattern at 104 before). 32 Blossoms and 40 flint lie about the park and regrow 12 s after they
    are picked. The left hand wears a watch reading "PRESS / Y / TO OPEN": Y while looking at it opens the inventory
    (A35, A41, A44).
 3. **The town lives on its own.** Townsfolk roam or keep their posts, stop to face the Human (Sparkakus greets with a
@@ -759,7 +760,7 @@ What the models have in common, as built:
   launch). Every character breathes, sways or bobs with slow sines (mostly 0.7-2.1 rad/s,
   a few centimetres or a few hundredths of a radian), each part at a different rate and phase, so nothing looks
   frozen and no two move alike. Talking adds a nod, a bounce or a moving mouth (`tkS`); walking adds a stride or a
-  hop. Dancers follow the beat (`gcBeatHz`, 104 beats a minute in town, 88 in the Event).
+  hop. Dancers follow the beat (`gcBeatHz`, 98 beats a minute in town since 4.0.45, the drums' tempo; 88 in the Event).
 - **Props tell the job.** Mushroom the sheriff: a star badge and a cowboy hat. Somlet the postmaster: a cap with an
   envelope badge, asleep at the post. Zollod the gardener: an apron with seed packets and a garden growing on his
   back. King Dino the drummer: a crown and drumsticks. Nextessa the courier: a pizza box on her head.
@@ -840,7 +841,9 @@ What the models have in common, as built:
 - **Synthetic parts of his own body** (the author): three lit buttons on each side and a back panel of five
   sockets, in the same glossy teal as his joints.
 - **Extras**: short arms with drumsticks; a five-point swept crown; the plume, a curved spine of feather cards fanning out.
-- **Motion**: rolls and sways; when the drums play (`DRUMS`), each hit swings an arm and nods his body.
+- **Motion**: rolls and sways; when the drums play (`DRUMS`) each hit swings an arm as hard as it is struck (the
+  right on the hi-hats, cymbals and floor tom, the left on the snare and the rack toms), and the kick nods his body;
+  during the horn song he plays along to its drum part from his kit (A65, 4.0.45).
 
 #### Etcher
 - **Body**: a pear-shaped blob (wide base, a long neck, a small head with a forward snout) covered in about 120
@@ -1277,8 +1280,8 @@ Outside the fence:
   drum 1 m across with a red shell (`#c23b3b`), cream heads and silver hoops, its front head lettered "KING DINO" in
   red-orange on cream; two rack toms, a snare and a floor tom in the same red; a gold hi-hat and a gold ride cymbal
   (`#d8a93a`) on silver stands; all on a round rug of two dark red discs (`#5e2222` under `#7e3628`). It plays itself
-  in time with King Dino's jazz (104 beats a minute; 88 in the Event): each drum hit swells and squashes the drum it
-  falls on, the hi-hat dips and the cymbal rocks (`JGP.jazz`).
+  in time with King Dino's funk (98 beats a minute since 4.0.45, A64; the dancers 88 in the Event): each drum hit
+  swells and squashes the drum it falls on, the hi-hat dips (closed or open) and the cymbal rocks (`JGP.jazz`).
 - **The dance floor**: 10 x 32 tiles of 1.2 m (12 x 38.4 m), dark purple (`#24103c` on `#12081f` grout, a lighter
   top-left edge), slightly glossy: a night-club floor set into the daylight park.
 - **Gemtoe's Gazebo**: an octagon 7.6 m across, white posts and rails (open on one side: its doorway, open to anyone; the railed sides solid walls since 3.15.67), a plank floor, a green

@@ -1922,6 +1922,57 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.45**:
+  - **A64, King Dino's drums go funk** (the author: "Can you make King Dino's whole Drum song a more funky song? not
+    too fast but funky"). The swung jazz pattern at 104 beats a minute (8 bars of brushes, then time, funk, trades and
+    shout choruses) is replaced by a funk song at 98 (a bar of 2.45 s): a 4-bar intro (hats and kick, the backbeat
+    from the third bar, a snare roll into the groove), then a 48-bar round (117.6 s) of six parts, the solo in the
+    middle (the author: "can we make the new song a little longer? and add a little solo in the middle?"). **Groove**: straight
+    sixteenths on the hi-hat (accents on the beats, softer off-beats), the kick on 1, the "a" of 1 and the "and" of 3,
+    the snare on 2 and 4 with ghost notes around it, an open hat on the "and" of 4 every other bar, a tom pickup every
+    fourth bar. **Ghost**: two kick figures alternating, busier ghost notes, open hats on the "and" of 2 and 4.
+    **Break**: four half-time bars (eighth-note hats, the snare on 3), then call and response, a groove half-bar
+    answered by a run down the toms. **Solo** (the middle, from 68.6 s): King Dino alone over a foot hi-hat on 2
+    and 4, eight written bars: a tom phrase on a crash, snare triplets falling down the toms, a linear kick-and-snare
+    figure, a sixteenth snare crescendo, a bell-and-tom bar on a crash, a syncopated mix, triplets round the three
+    toms, and a long fill into the drive. **Drive**: a crash, a bell on every beat, the fullest kick, a big fill down the
+    toms. **Pocket**: a laid-back groove (the kick on 1, the "and" of 2 and the "a" of 3, ghost notes, open hats),
+    the last bar's fill back into the groove at the top. Each part's last bar has a fill and the next part starts on a crash. Every hit is still
+    on the twelfth-of-a-beat grid the audio clock and the drummer's sticks use; a new open hi-hat voice (bright noise,
+    0.26 s) dips the hi-hat like the closed one; the kick has a short click on its attack and the snare a crisper top,
+    their levels trimmed so the song sits where the jazz did (a 40 s recording -31.6 dB average against -32.5, the
+    same loudness heard). The dancers in town bob at 98 too (`gcBeatHz`, the drums' tempo; 88 in the Event as
+    before). Recordings from the game before and after (`.runs` scratch). `test_jazz.js` checks the 98 grid and the
+    new parts; the song as a whole (100 bars) was checked on the grid and in its bar, all six parts played.
+  - **A65, King Dino plays what you hear** (the author: "Please ensure that King Dino's playing animations match the new
+    song"; "during the Horn song: King Dino has matching playing animations as he plays in the background"). Each hit
+    now reaches the kit and King Dino with its strength: an arm swings, and a drum swells, as hard as the hit (30% for
+    the softest ghost note, full for an accent), where every hit swung an arm fully before. The hi-hats move his right
+    hand (lightly: 45% closed, 60% open; they moved nothing before, and the funk's right hand is on them all the time),
+    and the kick nods his body (it was the right arm's hits). During the horn song (the Event; the kit is silent and he
+    stays at it, an Event actor) the horn's own drum part (its hi-hat and ride, snare, kick, crash, the intro's brushes)
+    is logged as it is scheduled, with its time on the audio clock and its strength (`ee.hits`, at most 800 waiting,
+    cleared when the horn stops), and played to the kit and to him as each hit sounds: he drums along in the
+    background. `JGP.drumAnim` (his drumming state) is published for the tests. `test_jazz.js`: in 14 s of funk 107
+    right-hand, 27 left-hand hits and 20 nods; in 3 s of the horn song 22, 12 and 7, the drums themselves silent; the
+    horn's queue empty after it.
+
+  - **B99, S41: back from the system menu without a stall** (the author's log 284613aa on 4.0.43: "That flash
+    occurred at the same time audio resumed after coming back from the Universal Menu"; "Regardless of what the cause
+    is, if we can fix this, that would be good"). The run opened and closed the Universal Menu five times in 20 s. At
+    each return to "visible" the session's visibility event ran `Ho.restore` (the original game's check for painted
+    canvases blanked while it was away: up to 3 one-pixel GPU readbacks for each of the 184 painted textures) twice,
+    once in the event and once on the next animation frame, then resumed the sound in the same handler. No new frame
+    came for about 0.4 s after each return (the runtime reused the last picture 30-35 times in a row, `VrApi` Stale
+    max 30-35), the picture from before the menu; on the marked return the head had turned 113 degrees meanwhile.
+    Headless the return took 1036 ms (336 readbacks). The Universal Menu leaves the page running ("visible-blurred"):
+    nothing can blank a canvas meanwhile, so that return now skips the check and logs "back from the system menu: no
+    texture check (...)". A return from "hidden", or with the page hidden meanwhile (the headset slept; its own
+    page-shown path is unchanged), still runs the full check as before. A first try ran the check in slices between
+    frames instead; each readback made the browser wait for the GPU's queued drawing, so the slices cost frames for
+    1.5 s (`test_play.js`: 3 frames drawn while blurred instead of 42), and it was replaced by the skip.
+    `test_menu_return.js` (new, standard tier): the menu's return 1.1 ms with no readback (4.0.43: 1036 ms, 336), frames
+    while the menu is open and after, and a canvas blanked while hidden still repainted; 4.0.43 fails it.
 - **4.0.43**:
   - **A63, Ollaag flies the UFO** (the author: "Please update this model to be Ollaag instead"; Ollaag, the leader of
     the Alien Alliance, is the one who flies round in the UFO): the small green alien in the saucer's dome (a green

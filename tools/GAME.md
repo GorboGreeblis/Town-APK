@@ -156,8 +156,13 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   (F-B39) and leaves it the same way, never hopping; no step of his rises or drops more than 0.3 m, so the desk is
   solid to him (F-B46). `test_mushroom_desk.js`. A vignette ends at once if a speaker becomes busy or the player talks to one of them; Sparkakus is
   busy whenever he walks to his shelves. `test_visits.js`, `test_content.js`.
-- **The jazz drums.** King Dino's kit plays a swung pattern at 104 beats a minute (a bar of 2.31 s): 8 bars of
-  brushes, then time, funk, trades and shout choruses of 8 bars each. Heard (on the dance floor, at the kit, or in
+- **The drums.** King Dino's kit plays a funk song at 98 beats a minute (a bar of 2.45 s; since 4.0.45, A64; until then
+  a swung jazz pattern at 104): a 4-bar intro, then a 48-bar round of 8-bar parts (about 2 minutes): groove, ghost, break, a
+  drum solo in the middle, drive and pocket: straight sixteenths on the hi-hat with an open hat on the off-beats, a syncopated kick, the backbeat on 2 and
+  4 with ghost notes around it, a call-and-response of toms in the break, King Dino alone over a foot hi-hat in the solo (tom runs, triplets, a
+  snare crescendo), a cowbell-like bell in the drive, a laid-back pocket to close, and a fill and a crash at each
+  part's turn. Dancers in town bob at the same 98. King Dino's arms swing as hard as each hit (the right hand on
+  the hi-hats too) and the kick nods him; during the horn song he plays its drum part along with it (A65). Heard (on the dance floor, at the kit, or in
   a battle) it is scheduled on the audio clock 3 s ahead; within 45 m it runs on the game clock only, to move the
   drummer's sticks; 1.5 s after the player stops hearing it, it switches clocks and starts the bars again. It is
   silent while the horn plays. `test_jazz.js`.
