@@ -72,8 +72,9 @@ organ (A53), the birds' flight (A54) and Nextessa filled in; corrected: there ar
   brown jacket, and a pointed-eared figure in a blue robe named **Ollaag**; each "WANTED" above and "REWARD" below
   (looks in "Creature design and style", "Faces in pictures"). The girl (the code's `visitor`) is the player's avatar (the
   author, 2026-11-04). The posters show several aliens, two of them humans (the author's answer 11 below); the grey
-  alien is one of the aliens in its own right, not a picture of the Human *(inference: the two humans are the girl
-  and the blond stranger, the only two drawn as people)*.
+  alien is one of the aliens in its own right, not a picture of the Human: the grey aliens are members of the Alien
+  Alliance (the author's answer 12) *(inference: the two humans are the girl and the blond stranger, the only two
+  drawn as people)*.
 - **The robin and the cardinal:** a robin and a cardinal perch on the park's two big trees beside the church (the
   robin moved there in 4.0.3, A30; the cardinal and its tree came in 4.0.4, A37, A38), the cardinal turned to face the
   robin (4.0.7, A40); pick either ("Robin", "Cardinal") and it flies off and comes back. A robin and a cardinal also
@@ -113,8 +114,9 @@ organ (A53), the birds' flight (A54) and Nextessa filled in; corrected: there ar
   Sheriff can only stammer: "Th-the Consortium will be informed." The Consortium is run by Maltoe and
   Mushroom (the author, 2026-10-28).
 - **The Alien Alliance.** The group of all the other alien factions, led by **Ollaag**, who is the one flying round
-  in the UFO; the Alliance is in conflict with the Consortium (the author, 2026-11-04). Ollaag is on one of the
-  Sheriff's WANTED posters.
+  in the UFO; the Alliance is in conflict with the Consortium (the author, 2026-11-04). At least four alien races
+  belong to it; the grey aliens on two of the Sheriff's WANTED posters are members (the author, 2026-11-04). Ollaag is
+  on one of the posters too.
 - **Gree-mail.** "When you see creatures exchanging symbols, that’s
   Gree-mail." (Glyph)
 - **The player** is "Human", a visitor the Sheriff is hunting ("Mont will
@@ -1016,8 +1018,9 @@ Creatures that exist only as paint, for completeness; none moves.
   blond hair, a gold earring, a brown jacket over a sage shirt and white collar; *Ollaag* (`olag`), tan skin, ears
   pointing out to the sides, heavy brows and forehead lines, a blue robe with dark collar points and gold diamond
   studs, a gold-and-navy checked belt, holding a sage tablet. They are several aliens, two of them humans (the
-  author's answer 11 below; *inference: the girl and the stranger*); the grey alien is an alien of its own, not the
-  Sheriff's picture of the Human (an earlier guess here). Who they are is not told: GLOOPERNAUGHT has a backstory this game
+  author's answer 11 below; *inference: the girl and the stranger*). The grey aliens are members of the Alien
+  Alliance, one of at least four alien races in it (the author's answer 12 below), not the Sheriff's picture of the
+  Human (an earlier guess here). Who they are is not told: GLOOPERNAUGHT has a backstory this game
   does not tell (the author's answer 4 below); Ollaag is the leader of the Alien Alliance, which is in conflict with the
   Consortium, and is the one who flies round in the UFO (the author's answer 9 below).
 - **Gooward's painting**: its creatures and motifs (`cubeJar`, `glitch`, `paisley`, `water`, `mise`, the butterflies,
@@ -1709,7 +1712,7 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 | The church, its glass, the Cave | `"church"` (`CHURCH`, `lancet`, `paintTravelerWindow`, `paintGardenWindow`, `stainedKit`), `id:"slug"` |
 | Night glow, the UFO, the Speech's bulb | `.emissive.setRGB(.95*` (the lit windows; `BIN.lit` in 3.15.44), `JGP.ufoNow`, `Bulb.start` |
 
-## The author's answers (2026-10-28; 9 to 11 added 2026-11-04)
+## The author's answers (2026-10-28; 9 to 12 added 2026-11-04)
 
 1. **Mama W** is a name for Mama Gorbo.
 2. **Flint** and the code's acorns are the same thing; flint is the game's word.
@@ -1726,6 +1729,8 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 10. **The girl** on the WANTED poster (the code's `visitor`) is the player's avatar (2026-11-04).
 11. **The WANTED posters** show several aliens, two of them humans (2026-11-04). The grey alien face is not the
     Sheriff's picture of the Human.
+12. **The grey aliens** on the WANTED posters are members of the Alien Alliance; at least four alien races belong to
+    the Alliance (2026-11-04). Which races they are is not told.
 
 ## Left open on purpose
 
