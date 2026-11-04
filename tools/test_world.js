@@ -174,7 +174,7 @@ const SAMPLE_S = Number(process.argv[3] || 40);
       const want = (top - e.group.position.y) / (e.group.scale.y || 1) - 0.07; out[e.id] = +(D.Ke(e) - want).toFixed(2); }
     return out;
   });
-  expect('every character\'s menu stands the same distance above its highest visible point (Mama Gorbo\'s too)', !hd.error && Object.keys(hd).length >= 8 && Object.values(hd).every((d) => Math.abs(d) <= 0.15), JSON.stringify(hd));
+  expect('every character\'s menu height is its highest visible point at rest, within their breathing and bobbing (0.25 m; Mama Gorbo\'s had been 0.8 m high)', !hd.error && Object.keys(hd).length >= 8 && Object.values(hd).every((d) => Math.abs(d) <= 0.25), JSON.stringify(hd));
   expect('A61: taking OVERCOMING SHYNESS plays its own sound once (not the pickup sound)', bk.book === 1 && bk.pickup === 0 && !bk.err, JSON.stringify(bk));
 
   // ---- a taken pickup still showing is hidden (B97, 4.0.35; the author: a Blossom picked by pointing "did not

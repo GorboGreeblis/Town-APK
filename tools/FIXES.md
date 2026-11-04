@@ -1922,6 +1922,37 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.41**:
+  - **Every game sound was silent in 4.0.40** (found while fixing the audit's low items, 2026-11-04): S40's "notes are
+    counted as started only when the audio is running" put the counter's two assignments after the audio check, in the
+    same block as the note's own `const` names, which the minifier had given the same letters; the counter's line then
+    read those consts before their declaration (a ReferenceError every note), inside the note's try, so no pickup,
+    heart, jingle, tweet, book, romp riff, text tick or drum played and nothing reported it. Only the jazz and the horn
+    (their own synth) still sounded. The counters have names of their own now. `test_audio.js` now calls each of the
+    game's sounds and fails unless it starts its sources (it fails on 4.0.40: every count 0), and checks the
+    recorder's note count; `test_flashlog.js` only checked the line's form.
+  - **The audit's low items, all fixed** (the author: "let's fix all of these items"):
+    - three.js: both holds are asked for every object, so one needing an upload and a program gets both in the same
+      gap (it was held twice); a held object's children wait with it (a body no longer missing while its eyes draw);
+      a render that throws still pops its render state and list and clears the multiview camera (the S19 fallback
+      draw no longer runs one level deeper for the rest of the session); multiview always draws both eyes in one
+      pass, whatever the view count; a controller's and a hand joint's pose mark their world matrix for update; the
+      upload check also sees an instanced mesh's instance buffers and morph attributes, and a geometry whose position
+      or index was replaced is checked again.
+    - The entry script: the projection layer is reused when nothing about it changes (the entry's retry, the
+      local-floor fallback) and a replaced one is never destroyed while its session runs (B96's rule); an incomplete
+      multiview framebuffer falls back to the classic layer after the frame, not inside it; textures repainted in
+      flat mode are uploaded at VR entry, not in the first headset frame; the loader's own WebGL context is released
+      once its session has ended; the retry count starts over once a session is live.
+    - The game: the head guard's dimming ends with the session (no dark start on the next entry); `rec near eyes`
+      sees each instance of the pickups by its own matrix; the recorder builds no new arrays per frame (each hand's
+      pointing text is rebuilt only when what it points at changes); leftovers removed: the last call of the general
+      dispose in `It.remove` (only couriers are ever removed), five unread fields on `JGP.slug` (`core`, `head`,
+      `mantle`, `stalks`, `mode`), `userData.gemPiece`, `JGP.jazz.tap`.
+    - Closed by the author as won't fix (BUGS S40-SL, S40-SC): spot lights and clipping planes per eye (this trimmed three.js has no spot-light
+      or clipping shader code at all, so there is nothing to move; the game uses neither); the scan texture painted
+      twice at load (identical 128x96 pictures, 48 KB; sharing them would tie a character's build to the sign
+      textures' load order for no visible change).
 - **4.0.40, S40: the fourth full code audit** (the author: "Before the final pass: Please perform a full code review /
   audit"): five parallel reviews of the beautified 4.0.39 file (the entry script and layer shim, the three.js patches,
   the engine side, the game logic, the leftovers), each finding checked against the code before a fix. Fixed:
@@ -1938,9 +1969,11 @@ frame already hands the game (no GL call added, RULES.md 28):
     her routed walk added to a constant (a TypeError every frame, logged as `[pizza]`); and her give-up clock kept
     running under dialogues and panels, so a long shop visit or dance battle after a call could send her home with the
     pizza (what B86 had fixed). The clock now pauses whenever the game is not in play, and the walk step only waits.
-  - **An Event without Seeds faded the Garden's flowers** (the logic review): in a later Event without Seeds the flowers
-    from an earlier one faded out, took new colours and grew back when Backpacka sprayed, against "no flowers grow"
-    (the author). The fade and Backpacka's watering now need the Seeds.
+  - **The Garden's flower fade and Backpacka's watering need the Seeds** (the logic review): the review's case was an
+    Event without Seeds after one with them; it cannot happen in play (the author: "It should never be possible to
+    lose Seeds between Events?"): the Seeds are only ever set by buying them, nothing takes them away, and flowers are
+    only planted in an Event with them, so every Event after the first with flowers has the Seeds. The two checks are
+    kept as a guard and change nothing a player can reach (the author: "Keep the code").
   - **The romp's jingle looped on when the romp paused** (the engine and logic reviews): the riff checked only that the
     romp existed, and the romp does not advance while the headset menu is up, after leaving VR or while the headset
     sleeps; it stops now when VR is left, blurred or hidden.
@@ -1966,7 +1999,7 @@ frame already hands the game (no GL call added, RULES.md 28):
     (RULES.md 28); the game's own session request (only if the entry script's throws) asks for layers (RULES.md 29);
     leftovers removed: `JGP.eventMove` and `xe.lastPick` (written, never read) and the pickups' regrow rescale.
   - **The head guard** (the engine review): at 3 cm it starts inside the camera's near plane (0.15 m), so leaning 5-15
-    cm from a wall can show through it; the author chose to keep 3 cm ("Keep 4.0.39").
+    cm from a wall can show through it; the author chose to keep 3 cm ("Keep 4.0.39") and closed it as not a bug.
   - **Recorded, not changed** (low or latent): the three.js holds short-circuiting each other and a thrown render not
     unwinding its render state (only after an S19 fallback); the right eye's matrices if a session ever reports other
     than two views; spot lights and clipping planes not moved per eye (none in the game); the projection layer replaced
@@ -2052,11 +2085,13 @@ frame already hands the game (no GL call added, RULES.md 28):
   - **A60, a tweet tweet for the birds** (the author: "Add a tweet tweet sound effect for interacting with either
     bird"): picking the robin or the cardinal plays two quick high chirps (three rising sine notes each, 2.6-3.75 kHz,
     soft) as it flies off; a pick while it is away plays nothing. Synthesised like every sound (one oscillator and gain
-    per note, freed at its end). `test_world.js` checks one tweet per pick.
+    per note, freed at its end). `test_world.js` checks one tweet per pick. Confirmed by the author in the headset
+    (2026-11-04: "these sound good to me").
   - **A61, the shyness book's sound** (the author: "Add a special sound effect for picking up the Overcoming Shyness
     book"): taking OVERCOMING SHYNESS from the Library played the plain pickup notes; it now plays its own: a quick
     riffle of five soft page ticks, a rising sine chime (G major seventh, five notes) and a soft held bell on top,
-    about 1.4 s, quiet like the rest. `test_world.js` checks it plays once, and the pickup sound does not.
+    about 1.4 s, quiet like the rest. `test_world.js` checks it plays once, and the pickup sound does not. Confirmed by
+    the author in the headset (2026-11-04).
   - **B46 noted**: the author's latest flash was "a white / bright flash", "seemingly the whole screen but also very
     quick" (the earlier ones read as dark). Nothing the game draws can whiten the whole view: the only full-view
     object is the head guard, which is black. Log 47ab0c91 (4.0.36, one mark): every frame drawn, no layer change, no

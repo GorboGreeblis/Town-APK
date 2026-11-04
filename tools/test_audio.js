@@ -67,6 +67,16 @@ const probe = () => {
       const s1 = snap();
       out.rounds.push({ did, live: s1.live, started: s1.started - s0.started, ended: s1.ended - s0.ended, endedConnected: s1.endedConnected - s0.endedConnected, made: s1.made - s0.made, state: s1.state, kinds: { ...A.made } });
     }
+    // every sound of the game's own module starts sources when called with the audio running (4.0.41: in 4.0.40 a
+    // counter written before its declaration made every note throw inside its try, so none played and nothing failed)
+    out.each = {};
+    for (const k of ['pickup', 'heart', 'jingle', 'bump', 'blorp', 'crackle', 'splash', 'tweet', 'book', 'textTick']) {
+      if (typeof D.G[k] !== 'function') { out.each[k] = 'missing'; continue; }
+      const s0 = A.started; try { D.G[k](); } catch (e) { out.each[k] = 'threw ' + e; continue; } await wait(60); out.each[k] = A.started - s0;
+    }
+    { const s0 = A.started; try { D.G.note(440, 0.1, 'sine', 0.03); D.G.drum('kick'); } catch (e) {} await wait(60); out.each.noteDrum = A.started - s0; }
+    { const s0 = A.started, st0 = D.G.rompSteps || 0; let on = true; try { D.G.romp(() => on); } catch (e) {} await wait(500); on = false; await wait(300); out.each.romp = A.started - s0; out.each.rompSteps = (D.G.rompSteps || 0) - st0; }
+    out.notes = window.__gtSndN ? window.__gtSndN() : null;
     // a suspended context (headset off, app in the background) runs again when the game is back in focus
     let resumed = null;
     if (A.ctx) { await A.ctx.suspend(); const was = A.ctx.state; dispatchEvent(new Event('focus')); await wait(1000); resumed = { was, now: A.ctx.state }; }
@@ -79,6 +89,8 @@ const probe = () => {
   r.rounds.forEach((x, i) => note(`round ${i + 1} (${x.did.join(', ')}): ${x.started} sources started, ${x.ended} ended, ${x.made} nodes made, ${x.endedConnected} ended still connected; playing after it settles: ${x.live}`));
   if (r.log.length) note('log: ' + r.log.slice(0, 5).join(' | '));
   expect('the game uses one audio context', r.ctxs === 1, String(r.ctxs));
+  expect('every sound of the game (pickup, heart, jingle, bump, blorp, crackle, splash, tweet, book, text tick, a note and a drum, the romp riff) starts its sources (4.0.41)', r.each && Object.entries(r.each).every(([k, v]) => k === 'rompSteps' ? v >= 2 : typeof v === 'number' && v >= 1), JSON.stringify(r.each));
+  expect('the recorder counts the notes started (4.0.38\'s count; 4.0.40\'s read a constant)', r.notes && r.notes[0] > 20, JSON.stringify(r.notes));
   expect('each round played its sounds (talk, a gift, a battle, the Portal, the bulb, the jazz, pickups)', r.rounds.length === 3 && r.rounds.every((x) => x.started >= 20 && x.did.length >= 7 && x.did.includes('jazz')), JSON.stringify(r.rounds.map((x) => [x.did, x.started])));
   const maxLive = Math.max(...r.rounds.map((x) => x.live));
   expect('after each round settles, no more sources are playing than after boot: every source a round started has ended', maxLive <= r.base.live, JSON.stringify({ base: r.base.live, rounds: r.rounds.map((x) => x.live) }));
