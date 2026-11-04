@@ -115,8 +115,9 @@ organ (A53), the birds' flight (A54) and Nextessa filled in; corrected: there ar
   Mushroom (the author, 2026-10-28).
 - **The Alien Alliance.** The group of all the other alien factions, led by **Ollaag**, who is the one flying round
   in the UFO; the Alliance is in conflict with the Consortium (the author, 2026-11-04). At least four alien races
-  belong to it; the grey aliens on two of the Sheriff's WANTED posters are members (the author, 2026-11-04). Ollaag is
-  on one of the posters too.
+  belong to it, and the aliens on the Sheriff's WANTED posters stand for its factions (the author, 2026-11-04): the
+  grey aliens (two posters), Ollaag's own kind (Ollaag's poster), GLOOPERNAUGHT's goo kind and the uniformed rabbit's
+  kind.
 - **Gree-mail.** "When you see creatures exchanging symbols, that’s
   Gree-mail." (Glyph)
 - **The player** is "Human", a visitor the Sheriff is hunting ("Mont will
@@ -1018,9 +1019,9 @@ Creatures that exist only as paint, for completeness; none moves.
   blond hair, a gold earring, a brown jacket over a sage shirt and white collar; *Ollaag* (`olag`), tan skin, ears
   pointing out to the sides, heavy brows and forehead lines, a blue robe with dark collar points and gold diamond
   studs, a gold-and-navy checked belt, holding a sage tablet. They are several aliens, two of them humans (the
-  author's answer 11 below; *inference: the girl and the stranger*). The grey aliens are members of the Alien
-  Alliance, one of at least four alien races in it (the author's answer 12 below), not the Sheriff's picture of the
-  Human (an earlier guess here). Who they are is not told: GLOOPERNAUGHT has a backstory this game
+  author's answer 11 below; *inference: the girl and the stranger*). The aliens stand for the Alien Alliance's
+  factions, at least four races (the author's answers 12 and 13 below): the grey aliens, Ollaag's kind, GLOOPERNAUGHT's
+  goo kind and the rabbit's kind. The grey aliens are not the Sheriff's picture of the Human (an earlier guess here). Who they are is not told: GLOOPERNAUGHT has a backstory this game
   does not tell (the author's answer 4 below); Ollaag is the leader of the Alien Alliance, which is in conflict with the
   Consortium, and is the one who flies round in the UFO (the author's answer 9 below).
 - **Gooward's painting**: its creatures and motifs (`cubeJar`, `glitch`, `paisley`, `water`, `mise`, the butterflies,
@@ -1712,7 +1713,7 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 | The church, its glass, the Cave | `"church"` (`CHURCH`, `lancet`, `paintTravelerWindow`, `paintGardenWindow`, `stainedKit`), `id:"slug"` |
 | Night glow, the UFO, the Speech's bulb | `.emissive.setRGB(.95*` (the lit windows; `BIN.lit` in 3.15.44), `JGP.ufoNow`, `Bulb.start` |
 
-## The author's answers (2026-10-28; 9 to 12 added 2026-11-04)
+## The author's answers (2026-10-28; 9 to 13 added 2026-11-04)
 
 1. **Mama W** is a name for Mama Gorbo.
 2. **Flint** and the code's acorns are the same thing; flint is the game's word.
@@ -1730,7 +1731,9 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 11. **The WANTED posters** show several aliens, two of them humans (2026-11-04). The grey alien face is not the
     Sheriff's picture of the Human.
 12. **The grey aliens** on the WANTED posters are members of the Alien Alliance; at least four alien races belong to
-    the Alliance (2026-11-04). Which races they are is not told.
+    the Alliance (2026-11-04).
+13. **The aliens on the WANTED posters** stand for the Alien Alliance's factions (2026-11-04): the grey aliens, Ollaag's
+    kind, GLOOPERNAUGHT's goo kind and the uniformed rabbit's kind.
 
 ## Left open on purpose
 
