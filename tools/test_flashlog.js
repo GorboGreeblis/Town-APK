@@ -72,7 +72,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     await wait(500);
     for (let k = 0; k < 20 && !logs.slice(L1).some((l) => /^rec after the mark/.test(l)); k++) await wait(250);   // logged 1.5 s after the mark
     const after = logs.slice(L1);
-    out.pointing = after.find((l) => /^rec pointing and pickups \(3 s\): /.test(l)) || null;
+    out.pointing = after.find((l) => /^rec pointing, pickups and sound \(3 s\): /.test(l)) || null;
     out.afterMark = after.find((l) => /^rec after the mark \(/.test(l)) || null;
     out.light = after.find((l) => /^rec light/.test(l)) || null;
     out.xr = after.find((l) => /^rec xr frames/.test(l)) || null;
@@ -101,7 +101,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('the staged one-frame flash shows in the mark\'s light line as a spike', !!r.light && /spikes or dips: \+\d+/.test(r.light), (r.light || 'no line').slice(-200));
   expect('the mark\'s dump does not stall its frame (under 25 ms; the near-eyes scan runs in slices)', r.dumpMs < 25 && !!r.near, `${r.dumpMs} ms; ${r.near ? 'near-eyes line logged' : 'no near-eyes line'}`);
   expect('the mark logs the XR frame health line', !!r.xr && /no head pose \d+/.test(r.xr), r.xr || 'none');
-  expect('B46 (4.0.38): the mark logs what each hand points at and the pickups\' fades (`rec pointing and pickups (3 s)`)', r.pointing && /now pointing .*, fading \d+, pickups see-through (on|off); /.test(r.pointing), String(r.pointing));
+  expect('B46 (4.0.38): the mark logs what each hand points at, the pickups\' fades and the sounds started (`rec pointing, pickups and sound (3 s)`)', r.pointing && /now pointing .*, fading \d+, pickups see-through (on|off), audio \w+, notes started \d+; /.test(r.pointing), String(r.pointing));
   expect('B46 (4.0.38): 1.5 s after the mark, the frames after it are logged (`rec after the mark`)', r.afterMark && /^rec after the mark \([\d.]+ s\): \d+ frames, calls \d+-\d+, head guard (not shown|shown, peak [\d.]+); /.test(r.afterMark), String(r.afterMark));
   expect('B46 (4.0.35): the mark logs the head guard line (whether the view was dimmed near a wall in the last 3 s; not in steady play)', r.guard && /: not shown$/.test(r.guard), String(r.guard));
   expect('S36: the mark logs a frame timeline of the last frames (frame:display step/callback/draw calls), 15 to a line, ending at the mark', r.timeline && r.timeline.length >= 2 && r.timeline.every((l) => /\d+:(\d+|-)\/\d+\/\d+/.test(l)) && /of (\d+)/.exec(r.timeline[0])[1] == r.timeline.length, JSON.stringify((r.timeline || []).slice(0, 2)).slice(0, 400));

@@ -252,8 +252,9 @@ blink of 4.0.31-4.0.34 is gone). Since 4.0.35 each mark also logs `rec head guar
 dimmed by the head guard (head near a wall), peak P, last -T s`: the head guard is the one full-view darkening left in
 the game, so a dark flash with it shown means the head passed near a building part. A taken Blossom or Flint that was
 still showing logs `recovery: a taken Blossom was still showing: hidden (B97) at X,Z` (B97).
-Since 4.0.38 (B46, the flash during quick pickups) each mark also logs `rec pointing and pickups (3 s): now pointing
-L:blossom R:-, fading N, pickups see-through on|off; ...`: per frame, what each hand's ray points at (L/R: `blossom`,
+Since 4.0.38 (B46, the flash during quick pickups) each mark also logs `rec pointing, pickups and sound (3 s): now
+pointing L:blossom R:-, fading N, pickups see-through on|off, audio running, notes started N; ...` (each `sound N note(s)
+PHz` and `audio woken` with its time, too; every audio state change is also logged as `audio STATE (base latency, output)`): per frame, what each hand's ray points at (L/R: `blossom`,
 `flint`, `ui`, a character's or zone's id, `-` for nothing), how many pickups are fading out or in, whether the pickups'
 materials are see-through (they are while any fades), and when a panel (menu, dialogue, shop panel, watch HUD) was
 redrawn, each change with its time before the mark. 1.5 s after the mark comes `rec after the mark (T s): F frames,

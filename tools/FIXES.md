@@ -1937,6 +1937,20 @@ frame already hands the game (no GL call added, RULES.md 28):
     changes and the same pointing and pickup changes), since the author presses after seeing a flash. `rec near eyes`
     now also checks sprites and lines. JavaScript only, no GL call (RULES.md 28). `test_flashlog.js` checks both lines.
     The boot now logs `build v4.0.38` (read from the gate's version text), so every log names its build.
+    Sound too (the author: "I personally think the way sound is handled could have caused the flash but I have no idea
+    how"): every note started is counted with its pitch, and each wake of the audio while it was not running; the mark
+    logs them per frame in `rec pointing, pickups and sound (3 s)` (with the audio's state and the notes started in the
+    3 s) and again in `rec after the mark`, and every change of the audio's state is logged at once (`audio running`,
+    `audio suspended`, with its latencies) and kept in `rec events`. Sound can reach the picture only indirectly (the
+    browser's audio thread holding up the game's frame, or the system restarting audio output), and nothing recorded
+    it before.
+  - **B46 closed by the author** ("For now: let's close out the flash issue"), with none in the two runs since the pickup
+    sound was removed; everything the recorder logs for it stays.
+  - **The romp from a browse spot** (A57 again): the full test caught a 0.26 m touch on the Library's back shelf. At a
+    browse spot Sparkakus stands facing the books, and the romp leaned him 20 degrees forward right there, into them;
+    it then ran straight from that spot onto the loop. He now goes back to his home spot first, leans there, and runs
+    the loop from it (the start that was always clear); the contact his outline already makes with the books while he
+    browses, before the romp, is left out of the check.
   - **The Portal in an Event** (the author: "Please make sure that the Portal animation fades out with the Portal, if
     Nextessa hasn't passed through it (spawned in the Park) already. If Nextessa has passed through the Portal, do not
     fade it early, until she has passed back out of the Portal"): the swirl (its two planes, the rings and the blue

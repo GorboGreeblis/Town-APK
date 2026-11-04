@@ -129,8 +129,9 @@ const file = process.argv[2];
     const D = window.__dbg, st = D.st, T = window.THREE; if (!st.atHome()) return { error: 'not home' };
     const sp = st.group, lib = sp.parent, obs = []; lib.updateMatrixWorld(true);
     lib.traverse((m) => { if (!m.isMesh) return; for (let p = m; p; p = p.parent) if (p === sp) return; const b = new T.Box3().setFromObject(m); if (b.isEmpty() || b.max.y - b.min.y < 0.4 || b.max.y < 0.5 || (b.max.x - b.min.x > 8 && b.max.z - b.min.z > 8)) return; obs.push(b); });
-    let low = 1e9, hit = 0, k = 0; const bb = new T.Box3(), G = D.G, s0 = G.rompSteps || 0; st.romp(() => {}, () => {}); const t0 = performance.now();
+    let low = 1e9, hit = 0, k = 0; const bb = new T.Box3(), G = D.G, s0 = G.rompSteps || 0, p0 = sp.position.clone(); st.romp(() => {}, () => {}); const t0 = performance.now();
     while (st.romping() && performance.now() - t0 < 90000) { await new Promise((r) => requestAnimationFrame(r)); if (++k % 3) continue; sp.updateMatrixWorld(true); bb.setFromObject(sp); low = Math.min(low, bb.min.y);
+      if (Math.hypot(sp.position.x - p0.x, sp.position.z - p0.z) < 0.5) continue;   // the browse spot he stood on before the romp (4.0.38: he walks home before he leans)
       for (const o of obs) { const ix = Math.min(bb.max.x - 0.1, o.max.x) - Math.max(bb.min.x + 0.1, o.min.x), iz = Math.min(bb.max.z - 0.1, o.max.z) - Math.max(bb.min.z + 0.1, o.min.z), iy = Math.min(bb.max.y, o.max.y) - Math.max(bb.min.y, o.min.y); if (ix > 0.02 && iz > 0.02 && iy > 0) hit = Math.max(hit, Math.min(ix, iz)); } }
     const secs = (performance.now() - t0) / 1000, s1 = G.rompSteps || 0; await new Promise((r) => setTimeout(r, 600)); const s2 = G.rompSteps || 0;
     return { low: +low.toFixed(3), hit: +hit.toFixed(2), done: !st.romping(), secs: +secs.toFixed(1), steps: s1 - s0, after: s2 - s1 };
