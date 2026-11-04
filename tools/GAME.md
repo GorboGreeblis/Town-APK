@@ -216,7 +216,9 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   themselves when the note ends. A suspended context (headset off, app in the background) resumes when the
   page is shown, visible or focused again, and on pointer or key input. Taking a Blossom or Flint makes no sound
   (A59, 4.0.37); picking the robin or the cardinal plays a soft two-note tweet tweet as it flies off (A60);
-  taking OVERCOMING SHYNESS plays its own page riffle and rising chime (A61).
+  taking OVERCOMING SHYNESS plays its own page riffle and rising chime (A61); Sparkakus's romp plays a plucked-guitar
+  riff (a sawtooth and a square through a closing lowpass, a step every 0.15 s, a bass pluck on each beat) for as long
+  as the romp lasts, and stops with it (A62, 4.0.38).
   `test_audio.js`, `test_world.js`.
 
 ## Safeties (what keeps a frame whole)

@@ -47,8 +47,8 @@ Worked around until the author can do them (the author, 2026-10-31).
   after the headset sleeps: B75 reverted, re-entry frees the old shim, the native census and the log's black box),
   confirmed by the author's 4.0.34 run (two hides, census steady). 4.0.35: the instant snap back (blink out, RULES 27
   restored), B46 reopened (a blocker; the head guard's level now in each mark), B97, A53, A54. 4.0.36: A55-A57. 4.0.37: A57
-  refined, A58 (the flowers fade), A59 (no pickup sound), A60 (the birds tweet), A61 (the shyness book's sound).
-  Open: B46 (blocker). Queued: the full code review and leftovers analysis. PRs #47-#69 merged.
+  refined, A58 (the flowers fade), A59 (no pickup sound), A60 (the birds tweet), A61 (the shyness book's sound). 4.0.38: A62 (the romp's
+  guitar jingle), B46 logging (pointing, pickup fades, after the mark). Open: B46 (blocker). Queued: the full code review and leftovers analysis. PRs #47-#69 merged.
 - **Closed by the author on 2026-11-03:** no-clear (for good) and a test build without the depth discard. The other two
   flash options (B91's gaps, a softer clear colour) went into 4.0.27 at the author's word. Open bugs: B96 (B46 closed by the author on 2026-11-03).
 - **The author** tests when they can: the next flash's mark prints `rec frames (3 s)` (S29); the basket side; entering

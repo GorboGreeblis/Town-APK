@@ -16,6 +16,7 @@
 //     between frames: the dump call itself takes under 25 ms);
 //   - the mark logs the layer path's line (S29, 4.0.23): `rec frames (3 s): N, late N, calls median, tris median,
 //     under 70%, same swapchain image twice`;
+//   - the mark logs what each hand points at and the pickups' fades, and 1.5 s later the frames after it (4.0.38);
 //   - the mark logs the head guard line (B46 reopened, 4.0.35): `rec head guard (3 s): not shown` in steady play;
 //   - the mark logs the display line (S35, 4.0.29): `rec display (3 s): display slots skipped N (ms@-t s) of a P ms
 //     period, layer image changes N (...; now viewports in WxH), view matrix faults N`: none of the last two in steady play;
@@ -69,7 +70,10 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const L1 = logs.length, t0 = performance.now(); window.__gtFR.dump(); out.dumpMs = Math.round(performance.now() - t0);
     for (let k = 0; k < 240 && !(logs.slice(L1).some((l) => /^rec near eyes/.test(l)) && logs.slice(L1).some((l) => /^rec light/.test(l))); k++) await wait(250);   // the sliced scan and the light read finish over the next frames
     await wait(500);
+    for (let k = 0; k < 20 && !logs.slice(L1).some((l) => /^rec after the mark/.test(l)); k++) await wait(250);   // logged 1.5 s after the mark
     const after = logs.slice(L1);
+    out.pointing = after.find((l) => /^rec pointing and pickups \(3 s\): /.test(l)) || null;
+    out.afterMark = after.find((l) => /^rec after the mark \(/.test(l)) || null;
     out.light = after.find((l) => /^rec light/.test(l)) || null;
     out.xr = after.find((l) => /^rec xr frames/.test(l)) || null;
     out.near = after.find((l) => /^rec near eyes/.test(l)) || null;
@@ -97,6 +101,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('the staged one-frame flash shows in the mark\'s light line as a spike', !!r.light && /spikes or dips: \+\d+/.test(r.light), (r.light || 'no line').slice(-200));
   expect('the mark\'s dump does not stall its frame (under 25 ms; the near-eyes scan runs in slices)', r.dumpMs < 25 && !!r.near, `${r.dumpMs} ms; ${r.near ? 'near-eyes line logged' : 'no near-eyes line'}`);
   expect('the mark logs the XR frame health line', !!r.xr && /no head pose \d+/.test(r.xr), r.xr || 'none');
+  expect('B46 (4.0.38): the mark logs what each hand points at and the pickups\' fades (`rec pointing and pickups (3 s)`)', r.pointing && /now pointing .*, fading \d+, pickups see-through (on|off); /.test(r.pointing), String(r.pointing));
+  expect('B46 (4.0.38): 1.5 s after the mark, the frames after it are logged (`rec after the mark`)', r.afterMark && /^rec after the mark \([\d.]+ s\): \d+ frames, calls \d+-\d+, head guard (not shown|shown, peak [\d.]+); /.test(r.afterMark), String(r.afterMark));
   expect('B46 (4.0.35): the mark logs the head guard line (whether the view was dimmed near a wall in the last 3 s; not in steady play)', r.guard && /: not shown$/.test(r.guard), String(r.guard));
   expect('S36: the mark logs a frame timeline of the last frames (frame:display step/callback/draw calls), 15 to a line, ending at the mark', r.timeline && r.timeline.length >= 2 && r.timeline.every((l) => /\d+:(\d+|-)\/\d+\/\d+/.test(l)) && /of (\d+)/.exec(r.timeline[0])[1] == r.timeline.length, JSON.stringify((r.timeline || []).slice(0, 2)).slice(0, 400));
   expect('S35: the mark logs the display line: display slots skipped against the period, layer image changes, view matrix faults (none in steady play)', !!r.display && /display slots skipped \d+/.test(r.display) && /ms period/.test(r.display) && /layer image changes 0 .*\(0 in the session; now \d/.test(r.display) && /view matrix faults 0 \(0 in the session\)/.test(r.display), r.display || 'none');

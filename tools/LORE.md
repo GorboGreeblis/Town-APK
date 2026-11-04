@@ -507,7 +507,7 @@ What each says when given a Blossom, and at the planting Event (the campfire lin
 | Somlet | "Thank you" | "Zzz" |
 | Anomalee | "* Munch *" | "PLANT" |
 | Zollod | (cannot be given one: his menu offers only talk, then the shop) | "Bringing plants to life is MY life’s work." |
-| Sparkakus | At the Library he romps about, then: "…sorry I don’t know what got into me." Away from it: "A Blossom! …I must resist the urge to run.\|Not out here, in front of everyone." | "Digging in the dirt like an animal? …don’t tell the others at the genealogical society." |
+| Sparkakus | At the Library he romps about (a plucked-guitar riff plays while he does, A62), then: "…sorry I don’t know what got into me." Away from it: "A Blossom! …I must resist the urge to run.\|Not out here, in front of everyone." | "Digging in the dirt like an animal? …don’t tell the others at the genealogical society." |
 | The Ancient | "..." | "Hello" |
 | Nextessa | (cannot be given one) | (not in the Event) |
 
@@ -647,7 +647,7 @@ outside it is scenery, seen and never entered (FIXES A4).
 | SHERIFF'S kiosk | Mushroom | Mushroom stands on his desk, up a ramp at its left end; WANTED posters (an alien; GLOOPERNAUGHT); toadstools everywhere; where the bribe is paid. |
 | GARDEN SUPPLIES | Zollod | Shut while he is shy; then "Shop at Garden Supplies" ("Welcome to our shop!"): Flower Hat, Sun Dress, Frog Shoes, the bagel seasoning packet. Shut during the Event. |
 | GOOWARD'S GALLERY | Gooward roams round it | Gooward's three-panel painting of the ages ("The gallery painting"), paint cans and splats, two easels. |
-| The LIBRARY | Sparkakus | Open to the sky: eight bookcases on a rug. The Artifact quest, the Speech, OVERCOMING SHYNESS, the first editions; a Blossom sets Sparkakus romping between the shelves. |
+| The LIBRARY | Sparkakus | Open to the sky: eight bookcases on a rug. The Artifact quest, the Speech, OVERCOMING SHYNESS, the first editions; a Blossom sets Sparkakus romping between the shelves, to a plucked-guitar riff of his own (A62, 4.0.38). |
 | The JUICE BAR | Fortizmo; King Dino drums at its end | "We only accept Blossoms at this establishment." Carrot juice on the rocks; the tip jar; King Dino's tab. |
 | The dance floor | Etcher, Glyph, Montgummery | A purple night-club floor in the daylit park; the dance battles, "KING DINO on drums.", where Etcher's tentacles etch every step. |
 | Gemtoe's Gazebo | Gemtoe | An octagon with gold coins on its floor; a kiosk "in all regards" (the author, P33): it fades with the kiosks in the Event, its seven railed sides are walls and its doorway open to anyone (F-B65), and no Blossom or flint ever spawns inside it (B95, 4.0.33). The Gem trade happens here. |

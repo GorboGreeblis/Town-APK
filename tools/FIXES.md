@@ -1922,6 +1922,20 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.38**:
+  - **A62, a jingle for the romp** (the author: "Please add a jingle that plays during Sparkakus' romp (after being given
+    a Blossom) animation (only)"; "make this a guitar sounding synth jingle"): a plucked-guitar voice (a sawtooth and a
+    slightly detuned square through a lowpass that closes in 0.2 s, a 4 ms attack and a 0.3 s decay; each note's
+    oscillators, filter and gain freed at its end) plays a 16-step riff in E (a step every 0.15 s, a bass pluck on each
+    beat, an octave sparkle every half bar) from the romp's start, checking before each step that the romp is still on,
+    so it stops with the romp. `test_input.js` checks the steps through a whole romp and none after.
+  - **B46, more logging** (the author: "add the extra logging to track down the flash"; the flash does not occur in
+    other applications; 2 of the last 3 marks came during quick pickups): the recorder keeps, per frame, what each
+    hand's ray points at, how many pickups are fading, whether their materials are see-through and the panels' redraw
+    count; each mark logs their changes over the last 3 s (`rec pointing and pickups (3 s)`), and 1.5 s after the mark
+    the frames drawn since it (`rec after the mark`: slow frames, calls, the head guard, program/texture/geometry
+    changes and the same pointing and pickup changes), since the author presses after seeing a flash. `rec near eyes`
+    now also checks sprites and lines. JavaScript only, no GL call (RULES.md 28). `test_flashlog.js` checks both lines.
 - **4.0.37, the author's asks**:
   - **A57 refined**: the 4.0.36 test caught his box reaching the Library's shelf books (0.06 m) from a romp started off
     the middle; measured from six starts, two (2.5 m either side, 0.3 m forward) touched the books at about z -3.07
