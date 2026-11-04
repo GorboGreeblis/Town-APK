@@ -1443,8 +1443,8 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   the church and Cave, the Ancient, Somlet, the pond or the Garden. In an Event without the Seeds only the town's
   trees fade (F-B72: "If the user starts the Event without having completed 'Seeds', kiosks should NOT fade out").
   The kiosk groups are the buildings of the game's registry other than the church: the Post Office, the Sheriff's,
-  Garden Supplies, the Gallery, Zollod's shop and the juice bar (the drum kit and the dance floor stay); the Library
-  is not a building of the registry and stays in full, as Sparkakus does. A kiosk waits
+  Garden Supplies, the Gallery, the Library (the registry's `shop`) and the juice bar (the drum kit and the dance
+  floor stay). A kiosk waits
   for its keeper to leave home before it fades; once out it stays out until the Event ends, even if
   the player walks up to it (A26: "Just keep everything faded out until things fade back in. I don't care if there is
   invisible collision"). The Portal's swirl and light fade with the Portal; while Nextessa's trip through it is under
@@ -1587,7 +1587,7 @@ of A5.
 | Backpacka's jets and drops | his feet, over the Garden | four pale blue glossy arcs and up to 420 falling drops, splashes where they land | only while he sprays; water the plants they land near | F-B74 |
 | The rainbow | across the Garden, 7 m south of its centre | a half ring 12.2-14.2 m in radius, seven bands red to violet | with the Seeds only: fades in to 42% as he sprays, out as he leaves | F-B74 |
 
-**The Library** (-24.75, -24.75; open to the sky; not a building of the registry, so it stays in full through the Event, as Sparkakus does)
+**The Library** (-24.75, -24.75; open to the sky; a kiosk like the others: the registry's building `shop`, so it fades out in the Event once Sparkakus has left and back in after it, Sparkakus himself excepted)
 
 | Element | Where | What it is / looks like | Behaviour | Source |
 | --- | --- | --- | --- | --- |
