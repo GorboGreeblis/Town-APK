@@ -70,8 +70,8 @@ organ (A53), the birds' flight (A54) and Nextessa filled in; corrected: there ar
 - **WANTED posters:** eight on the Sheriff's back wall, six kinds: an alien face (twice), a flying saucer, a goo
   creature named **GLOOPERNAUGHT**, a rabbit in a uniform, a girl in a yellow flowered dress, a blond stranger in a
   brown jacket, and a pointed-eared figure in a blue robe named **Ollaag**; each "WANTED" above and "REWARD" below
-  (looks in "Creature design and style", "Faces in pictures"). *(inference: the alien is how the Sheriff pictures the
-  Human he is hunting; the girl, the code's `visitor`, has the player's hair, freckles and dress.)*
+  (looks in "Creature design and style", "Faces in pictures"). The girl (the code's `visitor`) is the player's avatar (the
+  author, 2026-11-04). *(inference: the alien is how the Sheriff pictures the Human he is hunting.)*
 - **The robin and the cardinal:** a robin and a cardinal perch on the park's two big trees beside the church (the
   robin moved there in 4.0.3, A30; the cardinal and its tree came in 4.0.4, A37, A38), the cardinal turned to face the
   robin (4.0.7, A40); pick either ("Robin", "Cardinal") and it flies off and comes back. A robin and a cardinal also
@@ -187,7 +187,8 @@ are the code's.
 - A picket fence, Gemtoe's gazebo, a booth, and the **garden**: concentric rows round the Summoning
   Pillar.
 - **A girl in a yellow dress with a red ponytail**, seen from behind at the bottom centre, looking at it
-  all (the code calls her the `visitor`). *(inference: the Human, the player, who can buy a Sun Dress.)*
+  all (the code calls her the `visitor`, as on the WANTED poster, where she is the player's avatar, the author,
+  2026-11-04) *(inference: here too the Human, who can buy a Sun Dress)*.
 - Under the garden, a cut-away of the ground: coloured layers of earth with a fossil jaw and a small halo
   in them *(inference: the record of the ages under the town)*.
 - A pair of goo splats, pink and cyan, side by side *(inference: Mama Gorbo and Gooward, "Love at first
@@ -1003,7 +1004,7 @@ Creatures that exist only as paint, for completeness; none moves.
   bubbles; *the rabbit* (`rabbit`), brown with long pink-lined ears, a white muzzle, pink nose and whiskers, in a navy
   coat with gold epaulettes and buttons, red collar tabs and a wide navy hat edged in gold with a red, white and blue
   rosette; *the girl* (`visitor`), fair skin with freckles and a small smile, red-orange hair with a pigtail and a navy
-  bow, and a yellow dress with white flowers *(inference: the player)*; *the stranger* (`stranger`), fair skin, swept
+  bow, and a yellow dress with white flowers: the player's avatar (the author, 2026-11-04); *the stranger* (`stranger`), fair skin, swept
   blond hair, a gold earring, a brown jacket over a sage shirt and white collar; *Ollaag* (`olag`), tan skin, ears
   pointing out to the sides, heavy brows and forehead lines, a blue robe with dark collar points and gold diamond
   studs, a gold-and-navy checked belt, holding a sage tablet. Who they are is not told: GLOOPERNAUGHT has a backstory this game
@@ -1698,7 +1699,7 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 | The church, its glass, the Cave | `"church"` (`CHURCH`, `lancet`, `paintTravelerWindow`, `paintGardenWindow`, `stainedKit`), `id:"slug"` |
 | Night glow, the UFO, the Speech's bulb | `.emissive.setRGB(.95*` (the lit windows; `BIN.lit` in 3.15.44), `JGP.ufoNow`, `Bulb.start` |
 
-## The author's answers (2026-10-28; 9 added 2026-11-04)
+## The author's answers (2026-10-28; 9 and 10 added 2026-11-04)
 
 1. **Mama W** is a name for Mama Gorbo.
 2. **Flint** and the code's acorns are the same thing; flint is the game's word.
@@ -1712,6 +1713,7 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 8. **The mayor** under the Sheriff's cap in the painting is Montgummery in the near future.
 9. **Ollaag** (2026-11-04) is the leader of the Alien Alliance, a group of all the other alien factions; he is the one
    who flies around in the UFO; the Alien Alliance is in conflict with the Consortium.
+10. **The girl** on the WANTED poster (the code's `visitor`) is the player's avatar (2026-11-04).
 
 ## Left open on purpose
 
