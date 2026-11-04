@@ -1938,9 +1938,11 @@ frame already hands the game (no GL call added, RULES.md 28):
     her routed walk added to a constant (a TypeError every frame, logged as `[pizza]`); and her give-up clock kept
     running under dialogues and panels, so a long shop visit or dance battle after a call could send her home with the
     pizza (what B86 had fixed). The clock now pauses whenever the game is not in play, and the walk step only waits.
-  - **An Event without Seeds faded the Garden's flowers** (the logic review): in a later Event without Seeds the flowers
-    from an earlier one faded out, took new colours and grew back when Backpacka sprayed, against "no flowers grow"
-    (the author). The fade and Backpacka's watering now need the Seeds.
+  - **The Garden's flower fade and Backpacka's watering need the Seeds** (the logic review): the review's case was an
+    Event without Seeds after one with them; it cannot happen in play (the author: "It should never be possible to
+    lose Seeds between Events?"): the Seeds are only ever set by buying them, nothing takes them away, and flowers are
+    only planted in an Event with them, so every Event after the first with flowers has the Seeds. The two checks are
+    kept as a guard and change nothing a player can reach.
   - **The romp's jingle looped on when the romp paused** (the engine and logic reviews): the riff checked only that the
     romp existed, and the romp does not advance while the headset menu is up, after leaving VR or while the headset
     sleeps; it stops now when VR is left, blurred or hidden.
