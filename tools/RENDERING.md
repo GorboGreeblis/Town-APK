@@ -79,11 +79,9 @@ that keep it fast and flash-free, each with the test that enforces it. Details a
      - a framebuffer bind other than the shim's own.
 
      Programs compiled during the frame are also counted and named.
-4. **The snap turn's blink** (S37, 4.0.31; RULES.md 27): a snap turn is made inside a five-frame blink (about 70 ms) drawn
-   on the head guard's sphere around the eyes: half dark, fully dark (the turn is made on this frame), dark, then back
-   (0.6, 0.25). It is ordinary geometry in the frame's own draw, with its program compiled at VR entry: nothing is
-   uploaded or compiled for it, and the layer is not touched. It is stopped when VR is entered or left. The only
-   deliberate dark frames in the game; no other darkening of the view is allowed.
+4. **The snap turn** is instant (one frame; RULES.md 27). 4.0.31-4.0.34 made it inside a five-frame blink on the head
+   guard's sphere (S37); the author found it did not stop the flashes and asked for it out (4.0.35). The head guard
+   (the view dimming to black as the head goes into a wall, B47) is the only darkening of the view left.
 5. `end()` has nothing to resolve in multiview: the MSAA resolves on the tile. It discards the depth buffer
    (P14: `invalidateFramebuffer`), so the tiled GPU does not write it back to memory; nothing reads it after
    the frame. The classic path blits its MSAA renderbuffer here.

@@ -6,8 +6,7 @@
  *   - right stick sideways snap-turns the view by t.xr.snapAngle once per
  *     deflection (no repeat while held), and again after re-centering; at most one turn per t.xr.snapGap
  *     (0.4 s since 3.15.59, A11): a flick let go inside the gap is dropped, one still held when it ends turns once
- *   - the blink snap (S37): the turn is made on a fully dark frame of a short blink on the head sphere, then the
- *     view comes back; nothing is compiled for it
+ *   - the snap turn is instant (4.0.35: the blink of S37 taken out): the turn on the flick's frame, the view never dims
  *   - trigger (select) and grip (squeeze) events do not throw
  *   - the player cannot walk through a building hull
  *
@@ -103,28 +102,22 @@ const file = process.argv[2];
   yb = await yawOf();
   expect('snap gap: a second flick still held when the gap ends turns once (two steps)', Math.abs(Math.abs(norm(yb - ya)) - 2 * snap) < 0.08, `${(norm(yb - ya) * 180 / Math.PI).toFixed(1)} deg`);
 
-  mark('blink');
-  // The blink snap (S37, 4.0.31; RULES.md 27 as relaxed by the author): the view dims to black on the head guard's
-  // sphere, the turn is made on a fully dark frame, then the view comes back; nothing is compiled for it.
+  mark('instant');
+  // The snap turn is instant again (4.0.35; the blink of S37 taken out at the author's word: "let's have snap turns
+  // work without the black screen inbetween"): the turn is made on the flick's own frame, and the view never dims
+  // (the head guard's sphere stays hidden).
   await page.waitForTimeout(800);
-  const bl = await page.evaluate(async () => {
-    const D = window.__dbg, W = window.__gtBlink, HG = D.JGP.headGuard, O = D.O, orig = W.step, rec = [], p0 = O.info.programs.length;
+  const it = await page.evaluate(async () => {
+    const D = window.__dbg, HG = D.JGP.headGuard, wait = (ms) => new Promise((res) => setTimeout(res, ms)), X = window.__gtXR;
     const R = (x) => [{ handedness: 'left', axes: [0, 0, 0, 0], buttons: [{}, {}, {}, {}, {}, {}, {}] }, { handedness: 'right', axes: [0, 0, x, 0], buttons: [{}, {}, {}, {}, {}, {}, {}] }];
-    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-    W.step = function () { const y0 = D.we.headYaw; orig.apply(this, arguments); const d = D.we.headYaw - y0;
-      rec.push([+(W.b || 0).toFixed(2), +Math.abs(Math.atan2(Math.sin(d), Math.cos(d))).toFixed(3), HG.mesh.visible ? +HG.mesh.material.opacity.toFixed(2) : 0]); };
-    window.__fakeXR.setInputs(R(1)); await wait(500); window.__fakeXR.setInputs(R(0)); await wait(400);
-    W.step = orig;
-    return { rec, seq: W.seq, k: W.k, hidden: !HG.mesh.visible, newPrograms: O.info.programs.length - p0 };
+    const y0 = D.we.headYaw, n0 = window.__gtSnapN || 0; let dark = 0, framesToTurn = -1; const r0 = X.renders;
+    window.__fakeXR.setInputs(R(1));
+    for (let k = 0; k < 40; k++) { await new Promise((res) => requestAnimationFrame(res)); if (HG.mesh.visible) dark++; if (framesToTurn < 0 && (window.__gtSnapN || 0) > n0) framesToTurn = X.renders - r0; }
+    window.__fakeXR.setInputs(R(0)); await wait(400);
+    const d = D.we.headYaw - y0;
+    return { turned: +Math.abs(Math.atan2(Math.sin(d), Math.cos(d))).toFixed(3), framesToTurn, dark, blink: typeof window.__gtBlink };
   });
-  {
-    const turns = bl.rec.map((r, i) => [i, r]).filter(([, r]) => r[1] > 0.1);
-    const ti = turns.length === 1 ? turns[0][0] : -1;
-    const lit = bl.rec.filter((r) => r[0] > 0).map((r) => r[0]);
-    expect('blink snap: one turn, made on a fully dark frame after a half-dark one', ti > 0 && bl.rec[ti][0] === 1 && bl.rec[ti - 1][0] === 0.5, JSON.stringify(bl.rec.slice(Math.max(0, ti - 3), ti + 7)));
-    expect('blink snap: the dark frames follow the sequence (half, dark with the turn, dark, then back) and end', JSON.stringify(lit) === JSON.stringify(bl.seq) && bl.k === -1, JSON.stringify({ lit, seq: bl.seq, k: bl.k }));
-    expect('blink snap: the head sphere shows it (fully dark at its peak) and is hidden after; nothing compiled', Math.max(...bl.rec.map((r) => r[2])) === 1 && bl.hidden && bl.newPrograms === 0, JSON.stringify({ peak: Math.max(...bl.rec.map((r) => r[2])), hidden: bl.hidden, newPrograms: bl.newPrograms }));
-  }
+  expect('the snap turn is instant (made within the flick\'s first frames) and the view never dims (no blink, 4.0.35)', it.turned > 0.45 && it.framesToTurn >= 0 && it.framesToTurn <= 2 && it.dark === 0 && it.blink === 'undefined', JSON.stringify(it));
 
   mark('select');
   // Select / squeeze events.

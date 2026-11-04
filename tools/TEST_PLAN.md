@@ -45,7 +45,9 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | --- | --- | --- |
 | Left stick walk with dead-zone, speed, collision with buildings (`F.solid`) and bodies (`uo`), park bounds | `test_input.js` (walking into a townsperson never overlaps; walking outward stays inside the park) | done |
 | Right stick snap turn 30°, no repeat while held | `test_input.js` | done |
-| The blink snap: the turn on a fully dark frame, the blink's sequence and end, nothing compiled (S37) | `test_input.js` | done |
+| The snap turn instant: the turn on the flick's frame, the view never dims (4.0.35; the blink of S37 taken out) | `test_input.js` | done |
+| A taken Blossom or Flint left showing is hidden and logged (B97) | `test_world.js` | done (4.0.35) |
+| A flash mark logs the head guard line (B46 reopened, 4.0.35) | `test_flashlog.js` | done (4.0.35) |
 | Trigger/grip (`select`/`squeeze`): pick ray, pick range/cone, menu choice, UI buttons 4/5 | `test_input.js` (events only) | partial |
 | Controller mapping on real hardware (hand assignment; no haptics anywhere since 4.0.23, A50) | sideload | headset |
 

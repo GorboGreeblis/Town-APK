@@ -247,8 +247,11 @@ Since 4.0.32 (S38) the stability safeties log when they act, each a bug behind i
 hold stayed on 60 s with no dialogue open: cleared`, `recovery: the Event's ending show stayed busy 60 s past its time:
 ended` (and, since S20, `recovery: the Event kept failing for 30 frames: ended`), and an error tagged `eye-hide` (a
 throw while hiding a character the head is inside, caught before the draw).
-The snap turn's blink (S37, 4.0.31) has no line of its own: the turns are counted in the recorder's dumps (`snap`)
-and marked S in `rec timeline`; its dark frames are deliberate, not flashes.
+Snap turns are counted in the recorder's dumps (`snap`) and marked S in `rec timeline` (instant since 4.0.35; the
+blink of 4.0.31-4.0.34 is gone). Since 4.0.35 each mark also logs `rec head guard (3 s): not shown`, or `the view
+dimmed by the head guard (head near a wall), peak P, last -T s`: the head guard is the one full-view darkening left in
+the game, so a dark flash with it shown means the head passed near a building part. A taken Blossom or Flint that was
+still showing logs `recovery: a taken Blossom was still showing: hidden (B97) at X,Z` (B97).
 `depth range change kept off the session in play (NEAR-FAR; S18)`: the camera's far plane changed after VR entry, and
 the patched three.js kept the new depth range off the session (it sends it once per session). Expected twice per
 Event: at its start (the far-object safeguard's far plane, `finaleFar`, 300 m) and at its end (back to 310 m).

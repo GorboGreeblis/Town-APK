@@ -85,7 +85,7 @@ The HTML is 8 lines since the minification (3.15.45; it was 93 before); most of 
    `immersive-vr` session with optional `local-floor`/`bounded-floor`, hands
    it to three.js, builds the in-VR UI, creates the audio context and hides
    the gate.
-3. Leaving VR (the session's end handler) stops a snap turn's blink, clears the pending timers, turns the Event's
+3. Leaving VR (the session's end handler) clears the pending timers, turns the Event's
    far-object safeguard off, hides the in-VR panels, dialogue, menu and HUD, restores the 2D camera, resets the
    game clock (`Re.resetClock`), wakes the audio and shows the gate again. Its clean-up is guarded: a throw part way still
    ends presenting, so VR can always be entered again (S38).
@@ -112,8 +112,8 @@ the game file itself since 3.15.43 (FIXES.md, entry edits: 9 blocks).
 
 - Left thumbstick: walk (dead-zone 0.15).
 - Right thumbstick left/right: snap turn by 30 degrees; the stick returns to centre between turns, and a turn within
-  0.4 s of the last is ignored (A1; 0.3 s before 3.15.59, A11). Since 4.0.31 each turn is made inside a short blink:
-  the view dims to black and back over five frames (about 70 ms), the turn on a fully dark frame (S37; RULES.md 27).
+  0.4 s of the last is ignored (A1; 0.3 s before 3.15.59, A11). The turn is instant: the rig turns about the head in
+  one frame, with no dimming (4.0.31-4.0.34 made it inside a short blink, S37; taken out in 4.0.35 at the author's word).
 - Trigger (`select`): interact / pick up / choose in menus; the pick cone and
   range are in `t.xr`.
 - Grip (`squeeze`): secondary action; both also wake the audio engine.

@@ -45,8 +45,9 @@ Worked around until the author can do them (the author, 2026-10-31).
   build), the spread experiments removed. 4.0.32 (S38): six stability safeties. 4.0.33: B95 (pickups and the
   Gazebo), A52 (the Ancient larger and more detailed); B46 closed by the author. 4.0.34 (S39): B96 (memory exhausted
   after the headset sleeps: B75 reverted, re-entry frees the old shim, the native census and the log's black box),
-  awaiting the author's headset-off run. Queued after it: the author's full code review and the leftovers analysis.
-  PRs #47-#68 merged.
+  confirmed by the author's 4.0.34 run (two hides, census steady). 4.0.35: the instant snap back (blink out, RULES 27
+  restored), B46 reopened (a blocker; the head guard's level now in each mark), B97, A53, A54. Open: B46 (blocker), the
+  Sparkakus romp clipping (in work). Queued: the full code review and leftovers analysis. PRs #47-#69 merged.
 - **Closed by the author on 2026-11-03:** no-clear (for good) and a test build without the depth discard. The other two
   flash options (B91's gaps, a softer clear colour) went into 4.0.27 at the author's word. Open bugs: B96 (B46 closed by the author on 2026-11-03).
 - **The author** tests when they can: the next flash's mark prints `rec frames (3 s)` (S29); the basket side; entering

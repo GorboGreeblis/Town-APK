@@ -16,6 +16,7 @@
 //     between frames: the dump call itself takes under 25 ms);
 //   - the mark logs the layer path's line (S29, 4.0.23): `rec frames (3 s): N, late N, calls median, tris median,
 //     under 70%, same swapchain image twice`;
+//   - the mark logs the head guard line (B46 reopened, 4.0.35): `rec head guard (3 s): not shown` in steady play;
 //   - the mark logs the display line (S35, 4.0.29): `rec display (3 s): display slots skipped N (ms@-t s) of a P ms
 //     period, layer image changes N (...; now viewports in WxH), view matrix faults N`: none of the last two in steady play;
 //   - the mark logs a frame timeline (S36, 4.0.30): the last 150 frames, 15 to a line, each `frame:display step ms/
@@ -75,6 +76,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     out.frames = after.find((l) => /^rec frames \(3 s\)/.test(l)) || null;
     out.display = after.find((l) => /^rec display \(3 s\)/.test(l)) || null;
     out.timeline = after.filter((l) => /^rec timeline \(\d+ of \d+/.test(l));
+    out.guard = after.find((l) => /^rec head guard \(3 s\): /.test(l)) || null;
     D.C.remove(sh);
     // 5. a geometry held for a frame is named: a new shape put in view
     const box = new T.Mesh(new T.BoxGeometry(0.31, 0.31, 0.31), new T.MeshBasicMaterial({ color: 0x33aa55 }));
@@ -95,6 +97,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('the staged one-frame flash shows in the mark\'s light line as a spike', !!r.light && /spikes or dips: \+\d+/.test(r.light), (r.light || 'no line').slice(-200));
   expect('the mark\'s dump does not stall its frame (under 25 ms; the near-eyes scan runs in slices)', r.dumpMs < 25 && !!r.near, `${r.dumpMs} ms; ${r.near ? 'near-eyes line logged' : 'no near-eyes line'}`);
   expect('the mark logs the XR frame health line', !!r.xr && /no head pose \d+/.test(r.xr), r.xr || 'none');
+  expect('B46 (4.0.35): the mark logs the head guard line (whether the view was dimmed near a wall in the last 3 s; not in steady play)', r.guard && /: not shown$/.test(r.guard), String(r.guard));
   expect('S36: the mark logs a frame timeline of the last frames (frame:display step/callback/draw calls), 15 to a line, ending at the mark', r.timeline && r.timeline.length >= 2 && r.timeline.every((l) => /\d+:(\d+|-)\/\d+\/\d+/.test(l)) && /of (\d+)/.exec(r.timeline[0])[1] == r.timeline.length, JSON.stringify((r.timeline || []).slice(0, 2)).slice(0, 400));
   expect('S35: the mark logs the display line: display slots skipped against the period, layer image changes, view matrix faults (none in steady play)', !!r.display && /display slots skipped \d+/.test(r.display) && /ms period/.test(r.display) && /layer image changes 0 .*\(0 in the session; now \d/.test(r.display) && /view matrix faults 0 \(0 in the session\)/.test(r.display), r.display || 'none');
   expect('S29: the mark logs the layer path line: frames, late, calls and triangles medians, repeated swapchain images', !!r.frames && /^rec frames \(3 s\): \d+, late \d+/.test(r.frames) && /calls median \d+/.test(r.frames) && /tris median \d+k/.test(r.frames) && /same swapchain image twice: (\d+|every frame \(this browser hands one texture object per layer)/.test(r.frames), r.frames || 'none');

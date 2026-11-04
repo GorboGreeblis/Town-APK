@@ -9,6 +9,7 @@
  *   spots     the pickup spawn picker never puts a Blossom or Flint inside a
  *             building, within 4.1 m of the Gazebo or in a kiosk, nor are the
  *             live pickups there (B95)
+ *   heal      a taken pickup left showing is hidden and logged (B97)
  *   ancient   the Ancient's size (15% larger), radii, visitor spot and skin
  *             textures (A52)
  *   pickups   walking the player onto a blossom and an acorn increments the
@@ -127,6 +128,23 @@ const SAMPLE_S = Number(process.argv[3] || 40);
     expect(`${name}: walking onto it picks it up (+1)`, r && r.took === 1 && r.taken, JSON.stringify(r));
     expect(`${name}: regrows after ${r && r.regrowS}s`, r && r.regrew, r && `${r.regrowWaitS}s`);
   }
+
+  // ---- a taken pickup still showing is hidden (B97, 4.0.35; the author: a Blossom picked by pointing "did not
+  //      disappear ... Instead it became uninteractable"): one put in that state (taken, shown, no fade or regrow
+  //      running) is hidden by the next update and logged
+  const heal = await page.evaluate(async () => {
+    const D = window.__dbg, logs = [], L0 = window.__gtLog; window.__gtLog = (s) => { logs.push(String(s)); try { L0 && L0(s); } catch (e) {} };
+    const out = {};
+    for (const [k, mod] of [['blossom', D.le], ['flint', D.ce]]) {
+      const p = mod.list.find((q) => !q.userData.taken && q.visible); if (!p) { out[k] = 'none'; continue; }
+      const u = p.userData; u.taken = true; u.regrowAt = 1e9; delete u.fadeT0; delete u.regrowT0; p.visible = true;
+      const t0 = performance.now(); while (p.visible && performance.now() - t0 < 5000) await new Promise((r) => setTimeout(r, 50));
+      out[k] = { hidden: !p.visible, logged: logs.some((l) => new RegExp('^recovery: a taken ' + (k === 'blossom' ? 'Blossom' : 'Flint') + ' was still showing').test(l)) };
+      u.regrowAt = 0;
+    }
+    return out;
+  });
+  expect('B97: a taken Blossom or Flint still showing (no fade, no regrow) is hidden and logged', heal.blossom && heal.blossom.hidden && heal.blossom.logged && heal.flint && heal.flint.hidden && heal.flint.logged, JSON.stringify(heal));
 
   // ---- pickup spots never inside a kiosk (B95, 4.0.33; the author: "Flint and Blossoms should never spawn within any
   //      kiosk"; a Blossom was seen on the Gazebo's inner edge): 4000 spots from the spawn picker, none inside a building
