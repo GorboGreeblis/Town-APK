@@ -1922,6 +1922,31 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.37, the author's asks**:
+  - **A57 refined**: the 4.0.36 test caught his box reaching the Library's shelf books (0.06 m) from a romp started off
+    the middle; measured from six starts, two (2.5 m either side, 0.3 m forward) touched the books at about z -3.07
+    (0.13 and 0.08 m). The loop is now 3.8 x 0.6 m with its centre 0.25 m back (was 4.0 x 0.7 m at 0.45 m): no touch
+    from any of the six starts, the lowest point 0.06-0.07 m above the floor.
+  - **A58, the Garden's flowers fade out** (the author: "Let's replace the shrink out for the Garden Flowers with a fade
+    out also, when starting subsequent Events"): at a later Event's start each planted flower keeps its size and fades
+    by its material's opacity over 1.2 s (the material made transparent only for the fade; no new material, texture or
+    shader, three.js's program key leaves out transparency), then is reset as before (tiny, unwatered, its new colour)
+    and grows back when watered. `test_event_fade.js` checks mid-fade: full size, transparent, opacity falling.
+  - **A59, no pickup sound** (the author: "Remove the sound effects from the Blossom and Flint pickups"): taking one is
+    silent; the counts, the fade and the HUD are unchanged. The author asked whether the sound could cause a flash:
+    it cannot draw anything (it is an oscillator in the audio context, no GL), and no mark lined up with one more than
+    by chance, but it is gone anyway. `test_world.js` checks no pickup sound on a take.
+  - **A60, a tweet tweet for the birds** (the author: "Add a tweet tweet sound effect for interacting with either
+    bird"): picking the robin or the cardinal plays two quick high chirps (three rising sine notes each, 2.6-3.75 kHz,
+    soft) as it flies off; a pick while it is away plays nothing. Synthesised like every sound (one oscillator and gain
+    per note, freed at its end). `test_world.js` checks one tweet per pick.
+  - **A61, the shyness book's sound** (the author: "Add a special sound effect for picking up the Overcoming Shyness
+    book"): taking OVERCOMING SHYNESS from the Library played the plain pickup notes; it now plays its own: a quick
+    riffle of five soft page ticks, a rising sine chime (G major seventh, five notes) and a soft held bell on top,
+    about 1.4 s, quiet like the rest. `test_world.js` checks it plays once, and the pickup sound does not.
+  - **B46 noted**: the author's latest flash was "a white / bright flash", "seemingly the whole screen but also very
+    quick" (the earlier ones read as dark). Nothing the game draws can whiten the whole view: the only full-view
+    object is the head guard, which is black.
 - **4.0.36, the author's asks**:
   - **A55, more clouds** (the author: "Add more clouds to the sky"): 24 instead of 14 (seven until 3.15.68), built the
     same way from the same seeded stream, so the first 14 stay where they were and ten more join them; the Event's

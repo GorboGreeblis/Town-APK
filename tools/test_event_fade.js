@@ -10,7 +10,7 @@
 //   - a UFO already flying when the Event starts (A6) leaves by its normal exit path: it is hidden only far out
 //     (over 150 m), and no new one starts during the Event;
 //   - Backpacka (A7) is switched off only inside the mist: at least 10 m beyond the fence, with the mist at full;
-//   - in the second Event the garden's flowers (A8) shrink away within 1.5 s of the start, then grow back to full
+//   - in the second Event the garden's flowers (A8) fade out within 1.5 s of the start (A58: by opacity, at full size), then grow back to full
 //     before it ends;
 //   - no page errors.
 //
@@ -58,6 +58,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
         // mid-Event (the clouds fade back in at its end while the mist is still full, then the mist rolls out)
         if (J.mist.p() >= 0.99 && t > 35 && t < 120 && D.me.active) e.cloudsShownAtFull = Math.max(e.cloudsShownAtFull || 0, clouds.filter((c) => c.visible).length);
         { const k = J.mist.p(), want = k * k * (3 - 2 * k); e.fogOff = Math.max(e.fogOff, Math.abs((C.fog.gcMist || 0) - want)); }
+        if (n === 2 && e.midFade === undefined && t > 0.35 && t < 0.9) { const P = J.garden.plants.filter((p) => p.gcSh); if (P.length) e.midFade = { n: P.length, minScale: +Math.min(...P.map((p) => p.g.scale.x)).toFixed(2), opac: P.map((p) => p.g.userData.gcM && p.g.userData.gcM.opacity).filter((x) => x !== undefined), transparent: P.every((p) => p.g.userData.gcM && p.g.userData.gcM.transparent) }; }
         if (n === 2 && e.shrunk === null && t > 1.5) e.shrunk = Math.max(...J.garden.plants.map((p) => p.g.scale.x));
         if (n === 2 && J.garden.plants.length && J.garden.plants.every((p) => p.grow >= 1 && !p.gcSh) && t > 3) e.grownBack = true;
       }
@@ -79,7 +80,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('no UFO appears during the Event', r.ufoDuring === 0, String(r.ufoDuring));
   expect('after each Event the mist is gone and the clouds and pickups are back in full', [a, b].every((e) => e.endMist === 0 && e.endClouds >= 0.999 && e.endPickups === r.nPickups), JSON.stringify(r.out));
   expect('Backpacka is switched off only inside the mist (10 m or more beyond the fence, mist at full)', r.bp.length >= 1 && r.bp.every((x) => x.bpOff >= 10 && x.mist >= 0.99), JSON.stringify(r.bp));
-  expect('in the second Event the flowers shrink away at the start', b.shrunk !== null && b.shrunk <= 0.02, String(b.shrunk));
+  expect('in the second Event the flowers fade out at the start (A58: full size, transparent, opacity falling mid-fade), then are gone', b.shrunk !== null && b.shrunk <= 0.02 && b.midFade && b.midFade.transparent && b.midFade.minScale > 0.5 && b.midFade.opac.every((o) => o > 0 && o < 0.95), JSON.stringify({ end: b.shrunk, mid: b.midFade && Object.assign({}, b.midFade, { opac: b.midFade.opac.slice(0, 4) }) }));
   expect('and grow back to full during it', b.grownBack === true);
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   console.log(failures.length ? `EVENT FADE TEST FAILED (${failures.length})` : 'EVENT FADE TEST PASSED'); process.exit(failures.length ? 1 : 0);
