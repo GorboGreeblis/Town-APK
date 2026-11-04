@@ -1193,7 +1193,7 @@ Garden at the origin. Inside it:
   0.32 m on two rails (0.18 and 0.9 m up), a post every 3.2 m with a pyramid cap, and brick pillars (`#9a4a36`, 1.3 m,
   stone caps, iron balls) at the four corners and the middle of the north side. Beyond 18-28 m the modelled pickets
   fade out and a flat strip draws the same bars and rails as a pattern, averaged over each pixel
-  (`GB_FENCE_FAR`) *(inference: so that far railings do not shimmer)*.
+  (`GB_FENCE_FAR`), so that far railings do not shimmer (the author, 2026-11-04).
 
 Outside the fence:
 
