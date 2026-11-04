@@ -73,8 +73,7 @@ organ (A53), the birds' flight (A54) and Nextessa filled in; corrected: there ar
   (looks in "Creature design and style", "Faces in pictures"). The girl (the code's `visitor`) is the player's avatar (the
   author, 2026-11-04). The posters show several aliens, two of them humans (the author's answer 11 below); the grey
   alien is one of the aliens in its own right, not a picture of the Human: the grey aliens are members of the Alien
-  Alliance (the author's answer 12) *(inference: the two humans are the girl and the blond stranger, the only two
-  drawn as people)*.
+  Alliance (the author's answer 12). The two humans are the girl and the blond stranger (the author's answer 14).
 - **The robin and the cardinal:** a robin and a cardinal perch on the park's two big trees beside the church (the
   robin moved there in 4.0.3, A30; the cardinal and its tree came in 4.0.4, A37, A38), the cardinal turned to face the
   robin (4.0.7, A40); pick either ("Robin", "Cardinal") and it flies off and comes back. A robin and a cardinal also
@@ -1019,7 +1018,7 @@ Creatures that exist only as paint, for completeness; none moves.
   blond hair, a gold earring, a brown jacket over a sage shirt and white collar; *Ollaag* (`olag`), tan skin, ears
   pointing out to the sides, heavy brows and forehead lines, a blue robe with dark collar points and gold diamond
   studs, a gold-and-navy checked belt, holding a sage tablet. They are several aliens, two of them humans (the
-  author's answer 11 below; *inference: the girl and the stranger*). The aliens stand for the Alien Alliance's
+  author's answer 11 below): the girl and the blond stranger (answer 14). The aliens stand for the Alien Alliance's
   factions, at least four races (the author's answers 12 and 13 below): the grey aliens, Ollaag's kind, GLOOPERNAUGHT's
   goo kind and the rabbit's kind. The grey aliens are not the Sheriff's picture of the Human (an earlier guess here). Who they are is not told: GLOOPERNAUGHT has a backstory this game
   does not tell (the author's answer 4 below); Ollaag is the leader of the Alien Alliance, which is in conflict with the
@@ -1713,7 +1712,7 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 | The church, its glass, the Cave | `"church"` (`CHURCH`, `lancet`, `paintTravelerWindow`, `paintGardenWindow`, `stainedKit`), `id:"slug"` |
 | Night glow, the UFO, the Speech's bulb | `.emissive.setRGB(.95*` (the lit windows; `BIN.lit` in 3.15.44), `JGP.ufoNow`, `Bulb.start` |
 
-## The author's answers (2026-10-28; 9 to 13 added 2026-11-04)
+## The author's answers (2026-10-28; 9 to 14 added 2026-11-04)
 
 1. **Mama W** is a name for Mama Gorbo.
 2. **Flint** and the code's acorns are the same thing; flint is the game's word.
@@ -1734,6 +1733,8 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
     the Alliance (2026-11-04).
 13. **The aliens on the WANTED posters** stand for the Alien Alliance's factions (2026-11-04): the grey aliens, Ollaag's
     kind, GLOOPERNAUGHT's goo kind and the uniformed rabbit's kind.
+14. **The blond stranger** on the WANTED poster (the code's `stranger`) is the other human; the girl is the first
+    (2026-11-04).
 
 ## Left open on purpose
 
