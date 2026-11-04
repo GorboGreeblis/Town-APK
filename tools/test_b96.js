@@ -4,7 +4,8 @@
 // 315 compositor swapchains, re-made for the loader's destroyed layers (B75, 4.0.27, now reverted). Checked:
 //   1. the loader is never released (no layer destroyed, no context lost) through three hides and returns;
 //   2. the native census (the live GL object counts of every context and the XR layers made and destroyed) is logged
-//      on each visibility change and 5 s after each return, and shows no growth across the three returns;
+//      on each visibility change, 5 s after each return and every 60 s of play, and shows no growth across the three
+//      returns; 50 textures made between two censuses are flagged "(GROWTH)";
 //   3. the log's black box: once the APK's log server has answered, lines whose sending fails are kept (the last 150)
 //      and sent at the next boot marked "unsent from the last run", then cleared; with no server ever answering (the
 //      standalone and ordinal copies) nothing is kept.
@@ -22,17 +23,26 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : path.join(__dirna
   // 1-2. three hides and returns in VR
   const g = await boot({ file, vr: true, fastSim: true });
   const r = await g.page.evaluate(async () => {
-    const X = window.__gtXR, wait = (ms) => new Promise((res) => setTimeout(res, ms)), logs = [];
+    const X = window.__gtXR, D = window.__dbg, wait = (ms) => new Promise((res) => setTimeout(res, ms)), logs = [];
     const L0 = window.__gtLog; window.__gtLog = (s) => { logs.push(String(s)); try { L0 && L0(s); } catch (e) {} };
     const real = X.session.__real || X.session; await wait(1500);
     for (let k = 0; k < 3; k++) { real.setVisibility('visible-blurred'); real.setVisibility('hidden'); await wait(1500); real.setVisibility('visible-blurred'); real.setVisibility('visible'); await wait(6500); }
-    const census = logs.filter((l) => /^native census/.test(l));
+    // the census every 60 s of play (every sixth perf line: the counter set to its sixth and the perf line due now)
+    D.we.perfN = 5; D.we.perfAt = 0; await wait(1500);
+    const every60 = logs.filter((l) => /^native census \(every 60 s\)/.test(l)).length;
+    // the growth flag: 50 textures made on the game's context between two censuses
+    const O = D.O, gl = O.getContext(); X.census('probe before', O); const made = []; for (let i = 0; i < 50; i++) made.push(gl.createTexture());
+    X.census('probe after', O); made.forEach((t) => gl.deleteTexture(t));
+    const growthLine = logs.filter((l) => /^native census \(probe after\)/.test(l))[0] || '';
+    const census = logs.filter((l) => /^native census/.test(l) && !/probe/.test(l));
     return { census: census.length, after: census.filter((l) => /5 s after the return/.test(l)).length, growth: census.filter((l) => /GROWTH/.test(l)), released: logs.filter((l) => /loader released/.test(l)).length,
-      destroyed: X.nat ? X.nat.xr.destroyed : null, last: census.slice(-1)[0] || null };
+      destroyed: X.nat ? X.nat.xr.destroyed : null, last: census.slice(-1)[0] || null, every60, growthLine };
   });
   await g.close();
   expect('1. the loader is never released through three hides and returns (no layer destroyed)', r.released === 0 && r.destroyed === 0, JSON.stringify({ released: r.released, destroyed: r.destroyed }));
   expect('2. the native census is logged on each visibility change and 5 s after each return, with no growth', r.census >= 12 && r.after === 3 && r.growth.length === 0, JSON.stringify({ census: r.census, after: r.after, growth: r.growth.slice(0, 2), last: r.last }));
+  expect('2. the native census is also logged every 60 s of play (every sixth perf line)', r.every60 >= 1, String(r.every60));
+  expect('2. the census flags growth: 50 textures made between two censuses log "(GROWTH)"', /textures 50/.test(r.growthLine) && /\(GROWTH\)$/.test(r.growthLine), r.growthLine);
   // 3. the black box, on the entry script alone (served by a small server whose /log can be turned off)
   const html = fs.readFileSync(file, 'utf8'), s0 = (html.match(/<script[^>]*>([\s\S]*?)<\/script>/) || [])[1] || '';
   const { chromium } = require('playwright');

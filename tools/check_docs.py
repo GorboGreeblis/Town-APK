@@ -5,6 +5,9 @@
   - every doc in tools/ (*.md) is listed in README.md;
   - every script that run_tests.sh runs exists;
   - every test_*.js that run_tests.sh runs is named in TESTING.md's tier list (the one list of what each tier runs);
+  - every script run_tests.sh runs is named by $ROOT/tools/... (a path through any other variable is a typo: 4.0.32's
+    S38 and B96 stages ran "$TOOLS/...", never set, so they could only fail);
+  - every tools/test_*.js is run by run_tests.sh, and every test it runs has a row in TEST_PLAN.md;
   - every `tool.js` / `tool.py` / `tool.sh` named in the docs exists (in tools/ or tools/lib/);
   - every "NOTES n" reference points at a note that exists.
 
@@ -34,6 +37,18 @@ runner = open(os.path.join(T, 'run_tests.sh'), encoding='utf-8').read()
 for f in sorted(set(re.findall(r'\$ROOT/tools/([\w./-]+\.(?:js|sh|py))', runner))):
     if not os.path.exists(os.path.join(T, f)):
         problems.append(f'run_tests.sh runs tools/{f}, which does not exist')
+
+for v, f in sorted(set(re.findall(r'"\$(\w+)/([\w./-]+\.(?:js|sh|py))"', runner))):
+    if v != 'ROOT':
+        problems.append(f'run_tests.sh runs "${v}/{f}": scripts are run as "$ROOT/tools/..." (${v} is not the tools folder)')
+ran = set(re.findall(r'\$ROOT/tools/(test_[\w-]+\.js)', runner))
+for f in sorted(x for x in os.listdir(T) if re.match(r'test_[\w-]+\.js$', x)):
+    if f not in ran:
+        problems.append(f'tools/{f} is not run by run_tests.sh (add a stage, or say in README why it is not in a tier)')
+plan = open(os.path.join(T, 'TEST_PLAN.md'), encoding='utf-8').read()
+for f in sorted(ran):
+    if f'`{f}`' not in plan:
+        problems.append(f'run_tests.sh runs {f}, but TEST_PLAN.md has no row naming it')
 
 testing = open(os.path.join(T, 'TESTING.md'), encoding='utf-8').read()
 for f in sorted(set(re.findall(r'\$ROOT/tools/(test_[\w-]+\.js)', runner))):

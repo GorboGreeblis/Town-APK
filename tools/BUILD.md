@@ -77,10 +77,16 @@ What the entry script does on a Quest browser (NOTES 34, 41, 42):
    the game renders through an `XRProjectionLayer` behind an object that shows
    three.js its usual base layer (on the classic fallback an MSAA framebuffer resolved into the layer's
    eye texture each frame; on the multiview path, the release since 3.15.34, the game draws into the layer's
-   texture array directly and nothing is resolved); the layer is never swapped: the quality governor
-   changes foveation only, at native render scale (F-B31, since 3.15.43);
+   texture array directly and nothing is resolved); the layer is never swapped (F-B31, since 3.15.43): native
+   render scale, one fixed foveation (0) set at VR entry (F-B83, 4.0.13), and no quality levels (L1, 4.0.14);
+   the loader's cube and quad layers leave the layer list but are kept, with the loader's context, for the whole
+   session (B96, 4.0.34: B75's release reverted); a session's shim frees its framebuffers and depth buffers when
+   the session ends, so entering VR again starts clean;
 5. never ends the session on an entry failure: the error goes to the loading
-   screen with two retries, and page errors go to logcat via `/log`;
+   screen with two retries, and page errors go to logcat via `/log`; lines that
+   could not be sent once the server had answered are kept (the last 150, `localStorage`
+   key `gtBB`) and sent at the next boot (the black box, B96), and a native census of live GL
+   objects and XR layers is logged on every visibility change, after each return and every 60 s;
 6. uses the pre-rendered textures in `assets/tex/` (`tools/prerender_textures.js`,
    with each texture's probe points) instead of repainting them at boot;
    text-bearing textures are still painted on the headset.
@@ -175,3 +181,9 @@ Windows); see `tools/HEADSET_DIAG.md`.
   (or `ovr-platform-util upload-quest-build`).
 - `tools/check_apk.sh` reproduces the manifest, signature, SDK-level, size
   and 64-bit checks from the VRC document.
+- The final build has a full tier pass recorded in `tools/TEST_PLAN.md` ("Latest results"; RULES.md 23), after the
+  dead-code census and its removals (RULES.md 25).
+- **Headset off and on (sleep) check** on the APK to be uploaded: play 1 minute, take the headset off for 35 s or more,
+  put it back on and play 2 minutes, with the log captured live. The game must come back drawing and answering, the
+  runtime's `Free=` must hold, the `native census` lines must stay steady with no `(GROWTH)`, and every census must
+  read `destroyed 0` (B96; the procedure and what to look for: `tools/HEADSET_DIAG.md`, "Confirming B96").

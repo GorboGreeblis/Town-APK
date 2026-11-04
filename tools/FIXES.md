@@ -1922,6 +1922,41 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.35, the author's run on 4.0.34** (logs 865e1e9c and 9f51af63):
+  - **B96 holds**: two hides (3 min and 20 s) came back cleanly; the native census held steady on every visibility
+    change, 5 s after each return and every 60 s (textures 221, framebuffers 5, no growth); free memory steady.
+  - **B46 reopened** (the author: "A flash was still observed on the latest build. Possibly related to pickups?";
+    "The remaining flash is a blocker"): two marks. Mark 1 (46 s in): no snap in the 26 s before it, no pickup in the
+    last 17 s, a panel closed 4 s before; mark 2 (164 s in): rapid point-and-select pickups (the last 4.6 s before),
+    a text exchange ended 0.35 s before; no snap in the last 10 s. Both: every frame drawn by the game, no layer image
+    change, no matrix fault, the display steps steady (one skipped slot 2.6 s before mark 2). The compositor's tears
+    were checked against all 31 marks in 17 logs: 4 of 31 near a tear, the rate tears happen anyway (about 3% of
+    seconds), so not the cause; the headset's camera cycles (every 21 s, 1.3 s long) do not overlap either mark.
+    So snap turns are not needed for a flash, and the blink (S37) did not stop them (the author: "The black screen
+    between snap turns did not fix the issue"). The head guard (the one full-view darkening left) cannot have shown
+    at either spot (the nearest building part 7.2 m from mark 1's position); it does show on a few walkable spots by
+    the Sheriff's kiosk, the Gallery, the Post kiosk and the church's west wall, noted for a follow-up. New record:
+    each mark now logs `rec head guard (3 s)`, whether the view was dimmed by it and how much.
+  - **The instant snap restored** (the author: "If we can prevent ghosting, let's have snap turns work without the
+    black screen inbetween"): the blink of S37 is taken out and the snap turns the rig in one frame again, as on
+    4.0.30. The ghosting the author saw came only from the spread turns (two or three frames), which are gone; an
+    instant turn has no in-between frame to ghost. RULES.md 27 restored as written ("No comfort vignette ... ever").
+    `test_input.js` checks the turn is made on the flick's frame and the view never dims.
+  - **B97, a taken Blossom still showing** (the author: "A Blossom to the right of the Gazebo did not disappear after
+    being picked using pointing and selecting. Instead it became uninteractable"; "I was quickly picking up pickups
+    using point and select"): the pick and the fade were followed headless (a Blossom taken through the pointer's own
+    path near the Gazebo fades and hides in 0.4 s; the eye hide, the Event's pickup fade and the instanced drawing
+    all hide a taken pickup), so the path that left one shown was not found. Each pickup's update now hides a taken
+    Blossom or Flint that is still showing with no fade or regrow running, and logs it ("recovery: a taken Blossom was
+    still showing: hidden (B97) at X,Z", at most 5 a kind) so the next log names where it happened. `test_world.js`.
+  - **A53, the Ancient's breathing organ textured** (the author: "It's a little brown untextured round organ. Please
+    texture this organ, the same as its body"): the small round organ on its right side, which swells with its breath,
+    now uses the body's skin material (its skin and bump textures; smoother, 16 x 12 segments).
+  - **A54, the birds fly facing forward** (the author: "Please adjust the Cardinal bird's flying to move forward
+    instead of backward when moving into the tree"): the robin and the cardinal share one flight, which kept each
+    bird's perch heading; the cardinal perches facing the robin (A40), so it flew tail first. Each bird now turns to
+    face where it is going over the first fifth of the flight and back to its perch heading over the last quarter of
+    the return (median facing error along the flight 0 rad, from 1.2-1.3 rad).
 - **B96 / S39, memory after the headset sleeps** (4.0.34; MUST FIX; the author's logs b42c9cfb and a7fc5e95 on
   4.0.32: "After taking the headset off and letting the game idle a bit: The user came back to the game headlocking
   and non-functional"; "Please fully analyze the game code for any possible memory leaks. Fix any possible causes of

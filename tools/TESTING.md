@@ -10,13 +10,13 @@ how-to. Numbers in brackets are NOTES.md entries.
 tools/run_tests.sh --quick      static checks, no browser                    about 1 minute
 tools/run_tests.sh --smoke      the standard stages but the courier and desk, short   over an hour
 tools/run_tests.sh              the standard pass (default)                   about 1.5-2 hours (95 min on 3.15.45)
-tools/run_tests.sh --full       every scenario, long soaks, graphics, perf    about 3.5 hours (216 min on 3.15.54, NOTES 96; less since the 3.15.63 tools pass); every build (RULES.md 23)
+tools/run_tests.sh --full       every scenario, long soaks, graphics, perf    about 3.5 hours (216 min on 3.15.54, NOTES 96); longer since, as stages were added (the 4.0.25 pass with coverage hit its 16000 s limit at stage 46 of 52); every build (RULES.md 23)
 ... --resume                    skip the stages that already passed (section 2)
 ... --only=REGEX                run only the stages whose name matches, with the tier's settings
 ```
 
 The summary at the end gives each stage's time and the whole pass's. To re-run one failed stage exactly as the tier
-ran it: `tools/run_tests.sh --only='quality governor'` (any part of its name; case does not matter).
+ran it: `tools/run_tests.sh --only='frame governor'` (any part of its name; case does not matter).
 
 Until 2026-10-29 the full tier was for the final build only; superseded by RULES.md 23 (every build is treated as
 the final build until the author says otherwise). The smoke tier is no longer a few minutes: it runs the standard
@@ -27,7 +27,7 @@ fails when a test the runner runs is missing here). Every tier: the copies are t
 minified, the compressed version unpacks to it, every experiment applies, the server harness, docs consistency,
 spell-check, the bend test (`test_bend_exact.js`), no undeclared names (`test_freevars.js`), the APK check. Every tier but quick: VR entry (`test_entry.js`), runtime play
 (`test_play.js`), multiview (`multiview_check.js`), uniform budget, warm-up coverage, standalone, the compressed
-version as an ordinal (`test_compressed.js`), the Event's first start, the texture census, the quality governor (`test_governor.js`),
+version as an ordinal (`test_compressed.js`), the Event's first start, the texture census, the frame governor and fixed foveation (`test_governor.js`),
 game content (`test_content.js`), greeting, wrist HUD (`test_hud.js`), roaming (`test_roam.js`, `--long` in full), meetings (`test_meet.js`), jazz drums
 (`test_jazz.js`), audio,
 seeded decoration (`test_seeded.js`), the interaction menu (`test_menu.js`), visitors to the Ancient in the Cave
@@ -62,7 +62,7 @@ Environment switches for the browser tests:
 | --- | --- |
 | `GT_ASSET=path` | The game file the browser tests load (a diagnostic variant, or an older build); the copy, minify, compressed and APK checks always check the game file and the root APK. |
 | `GT_MULTIVIEW=0` | The classic two-pass path instead of multiview (the headset's path since 3.15.34, the default). |
-| `GT_DEVICE=quest3s` / `quest3` / `quest2` | That headset's user agent and GPU limits (`fakexr.js` `DEVICES`); the default user agent is a Quest 3. |
+| `GT_DEVICE=quest3s` / `quest3` / `quest2` | That headset's user agent and GPU limits (`fakexr.js` `DEVICES`); the default user agent is a Quest 3. The game supports only the Quest 3 and 3S (RULES.md 18); `quest2` stays for comparison measurements only. |
 | `GT_HEADSET_FOV=1` | Quest 3-shaped eyes, for draw counts and culling as on the headset. |
 | `GT_LAYER_DEPTH=0` | The layer brings no depth texture, so multiview draws into the game's own depth buffer as on the headset (P14's depth discard runs). |
 | `GT_GLERR=1` | Every WebGL call checked: the calls that raise an error are printed when the test ends, with the object being drawn (section 4, the WebGL error check). |

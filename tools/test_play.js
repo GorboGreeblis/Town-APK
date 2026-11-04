@@ -188,16 +188,19 @@ async function scenario(name, srvUrl, browser) {
       const cv = document.querySelector('#game canvas') || document.querySelector('canvas');
       const gl = cv.getContext('webgl2') || cv.getContext('webgl'); const ext = gl && gl.getExtension('WEBGL_lose_context');
       if (!ext) return { skipped: 'no WEBGL_lose_context' };
+      const logs = [], L0 = window.__gtLog; window.__gtLog = (s) => { logs.push(String(s)); try { L0 && L0(s); } catch (e) {} };
       ext.loseContext(); await new Promise((r) => setTimeout(r, 800));
+      const lostLogged = logs.some((l) => /^the game's WebGL context was lost/.test(l)), leftVR = !window.__dbg.we.presenting;
       ext.restoreContext();
       const t0 = performance.now(); const f1 = window.__fakeXR.frames;
       while (window.__fakeXR.frames - f1 < 5 && performance.now() - t0 < 20000) await new Promise((r) => setTimeout(r, 50));
-      return { resumedFrames: window.__fakeXR.frames - f1, lost: gl.isContextLost() };
+      return { resumedFrames: window.__fakeXR.frames - f1, lost: gl.isContextLost(), lostLogged, leftVR, restoredLogged: logs.some((l) => /^the game's WebGL context was restored/.test(l)) };
     });
     if (ctxLoss.skipped) console.log(`  NOTE  context loss check skipped (${ctxLoss.skipped})`);
     // Known limitation (BUGS B19, closed as will-not-fix): XR frames do not resume after a context loss headless, with or without the
     // layers path (the original game behaves the same); reported, not failed, until a Quest reproduction exists.
-    else console.log(`  ${ctxLoss.resumedFrames >= 5 ? 'PASS' : 'NOTE'}  WebGL context lost and restored: ${ctxLoss.resumedFrames >= 5 ? 'frames resume' : 'frames did not resume (B19, closed: will not fix)'}  [${JSON.stringify(ctxLoss)}]`);
+    else expect('a WebGL context loss is logged (B96, R4), leaves VR (presenting ends) and its restore is logged', ctxLoss.lostLogged && ctxLoss.leftVR && ctxLoss.restoredLogged, JSON.stringify(ctxLoss));
+    if (!ctxLoss.skipped) console.log(`  ${ctxLoss.resumedFrames >= 5 ? 'PASS' : 'NOTE'}  WebGL context lost and restored: ${ctxLoss.resumedFrames >= 5 ? 'frames resume' : 'frames did not resume (B19, closed: will not fix)'}  [${JSON.stringify(ctxLoss)}]`);
     const errs2 = await page.evaluate(() => window.__play.errors);
     for (const e of errs2) if (!errors.includes(e)) errors.push(e);
     expect('no page errors across visibility change and context loss', errors.length === 0, errors.slice(0, 3).join(' | '));

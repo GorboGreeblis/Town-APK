@@ -7,7 +7,11 @@
  *   hulls     over a sampling window no NPC stands inside a building hull it
  *             does not belong to, and none leaves the park bounds.
  *   spots     the pickup spawn picker never puts a Blossom or Flint inside a
- *             building, the Gazebo or a kiosk (B95)
+ *             building, within 4.1 m of the Gazebo or in a kiosk, nor are the
+ *             live pickups there (B95)
+ *   heal      a taken pickup left showing is hidden and logged (B97)
+ *   ancient   the Ancient's size (15% larger), radii, visitor spot and skin
+ *             textures (A52)
  *   pickups   walking the player onto a blossom and an acorn increments the
  *             counters and the item regrows after its timer.
  *   watchdog  an NPC displaced from its post is sent home by the away
@@ -125,6 +129,23 @@ const SAMPLE_S = Number(process.argv[3] || 40);
     expect(`${name}: regrows after ${r && r.regrowS}s`, r && r.regrew, r && `${r.regrowWaitS}s`);
   }
 
+  // ---- a taken pickup still showing is hidden (B97, 4.0.35; the author: a Blossom picked by pointing "did not
+  //      disappear ... Instead it became uninteractable"): one put in that state (taken, shown, no fade or regrow
+  //      running) is hidden by the next update and logged
+  const heal = await page.evaluate(async () => {
+    const D = window.__dbg, logs = [], L0 = window.__gtLog; window.__gtLog = (s) => { logs.push(String(s)); try { L0 && L0(s); } catch (e) {} };
+    const out = {};
+    for (const [k, mod] of [['blossom', D.le], ['flint', D.ce]]) {
+      const p = mod.list.find((q) => !q.userData.taken && q.visible); if (!p) { out[k] = 'none'; continue; }
+      const u = p.userData; u.taken = true; u.regrowAt = 1e9; delete u.fadeT0; delete u.regrowT0; p.visible = true;
+      const t0 = performance.now(); while (p.visible && performance.now() - t0 < 5000) await new Promise((r) => setTimeout(r, 50));
+      out[k] = { hidden: !p.visible, logged: logs.some((l) => new RegExp('^recovery: a taken ' + (k === 'blossom' ? 'Blossom' : 'Flint') + ' was still showing').test(l)) };
+      u.regrowAt = 0;
+    }
+    return out;
+  });
+  expect('B97: a taken Blossom or Flint still showing (no fade, no regrow) is hidden and logged', heal.blossom && heal.blossom.hidden && heal.blossom.logged && heal.flint && heal.flint.hidden && heal.flint.logged, JSON.stringify(heal));
+
   // ---- pickup spots never inside a kiosk (B95, 4.0.33; the author: "Flint and Blossoms should never spawn within any
   //      kiosk"; a Blossom was seen on the Gazebo's inner edge): 4000 spots from the spawn picker, none inside a building
   //      hull, the Gazebo's octagon (radius 3.3 m, plus a margin) or any kiosk's area (the phone booth, the portal)
@@ -132,12 +153,33 @@ const SAMPLE_S = Number(process.argv[3] || 40);
     const D = window.__dbg, F = D.F, E = D.E, go = window.__gtPickSpot, out = { n: 0, hull: 0, gazebo: 0, kiosk: 0, ex: [] };
     if (!go) return { error: 'no picker' };
     const kiosks = E.list.filter((e) => e.tag === 'phone' || e.tag === 'portal');
+    const bad = (p) => { const h = F.buildings.some((b) => F.inHull(b, p.x, p.z, 0)), gz = F.gzAt && Math.hypot(p.x - F.gzAt[0], p.z - F.gzAt[1]) < 4.1, kk = kiosks.some((e) => Math.hypot(p.x - e.x, p.z - e.z) < e.r); return [h, gz, kk]; };
     for (let k = 0; k < 4000; k++) { const p = go(null, []); if (!p) continue; out.n++;
-      const h = F.buildings.some((b) => F.inHull(b, p.x, p.z, 0)), gz = F.gzAt && Math.hypot(p.x - F.gzAt[0], p.z - F.gzAt[1]) < 3.6, kk = kiosks.some((e) => Math.hypot(p.x - e.x, p.z - e.z) < e.r);
+      const [h, gz, kk] = bad(p);
       if (h) out.hull++; if (gz) out.gazebo++; if (kk) out.kiosk++; if ((h || gz || kk) && out.ex.length < 4) out.ex.push([+p.x.toFixed(1), +p.z.toFixed(1)]); }
+    // the live pickups too (placed at boot and moved on each regrow)
+    out.live = 0; out.liveBad = 0;
+    for (const mod of [D.le, D.ce]) for (const g of (mod && mod.list) || []) { out.live++; if (bad(g.position).some(Boolean)) out.liveBad++; }
     return out;
   });
-  expect('B95: no Blossom or Flint spot inside a building, the Gazebo or a kiosk (4000 spots)', !spots.error && spots.n > 3000 && spots.hull === 0 && spots.gazebo === 0 && spots.kiosk === 0, JSON.stringify(spots));
+  expect('B95: no Blossom or Flint spot inside a building, within 4.1 m of the Gazebo or in a kiosk (4000 spots, and every live pickup)', !spots.error && spots.n > 3000 && spots.hull === 0 && spots.gazebo === 0 && spots.kiosk === 0 && spots.live > 50 && spots.liveBad === 0, JSON.stringify(spots));
+
+  // ---- the Ancient's size, radii and skin (A52, 4.0.33): 15% larger about its ground point (and in its breathing), its
+  //      solid radius 1.0 m, its meeting radius 1.6 m, a visitor's spot clear of its body, its two skin textures 1024 x 256
+  const anc = await page.evaluate(() => {
+    const D = window.__dbg, J = D.JGP.slug, T = window.THREE; if (!J) return { error: 'no Ancient' };
+    const c = J.core.scale, z = D.z.list.find((q) => q.id === 'slug'), b = new T.Box3().setFromObject(J.body), v = J.visit(0.9);
+    const ax = J.ent.group.position, spot = v.spot, mid = new T.Vector3((b.min.x + b.max.x) / 2, 0, (b.min.z + b.max.z) / 2);
+    // the visitor's spot against the body's outline: the nearest body vertex on the ground plane
+    let near = 1e9; J.body.updateMatrixWorld(true); J.body.traverse((m) => { if (!m.isMesh || !m.geometry.attributes.position) return; const p = m.geometry.attributes.position, w = new T.Vector3();
+      for (let i = 0; i < p.count; i += 7) { w.fromBufferAttribute(p, i).applyMatrix4(m.matrixWorld); near = Math.min(near, Math.hypot(w.x - spot[0], w.z - spot[1])); } });
+    return { core: [c.x, c.y, c.z].map((x) => +x.toFixed(3)), solidR: z && z.solidR, bodyR: J.ent.bodyR, len: +(b.max.z - b.min.z).toFixed(2), wid: +(b.max.x - b.min.x).toFixed(2), onFloor: +b.min.y.toFixed(2), spotClear: +near.toFixed(2) };
+  });
+  const man = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, 'android/app/src/main/assets/tex/manifest.json'), 'utf8'));
+  const skins = man.filter((m) => /^1024x256_/.test(m.f)).length;
+  expect('A52: the Ancient 15% larger (core scale about 1.15 x, 0.71 tall), its solid radius 1.0 m and meeting radius 1.6 m, still on the floor', !anc.error && Math.abs(anc.core[0] - 1.15) < 0.04 && Math.abs(anc.core[2] - 1.15) < 0.04 && Math.abs(anc.core[1] - 0.713) < 0.03 && anc.solidR === 1 && anc.bodyR === 1.6 && anc.onFloor > -0.15 && anc.len > 7, JSON.stringify(anc));
+  expect('A52: a visitor\'s spot by the Ancient stays clear of its larger body (over 0.4 m from it)', !anc.error && anc.spotClear > 0.4, JSON.stringify(anc));
+  expect('A52: the Ancient\'s skin and bump textures are pre-painted at 1024 x 256', skins >= 2, `${skins} textures of 1024 x 256 in tex/manifest.json`);
 
   // ---- away watchdog on a posted NPC (Zollod at Garden Supplies, id cutebex)
   const wd = await page.evaluate(async () => {

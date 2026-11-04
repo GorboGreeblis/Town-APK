@@ -52,10 +52,11 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 9. **No texture is made during play** (2026-10-28, F-B29/F-B30): everything is made while loading
    (`texture_census.js`).
 10. **No render-scale changes** (2026-10-28: the Event's resolution drop removed, "close out that option"; both flash
-    experiments in the release): the projection layer is never swapped; the quality governor changes foveation only
-    (F-B31) [83].
+    experiments in the release): the projection layer is never swapped; the quality governor changed foveation only
+    (F-B31) [83]; since 4.0.13 the foveation is one fixed value set at VR entry (F-B83), and since 4.0.14 the
+    governor has no quality levels (L1).
 
-26. **The Event's fade groups** (2026-10-30; P33, F-B64; `window.__gcSt` in the game, `test_stands.js`). During the
+30. **The Event's fade groups** (numbered 26 until 2026-11-04, when that number was found given twice; references to "RULES.md 26" about the fade groups in FIXES.md, VERSIONS.md, LORE.md and RELEASE.md mean this rule) (2026-10-30; P33, F-B64; `window.__gcSt` in the game, `test_stands.js`). During the
     Event, once the mist is up, these fade out slowly and back after it (2026-10-30: "we can hide things as long as we
     give them time to fade out and then give them time to fade in"; "We don't want to do it too quickly": at least 9 s
     out). Each group fades as one, every part at the same time and never in parts ("all parts of Kiosks [and] other
@@ -171,12 +172,11 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     a meeting, a menu press or the flash mark; the pulse helpers are gone (A50, 4.0.23) and `test_hud.js` checks that
     no haptic actuator is ever called.
 
-27. **No comfort vignette on the player's view; the snap turn's blink is the one exception** (2026-11-03: "I never
-    want a comfort vignette applied to the user's view, for any reason"; the ring went in 4.0.4, A34; relaxed the same
-    day for the snap turn: "let's weaken Rule 27 to allow for this"): no ring, tunnel or edge darkening ever, and no
-    darkening or fade on a stick move, a teleport or anything else. The one exception is the snap turn's blink (S37,
-    4.0.31): the whole view dims to black for about 70 ms (five frames) and the turn is made on a dark frame.
-    Nothing else may reuse it, and it may not grow longer or partial (a vignette) without the author's word.
+27. **No comfort vignette on the player's view, ever** (2026-11-03: "I never want a comfort vignette applied to the
+    user's view, for any reason"; the ring went in 4.0.4, A34): no darkening, fade, ring or tunnel on a snap turn, a
+    stick move, a teleport or anything else; snap turns only rotate the rig. (Relaxed for a snap-turn blink in 4.0.31,
+    S37; restored in 4.0.35, the author: "The black screen between snap turns did not fix the issue ... let's have
+    snap turns work without the black screen inbetween".)
 
 28. **Nothing touches the GL context inside a headset frame but the frame's own draw** (2026-11-03, the author's
     stability ask): no upload, compile, readback, framebuffer switch or query inside a frame; the holds (F-B31, F-B51,
@@ -193,8 +193,8 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 - **Never below 60 fps on a Quest 3S and a Quest 3** (2026-10-30: "Tiny visual changes are ok to reach 60 fps.
   Never below 60 fps is the goal"); PERF.md 14.
 - **No full-screen flashes, ever** (the author, throughout): every flash found is a must-fix; the safeties S1 and S2
-  (FIXES) back the fixes up. The snap turn's blink (rule 27, S37) is the one deliberate dark frame, by the author's
-  word; any other dark or bright frame is a flash.
+  (FIXES) back the fixes up. Any dark or bright frame is a flash (the snap turn's blink, the one deliberate dark frame
+  of 4.0.31-4.0.34, is gone).
 - **Performance is the biggest blocker for the Store submission** (2026-10-28: "once all other tasks are completed,
   performance should be our focus"): after the open tasks, work goes to the frame rate (the Event on a Quest 3S).
 
@@ -211,7 +211,7 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
   options 2, 3, and 4"; "I don't want to try option 3 at any point" (the classic two-eye path stays closed for good);
   "2 and 4 may introduce other problems".
 - Option 1 (no colour clear, S30, 4.0.24): taken out in 4.0.25 (2026-11-03, "The next build should not have the no clear
-  addition"); the colour is cleared to black each frame (S18). Closed for good (2026-11-03, "Let's remove the no-clear
+  addition"); the colour is cleared each frame (S18: black; since 4.0.27 a muted green outdoors and black in the Cave, S33). Closed for good (2026-11-03, "Let's remove the no-clear
   option. The risk is too high. We can close this option out as well"): no build tries it again.
 - The plain WebXR layer (the `nolayers` experiment, no projection layer, no multiview): closed (2026-11-03, "Close out
   the no layers build. It has serious issues and we're not taking this route"); the experiment is removed, and

@@ -10,14 +10,13 @@
 //      game cannot be soft-locked with every interaction refused; with a dialogue open it stays;
 //   4. a non-number movement step (a bad head direction) is skipped: the player stays where they were, not sent to
 //      the spawn point;
-//   5. the Event's end no longer waits forever on its ending show (present in the game file; its 60 s past the
-//      Event's time is not waited out headless);
+//   5. the Event's end no longer waits forever on its ending show: an Event started with its show held busy and its
+//      clock set past its time plus 60 s ends, logged;
 //   6. VR exit whose clean-up throws part way still ends "presenting", so VR can be entered again.
 //   No page errors but the injected ones.
 //
 //   node tools/test_s38.js [file]
 const path = require('path');
-const fs = require('fs');
 const { boot, reporter } = require('./lib/harness');
 const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
 
@@ -52,18 +51,25 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       if (desc) Object.defineProperty(D.we, 'headYaw', desc); else { delete D.we.headYaw; D.we.headYaw = 0; }
       D.we.move.x = 0; await wait(300);
       out.nan = { finite: Number.isFinite(p1.x) && Number.isFinite(p1.z), moved: +p1.distanceTo(p0).toFixed(2) }; }
+    // 5. the Event's end not held by its ending show: an Event started, its ending show held busy, its clock set past its
+    //    time plus 60 s: it ends, logged
+    { const Kt = D.Kt, me = D.me, bp = D.JGP.backpacka, busy0 = bp.busy; Kt.rewards.stone = Kt.rewards.seeds = Kt.rewards.snacks = true;
+      D.oe.open(); await wait(400); const yes = ((D._t.state && D._t.state.items) || []).find((i) => i.label === 'Yes'); if (yes) yes.onClick();
+      let t0 = performance.now(); while (!me.active && performance.now() - t0 < 20000) await wait(50); const started = !!me.active;
+      bp.busy = () => true; D.bt.t0 = D.Re.t - D.t.finale.durationS - 62;
+      t0 = performance.now(); while (me.active && performance.now() - t0 < 20000) await wait(100);
+      out.evEnd = { started, ended: !me.active, logged: logs.some((l) => /^recovery: the Event's ending show stayed busy 60 s past its time/.test(l)) }; bp.busy = busy0; await wait(500); }
     // 6. VR exit whose clean-up throws still ends presenting (last: it ends the session)
     { const hud = D.UI.hud; D.UI.hud = {}; let threw = null;
       try { D.we.exit(); } catch (e) { threw = String(e).slice(0, 80); }
       await wait(1200); out.exit = { presenting: D.we.presenting, threw }; D.UI.hud = hud; }
     return out;
   });
-  const src = fs.readFileSync(file || path.join(__dirname, 'android/app/src/main/assets/index.html'), 'utf8');
   expect('1. an update failing before its input step does not keep walking the player on the last stick value', r.stick.moved < 0.05, JSON.stringify(r.stick));
   expect('2. a throw in the eye hide is caught before the draw: frames still drawn, no fallback, the safe mode unchanged', r.eye.lv[0] === r.eye.lv[1] && r.eye.frames >= 30 && r.eye.fallback === 0, JSON.stringify(r.eye));
   expect('3. the scene hold left on 60 game seconds with no dialogue open is cleared and logged', r.hold.started && r.hold.cleared && r.hold.logged, JSON.stringify(r.hold));
   expect('4. a non-number movement step is skipped: the player stays put, not sent to the spawn point', r.nan.finite && r.nan.moved < 0.05, JSON.stringify(r.nan));
-  expect('5. the Event\'s end waits at most 60 s past its time for the ending show (in the game file)', src.includes('recovery: the Event\'s ending show stayed busy 60 s past its time: ended'), '');
+  expect('5. the Event\'s end waits at most 60 s past its time for its ending show: held busy, it still ends, logged', r.evEnd && r.evEnd.started && r.evEnd.ended && r.evEnd.logged, JSON.stringify(r.evEnd));
   expect('6. VR exit whose clean-up throws part way still ends presenting', r.exit.presenting === false, JSON.stringify(r.exit));
   const other = g.errors.filter((e) => !/injected s38|Cannot read properties of undefined|setting 'visible'|mesh/.test(e));
   expect('no page errors but the injected ones', other.length === 0, other.slice(0, 3).join(' | '));
