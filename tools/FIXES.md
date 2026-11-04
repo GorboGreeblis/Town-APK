@@ -1922,6 +1922,42 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **B96 / S39, memory after the headset sleeps** (4.0.34; MUST FIX; the author's logs b42c9cfb and a7fc5e95 on
+  4.0.32: "After taking the headset off and letting the game idle a bit: The user came back to the game headlocking
+  and non-functional"; "Please fully analyze the game code for any possible memory leaks. Fix any possible causes of
+  memory leaks. And then add safeties to prevent memory leaks"):
+  - **What the logs show**: the session went hidden for 35 s (the display asleep) and came back with tracking emulated
+    for 2 s. The headset's free memory was 2992 MB before, 2389 MB 1.3 s after the return and 264 MB within 10 s; the
+    kernel's oom_reaper killed the cached apps, the APK serving the page among them (the game's log ends there), and
+    the browser stopped drawing (the last frame head-locked). When the session ended the browser destroyed 945
+    swapchain images: 315 swapchains, against the one projection layer the game uses and the two small layers of the
+    loader (the 1024 x 512 quad, the 64 x 64 cube). On 4.0.1-4.0.22 about 20 hides and returns lost at most 230 MB and
+    were back at full frame rate in 2 s; both 4.0.30-based logs with a hide (the no-layers build and this one)
+    collapsed. The JS heap reading is no evidence either way (Chromium rounds it and refreshes it rarely).
+  - **The cause (likely; the browser's side is inferred)**: B75 (4.0.27) released the loader 10 s after the takeover:
+    it destroyed the loader's cube, quad and projection layers and lost its WebGL context (WEBGL_lose_context) inside
+    the live session. On resume the browser re-made swapchains for those layers, over and over, until the headset's
+    memory ran out. The release saved almost nothing (free memory did not move when it ran).
+  - **R1, B75 reverted**: the loader keeps its context and layers for the session, as on 4.0.26 (about 10 MB);
+    `test_s33.js`'s check is inverted (never released).
+  - **R2, the old shim's GL objects freed**: each VR re-entry made a new projection-layer shim and leaked the old one's
+    two framebuffers and its depth texture array (about 24 MB) or MSAA renderbuffers; a shim now deletes them when its
+    session ends (outside any frame). `test_reentry.js` checks the live counts do not rise across a re-entry.
+  - **R3**: the boot-slices log line is written once (its list grew on every re-entry). **R4**: the game's own
+    WebGL context loss and restore are logged (they were silent).
+  - **Safeties**: a native census in the entry script counts the live GL objects of every context (create minus
+    delete, as plain JS counters: no GL call, RULES.md 28) and the XR layers made and destroyed; it is logged
+    ("native census (...)") on every XR visibility change, 5 s after each return and every 60 s, with the change since
+    the last one and "(GROWTH)" past +16 textures, +2 framebuffers, +2 renderbuffers or +64 buffers. The log's black
+    box: once the APK's server has answered, a line whose sending fails is kept (the last 150, in the page's storage,
+    written at most once a second) and sent at the next boot as "unsent from the last run: ...", so the lines before a
+    crash are not lost; the standalone and ordinal copies, with no server, keep nothing. `test_b96.js` checks all of it.
+  - **Checked and clean** (headless, six play cycles and four hides and returns): three.js geometries, textures and
+    programs flat; the game context's GL objects flat; audio nodes all ended and disconnected (nothing scheduled while
+    the context is not running); the batcher, the holds, the flight recorder's rings, the logs, workers, hand meshes
+    and listeners bounded. Footprint, not leaks: 200 canvases kept for a context restore (about 114 MB) and 138
+    pre-rendered bitmaps (about 97 MB), as on 4.0.22.
+  - Not reproducible headless (no real compositor): the author's run with the headset off is the check.
 - **B95, pickups inside the Gazebo** (4.0.33; the author: "Blossoms can spawn inside the Gazebo. Flint and Blossoms
   should never spawn within any kiosk. A Blossom was observed in the inner edge of the Gazebo"): the spawn picker kept
   pickups out of building hulls (0.8 m margin), solid circles and the kiosk areas (the phone booth, the portal), but

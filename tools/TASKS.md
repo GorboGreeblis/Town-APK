@@ -42,8 +42,10 @@ Worked around until the author can do them (the author, 2026-10-31).
   `snapspread` experiment tests the one-frame jump; the spread snaps ghost in the headset, and `nolayers` was closed
   by the author (removed). 4.0.31 (S37): the blink snap (RULES.md 27 relaxed for it), rule 29 (never a no-layers
   build), the spread experiments removed. 4.0.32 (S38): six stability safeties. 4.0.33: B95 (pickups and the
-  Gazebo), A52 (the Ancient larger and more detailed); B46 closed by the author. Open: B96 (memory exhausted after
-  the headset sleeps, the game frozen on return; MUST FIX, in work). PRs #47-#67 merged.
+  Gazebo), A52 (the Ancient larger and more detailed); B46 closed by the author. 4.0.34 (S39): B96 (memory exhausted
+  after the headset sleeps: B75 reverted, re-entry frees the old shim, the native census and the log's black box),
+  awaiting the author's headset-off run. Queued after it: the author's full code review and the leftovers analysis.
+  PRs #47-#68 merged.
 - **Closed by the author on 2026-11-03:** no-clear (for good) and a test build without the depth discard. The other two
   flash options (B91's gaps, a softer clear colour) went into 4.0.27 at the author's word. Open bugs: B96 (B46 closed by the author on 2026-11-03).
 - **The author** tests when they can: the next flash's mark prints `rec frames (3 s)` (S29); the basket side; entering

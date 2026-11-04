@@ -214,8 +214,13 @@ image changes N (...; now ...), view matrix faults N`. Slots skipped at the flas
 frame there; an image change or a matrix fault near it would point at the frame's setup; `layer image changed` and
 `view projection jumped` lines can also appear on their own in play.
 
-Since 4.0.27 (S33) the log may also have: `loader released: its layers, program, buffer, texture and context` (once,
-about 10 s after entry: expected); `multiview not decided yet: ...` (once, if the renderer asked before the session:
+Since 4.0.34 (B96) the log has `native census (why): live GL objects ...; xr layers made: projection N, quad N, cube N,
+destroyed N; three geometries N, textures N, programs N; since the last census: ...` on each `xr visibility` line, 5 s
+after each return and every 60 s: the counts should hold steady; `(GROWTH)` at its end means GL objects piled up since
+the last census (report it, with the lines around it). After a crash or a freeze, the next run's log begins with up to
+150 lines `unsent from the last run: ...`: the last lines the dead run could not send. `the game's WebGL context was
+lost` / `... restored` are logged too. `loader released` no longer appears (B75 reverted in 4.0.34).
+Since 4.0.27 (S33) the log may also have: `multiview not decided yet: ...` (once, if the renderer asked before the session:
 expected, the decision follows); `shader hold: the compile between frames failed for ...` or `geometry hold: the
 upload between frames failed for ...` (not expected: the object was then drawn without the hold, report it);
 `geometry warm-up: its draw into the layer's framebuffer raised N GL error kind(s), read off here` (at VR entry:
