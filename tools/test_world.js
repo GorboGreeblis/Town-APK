@@ -12,6 +12,8 @@
  *   fade      a taken pickup fades out in place, no move and no shrink (A56), with no sound (A59)
  *   birds     picking the robin or the cardinal tweets once (A60)
  *   book      taking OVERCOMING SHYNESS plays its own sound once, not the pickup sound (A61)
+ *   menus     every character's menu height is its highest visible point, not its bounding box (4.0.38: Mama Gorbo's
+ *             tilted cap put hers 0.8 m too high)
  *   heal      a taken pickup left showing is hidden and logged (B97)
  *   ancient   the Ancient's size (15% larger), radii, visitor spot and skin
  *             textures (A52)
@@ -161,6 +163,18 @@ const SAMPLE_S = Number(process.argv[3] || 40);
     const b0 = G.book, p0 = G.pickup; let b = 0, p = 0; G.book = function () { b++; return b0.apply(this, arguments); }; G.pickup = function () { p++; return p0.apply(this, arguments); };
     let err = null; try { z.run(); z.run(); } catch (e) { err = String(e); } G.book = b0; G.pickup = p0; return { book: b, pickup: p, err };
   });
+  // ---- menus the same height above every head (4.0.38; the author: "Mama Gorbo's interact menu now appears too high over
+  //      her head. All interact menus should appear with the same distance above the NPC's head"): the head top the menus
+  //      stand on is each character's highest visible vertex (minus the same 0.07 m), never its bounding box's corner
+  const hd = await page.evaluate(() => {
+    const D = window.__dbg, T = window.THREE, v = new T.Vector3(), out = {};
+    if (typeof D.Ke !== 'function') return { error: 'no head-top hook' };
+    for (const e of D.It.all) { if (!e.group || !e.id) continue; e.group.updateMatrixWorld(true); let top = -Infinity;
+      e.group.traverse((o) => { if (!o.isMesh || o.isInstancedMesh || !o.geometry || !o.geometry.attributes.position) return; for (let p = o; p && p !== e.group; p = p.parent) if (!p.visible) return; const a = o.geometry.attributes.position; for (let k = 0; k < a.count; k++) { v.fromBufferAttribute(a, k).applyMatrix4(o.matrixWorld); if (v.y > top) top = v.y; } });
+      const want = (top - e.group.position.y) / (e.group.scale.y || 1) - 0.07; out[e.id] = +(D.Ke(e) - want).toFixed(2); }
+    return out;
+  });
+  expect('every character\'s menu stands the same distance above its highest visible point (Mama Gorbo\'s too)', !hd.error && Object.keys(hd).length >= 8 && Object.values(hd).every((d) => Math.abs(d) <= 0.15), JSON.stringify(hd));
   expect('A61: taking OVERCOMING SHYNESS plays its own sound once (not the pickup sound)', bk.book === 1 && bk.pickup === 0 && !bk.err, JSON.stringify(bk));
 
   // ---- a taken pickup still showing is hidden (B97, 4.0.35; the author: a Blossom picked by pointing "did not

@@ -1936,6 +1936,22 @@ frame already hands the game (no GL call added, RULES.md 28):
     the frames drawn since it (`rec after the mark`: slow frames, calls, the head guard, program/texture/geometry
     changes and the same pointing and pickup changes), since the author presses after seeing a flash. `rec near eyes`
     now also checks sprites and lines. JavaScript only, no GL call (RULES.md 28). `test_flashlog.js` checks both lines.
+    The boot now logs `build v4.0.38` (read from the gate's version text), so every log names its build.
+  - **The Portal in an Event** (the author: "Please make sure that the Portal animation fades out with the Portal, if
+    Nextessa hasn't passed through it (spawned in the Park) already. If Nextessa has passed through the Portal, do not
+    fade it early, until she has passed back out of the Portal"): the swirl (its two planes, the rings and the blue
+    light) is kept out of the Portal's fade group (its own per-frame opacities would fight the group's), so it drew
+    at full strength while the frame faded round it. Its strength is now the Portal's opening times the Portal's fade,
+    and it is hidden once the Portal is out. The Portal does not start fading while Nextessa's trip is under way (from
+    her arrival through it until she has gone back out); a fade under way returns to full if she comes through. Once
+    her trip is over it fades as the other kiosks do. `test_portal_fade.js` (new) checks both cases.
+  - **Menus the same height above every head** (the author: "Mama Gorbo's interact menu now appears too high over her
+    head. All interact menus should appear with the same distance above the NPC's head"): a menu stands on the
+    character's head top, measured once from its bounding box; Mama Gorbo's cap (made larger in A36, tilted back 0.5
+    rad and stretched 2.85 times) has a box whose corners reach 4.2 m, against the cap's real top at 3.4 m, so her menu
+    stood 0.8 m higher than everyone's. The head top is now the highest visible vertex (the same 0.07 m below it):
+    Mama Gorbo 3.36 m (was 4.18), Somlet 2.25 (was 2.69), everyone else within 0.04 m of before. `test_world.js` checks
+    every character.
 - **4.0.37, the author's asks**:
   - **A57 refined**: the 4.0.36 test caught his box reaching the Library's shelf books (0.06 m) from a romp started off
     the middle; measured from six starts, two (2.5 m either side, 0.3 m forward) touched the books at about z -3.07
