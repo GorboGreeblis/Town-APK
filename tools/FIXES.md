@@ -1922,6 +1922,32 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.46**:
+  - **S42: nothing built on the GPU in the Speech or an Event with the Snacks** (the author's logs 284613aa and
+    971128fc on 4.0.43 and 4.0.45: "geometry held for one frame: 1 object(s) uploaded between frames: mesh of 148
+    vertices #ffffff", and the native census's 4 geometries and 21 buffers when an Event with the Snacks started;
+    the author: "Please fully investigate and fix the 'two loose ends' now"). Both were safe (made and uploaded
+    between frames, the hold), but against the rule that nothing is built or uploaded mid-play. The play census
+    reproduced both (22 buffers in play) and pinned them:
+    - **The glue bottle's band in the Speech**: a 24-sided cylinder carrying three materials (the GLUE label and two
+      reds, 148 vertices). The multi-material merger (`__gtMM`) gives such a mesh a copy of its shape with one draw
+      group per distinct material, scanning the scene every 120 frames; the load-time warm-up put the Speech's props
+      in the scene and took them out before the merger looked, so the copy (a new index buffer) was first built, and
+      uploaded, when the Speech assembled the Gem. The merger has a `scan()` now, run at the start of every load-time
+      geometry warm-up, so the copy is built and drawn at load and found in its cache in play. (In the headset logs
+      the bulb was up for about 20 s each time, the Speech's length; the trail's label for it was "gem", renamed
+      "bulb", since it is Sparkakus's bulb, up for the Speech and his romps.)
+    - **The pizza boxes' draw batches in the Event**: the batcher merges the boxes once they have faded in (1.6 s),
+      building new batch shapes (4 of 312 vertices, 21 GL buffers) each Event with the Snacks; the load-time warm-up
+      built the same 4 and threw them away ("batches of warm-up objects dropped while loading: 4"). A batch shape
+      depends only on its parts' shapes, colours and order (the parts move by uniforms), so it is now kept by a hash of
+      its contents (`__gcBG`), reused for the same parts when no live batch holds it, and released rather than
+      disposed when its batch goes (a batch built while the kept one is in use is a fresh one, as before).
+    - The held-upload log line names its object's owner now (a character's id, the player, or the scene child and its
+      marks) and says when it is a merged-groups copy or carries several materials.
+    `test_play_uploads.js` (new, standard tier): no geometry made, uploaded or held and no GL buffer made in the
+    Speech or an Event with the Snacks; 4.0.45 fails it with exactly the headset's numbers (1 in the Speech; 4
+    geometries and 21 buffers in the Event). The play census: GPU work during play `{}` (4.0.45: 22 buffers).
 - **4.0.45**:
   - **A64, King Dino's drums go funk** (the author: "Can you make King Dino's whole Drum song a more funky song? not
     too fast but funky"). The swung jazz pattern at 104 beats a minute (8 bars of brushes, then time, funk, trades and
