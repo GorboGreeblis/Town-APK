@@ -112,6 +112,7 @@ if [ "$TIER" != quick ]; then
   run "the Garden's flowers: each plant a random colour of its own, new each Event, changed only while shrunk away; nothing compiled in a frame (A29)" node "$ROOT/tools/test_flower_tint.js" "$ASSET"
   run "an Event without Seeds fades no kiosk and not the park's tree; only the town's trees (F-B72)" node "$ROOT/tools/test_noseeds.js" "$ASSET"
   run "the Portal's swirl fades with the Portal, and the Portal waits while Nextessa is through it" node "$ROOT/tools/test_portal_fade.js" "$ASSET"
+  run "coming back from the system menu never stalls: no texture check on the menu's return, still one from hidden (B99, S41)" node "$ROOT/tools/test_menu_return.js" "$ASSET"
   run "every option of every character and place, empty-handed, stocked, with the quests done and in an Event: no error, no soft-lock, no counter below zero; the menus' height; the courier under a dialogue" node "$ROOT/tools/test_interactions.js" "$ASSET"
   run "goo never fills the view: Mama Gorbo and Gooward meet with the player among them; no goo blob drawn within 0.7 m of the eyes, no GPU work in a frame (S8)" node "$ROOT/tools/test_goo_eye.js" "$ASSET"
   run "speech bubbles never fill the view: a text scene with the player walking up to the speaker; no bubble over 55 degrees or within 1.2 m (S9)" node "$ROOT/tools/test_bubble_eye.js" "$ASSET"

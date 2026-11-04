@@ -1,5 +1,6 @@
-// Jazz drums timing (standard tier). King Dino's kit plays a swung pattern at 104 beats a minute (a bar of 2.31 s:
-// brushes for 8 bars, then time, funk, trades and shout choruses of 8 bars each). Heard (the player on the dance
+// Drums timing (standard tier). King Dino's kit plays a funk song at 98 beats a minute (a bar of 2.45 s; 4.0.45, A64,
+// the author: "make King Dino's whole Drum song a more funky song, not too fast but funky"; a swung jazz pattern at 104
+// before): a 4-bar intro, then a 48-bar round of groove, ghost, break, solo, drive and pocket, 8 bars each). Heard (the player on the dance
 // floor or at the kit, or in a battle) it is scheduled on the audio clock up to 3 s ahead; within 45 m but not heard
 // it runs on the game clock only, to move the drummer's sticks. Either way each hit is handed to the drummer's
 // animation when its time comes. This checks, on both clocks: every hit lies on the beat grid (quarter beats and
@@ -19,12 +20,12 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
   const r = await page.evaluate(async () => {
     const D = window.__dbg, J = D.JGP.jazz, wait = (ms) => new Promise((res) => setTimeout(res, ms)), out = {};
     if (!J) return { missing: true };
-    const BEAT = 60 / 104, BAR = 4 * BEAT;
+    const BEAT = 60 / 98, BAR = 4 * BEAT;
     let log = null;
     const u0 = J.update;
     J.update = function (tt, on) {
       const f = u0.apply(this, arguments);
-      if (log) { const st = J.state, ctx = D.G.ctx && D.G.ctx(); const now = st.clock === 'a' ? ctx.c.currentTime : tt; log.push({ clock: st.clock, now, ahead: st.ahead, fired: f ? f.map((x) => [x[0], x[1]]) : [] }); }
+      if (log) { const st0 = J.state; (out.parts = out.parts || new Set()).add(String(st0.part).split(' ')[0]); const st = st0, ctx = D.G.ctx && D.G.ctx(); const now = st.clock === 'a' ? ctx.c.currentTime : tt; log.push({ clock: st.clock, now, ahead: st.ahead, fired: f ? f.map((x) => [x[0], x[1]]) : [] }); }
       return f;
     };
     const gs = () => D.Re.t;
@@ -53,7 +54,10 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
       return { clocks, hits: hits.length, kinds: [...new Set(hits.map((h) => h[1]))], early, late, maxLate: +maxLate.toFixed(3), offGrid, maxOff: +maxOff.toFixed(4), aheadMin: Math.min(...l.filter((e) => e.clock === 'a').map((e) => e.ahead)), bar: J.state.bar, part: J.state.part };
     };
     // heard: at the kit (the audio clock)
+    const A = D.JGP.drumAnim, snap = () => ({ on: !!A.on, r: A.r, l: A.l, k: A.k || 0 });
+    const a0 = snap();
     out.heard = judge(await record(-36.6, 21.2, 14));
+    const a1 = snap(); out.anim = { on: a1.on, r: a1.r - a0.r, l: a1.l - a0.l, k: a1.k - a0.k };
     // within 45 m, not heard (the game clock, the drummer's sticks only)
     out.ghost = judge(await record(-34.8, -2, 14));
     // far away: off
@@ -61,11 +65,12 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
     // the horn takes over: the drums stop while it plays
     if (D.ee && D.ee.start) {
       D.At.position.set(-36.6, D.At.position.y, 21.2); await wait(1500);
-      D.ee.start(gs()); const l = await record(-36.6, 21.2, 3); D.ee.stop && D.ee.stop();
-      out.horn = { clocks: [...new Set(l.map((e) => e.clock))], fired: l.reduce((a, e) => a + e.fired.length, 0) };
+      D.ee.start(gs()); const h0 = snap(); const l = await record(-36.6, 21.2, 3); const h1 = snap(); D.ee.stop && D.ee.stop();
+      out.horn = { clocks: [...new Set(l.map((e) => e.clock))], fired: l.reduce((a, e) => a + e.fired.length, 0), on: h1.on, r: h1.r - h0.r, l: h1.l - h0.l, k: h1.k - h0.k };
+      await wait(2500); out.horn.queueAfter = (D.ee.hits || []).length;
     }
     J.update = u0;
-    out.BAR = BAR;
+    out.BAR = BAR; out.parts = [...(out.parts || [])];
     return out;
   });
   if (r.missing) { expect('JGP.jazz exists', false, 'not found'); await g.close(); process.exit(1); }
@@ -73,12 +78,15 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
   expect('at the kit the drums run on the audio clock and play (14 game seconds, about 6 bars)', r.heard.clocks.includes('a') && r.heard.hits >= 40, JSON.stringify(r.heard));
   expect('within 45 m but not heard they run on the game clock (the sticks move, no sound)', r.ghost.clocks.includes('g') && !r.ghost.clocks.includes('a') && r.ghost.hits >= 40, JSON.stringify(r.ghost));
   for (const [k, x] of [['heard', r.heard], ['within 45 m', r.ghost]]) {
-    expect(`${k}: every hit lies on the beat grid (a twelfth of a beat at 104 bpm, within 2 ms)`, x.offGrid === 0, JSON.stringify({ offGrid: x.offGrid, maxOff: x.maxOff }));
+    expect(`${k}: every hit lies on the beat grid (a twelfth of a beat at 98 bpm, within 2 ms)`, x.offGrid === 0, JSON.stringify({ offGrid: x.offGrid, maxOff: x.maxOff }));
     expect(`${k}: hits reach the drummer's animation when due, never early, at most one frame late`, x.early === 0 && x.late === 0, JSON.stringify({ early: x.early, late: x.late, maxLate: x.maxLate }));
   }
+  expect('the song is the funk one: its parts are intro, groove, ghost, break, solo, drive and pocket (98 bpm)', r.parts.length > 0 && r.parts.every((p) => /^(intro|groove|ghost|break|solo|drive|pocket)$/.test(p)), JSON.stringify(r.parts));
   expect('heard: the audio is scheduled ahead of the clock (the 3 s look-ahead never runs dry)', r.heard.aheadMin > 0, String(r.heard.aheadMin));
   expect('far from the kit the drums are off', r.far.fired === 0 && r.far.clocks.every((c) => c === ''), JSON.stringify(r.far));
   if (r.horn) expect('the drums stop while the horn plays', r.horn.fired === 0, JSON.stringify(r.horn));
+  expect('King Dino plays along to the funk: right hand (hi-hats, cymbals, floor tom), left hand (snare, toms) and a nod on the kick', r.anim.on && r.anim.r >= 20 && r.anim.l >= 5 && r.anim.k >= 4, JSON.stringify(r.anim));
+  if (r.horn) expect('during the horn song King Dino plays its drum part (both hands and the kick nod follow its hits), and its queue empties after', r.horn.on && r.horn.r >= 4 && r.horn.l >= 1 && r.horn.k >= 1 && r.horn.queueAfter === 0, JSON.stringify(r.horn));
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   await g.close();
   console.log(failures.length ? `JAZZ TEST FAILED (${failures.length})` : 'JAZZ TEST PASSED');

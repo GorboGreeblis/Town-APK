@@ -6,6 +6,7 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 
 | Version | versionCode | What changed | Headset |
 | --- | --- | --- | --- |
+| 4.0.45 | 114 | Back from the system menu without a 0.4 s stall (B99, S41): the menu's return skips the texture check (from hidden it still runs). King Dino's drums go funk at 98 bpm, 2-minute round with a solo in the middle (A64); he plays what is heard, the horn song's drums too (A65). | not yet run |
 | 4.0.43 | 112 | Ollaag flies the UFO (A63): his poster's look in place of the green alien, facing the way the saucer flies while it spins. | not yet run |
 | 4.0.42 | 111 | `JGP.slug.core` restored (a test reads it); otherwise as 4.0.41. | not yet run |
 | 4.0.41 | 110 | **Every game sound restored** (silent in 4.0.40: a counter read before its declaration in each note); the audit's low items fixed (the three.js holds, render unwinding, multiview views, controller matrices, upload checks; the entry's layer reuse, the fallback after the frame, flat-mode textures at entry, the loader's context released; the head guard's level, pickups near the eyes, no per-frame arrays, leftovers). | not yet run |

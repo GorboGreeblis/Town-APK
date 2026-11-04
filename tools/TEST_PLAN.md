@@ -57,6 +57,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Sparkakus's romp plays its guitar jingle through the romp and stops with it (A62) | `test_input.js` | done (4.0.38) |
 | A flash mark logs the pointing and pickup fades (3 s) and the frames after the press (B46) | `test_flashlog.js` | done (4.0.38) |
 | The Portal's swirl fades with the Portal; it waits while Nextessa is through it | `test_portal_fade.js` (standard tier) | done (4.0.38) |
+| Coming back from the system menu never stalls the game: no texture check on the menu's return (nothing read back); from hidden the check still repaints a blanked canvas (B99) | `test_menu_return.js` (standard tier) | done (4.0.45) |
 | Every interaction (every menu option of every character and place) in four states: no error, no soft-lock, no negative counter | `test_interactions.js` (standard tier) | done (4.0.40) |
 | Every menu, opened with the controller, stands the same angle above its character's highest point | `test_interactions.js` | done (4.0.40) |
 | Nextessa's route in the church under an open dialogue: no error | `test_interactions.js` | done (4.0.40) |
@@ -121,7 +122,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Long session stability: heap, programs, entity count over N minutes with all systems exercised (GPU counters are stubbed in the harness) | `test_soak.js` (full tier, 10 min) | done: 10 min on 3.15.52 (11 min with the boot): PASS, heap 126 -> 129 MB after the 2-minute mark, programs 140, textures 209, geometries 206, 13 entities, no errors |
 | Pizza courier inside the church: detour around the Ancient to a player on the far side, deliver, walk back out (B11) | `test_courier.js` | done |
 | Library finale: three Artifacts → Sparkakus awards the Gem | `test_progression.js` | done |
-| Backpacka sequence (`BP`) and jazz (`JAZZ`) timings | `test_content.js` (Backpacka); `test_jazz.js` (standard tier: on the audio clock at the kit, the game clock within 45 m, every hit on the 104 bpm grid, never early, at most a frame late, the 3 s look-ahead, off far away and under the horn) | done (3.15.41) |
+| Backpacka sequence (`BP`) and jazz (`JAZZ`) timings | `test_content.js` (Backpacka); `test_jazz.js` (standard tier: on the audio clock at the kit, the game clock within 45 m, every hit on the 98 bpm grid (the funk song since 4.0.45; its parts intro, groove, ghost, break, solo, drive, pocket), never early, at most a frame late, the 3 s look-ahead, off far away and under the horn) | done (3.15.41) |
 
 ## 8. Audio
 
