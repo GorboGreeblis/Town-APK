@@ -1,4 +1,4 @@
-# How a frame is drawn (3.15.67)
+# How a frame is drawn (4.0.34)
 
 A map of the render path in the shipped build: what runs, in what order, which file owns it, and the rules
 that keep it fast and flash-free, each with the test that enforces it. Details and history are in NOTES.md
@@ -36,8 +36,12 @@ that keep it fast and flash-free, each with the test that enforces it. Details a
    (F-B35); the gallery mural comes from `tex/` (F-B34) and the murals' placeholders are uploaded here, without
    mipmaps (F-B54). Every geometry, the batcher's parked sources included, is on the GPU before the first headset
    frame (F-B48).
-6. The game's first frame replaces the cube and quad layers with the projection layer (`projection layer
-   live, scale ..., msaa 4` in the log).
+6. The game's first frame replaces the cube and quad layers with the projection layer in the session's layer list
+   (`projection layer live, scale ..., msaa 4` in the log). The loader's layers and its WebGL context are kept, not
+   destroyed, for the whole session (B96, 4.0.34): B75 (4.0.27) destroyed them 10 s after the takeover, and after the
+   headset slept the browser kept re-making their swapchains until the headset's memory ran out; that release is
+   reverted for good (RULES.md "Decisions"). Every build requests the `layers` feature and draws through the
+   projection layer; there is never a no-layers build (RULES.md 29).
 7. Every texture gets mipmaps and 4x anisotropy while loading, uploaded once by the warm-up (F-B40; `mipmaps on: N
    textures set while loading` in the log). The sliced pass 2.6 s after VR entry (F-B36, 3.15.49) remains as a
    backstop and finds nothing; since 4.0.14 (S20) leaving VR keeps the mipmaps, so a second entry uploads nothing
@@ -75,7 +79,12 @@ that keep it fast and flash-free, each with the test that enforces it. Details a
      - a framebuffer bind other than the shim's own.
 
      Programs compiled during the frame are also counted and named.
-4. `end()` has nothing to resolve in multiview: the MSAA resolves on the tile. It discards the depth buffer
+4. **The snap turn's blink** (S37, 4.0.31; RULES.md 27): a snap turn is made inside a five-frame blink (about 70 ms) drawn
+   on the head guard's sphere around the eyes: half dark, fully dark (the turn is made on this frame), dark, then back
+   (0.6, 0.25). It is ordinary geometry in the frame's own draw, with its program compiled at VR entry: nothing is
+   uploaded or compiled for it, and the layer is not touched. It is stopped when VR is entered or left. The only
+   deliberate dark frames in the game; no other darkening of the view is allowed.
+5. `end()` has nothing to resolve in multiview: the MSAA resolves on the tile. It discards the depth buffer
    (P14: `invalidateFramebuffer`), so the tiled GPU does not write it back to memory; nothing reads it after
    the frame. The classic path blits its MSAA renderbuffer here.
 
@@ -104,6 +113,7 @@ working by the tests below.
 | Creature geometry stays non-indexed. | The ground-fit scan samples every 6th vertex; indexing would move the creatures (P12 excludes them). | The `gcIdx` creature exclusion in P12; `minify_identity.js BEFORE AFTER` by hand. |
 | No texture is made, or first uploaded, during play. | A texture made mid-play is what the flashes came with (F-B29/F-B30, [82]); one first uploaded when first drawn is uploaded inside that frame (F-B34, F-B35, [91]). | `texture_census.js` (standard tier); `event_start_check.js` fails if any scene texture is not uploaded at its current version (F-B36). |
 | The projection layer is never swapped, never touched in play: native render scale, one fixed foveation set at VR entry. | The author's rule (RULES.md 10, F-B31); F-B83. | `test_governor.js` (standard tier). |
+| The loader's layers and context stay whole for the session; each session's layer shim frees its framebuffers and depth buffers when that session ends (re-entry makes a new one). | Destroyed layers were re-made by the browser after the headset slept until the memory ran out; each re-entry leaked about 24 MB (B96). | `test_s33.js`, `test_b96.js` (never released, no layer destroyed, the native census steady through three hides and returns); `test_reentry.js` (live counts not higher after a re-entry). On the headset: `native census` lines with no `(GROWTH)`, `destroyed 0`. |
 | The shipped copies are the game file. | One source: `tools/uncompressed.html`, edited directly. | `sync_game.py --check` (quick tier, pre-commit hook), `check_apk.sh`. |
 | The game file is fully minified; the compressed version unpacks to it exactly. | The author's rules (RULES.md 19, 20). | `minify_game.js --check`, `build_compressed.js --check` (quick tier, pre-commit hook, `build.sh`); `test_compressed.js`. |
 

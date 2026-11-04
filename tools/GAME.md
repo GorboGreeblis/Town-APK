@@ -1,7 +1,7 @@
 # Greeblis Town, basic game documentation
 
 Everything below was read from the game code (`tools/uncompressed.html`,
-3.15.67). Where the code did not make something explicit it is left out rather
+4.0.34). Where the code did not make something explicit it is left out rather
 than guessed. Since 3.15.45 the file is minified (FIXES R2): top-level names
 (`t`, `G`, `It`, `JGP`, `gcEB` and the like) are as quoted, but names local to a
 function were renamed, so routines are described by what they do.
@@ -62,6 +62,8 @@ The HTML is 8 lines since the minification (3.15.45; it was 93 before); most of 
   the framebuffer scale native (1), target 72 Hz with a frame-time average (`targetHz`, `emaAlpha`) and a
   frames-over-budget flag that only logs (`sosFrac`, `sosFrames`); the quality levels are gone (L1, 4.0.14).
 - Pickups: 32 blossoms (regrow 12 s), 40 flint (regrow 12 s; called acorns in the code, flint in the game's own text and the Store).
+  No pickup spot lies inside a building, a kiosk's area (the phone booth, the portal) or within 4.1 m of the Gazebo's
+  centre (B95, 4.0.33; a Blossom had been seen on the Gazebo's inner edge). `test_world.js`.
 - Finale: 190 s of planting (180 s until 3.15.57, A9), NPC chatter every 3-7 s, the far plane at `finaleFar` (300) for the Event's far-object safeguard.
 - Pizza: call delay 1.8 s, driver spawn radius 75, gives up after 100 s.
 - Gravity 14.
@@ -83,7 +85,20 @@ The HTML is 8 lines since the minification (3.15.45; it was 93 before); most of 
    `immersive-vr` session with optional `local-floor`/`bounded-floor`, hands
    it to three.js, builds the in-VR UI, creates the audio context and hides
    the gate.
-3. Leaving VR (the session's end handler) restores the 2D camera and shows the gate again.
+3. Leaving VR (the session's end handler) stops a snap turn's blink, clears the pending timers, turns the Event's
+   far-object safeguard off, hides the in-VR panels, dialogue, menu and HUD, restores the 2D camera, resets the
+   game clock (`Re.resetClock`), wakes the audio and shows the gate again. Its clean-up is guarded: a throw part way still
+   ends presenting, so VR can always be entered again (S38).
+   **Entering again** (S31): the gate's own entry (A, a click) requests a second session through the entry script,
+   with the `layers` feature like the first (`session requested again (re-entry)` in the log); it runs on a new
+   projection layer through the frame wrapper, with multiview again, and uploads nothing new (the mipmaps are kept,
+   S20). The first session's layer shim frees its framebuffers and depth buffers when that session ends (B96, 4.0.34;
+   each re-entry leaked about 24 MB before). `test_reentry.js`.
+   **Blurred and hidden** (Horizon OS's menus, the headset taken off): while the session is `visible-blurred` the
+   game keeps rendering but skips its update (no movement, no NPC time, no input) and hides the controllers; while
+   it is `hidden` the browser sends no frames. Back to `visible`, frames resume where they stopped and a suspended
+   audio context is resumed. Each change is logged (`xr visibility ...`) with the native census (Safeties below).
+   `test_play.js`, `test_input.js`, `test_audio.js`, `test_b96.js`.
 4. On non-Quest user agents the gate shows "This game is designed for the Meta Quest Browser. Please open this
    file in the Quest Browser on your Meta Quest headset." with the version below it, and nothing else runs (A15,
    A18).
@@ -179,12 +194,16 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   none starts (A6). At the end Backpacka flies off into the mist (his show is 88 s, A7), the mist rolls back out over
   30 s and everything fades back in. In a second or later Event the garden's flowers shrink away at the start and grow back
   when watered (F-B43). Nothing is shown or hidden at once. `test_event_fade.js`.
-- **The Event's fade groups (3.15.66, P33; RULES.md 26).** Once the mist is past 15%, each kiosk (every building but the
+- **The Event's fade groups (3.15.66, P33; RULES.md 30).** Once the mist is past 15%, each kiosk (every building but the
   church) and the gazebo fade out over 10 s, each on its own and only once its owner has left home (6 m), and every
   tree with the robin as one group; all of a group's parts fade together. Once out, a group stays out until the Event
   ends, however near the player comes (A26), and all come back after it over 10 s. The church and Cave, the Ancient, Somlet, the pond (F-B64: the
   far-scenery fader no longer touches it) and the Garden never fade. Fading is drawn only: collision stays on, and as a
   group comes back anyone standing in it is pushed out (S3). `test_stands.js`.
+- **The Ancient** (A52, 4.0.33): its body (core, mantle, head and eye stalks) is 15% larger than before about its
+  ground point, in the build and in its idle breathing; its solid radius is 1.0 m and its meeting radius 1.6 m, so
+  visitors stand 1.9 m plus their own radius from its axis, clear of the Cave walkway's 1.45 m half-width. Its skin and
+  bump textures are painted at 1024 x 256 (512 x 128 before), pre-painted into `tex/` like every texture.
 - **The gazebo (3.15.67, F-B65).** Its seven railed sides are solid walls for everyone; its doorway is open to anyone.
   Gemtoe can be talked to from all round it (talk range 4.6 m).
 - **The Event's flowers** are 15% taller (A20) and more colourful (A22); **the pond's water** ripples (A21).
@@ -214,8 +233,29 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   visible changes, and a frame whose draw is ever lost shows a flat tone close to the scene's own brightness.
   (Black everywhere from 4.0.13 to 4.0.26; 4.0.24 left the colour uncleared, S30, taken out in 4.0.25, B90.)
 - **Nothing touches the session after VR entry** (F-B83, S18): one fixed foveation set at entry, the projection layer
-  never swapped, the camera's far plane never changed (three.js would re-send the session's depth range), the eye
-  buffer never read during play (the light record is opt-in), and a flush at the end of every frame.
+  never swapped, the session's depth range sent once (the Event's far-object safeguard does change the camera's far
+  plane, 310 to `finaleFar` 300 m and back, but the bundled three.js is patched to send the depth range once per
+  session: a later change is kept off the session and logged, `depth range change kept off the session in play`), the
+  eye buffer never read during play (the light record is opt-in), and a flush at the end of every frame. The loader's
+  layers and context stay whole for the whole session (B75's release reverted in 4.0.34, B96; RULES.md "Decisions").
+- **The stability safeties** (S38, 4.0.32; `test_s38.js`), each a guard that changes nothing in normal play: the
+  player's stick value is cleared at the start of each update, so an update that fails early never keeps walking the
+  player; a throw while hiding a character the head is inside is caught before the draw, and the frame draws as
+  usual; a non-number movement step is skipped (the player stays put rather than being sent to the spawn point); a
+  VR exit whose clean-up throws still ends presenting.
+- **The 60 s limits** (S38): the Gem scene's hold (`Bulb.hold`, which refuses every interaction until the Speech's
+  dialogue clears it; about 16 s in play) is cleared if it stays on 60 game seconds with no dialogue open; the Event
+  waits for Backpacka's ending show at most 60 s past its own time, then ends. Both are logged as `recovery: ...`.
+  An Event that fails for 30 frames running is ended (S20).
+- **The native census** (B96, 4.0.34): the entry script counts the live GL objects of every context (textures,
+  buffers, framebuffers, renderbuffers, programs, vertex arrays: create minus delete, plain JS counters, no GL call)
+  and the XR layers made and destroyed, and logs them (`native census (why): ...`) on every XR visibility change, 5 s
+  after each return and every 60 s, with the change since the last census and `(GROWTH)` past +16 textures, +2
+  framebuffers, +2 renderbuffers or +64 buffers. `test_b96.js`.
+- **The log's black box** (B96): once the APK's log server has answered, a log line whose sending fails is kept, the
+  last 150, in `localStorage` under the key `gtBB`, and sent at the next boot marked `unsent from the last run:`, then
+  cleared. That key holds unsent log lines and nothing else. With no log server ever answering (the standalone and
+  ordinal copies) nothing is kept. `test_b96.js`.
 
 ## Every element of the game, where it is described and what tests it
 
@@ -227,7 +267,7 @@ story, characters and looks are in `LORE.md` (section named); the fixes in `FIXE
 | The park and the town | A cartoon town round Greeblis Park, inside a picket fence; the mist beyond it in the Event | LORE "The world", "Environment design and style" | `test_world.js`, `test_seams.js`, `test_zfight.js`, `test_coincident.js`; `shots.js --preset park` |
 | The Garden and the Summoning Pillar | The park's centre; the Pillar ("Use the Summoning Pillar") starts the Event with the Summoning Stone | LORE "The world", "Events" | `test_content.js` (zones), `test_noseeds.js`, `test_stands.js` |
 | The kiosks | Post Office, Sheriff's kiosk, Garden Supplies, Gooward's Gallery, Juice Bar, First Bank (with Gemtoe's Gazebo); the Phone Booth and the Portal count as kiosks | LORE "The world" | `test_npc_home.js`, `test_owner_exit.js`, `test_gazebo.js`, `test_stands.js` |
-| The Post Office's mail pile | Behind the kiosk: letters, sacks and five parcels ("To Montreal", "To Cobourg", "To Bangkok", "To Ormstown", one blank) | LORE "The world"; FIXES A43 | pictures only (`shots.js` free views; FIXES A43) |
+| The Post Office's mail pile | Behind the kiosk: letters, sacks and five parcels ("To Montreal", "To Cobourg", "To Bangkok", "To Ormstown", one blank) | LORE "The world"; FIXES A43 | `test_mailpile.js`; `shots.js` free views |
 | The church and the Cave | The Ancient's home; the Cave's walkway and visit spot; visitors come to the Ancient | LORE "The Ancient" | `test_cave.js`, `test_visits.js`; `shots.js --preset cave` |
 | The Library | Sparkakus's kiosk, its books (OVERCOMING SHYNESS), the Speech | LORE "The Library's books" | `test_content.js`, `test_progression.js` |
 | The pond | A flat water texture, its stones on the ground | LORE "Environment design and style"; FIXES A33 | `shots.js --preset pond` |
@@ -237,10 +277,10 @@ story, characters and looks are in `LORE.md` (section named); the fixes in `FIXE
 | The townsfolk | Hennrick, Mushroom, Anomalee, King Dino, Gooward, Zollod, Somlet, Fortizmo, Etcher, Gemtoe, Glyph, Montgummery, Mama Gorbo, Sparkakus, the Ancient | LORE "Cast", "Character by character" | `test_roam.js`, `test_stuck.js`, `test_jitter.js`, `test_greet.js`, `test_cap.js` (Mama Gorbo's cap) |
 | Nextessa | The pizza courier from the far future: arrives, waits for the Gem, delivers | LORE "Nextessa" | `test_courier.js`, `test_courier_gem.js` |
 | Backpacka | The flying creature of the Event: drinks from the pond, waters the Garden, flies into the mist | LORE "Backpacka" | `test_backpacka.js`, `test_bp_water.js` |
-| Pickups | 32 Blossoms and 40 flint in the park, regrowing in 12 s | LORE "Currency, items and rewards" | `test_world.js` |
+| Pickups | 32 Blossoms and 40 flint in the park, regrowing in 12 s; never inside a building, a kiosk or the Gazebo (B95) | LORE "Currency, items and rewards"; GAME "Tuning values" | `test_world.js` |
 | Rewards and items | Artifacts (dance-battle wins), the Gem, the Summoning Stone, Seeds, Snacks, the shyness book, outfits | LORE "Currency, items and rewards", "Quests and their lines" | `test_progression.js`, `test_courier_gem.js` |
 | Talking and gifts | Menus (`Talk to ...`, `Give a blossom`), dialogue pages, greetings | LORE "Quests and their lines", "Gifts and gardening lines" | `test_progression.js`, `test_menu.js`, `test_textfit.js`, `test_greet.js` |
-| Dance battles | Etcher, Glyph and Montgummery; rock, scissors, paper; King Dino on drums | LORE "Events" | `test_content.js` |
+| Dance battles | Etcher, Glyph and Montgummery; rock, scissors, paper; King Dino on drums | LORE "Events" | `test_content.js`, `test_progression.js` |
 | Text scenes and token scenes | Two townsfolk meet: speech bubbles, or thrown tokens (one choreography ends in a confetti burst) | LORE "Vignettes" | `test_vig_flash.js`, `test_bubble_clear.js`, `test_bubble_eye.js` |
 | Mama Gorbo and Gooward's meeting | Hearts and a goo barrage; Gooward not interactable during it | LORE "Events"; FIXES A39 | `test_meet.js`, `test_meet_walk.js`, `test_goo_eye.js` |
 | King Dino's jazz | The jazz session | LORE "Events" | `test_jazz.js` |
@@ -250,8 +290,8 @@ story, characters and looks are in `LORE.md` (section named); the fixes in `FIXE
 | View safeties | The head guard (the view dims at a wall), the head inside a character, held uploads and shader compiles, eye guards (goo, bubbles, confetti) | GAME "Safeties"; FIXES S1-S15, F-B82 | `test_safeties.js`, `test_shaderhold.js`, `test_firstdraw.js`, `test_goo_eye.js`, `test_bubble_eye.js` |
 | The flash record | The B mark logs the last seconds: state changes, GPU work, the drawn picture's brightness, XR frame health | FIXES D2, S15; `HEADSET_DIAG.md` | `test_flashlog.js` |
 | Sound | Every sound synthesised; positional hearing radii | GAME "Content hooks" | `test_audio.js` |
-| Frame rate and quality | The governor (its level now only drives the Event's far-object safeguard; the render scale is native and foveation fixed at 0), multiview, batching | `PERF.md`, `RENDERING.md` | `test_governor.js`, `test_lod.js`; report tools in `README.md` |
-| Stability | Recovery from faults, long play | GAME "Safeties"; FIXES S3-S5, S13 | `test_recover.js`, `test_soak.js` |
+| Frame rate and quality | The governor (a frame-time average and an over-budget flag that only logs; no quality levels since 4.0.14; the render scale is native and foveation fixed at 0), the Event's far-object safeguard (keyed on the Event alone), multiview, batching | `PERF.md`, `RENDERING.md` | `test_governor.js`, `test_lod.js`; report tools in `README.md` |
+| Stability | Recovery from faults, the stability safeties and 60 s limits, leaving and entering VR, memory after the headset sleeps (the native census, the black box), long play | GAME "Safeties", "Boot and VR entry"; FIXES S3-S5, S13, S31, S38, B96 | `test_recover.js`, `test_s38.js`, `test_reentry.js`, `test_b96.js`, `test_soak.js` |
 | The three forms | The APK, `index.html` (archive), `index.compressed.html` (ordinal) | GAME "The three forms it ships in"; NOTES 100 | `test_entry.js`, `test_standalone.js`, `test_compressed.js` |
 
 ## Content hooks seen in the code
@@ -266,7 +306,8 @@ story, characters and looks are in `LORE.md` (section named); the fixes in `FIXE
 - Audio: everything is synthesised (`G.note(freq, dur, wave, gain, delay)`
   with sine/square/sawtooth/triangle), with helpers like `G.bubbleBlip`,
   `G.toot`; the audio context uses `latencyHint: "balanced"` on Quest.
-- No save system: no `localStorage`, `sessionStorage` or IndexedDB use.
+- No save system: no game state is stored. The only storage use is the log's black box: unsent log lines in
+  `localStorage` under `gtBB` (B96, Safeties above); no `sessionStorage` or IndexedDB.
 
 Names: "the Event" is the planting event (GARDEN EVENT, `me` in the code, labelled
 "finale" there); "the Speech" is Sparkakus's library finale (`speech` in the code).

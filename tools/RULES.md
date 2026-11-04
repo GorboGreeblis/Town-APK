@@ -52,10 +52,11 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 9. **No texture is made during play** (2026-10-28, F-B29/F-B30): everything is made while loading
    (`texture_census.js`).
 10. **No render-scale changes** (2026-10-28: the Event's resolution drop removed, "close out that option"; both flash
-    experiments in the release): the projection layer is never swapped; the quality governor changes foveation only
-    (F-B31) [83].
+    experiments in the release): the projection layer is never swapped; the quality governor changed foveation only
+    (F-B31) [83]; since 4.0.13 the foveation is one fixed value set at VR entry (F-B83), and since 4.0.14 the
+    governor has no quality levels (L1).
 
-26. **The Event's fade groups** (2026-10-30; P33, F-B64; `window.__gcSt` in the game, `test_stands.js`). During the
+30. **The Event's fade groups** (numbered 26 until 2026-11-04, when that number was found given twice; references to "RULES.md 26" about the fade groups in FIXES.md, VERSIONS.md, LORE.md and RELEASE.md mean this rule) (2026-10-30; P33, F-B64; `window.__gcSt` in the game, `test_stands.js`). During the
     Event, once the mist is up, these fade out slowly and back after it (2026-10-30: "we can hide things as long as we
     give them time to fade out and then give them time to fade in"; "We don't want to do it too quickly": at least 9 s
     out). Each group fades as one, every part at the same time and never in parts ("all parts of Kiosks [and] other
@@ -211,7 +212,7 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
   options 2, 3, and 4"; "I don't want to try option 3 at any point" (the classic two-eye path stays closed for good);
   "2 and 4 may introduce other problems".
 - Option 1 (no colour clear, S30, 4.0.24): taken out in 4.0.25 (2026-11-03, "The next build should not have the no clear
-  addition"); the colour is cleared to black each frame (S18). Closed for good (2026-11-03, "Let's remove the no-clear
+  addition"); the colour is cleared each frame (S18: black; since 4.0.27 a muted green outdoors and black in the Cave, S33). Closed for good (2026-11-03, "Let's remove the no-clear
   option. The risk is too high. We can close this option out as well"): no build tries it again.
 - The plain WebXR layer (the `nolayers` experiment, no projection layer, no multiview): closed (2026-11-03, "Close out
   the no layers build. It has serious issues and we're not taking this route"); the experiment is removed, and

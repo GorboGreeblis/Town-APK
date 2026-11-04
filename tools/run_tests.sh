@@ -1,5 +1,5 @@
 #!/bin/sh
-# Greeblis Town test passes. Three tiers share the same scripts:
+# Greeblis Town test passes. Four tiers share the same scripts:
 #
 #   tools/run_tests.sh --smoke     the standard stages but the courier ones and the Mushroom's desk, shorter soaks (over an hour)
 #   tools/run_tests.sh             standard pass (default), about 1.5-2 hours on a 4-core machine (95 min on 3.15.45)
@@ -118,9 +118,9 @@ if [ "$TIER" != quick ]; then
   run "the Post Office's mail pile: five parcels, four labelled with painted textures, none floating or buried, every label facing out, the Ormstown parcel clear of the others and the stacks (A43, B55)" node "$ROOT/tools/test_mailpile.js" "$ASSET"
   run "scenery asks of 2026-11-03: the cap closed underneath with a full-disc brim, one hanging basket at Garden Supplies, the church doorway backed, no cross (A45-A48)" node "$ROOT/tools/test_scenery.js" "$ASSET"
   run "leaving VR and entering again: the second session on the projection layer, through the frame wrapper, with multiview and the holds (S31)" node "$ROOT/tools/test_reentry.js" "$ASSET"
-  run "the fourth pass's fixes: sprites and four more conditions in the shader hold, a failing hold lets its object through, no multiview decision from the loader's context, batches made in play built after the frame, the eye hide's cold batches, the warm-ups, the loader released (S33)" node "$ROOT/tools/test_s33.js" "$ASSET"
-  run "the stability safeties: the stick cleared when the update fails early, the eye hide caught before the draw, the scene hold cleared after 60 s, a non-number step skipped, the Event's end not held by its show, VR exit always ends presenting (S38)" node "$TOOLS/test_s38.js" "$ASSET"
-  run "memory after the headset sleeps: the loader never released, the native census on each visibility change with no growth, the log's black box (B96)" node "$TOOLS/test_b96.js" "$ASSET"
+  run "the fourth pass's fixes: sprites and four more conditions in the shader hold, a failing hold lets its object through, no multiview decision from the loader's context, batches made in play built after the frame, the eye hide's cold batches, the warm-ups; the loader never released since 4.0.34 (S33, B96)" node "$ROOT/tools/test_s33.js" "$ASSET"
+  run "the stability safeties: the stick cleared when the update fails early, the eye hide caught before the draw, the scene hold cleared after 60 s, a non-number step skipped, the Event's end not held by its show, VR exit always ends presenting (S38)" node "$ROOT/tools/test_s38.js" "$ASSET"
+  run "memory after the headset sleeps: the loader never released, the native census on each visibility change with no growth, the log's black box (B96)" node "$ROOT/tools/test_b96.js" "$ASSET"
   run "the flash record: no drawing without a head pose, tracking logged, the light record catches a staged one-frame flash at no frame cost, the mark never stalls, held geometry named (S15)" node "$ROOT/tools/test_flashlog.js" "$ASSET"
   run "the Event's pizza boxes fade out at its end with their own materials, no shader compiled (A42)" node "$ROOT/tools/test_pizza_fade.js" "$ASSET"
   run "Backpacka's water shows against the mist: the drip from his mouth at the pond and in flight, the jets, drops and rainbow over the Garden, each with a mist wall behind (F-B74)" node "$ROOT/tools/test_bp_water.js" "$ASSET"

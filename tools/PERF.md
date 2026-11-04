@@ -1,7 +1,8 @@
 # Performance analysis of the APK build
 
 Started as an analysis (sections 1-6); sections 6-13 record the changes that
-were applied, each listed in FIXES.md (section 15 is the latest: 3.15.65 on, P31-P33; section 14 3.15.53-3.15.63). The render path itself is described in
+were applied, each listed in FIXES.md (section 15 is the latest: 3.15.65 to 4.0.2, P31-P33, A26, A28; section 14 3.15.53-3.15.63; the author closed the frame-rate
+task on 2026-10-31, "The FPS now fully passes the bar, in headset", TASKS D22, and no section has been added since). The render path itself is described in
 RENDERING.md. Numbers from the headless harness (software GL) are marked as such: draw calls, triangle counts, program counts
 and JS time are meaningful there, GPU time is not. Headset measurements: the author's 3.15.33-3.15.34 run on a
 Quest 3S (section 10) and the 3.15.41, noswap and deferupload runs (section 13, NOTES 79-81), which showed the frame rate
@@ -290,7 +291,8 @@ is 60. `perf_log.js` reports both.
   -> 8 on the large textures, fixed foveation from the start level, render
   scale. Multiview rendering (one draw for both eyes) would halve every draw
   call but needs a newer three.js or shader patches and an entry-script
-  change, so it would ship first as an experiment APK.
+  change, so at the time it would have shipped first as an experiment APK (a rule retired on 2026-10-28: RULES.md 22,
+  changes go straight into the main build). Multiview went in as section 9 describes.
 
 ## 9. Multiview experiment (NOTES 65)
 
@@ -299,8 +301,8 @@ classic path (bit-identical apart from rounding on a few right-eye pixels) and
 draw calls halve: spawn 68 -> 34, town centre 264 -> 132, garden 320 -> 160,
 the Event 244 -> 122. On the headset it removes half the draw submission (three.js
 and the browser's GPU process) and, with MSAA, the per-frame resolve blit. It
-does not reduce pixel shading. Ships as an experiment APK first (RELEASE.md 6);
-the headset run decides whether it goes into the release.
+does not reduce pixel shading. It shipped as an experiment APK first (3.15.33) and has been the release path since
+3.15.34 (headset-confirmed); experiment-first builds are retired (RULES.md 22, 2026-10-28).
 
 ## 10. The Event on the headset (3.15.33-3.15.34 headset run, NOTES 65-68)
 
@@ -492,7 +494,7 @@ more away (scenery batches 88, creature parts 68, other textured 69, other plain
 | --- | --- | --- | --- |
 | P31 | 3.15.65 | Culling skips subtrees that draw nothing (1,482 of 2,460 nodes): 1.37 -> 1.26 ms headless. | No (pixel-identical) |
 | P32 | 3.15.66 | The matrix walk returns at the town's still top-level groups (audited 150 nodes a frame; a group that moves is walked every frame from then on). | No |
-| P33 | 3.15.66 | The fade groups (each kiosk and the gazebo; every tree with the robin) fade out over 10 s once the Event's mist is up and back after it (RULES.md 26). | Yes, by the author's design |
+| P33 | 3.15.66 | The fade groups (each kiosk and the gazebo; every tree with the robin) fade out over 10 s once the Event's mist is up and back after it (RULES.md 30). | Yes, by the author's design |
 
 Tried and dropped: batching scenery across groups by 16 m cells (265 -> 258 draws: the one-off draws have textures of
 their own); hiding objects under a few pixels across (18 draws at the heaviest view, and they would pop).

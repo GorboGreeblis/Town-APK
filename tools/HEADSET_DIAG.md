@@ -8,7 +8,8 @@ and the launch investigation of B9 (sections 2-4, kept for the record; B9 was fi
 
 Capture the log live, from before the launch to the end of the run (`tools\capture_log.ps1` on Windows,
 `tools/capture_log.sh` elsewhere, do exactly what the commands below do and save UTF-8), and let the reader summarise it. **When you see a
-flash, press B on the right controller** (a short buzz confirms): the log gets "MARK flash seen" with the frame number,
+flash, press B on the right controller** (no buzz: the game never vibrates a controller since 4.0.23, A50, RULES.md
+26): the log gets "MARK flash seen" with the frame number,
 and `perf_log.js` lists every mark with what the log shows in the 3 s before it (long frames over 28 ms, uploads,
 shader compiles, GPU work inside a frame, frame gaps, near-empty frames, governor changes, shader and geometry holds,
 the head-inside guard, stuck townsfolk, errors caught in frames). By hand:
@@ -29,6 +30,28 @@ the 72 fps target (the author's aim) and the Store's 60 fps floor, with the like
 runtime's `VrApi` lines, the seconds under the refresh rate per scene with GPU and CPU use and a verdict: CPU-bound
 when the app's GPU time is under 80% of the frame budget, GPU-bound otherwise; then the flash marks, the long frames
 (over 28 ms, at most two a second), and compiles and uploads during play.
+
+### Confirming B96: the headset-off run (memory after the headset sleeps)
+
+B96 (found on 4.0.32, the author's logs b42c9cfb and a7fc5e95): after the headset slept 35 s the headset ran out of
+memory within seconds of the return and the game froze head-locked. 4.0.34 has the fix (the loader kept whole, the
+old shim freed at a session's end); this run confirms it on the headset:
+
+1. Start the live capture above (`capture_log.ps1` / `capture_log.sh`, or `adb logcat -c` then
+   `adb logcat -v threadtime -s GreeblisServer VrApi > run.txt`), then launch the game.
+2. Play for 1 minute.
+3. Take the headset off and leave it off for 35 s or more, so the display sleeps.
+4. Put it back on and play for 2 minutes.
+5. Stop the capture and send the log (`node tools/perf_log.js run.txt` summarises it).
+
+What to look for:
+- **`Free=` holding** in the runtime's once-a-second `VrApi` lines: the headset's free memory after the return about
+  where it was before (on 4.0.32 it fell from 2992 MB to 264 MB within 10 s of the return).
+- **The census steady**: the `native census (...)` lines (at each `xr visibility` change, 5 s after the return and
+  every 60 s) show the same live GL object counts before and after, and none ends in `(GROWTH)`.
+- **`destroyed 0`** in every census line's `xr layers made: ...` part: no layer destroyed during the session.
+- The game drawing and answering after the return (no head-locked picture). If it froze, launch once more and send
+  that log too: its first lines, `unsent from the last run: ...`, are the frozen run's last lines.
 
 ## 2. Unfiltered log of one launch (launch problems only)
 
@@ -220,6 +243,16 @@ after each return and every 60 s: the counts should hold steady; `(GROWTH)` at i
 the last census (report it, with the lines around it). After a crash or a freeze, the next run's log begins with up to
 150 lines `unsent from the last run: ...`: the last lines the dead run could not send. `the game's WebGL context was
 lost` / `... restored` are logged too. `loader released` no longer appears (B75 reverted in 4.0.34).
+Since 4.0.32 (S38) the stability safeties log when they act, each a bug behind it (send the log): `recovery: the scene
+hold stayed on 60 s with no dialogue open: cleared`, `recovery: the Event's ending show stayed busy 60 s past its time:
+ended` (and, since S20, `recovery: the Event kept failing for 30 frames: ended`), and an error tagged `eye-hide` (a
+throw while hiding a character the head is inside, caught before the draw).
+The snap turn's blink (S37, 4.0.31) has no line of its own: the turns are counted in the recorder's dumps (`snap`)
+and marked S in `rec timeline`; its dark frames are deliberate, not flashes.
+`depth range change kept off the session in play (NEAR-FAR; S18)`: the camera's far plane changed after VR entry, and
+the patched three.js kept the new depth range off the session (it sends it once per session). Expected twice per
+Event: at its start (the far-object safeguard's far plane, `finaleFar`, 300 m) and at its end (back to 310 m).
+Harmless; any other time, send the log.
 Since 4.0.27 (S33) the log may also have: `multiview not decided yet: ...` (once, if the renderer asked before the session:
 expected, the decision follows); `shader hold: the compile between frames failed for ...` or `geometry hold: the
 upload between frames failed for ...` (not expected: the object was then drawn without the hold, report it);

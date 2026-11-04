@@ -1,8 +1,10 @@
-# Greeblis Town, Lore Bible (second pass)
+# Greeblis Town, Lore Bible (third pass)
 
 Compiled strictly from the game's own text, data and pictures in the game file, `tools/uncompressed.html`
-(3.15.45; the root `index.html` is a byte copy of it, and none of the fixes in FIXES.md changes a line of
-story text). Lines are quoted as written. Anything not stated by the game is marked *(inference)*. Gaps are listed at the end so the author can fill them.
+(4.0.34; the root `index.html` is a byte copy of it). Of the fixes in FIXES.md only A2 (Gemtoe's seventh talk
+line, 3.15.53) adds story text; the rest change looks and staging, which this Bible follows where they touch the
+lore. Lines are quoted as written. Anything not stated by the game is marked *(inference)*. Gaps are listed at the
+end so the author can fill them.
 
 > **Naming rule (author):** the names the game shows are the canon. The code's
 > identifiers are leftovers from earlier games and prove nothing: `acorns` is
@@ -17,11 +19,18 @@ story text). Lines are quoted as written. Anything not stated by the game is mar
 > are in the game file as quoted. The table names `TIES`, `SIG` and `PAIRS` are from the unminified 3.15.44 file
 > (`git show 21596f1:tools/uncompressed.html`); since 3.15.45 (FIXES R2) the minifier renamed them.
 
-**Changes in this pass:** the Ancient (who speaks, and where it lives), the gallery painting, Backpacka,
-the Library's books, the WANTED posters, the billboard, the parcels, every character's gift and
-gardening lines, the quests (shyness, the Gem trade, the bribe). Three corrections to the first pass:
-it is **Zollod** who is shy (the book cures him), the **Gem trade is Gemtoe's**, and "OF ORSON",
-"OF APPTERIX", PATCHOOLEE, STAPLERS and RANGER are **Library book covers**, not gallery pieces or signs.
+**Changes in this pass** (third pass, 2026-11-04, checked against the 4.0.34 game file): every line the game can
+show is now here with its trigger: every talk line in its order ("Every talk line"), all 90 two-line exchanges
+("Vignettes"), the cast at a glance (ids, display names, posts, Gree-mail, ties), the shop, phone, battle, Pillar and
+inventory texts ("Menus, panels and boxes"), a fuller items table, a session timeline ("A session, from the first
+visit to the Event") and a places gazetteer. Corrected: the cardinal faces the robin (A40); the Ancient's gift line
+is "..." and it is 15% larger with finer skin (A52); Backpacka's show is 88 s, not 70; an Event without Seeds
+gathers no one and fades no kiosk (F-B72); the pizza needs Snacks and its boxes fade in and out (A51, A42); the phone
+booth and the Portal fade like kiosks (A27); pickups never spawn in the Gazebo (B95); Fortizmo and Somlet are she
+throughout; the inventory is on the left-hand watch (A35). The second pass (2026-10-28 to 10-31) added the Ancient,
+the gallery painting, Backpacka, the Library's books, the WANTED posters, the billboard, the parcels, the gift and
+gardening lines and the quests, and corrected the first: Zollod is the shy one, the Gem trade is Gemtoe's, and "OF
+ORSON", "OF APPTERIX", PATCHOOLEE, STAPLERS and RANGER are Library book covers.
 
 ## The world
 
@@ -51,8 +60,10 @@ it is **Zollod** who is shy (the book cures him), the **Gem trade is Gemtoe's**,
 - **WANTED posters:** two kinds. One shows an alien face; the other shows a goo
   creature and the name **GLOOPERNAUGHT**. *(inference: the alien is how the
   Sheriff pictures the Human he is hunting.)*
-- **The robin and the cardinal:** a robin and a cardinal perch on the park's two big trees beside the church; pick
-  either and it flies off.
+- **The robin and the cardinal:** a robin and a cardinal perch on the park's two big trees beside the church (the
+  robin moved there in 4.0.3, A30; the cardinal and its tree came in 4.0.4, A37, A38), the cardinal turned to face the
+  robin (4.0.7, A40); pick either ("Robin", "Cardinal") and it flies off and comes back. A robin and a cardinal also
+  perch on a branch in the top corner of Gooward's painting.
 - **Parcels at the Post Office:** on the mail pile behind the kiosk, addressed "To Montreal", "To Cobourg",
   "To Bangkok" and "To Ormstown" (4.0.10), and one without a label.
 - **The Portal.** A gateway between eras, currently locked: "All travel
@@ -79,7 +90,7 @@ it is **Zollod** who is shy (the book cures him), the **Gem trade is Gemtoe's**,
   with "the age of Dinosaurs"), and **the age of the Ancients** are the three
   ages Etcher records. Glyph's symbols "descend from" Hennrick's era's
   alphabet.
-- **The Originator.** Anomalee's obsession: "ORIGINATOR… WAS there WITHIN."
+- **The Originator.** Anomalee's obsession: "ORIGINATOR…", "WAS there WITHIN."
   "The Ancient texts speak of an ORIGINATOR" (Sparkakus). "BEINGS of CODE."
   "ETCH this: the ORIGINATOR was HERE." "Your RHYTHM... the ORIGINATOR had it TOO."
 - **The Consortium.** The authority the Sheriff answers to: "This town is
@@ -87,7 +98,7 @@ it is **Zollod** who is shy (the book cures him), the **Gem trade is Gemtoe's**,
   Fortizmo's bar and watches Sparkakus's books. Faced with the Ancient, the
   Sheriff can only stammer: "Th-the Consortium will be informed." The Consortium is run by Maltoe and
   Mushroom (the author, 2026-10-28).
-- **Gree-mail.** "When you see creatures exchanging symbols, that's
+- **Gree-mail.** "When you see creatures exchanging symbols, that’s
   Gree-mail." (Glyph)
 - **The player** is "Human", a visitor the Sheriff is hunting ("Mont will
   hide you from alien hunting Sheriff"; "Have you seen a human in this
@@ -105,8 +116,12 @@ The one character who is not on the town's cast list, and the one the others def
 - **What it looks like:** a great slug-like body with a mantle, two long eye
   stalks with knobs and two short ones, and a tail (the 3D model; the code
   calls it `slug`). Its name panel reads ANCIENT in an earthen brown.
-- **What it says:** "I am the one reborn." During the planting Event, when the
-  Seeds have been brought: "Hello". A Blossom given to it: "…".
+- **What it says:** "I am the one reborn." (its menu says only "Talk"). During an Event started with the
+  Seeds: "Hello". A Blossom given to it: "..." (three dots, as typed in the game).
+- **Its size** (since 4.0.33, A52): 15% larger than before, its skin and bump painted at twice the resolution with
+  finer pores, creases and scratches; visitors stand clear of its larger body.
+- **Its visitors:** every townsperson but King Dino and Somlet has an exchange with it; they come to the Cave on
+  visits, more often while the Human is inside (A3). Its Gree-mail is a spore, its gesture a doze, its emote "…".
 - **What it says to the others** (it speaks first, they answer):
 
 | To | The Ancient | The answer |
@@ -200,25 +215,37 @@ character sends their own token to the other (the game's `SIG` table): Hennrick 
 spore, Anomalee a pixel, King Dino a crown, Gooward and Mama Gorbo goo, Zollod a sprout, Somlet a letter,
 Fortizmo a note, Etcher and Sparkakus a card, Gemtoe a gem, Glyph a tile, Montgummery a coin, and the
 Ancient a spore. Each also has a gesture and an emote they show when an exchange starts (Hennrick nods
-"!", Anomalee glitches "?", King Dino puffs "★", Gooward wobbles "~", Zollod sways "✿", Somlet dozes "z",
-Fortizmo grooves "♪", Gemtoe twirls "✦", Glyph giggles "?", Mama Gorbo bows "♥", the Ancient dozes "…").
+"!", the Sheriff puffs "!", Anomalee glitches "?", King Dino puffs "★", Gooward wobbles "~", Zollod sways "✿",
+Somlet dozes "z", Fortizmo grooves "♪", Etcher nods "!", Gemtoe twirls "✦", Glyph giggles "?", Montgummery nods "!",
+Mama Gorbo bows "♥", Sparkakus nods "?", the Ancient dozes "…").
+
+Motifs the painter places that are not named above (the code's names, hints only): `page` in the left panel,
+`cubeJar` and `glitch` left of centre, `paisley`, `water` and `mise` in the centre and right, and a robin and a
+cardinal on a branch in the top right corner.
 
 ## Currency, items and rewards
 
 | Thing | Facts from the game |
 | --- | --- |
-| Blossoms | The town currency ("We only accept Blossoms at this establishment"; "the house currency is Blossoms"). 32 grow in the park and regrow in 12 s. Given as gifts; given to the Sheriff, a bribe. |
-| Flint | The pickups on the ground and the shop's currency (author confirmed: the game says flint; the code calls the same counter acorns). Gemtoe values gems in flint ("worth countless flint"). 40 in the park, regrow in 12 s. |
-| Gems / Ancient Gem | Gemtoe hoards gems. "Ancient Gem collected!" is the finale reward (the Eye of the Sphinx). |
-| Artifacts | Three Ancient Artifacts exist in the region; one is awarded for each first dance-battle win. Sparkakus glues them together into the Gem. |
-| Summoning Stone | Gemtoe trades it for the Gem: "That Gem you have… It's worthless… trust me. I'll trade this rock I found for it. You're better off!" Wakes the Summoning Pillar's runes ("The runes stay dark. Only the Summoning Stone can wake them and start the gardening event."). |
-| Seeds | "bagel seasoning packet", 25 flint at Garden Supplies, completes the SEEDS quest. |
-| Snacks | +20 Snacks per pizza delivery. Needed for the garden event. |
-| OVERCOMING SHYNESS | A book on the Library's shelves ("Take OVERCOMING SHYNESS"); it frees Zollod from his shyness. |
-| King Dino's coins | "not legal tender"; "He stamps those coins himself." |
-| Goo burger coupons | Mama Gorbo hands them out. |
+| Blossoms | The town currency ("We only accept Blossoms at this establishment"; "the house currency is Blossoms"). 32 grow in the park and regrow 12 s after picking ("pick blossom"), each a red, orange and gold flower with a soft halo. Given as gifts; to the Sheriff, a bribe; to a dancer, an invitation to battle. Never spawn inside a building, a kiosk area or the Gazebo (B95, 4.0.33: 4.1 m from its centre). Faded out during the Event (A5). |
+| Flint | The pickups on the ground and the shop's currency (author confirmed: the game says flint; the code calls the same counter acorns). Gemtoe values gems in flint ("worth countless flint"). 40 dark faceted stones with a glint in the park, regrow in 12 s; the same spawn rules as Blossoms. |
+| Ancient Artifacts | Three exist "in this region"; one is awarded for each first dance-battle win ("<name> awards you an Ancient Artifact!"). Each is a teal crystal third of a cut gem; in the Speech Sparkakus joins them with a white bottle labelled "GLUE". |
+| The Gem (Ancient Gem) | The three Artifacts joined: "the missing Eye of the Great Sphinx of The Computer Core". "Ancient Gem collected!" Gemtoe calls it "worthless" and takes it. |
+| Summoning Stone | Gemtoe trades it for the Gem: "That Gem you have… It’s worthless… trust me.\|I’ll trade this rock I found for it. You’re better off!" then "* Summoning Stone obtained! *". Wakes the Summoning Pillar's runes ("The runes stay dark.\|Only the Summoning Stone can wake them and start the gardening event."). Not used up: the Event can be held again. |
+| Seeds | The "bagel seasoning packet", 25 flint at Garden Supplies ("You bought the bagel seasoning packet! SEEDS quest complete!"; again: "You already have the bagel seasoning packet."). With them the town gathers and plants at the Event. |
+| Snacks | "+20 Snacks" per pizza delivery (one is enough). With them the Event has pizza: eight stacks of boxes round the Garden and Anomalee's own open box. |
+| OVERCOMING SHYNESS | A book on the Library's shelves ("Take OVERCOMING SHYNESS"); it frees Zollod from his shyness; it leaves the shelf when taken. |
+| Outfits | Flower Hat, Sun Dress, Frog Shoes, 3 flint each, worn by the player ("You bought the Flower Hat and put it on. Take a look in the mirror!"; "You put on the …", "You take off the …"; short: "You need 2 more flint for the Sun Dress."). |
+| King Dino's coins | "not legal tender"; "He stamps those coins himself."; "Stamped by the King, baby. Legal enough." |
+| Goo burger coupons | Mama Gorbo hands them out ("Please take a coupon for my famous goo burger."). |
 | Carrot juice | Fortizmo's house special, "on the rocks… just carrots and ice". |
-| Outfits | Flower Hat, Sun Dress, Frog Shoes, 3 flint each, worn by the player ("Take a look in the mirror!"). |
+| Gree-mail tokens | The symbols the townsfolk throw to each other in their exchanges ("The gallery painting" above). |
+| Parcels and letters | The Post Office's mail pile: "To Montreal", "To Cobourg", "To Bangkok", "To Ormstown". |
+
+**The inventory** (the watch on the left hand, A35): "SEEDS", "SUMMONING STONE" and "SNACKS" each with a tick box,
+then a tile for each thing held with its count: Blossoms, flint, Artifacts (until the Speech), the Gem, the Stone, the
+book (until Zollod reads it), the Seeds and the pizza. The shop's panel shows "Flint: " and the price ("3 flint",
+"bought").
 
 ## The Library's books
 
@@ -230,40 +257,108 @@ editions.") and the Ancient texts.
 
 ## Quests and their lines
 
-- **Zollod's shyness.** Before: "…|…|I'm shy…". Mama Gorbo's hint: "I hear there is a book that can
-  help anyone overcome shyness." With the book: "…|That book…|Let me see..|Wow I'm free from
+- **Zollod's shyness.** Before: "…|…|I’m shy…". Mama Gorbo's hint: "I hear there is a book that can
+  help anyone overcome shyness." With the book: "…|That book…|Let me see..|Wow I’m free from
   shyness!" Only then does Garden Supplies open; Zollod then says "Bringing plants to life is MY
-  life's work."
+  life’s work."
 - **The bribe.** A Blossom to the Sheriff opens the Portal: "A bribe? …Portal is now open to your
-  use." Then the TELEPHONE reaches Nextessa: "*Ring Ring* This is Nextessa's inter-temporal pizza
-  shop!|One pie on your way." The courier: "One hot and ready pie!|* +20 Snacks *|I love my job!"
+  use." Before it, the TELEPHONE's PHONE box says "*connection to the Portal seems blocked*". After it, the TELEPHONE
+  reaches Nextessa: "*Ring Ring* This is Nextessa’s inter-temporal pizza shop!|One pie on your way." (with a pie
+  already on its way: "*no answer*"). The Portal opens and the courier comes through it, hopping to the Human
+  ("Talk to NEXTESSA"): "One hot and ready pie!|* +20 Snacks *|I love my job!", and, delivered inside the church,
+  "One hot and ready pie!|* +20 Snacks *|I love my job!|oh Hello Ancient." While the Speech is on she waits, facing
+  the Human, and delivers after it (F-B45). No pizza is ordered during the Event.
+- **The dance battles.** A Blossom to Etcher, Glyph or Montgummery: "Let’s dance!", and the battle
+  starts when the line closes (not during the Event). The first win against each awards an Artifact;
+  later wins only "<name> takes a bow." The Human cannot lose; "BOW OUT" leaves (80% of the time).
 - **The Artifacts and the Speech.** Sparkakus: "For my research: I seek Artifacts left by the
-  Ancients.|Three exist in this region." With all three: "You've found all three Artifacts!|Amazing!
-  |Let me see those…|Ah…", then the Speech about the Eye of the Great Sphinx, the Gem, and "Well
-  done, Human!"
+  Ancients.|Three exist in this region." With one or two: "I require more Artifacts to complete my
+  research." With all three: "You’ve found all three Artifacts!|Amazing!|Let me see those…|Ah…"; the
+  bulb lights, the pieces are glued, and the Speech: "This is the missing Eye of the Great Sphinx of The
+  Computer Core!|According to the Ancient texts:|The Sphinx guarded the Computer Core.|Asking Synthetics
+  riddles before allowing them in.|This relic has been missing for ages!", then "* Ancient Gem
+  collected! *", and from then on "Well done, Human!"
 - **The Gem trade** (Gemtoe): the Gem for the Summoning Stone, above.
-- **The planting Event**: Summoning Stone, Seeds and Snacks at the SUMMONING PILLAR.
+- **The SEEDS quest**: the bagel seasoning packet from Garden Supplies, 25 flint: "You bought the bagel seasoning
+  packet! SEEDS quest complete!"
+- **The planting Event**: the Summoning Stone at the SUMMONING PILLAR, with the Seeds and Snacks if the Human has
+  them (only the Stone is required).
 
 ## Events
 
 - **Dance battles** (vs Etcher, Glyph, Montgummery; "KING DINO on drums."):
   rock / scissors / paper as "Rock out!", "Do the splits like scissors!",
-  "Go horizontal like paper!"; stamina 10; "BOW OUT" / "TAKE A BOW" ("You take a bow."; BOW OUT works 80% of the time, otherwise "The beat
-  won't let you go!"); first win: "<name> awards you an Ancient Artifact!". Each dancer's stamina bar
-  counts their signature move: "Robot steps left" (Montgummery), "Tentacle twists left" (Etcher),
-  "Macarena moves left" (Glyph). A Blossom given to a dancer is an invitation: "Let's dance!", and the
+  "Go horizontal like paper!" (the dancer's move is shown first: "<NAME> rocks out!", "… does the splits like
+  scissors!", "… lays horizontal like paper!"; each beating move costs the dancer one); stamina 10;
+  "BOW OUT" / "TAKE A BOW" ("You take a bow."; BOW OUT works 80% of the time, otherwise "The beat
+  won't let you go!", the game's own straight apostrophe); first win: "<name> awards you an Ancient
+  Artifact!", later wins: "<name> takes a bow.". Each dancer's stamina bar counts their signature move: "Robot steps left" (Montgummery), "Tentacle twists left" (Etcher),
+  "Macarena moves left" (Glyph). A Blossom given to a dancer is an invitation: "Let’s dance!", and the
   battle starts when the line closes.
-- **Gardening event**: at the Summoning Pillar with Stone, Seeds and Snacks; townsfolk gather in a ring,
-  plant, then go home. Each says their gardening line (below).
+- **Gardening event** (the Event): at the Summoning Pillar with the Stone. **With the Seeds** the townsfolk
+  gather in three rings round the Garden (all but King Dino, who drums on at 88 beats a minute, and Somlet, who
+  sleeps on at the Post Office; Sparkakus leaves the Library to join them), wait for each other, then plant for 190 s
+  (dig, pat or scatter, each their own way) and go home; spoken to, each says their gardening line (below). In the
+  first Event each plants a flower; in later ones the old flowers shrink away, take new colours and grow back
+  (F-B43, A29). **Without the Seeds** no one gathers or plants and no kiosk or park tree fades (F-B72); the mist,
+  the fades of the town and Backpacka still come. **With the Snacks** eight stacks of pizza boxes fade in round the
+  Garden as it starts (A51) and Anomalee, instead of planting, sets down her own open box (fading in) and eats a
+  slice every 22 s, leaving the last two (F-B49); without them she plants like everyone else. The boxes fade out at
+  the end (A42). While the town gathers, neighbours in the ring trade little emotes ("♥", "✿", "!", "~").
 - **Backpacka**: Fortizmo practises "a song for the coming of the legendary Backpacka". During the
   planting Event, once the planting has begun and the townsfolk have taken their places, they form a
-  ring round the garden and, when the Seeds were brought, Fortizmo plays her horn; then Backpacka comes: a long-necked creature with green wings arrives, lands, drinks at the
-  pond, rises, flies over the garden, spreads his wings and sprays water over it, then leaves (the
-  animation's own stages: arrive, down, drink, up, to the garden, splay, spray, gone; about 70 s).
+  ring round the garden and, when the Seeds were brought, Fortizmo plays her horn; then Backpacka
+  comes: a long-necked creature with green wings arrives, lands, drinks at the pond, rises, flies over the garden, spreads his wings and sprays water over it, then leaves low over the
+  north-west fence into the mist (the animation's own stages: arrive, down, drink, up, to the garden, splay, spray,
+  gone; 88 s, A7). While the horn plays the ring dances (Gemtoe twirls, Gooward bounces, Mushroom shimmies,
+  Anomalee stomps, Zollod grooves, Mama Gorbo jellies, Hennrick and the three dancers their own dances). Without the Seeds there is no
+  horn, but the code still sends him *(read from the start condition, which only the horn checks)*.
 - **Pizza**: the TELEPHONE calls Nextessa's inter-temporal pizza shop; a courier delivers, even into the
   church where the Ancient lives.
-- **The Speech**: with all three Artifacts, Sparkakus assembles the Eye of the Great Sphinx; "Well done,
-  Human!"
+- **The Speech**: with all three Artifacts, Sparkakus stops, a giant light bulb lights over him and the world
+  dims to 70% of night; he joins the Artifacts with glue into the Eye of the Great Sphinx (the five-page speech),
+  "* Ancient Gem collected! *", the world brightens, and from then on "Well done, Human!".
+- **Mama Gorbo and Gooward's meeting**: every 20-40 s they walk to each other, face each other and trade goo arcs
+  with a "blorp" and pink hearts. A Blossom to Gooward ("GOOMP") turns his goo on the Human: eight volleys that
+  splat on the view, and he cannot be spoken to until it is over (A39).
+- **The UFO**: a saucer with a green alien inside crosses the sky every 600 s, hovers and leaves (never in the
+  Event, A6) *(inference: the "UFO sightings" the Sheriff investigates)*.
+
+## A session, from the first visit to the Event
+
+The game keeps no save (GAME.md "Content hooks"): every session starts from nothing, with empty pockets. Apart
+from the steps that need an earlier one, the order is the player's.
+
+1. **The gate.** In the Quest Browser a landing screen reads "GREEBLIS TOWN" with the version, then "Loading...",
+   "Press A to Continue." and, on the press, "Entering VR...". Any other browser gets "GREEBLIS TOWN", "This game is
+   designed for the Meta Quest Browser.", "Please open this file in the Quest Browser", "on your Meta Quest headset."
+   and the version, under the title "-Greeblis Town-".
+2. **Arrival.** The Human stands at the park's west fence (-36.3, -20), by the dance floor and the JUICE BAR, with
+   King Dino drumming at 104 beats a minute. 32 Blossoms and 40 flint lie about the park and regrow 12 s after they
+   are picked. The left hand wears a watch reading "PRESS / Y / TO OPEN": Y while looking at it opens the inventory
+   (A35, A41, A44).
+3. **The town lives on its own.** Townsfolk roam or keep their posts, stop to face the Human (Sparkakus greets with a
+   "!"), visit each other and play their two-line exchanges (below), Mama Gorbo and Gooward meet every 20-40 s, the
+   UFO crosses the sky every 600 s, and visitors come to the Ancient in the church.
+4. **Talking.** Each townsperson's "Talk to" gives their talk lines one at a time, in order, round and round
+   ("Every talk line" below). "Give a blossom" spends a Blossom on their gift line.
+5. **Garden Supplies is shut** while Zollod is shy ("…|…|I’m shy…"). Mama Gorbo hints at a cure; the Library holds
+   OVERCOMING SHYNESS ("Take OVERCOMING SHYNESS"); with it Zollod is free, and his shop sells the outfits (3 flint
+   each) and the bagel seasoning packet, the Seeds (25 flint: "SEEDS quest complete!").
+6. **The bribe and the pizza.** A Blossom to Mushroom opens the Portal; the TELEPHONE then reaches Nextessa, whose
+   courier comes through the Portal with a pie: "+20 Snacks".
+7. **Three dance battles.** A Blossom to Etcher, Glyph or Montgummery ("Let’s dance!") starts a battle; each
+   dancer's first defeat awards an Ancient Artifact.
+8. **The Speech.** With three Artifacts, Sparkakus glues them into the missing Eye of the Great Sphinx under a giant
+   light bulb as the world dims: "Ancient Gem collected!", "Well done, Human!".
+9. **The Gem trade.** Gemtoe talks the Human out of the Gem for "this rock I found": "Summoning Stone obtained!".
+10. **The Event.** At the SUMMONING PILLAR ("Use the Summoning Pillar") the GARDEN EVENT panel ticks off "Summoning
+    Stone", "Seeds" and "Snacks" and asks "Start gardening event?". Only the Stone is required; the Seeds bring the
+    town to plant, the Snacks bring the pizza. The mist rolls in, the town plants (190 s), Fortizmo plays her horn,
+    Backpacka waters the Garden and flies into the mist, and everything comes back.
+11. **After.** The Event can be started again from the Pillar, as often as the Human likes: the flowers already
+    planted shrink away, take new colours and grow back when Backpacka waters them (F-B43, A29). Sparkakus now
+    answers only "Well done, Human!".
 
 ## Cast
 
@@ -277,15 +372,119 @@ editions.") and the Ancient texts.
 | Montgummery (Mont) | `w_mont` | Dance floor; hides the Human from the Sheriff | Robot with a screen face; eats VHS tapes ("Knowledge in the reels. Dinner in the cassette."); "We are all digital monsters." Speaks in third person. Ate the Library's tapes. |
 | Hennrick | `gratelet` | Researcher from the far past (the author), stuck by the Portal | "Casing" and "joints… built for fieldwork"; collects samples in jars; "unwilling guest of the Sheriff"; observes Somlet ("Subject remains asleep. Observation day 41."). |
 | Mushroom (the Sheriff) | `drifter` | Sheriff's kiosk desk, reached by a little ramp at its left end (since 3.15.53) | Cap with gills; investigates UFOs; enforces the Consortium; takes bribes ("A bribe? ...Make it a double."). |
-| Fortizmo | `frog` | Juice Bar | She (Etcher: "her dancefloor"). Brass valves ("My valves turn a breath into a brass note"); "sugar"/"honey"; Blossoms only; practising a song for Backpacka. The four small dots beside his eyes are beauty marks (author). |
+| Fortizmo | `frog` | Juice Bar | She (Etcher: "her dancefloor"). Brass valves ("My valves turn a breath into a brass note"); "sugar"/"honey"; Blossoms only; practising a song for Backpacka. The four small dots beside her eyes are beauty marks (author). |
 | King Dino | `m_kingdino` | Drums at the Juice Bar | "King of Jazz, baby!"; drums "since the Cretaceous"; works off his bar tab; stamps his own coins; wears a crown ("The crown is extra"). The lit buttons on his sides and the sockets on his back are synthetic parts of his own body (author). |
-| Somlet | `m_somlet` | Asleep on a pile of mail at the Post Office | She says "Zzz"; "a letter peeks out from under her cap"; "a tiny paw curls beneath her cap"; "a patron of the Library". |
-| Anomalee | `blinker` | Gazes up at the Window | Speaks in CAPITALS about CODE and the ORIGINATOR; "chewing cables" into the Computer Core; "My SIGNAL flickers. My FRAME remembers how to STAND." (a sad melody plays under "ORIGINATOR…"). |
+| Somlet | `m_somlet` | Asleep on a pile of mail at the Post Office | She says "Zzz"; "A letter peeks out from under her cap"; "a tiny paw curls beneath her cap"; "a patron of the Library". |
+| Anomalee | `blinker` | Gazes up at the Window | Speaks in CAPITALS about CODE and the ORIGINATOR; "chewing cables" into the Computer Core; "My SIGNAL flickers.\|My FRAME remembers how to STAND." (a sad melody plays under "ORIGINATOR…"). |
 | Zollod | `cutebex` | Garden Supplies | Gardener; seedlings, mint, carrots; "A little goo is good for the soil."; shy until the book cures him. |
-| Sparkakus | (library, `st`) | Librarian | Seeks the three Artifacts; member of a "genealogical society"; a Blossom sets him romping about the Library ("…sorry I don't know what got into me."); elsewhere he holds back ("I must resist the urge to run. Not out here, in front of everyone."). |
+| Sparkakus | (library, `st`) | Librarian | Seeks the three Artifacts; member of a "genealogical society"; a Blossom sets him romping about the Library ("…sorry I don’t know what got into me."); elsewhere he holds back ("I must resist the urge to run. Not out here, in front of everyone."). |
 | Nextessa | (pizza shop) | Inter-temporal pizza shop in the far future (the author), reached by phone | "I love my job!"; courier delivers. |
 | The Ancient | `slug` | Inside the church | "I am the one reborn." See its own section. |
 | Mama W | map node `MAMA_W` | On the gallery painting only | A name for Mama Gorbo (the author); in her colour, tied to her. |
+
+### The cast at a glance
+
+The display name is the one on the dialogue box (and the vignette table's key). The post is where each one lives when
+not visiting; roamers wander round it. Gree-mail is the token, gesture and emote each shows in a token exchange (the
+game's `SIG` table). Ties are the threads on Gooward's painting. Pronouns: as the game and the author give them
+(Gemtoe, Fortizmo, Somlet, Anomalee and Nextessa she; Backpacka and the rest he; the Ancient it).
+
+| Display name | Code id | Post | Role | Signature line | Gree-mail | Ties on the painting |
+| --- | --- | --- | --- | --- | --- | --- |
+| HENNRICK | `gratelet` | Roams round the Portal | Researcher from the far past, stranded | "Much research is still needed in this era." | cube, nod, "!" | Sparkakus, Etcher, Mushroom |
+| MUSHROOM | `drifter` | The Sheriff's desk (by its ramp) | Sheriff; runs the Consortium with Maltoe | "This town is under the protection of the Consortium." | spore, puff, "!" | Nextessa, Hennrick, Montgummery |
+| ANOMALEE | `blinker` | Before the church, gazing up at its window | Seeker of the ORIGINATOR; cable-chewer under investigation | "The WINDOW REMEMBERS the TRAVELER." | pixel, glitch, "?" | Mama Gorbo, Glyph |
+| KING DINO | `m_kingdino` | His drums by the JUICE BAR | Drummer; works off his bar tab | "I’m the King of Jazz, baby!" | crown, puff, "★" | Fortizmo, Montgummery |
+| GOOWARD | `gorbo` | Roams round GOOWARD'S GALLERY | Artist; Mama Gorbo's husband | "Gomp Gomp Gomp!" | goo, wobble, "~" | Mama Gorbo (knot), Montgummery, Zollod |
+| ZOLLOD | `cutebex` | GARDEN SUPPLIES | Gardener and shopkeeper; shy until the book | "Bringing plants to life is MY life’s work." | sprout, sway, "✿" | Gooward, Fortizmo |
+| SOMLET | `m_somlet` | Asleep on the POST OFFICE mail | Postmaster; Library patron | "Zzz" | letter, doze, "z" | Fortizmo, the Ancient |
+| FORTIZMO | `frog` | Behind the JUICE BAR | Bar owner; horn player for Backpacka | "We only accept Blossoms at this establishment." | note, groove, "♪" | King Dino, Zollod, Somlet |
+| ETCHER | `p_etcher` | The dance floor | Data preservation; dancer | "My skin is a ledger." | card, nod, "!" | Glyph (groove), Hennrick |
+| GEMTOE | `p_gemtoe` | Gemtoe's Gazebo | Keeper of the First Bank; inventor of "Avarice" | "This is mine now." | gem, twirl, "✦" | Glyph, Sparkakus |
+| GLYPH | `p_glyph` | The dance floor | Master of symbols; dancer | "I am the Master of symbols.\|Symbols make up everything… don’t you think?" | tile, giggle, "?" | Etcher (groove), Gemtoe, Anomalee |
+| MONTGUMMERY | `w_mont` | The dance floor | VHS-eating robot; dancer; the Human's protector | "We are all digital monsters." | coin, nod, "!" | Mama Gorbo, Gooward, King Dino, Mushroom |
+| MAMA GORBO | `p_mamagorbo` | Roams the park | Runs the Gooburger; gardener | "What a beautiful day in Greeblis Park!" | goo, bow, "♥" | Gooward (knot), Montgummery, Anomalee, Mama W |
+| SPARKAKUS | (library, `st`) | The LIBRARY | Librarian; seeks the Artifacts | "For my research: I seek Artifacts left by the Ancients." | card, nod, "?" | Hennrick, Gemtoe, the Ancient |
+| NEXTESSA | `pk_nextessa` (builder) | Her pizza shop in the far future; visits by the Portal | Inter-temporal pizza courier | "I love my job!" | (none) | Mushroom |
+| ANCIENT | `slug` | The Cave inside the church | The one reborn | "I am the one reborn." | spore, doze, "…" | Sparkakus, Somlet |
+
+Named relations in the game's own words: Mama Gorbo and Gooward are married ("the hubby"); King Dino owes Fortizmo
+his bar tab; Gemtoe envies Sparkakus ("Spark collects books and calls it a job"); Fortizmo resents Etcher etching
+"her dancefloor"; Hennrick is the Sheriff's "unwilling guest"; Mushroom investigates Anomalee; Montgummery hides the
+Human from the Sheriff and ate the Library's VHS tapes; Glyph and Etcher need each other ("Without your symbols I'd
+have nothing to etch."); Hennrick calls Etcher a colleague ("You etch history and I jar it. Colleagues!") and Sparkakus another ("Much research is still needed, colleague.").
+
+### Every talk line
+
+"Talk to …" gives a townsperson's lines one at a time, in this order, starting again after the last (the game
+counts each character's talks; nothing is random). A "|" is a page break in the dialogue box. Each talk shows the
+speaker's talk emote over their head (Hennrick "~" with a splash, Gooward "!" with a blorp, Mushroom "...",
+Anomalee "?" with a crackle, Fortizmo "♪" with a toot, Zollod "≈" with a bubble blip, everyone else "!").
+
+- **Anomalee**: "BEINGS of CODE." · "ORIGINATOR…" (a sad four-note melody plays under it) · "WAS there WITHIN." ·
+  "The WINDOW REMEMBERS the TRAVELER." · "My SIGNAL flickers.|My FRAME remembers how to STAND."
+- **Mushroom**: "This town is under the protection of the Consortium." · "All travel through the Portal is locked
+  down until further notice." · "We’re investigating UFO sightings in this area." · "See anything glowing in the
+  sky, you report it to this office.|Directly." · "Under this cap, my gills keep the spores moving.|A sheriff must
+  know what is in the air." · "Anomalee is under investigation for chewing cables leading into the Computer Core."
+- **Hennrick**: "Good to see you again, Human!" (his first line, even at a first meeting) · "Much research is still
+  needed in this era." · "I am an unwilling guest of the Sheriff, until the Consortium decides to reopen the
+  Portal." · "In my era, the towers of Greeblis City reach the clouds.|I never imagined the far future would have…
+  picket fences." · "I have catalogued every Blossom in this park.|They grow back faster than my notes can keep
+  up." · "My casing keeps the instruments steady.|These joints were built for fieldwork, not a desk."
+- **Fortizmo**: "King Dino’s money is no good here!|He stamps those coins himself." · "That lounge lizard never
+  leaves.|He’s been employed on the drums until he plays off his bar tab." · "We only accept Blossoms at this
+  establishment." · "Our house special is carrot juice on the rocks.|Don’t tell the King it’s just carrots and
+  ice." · "I’ve been practicing a song for the coming of the legendary Backpacka." · "My valves turn a breath into a
+  brass note.|Carrot juice is for the customers, sugar."
+- **King Dino**: "I’m the King of Jazz, baby!" · "Feel the beat!" · "Hitting you with that prehistoric rhythm!" ·
+  "These drums have been in the family since the Cretaceous, baby!" · "Gooward, that wild cat painted my
+  billboard!" · "These springy joints have kept the beat since the age of Dinosaurs, baby!|The crown is extra."
+- **Somlet**: "Zzz" · "Zzz" · "Zzz" · "* A letter peeks out from under her cap *|Zzz" · "* Her soft body settles
+  with each breath; a tiny paw curls beneath her cap *|Zzz…"
+- **Gooward**: "Gomp Gomp Gomp!" · "Goooooomp!" · "Gomp?" · "* His crystal wings flutter *|Gomp Gomp!" · "Goomp!
+  Goomp! Goomp!" · "Goomp?" · "* He presses two goo bubbles together, then fans his crystal wings as they spring
+  apart *|Gomp! Gomp!"
+- **Gemtoe**: "I’ve invented a new concept.|I call it “Avarice”.|In theory: it will improve society some." · "These
+  gems are worth countless flint. I will not part with any." · "Spark collects books and calls it a job.|Why am I
+  so different?" · "I seek the rarest gems." · "My tails never let go of my crystals.|Not even while I sleep." ·
+  "These tails curl around a crystal without a scratch.|A useful talent for the keeper of the First Bank of
+  Greeblis." · "I’m selling digital plots out here in the Greeblis-verse!" (added in 3.15.53, FIXES A2). Once the
+  Human holds the Gem, her next talk is the Gem trade instead of a line.
+- **Mama Gorbo**: "Hello dear! I’m so excited to start gardening." · "Please take a coupon for my famous goo
+  burger.|I run the local fast food joint, and the hubby runs the Art Gallery now." · "What a beautiful day in
+  Greeblis Park!" · "I hear there is a book that can help anyone overcome shyness." · "The hubby and I met over a
+  spilled goo shake.|Love at first splat!" · "My hubby is quite the artist." · "My noble goo can heal many
+  inflictions." · "This noble goo keeps me round and bouncy, dear.|A little wobble is how I wave hello!"
+- **Montgummery**: "Hello Human.|Mont will hide you from alien hunting Sheriff." · "Mont knows of humans.|Mont eats
+  many VHS and digests much knowledge of your culture." · "Mont understands the high point of human
+  culture|…|‘Flint Knapping for Beginners’" · "We are all digital monsters." · "Mont always rewinds tape before
+  eating.|Mont is polite monster." · "Mont feeds tape through inner readers.|Knowledge in the reels. Dinner in the
+  cassette."
+- **Etcher**: "I work in data preservation.|I like to think the Ancients created us for our purposes." · "As I move
+  my tentacles etch data into everything they touch.|Fortizmo is upset that I do it on her dancefloor." · "The age
+  of the Ancients is etched.|The age of the Synthetics is etched.|The age of Dinosaurs began the long record of the
+  Organics.|There is always more to preserve." · "Every scale on my body holds a backup of a backup.|One can never
+  be too careful." · "My small scales shelter layers of stored marks.|The tentacles write; the body keeps the
+  archive." · "My skin is a ledger."
+- **Glyph**: "I am the Master of symbols.|Symbols make up everything… don’t you think?" · "Etcher would have
+  nothing to reconstruct with without symbols.|Mont would remain motionless without symbols to translate in binary
+  electrical signals.|Even Dino would have no music to play!" · "All things come into being from symbols… don’t you
+  think?" · "Even a single footprint is a symbol… don’t you think?" · "My plates fit together like a sentence.|A
+  moving arrangement of symbols… don’t you think?" · "When you see creatures exchanging symbols, that’s Gree-mail."
+- **Zollod**: shy, "…|…|I’m shy…"; with the book, once, "…|That book…|Let me see..|Wow I’m free from shyness!";
+  afterwards always "Bringing plants to life is MY life’s work.", beside "Shop at Garden Supplies" (the shop is
+  closed during the Event).
+- **Sparkakus**: by progress, not in turn: "For my research: I seek Artifacts left by the Ancients.|Three exist in
+  this region." (no Artifact yet); "I require more Artifacts to complete my research." (one or two); the Speech
+  (three); "Well done, Human!" (ever after). While he romps or the Speech's bulb is up he cannot be spoken to.
+- **Nextessa**: no talk lines; her words are the phone's and the delivery's ("Quests and their lines").
+- **The Ancient**: "I am the one reborn." (its "Talk"); during an Event with Seeds, "Hello".
+
+During an Event started with the Seeds every townsperson answers only with their gardening line, in the ring or
+at home ("Gifts and gardening lines"); Fortizmo, at her horn, cannot be spoken to. In any Event no Blossom can be
+given, the TELEPHONE and the Pillar offer nothing, and Garden Supplies is shut; without the Seeds the talk lines go on
+as usual.
 
 ### Gifts and gardening lines
 
@@ -296,18 +495,23 @@ What each says when given a Blossom, and at the planting Event (the campfire lin
 | Mama Gorbo | "Thank you, dear." | "Pretty flowers come to life!" |
 | Gooward | "GOOMP" | "* Happy planting sounds *" |
 | Gemtoe | "This is mine now." | "Enjoying the SHARED garden… what is this feeling?" |
-| Etcher | "Let's dance!" | "Etching what was is important but living this is what IS." |
-| Glyph | "Let's dance!" | "Growing flowers, it's a symbol of life." |
-| Montgummery | "Let's dance!" | "Joyful to bring life to our Town." |
+| Etcher | "Let’s dance!" | "Etching what was is important but living this is what IS." |
+| Glyph | "Let’s dance!" | "Growing flowers, it’s a symbol of life." |
+| Montgummery | "Let’s dance!" | "Joyful to bring life to our Town." |
 | Hennrick | "Adding to a collection jar." | "Sometimes I worry that doing these things will alter the timeline…" |
 | Mushroom | "A bribe? …Portal is now open to your use." | "…" |
-| Fortizmo | "Add it to the tip jar." | (none) |
-| King Dino | "Yes! I can finally afford another mug of carrot juice!" | "Can't stop the beat!" |
+| Fortizmo | "Add it to the tip jar." | (none: she plays her horn and cannot be spoken to) |
+| King Dino | "Yes! I can finally afford another mug of carrot juice!" | "Can’t stop the beat!" |
 | Somlet | "Thank you" | "Zzz" |
 | Anomalee | "* Munch *" | "PLANT" |
-| Zollod | | "Bringing plants to life is MY life's work." |
-| Sparkakus | At the Library he romps about, then: "…sorry I don't know what got into me." Away from it: "A Blossom! …I must resist the urge to run.|Not out here, in front of everyone." | "Digging in the dirt like an animal? …don't tell the others at the genealogical society." |
-| The Ancient | "…" | "Hello" |
+| Zollod | (cannot be given one: his menu offers only talk, then the shop) | "Bringing plants to life is MY life’s work." |
+| Sparkakus | At the Library he romps about, then: "…sorry I don’t know what got into me." Away from it: "A Blossom! …I must resist the urge to run.\|Not out here, in front of everyone." | "Digging in the dirt like an animal? …don’t tell the others at the genealogical society." |
+| The Ancient | "..." | "Hello" |
+| Nextessa | (cannot be given one) | (not in the Event) |
+
+What follows a gift: Gooward's goo barrage (A39); the Portal opens (Mushroom); a dance battle (Etcher, Glyph,
+Montgummery); Somlet's hidden eye opens; Montgummery's screen shows robot eyes; Sparkakus romps (at the Library) or
+holds back. No gift can be given during the Event, and the gifts' words never change.
 
 ### Vignettes
 
@@ -318,6 +522,178 @@ Zollod joins in only once he is cured of his shyness. `tools/spellcheck_dialogue
 Hennrick wanting to go home, everyone refusing King Dino's coins, Blossoms-only at the bar, Etcher
 etching everything (including citations and snores), Mont having eaten the Library's VHS tapes, Mama
 offering everyone a goo burger, Gemtoe claiming whatever is worth something.
+
+**How an exchange is chosen.** Exchanges start two ways. On a visit, one townsperson walks over to another's post
+and the pair plays its exchange there (visits come every 22-32 s; Sparkakus visits only once the Human has the Gem or
+the Stone, F-B42; visitors come to the Ancient more often while the Human is in the Cave, A3). And every 18-28 s (4 s
+while nothing fits) the game looks for two townsfolk idle at their own posts side by side (within their two body
+radii and 2.4 m) and plays the exchange that pair has played least; whether it is spoken (bubbles) or thrown (tokens)
+alternates with what that pair did last. These never start during the Event or while the Human has a box or panel
+open. Outside the church only the 90 below can play; inside, only the Ancient's twelve. Zollod is left out until he
+is cured; an exchange stops at once if either speaker is called away or talked to. Each pair's third field in the
+game's table picks one of eleven token choreographies (all of the Ancient's float a bubble); the spoken lines are the
+same whichever plays.
+
+**All 90 exchanges** (in the game's order; straight apostrophes as the game writes them in this table). Each
+townsperson has 13, King Dino and Somlet 12.
+
+| # | Speaks first | Says | Answers | Says |
+| --- | --- | --- | --- | --- |
+| 1 | Hennrick | "Sheriff, when may I return to my own era?" | Mushroom | "When the Consortium says so. Not before." |
+| 2 | Hennrick | "May I record what you see in that window?" | Anomalee | "It is NOT for jars. It is for REMEMBERING." |
+| 3 | Hennrick | "Remarkable. Drums survive into the far future?" | King Dino | "Baby, the beat outlasts everything!" |
+| 4 | Hennrick | "A goo sample, for science? Only a small one." | Gooward | "Gomp gomp... GOMP!" |
+| 5 | Hennrick | "In my era, this flora hasn't even evolved yet." | Zollod | "Then you got here just in time to see it bloom." |
+| 6 | Hennrick | "Subject remains asleep. Observation day 41." | Somlet | "Zzz..." |
+| 7 | Hennrick | "I'm told the house currency is Blossoms?" | Fortizmo | "Blossoms only, sugar. Tip jar's on your left." |
+| 8 | Hennrick | "You etch history and I jar it. Colleagues!" | Etcher | "Then I will etch you into the age of Synthetics." |
+| 9 | Hennrick | "That gem would suit my collection jar." | Gemtoe | "Your jar can't afford it. Nobody can." |
+| 10 | Hennrick | "Your symbols descend from my era's alphabet!" | Glyph | "Every era borrows from symbols... don't you think?" |
+| 11 | Mushroom | "State your business at that window." | Anomalee | "The ORIGINATOR'S business. Not YOURS." |
+| 12 | Mushroom | "Those coins of yours are not legal tender." | King Dino | "Stamped by the King, baby. Legal enough." |
+| 13 | Mushroom | "You are leaving goo on public property." | Gooward | "Gomp? ...gomp." |
+| 14 | Mushroom | "Report any UFOs over your seedlings." | Zollod | "Only bees up there. My seedlings are thriving." |
+| 15 | Mushroom | "Have you seen anything suspicious today?" | Somlet | "Zzz... zzz..." |
+| 16 | Mushroom | "The Consortium will be inspecting your bar." | Fortizmo | "Inspect away. Blossoms up front, honey." |
+| 17 | Mushroom | "Have you been etching the town records?" | Etcher | "I etch everything. Including your citations." |
+| 18 | Mushroom | "And where did all those gems come from?" | Gemtoe | "Found them. Fairly. Mostly. Don't write that down." |
+| 19 | Mushroom | "Is that symbol a coded alien message?" | Glyph | "Every symbol is a message... don't you think?" |
+| 20 | Anomalee | "Your RHYTHM... the ORIGINATOR had it TOO." | King Dino | "Then the Originator could swing, baby!" |
+| 21 | Anomalee | "GOO... is also a kind of CODE." | Gooward | "Gomp gomp! Gooomp!" |
+| 22 | Anomalee | "ROOTS run like CODE beneath the soil." | Zollod | "And I tend every line of it." |
+| 23 | Anomalee | "You DREAM. We were MADE to dream." | Somlet | "Zzz... mm... zzz." |
+| 24 | Anomalee | "Do you ACCEPT pizza here? One SLICE?" | Fortizmo | "Blossoms only. But I won't tell if you share." |
+| 25 | Anomalee | "ETCH this: the ORIGINATOR was HERE." | Etcher | "Already etched, Anomalee. Deep enough to last." |
+| 26 | Anomalee | "Your gems GLOW like the WINDOW." | Gemtoe | "Mine glow brighter. And they're not for sale." |
+| 27 | Anomalee | "Your symbols... I KNOW them. From WITHIN." | Glyph | "Then we have read the same page... don't you think?" |
+| 28 | King Dino | "Gimme a goo-bop on the backbeat!" | Gooward | "Gomp! Gomp-gomp! GOMP!" |
+| 29 | King Dino | "Any carrots back there for my juice, baby?" | Zollod | "Grown with care. Not for your bar tab." |
+| 30 | King Dino | "Put one more carrot juice on my tab?" | Fortizmo | "Play off the last forty first, lounge lizard." |
+| 31 | King Dino | "Etch my solos, baby! For history!" | Etcher | "I etch them as you play. Your hi-hat too." |
+| 32 | King Dino | "I'll trade you a royal coin for that gem." | Gemtoe | "You stamp those yourself. Nice try." |
+| 33 | King Dino | "What's the symbol for a bigger beat, baby?" | Glyph | "This one. Joy and rhythm in one stroke... don't you think?" |
+| 34 | Gooward | "Gomp? Gomp gomp?" | Zollod | "Yes, Gooward. A little goo is good for the soil." |
+| 35 | Gooward | "gomp... gomp..." | Somlet | "Zzz..." |
+| 36 | Gooward | "Gomp gomp gomp!" | Fortizmo | "Goo is not currency, sweetie. Nice try." |
+| 37 | Gooward | "Gooomp?" | Etcher | "Yes, I etched your goo too. It's archived." |
+| 38 | Gooward | "Gomp! GOMP!" | Gemtoe | "Goo isn't gems. ...Fine. I'll keep it anyway." |
+| 39 | Gooward | "Gomp?" | Glyph | "'Gomp' is a fine symbol... don't you think?" |
+| 40 | Zollod | "Shh. My seedlings are napping too." | Somlet | "Zzz..." |
+| 41 | Zollod | "Fresh mint for your bar, cut this morning." | Fortizmo | "Mint like that, I'd almost take flint for it." |
+| 42 | Zollod | "Etch my seed catalogue. Every variety." | Etcher | "Each one a word in the age of Organics." |
+| 43 | Zollod | "Gems don't grow, Gemtoe. Plants do." | Gemtoe | "Then I'll plant gems and grow MORE gems." |
+| 44 | Zollod | "Is there a symbol for a seed?" | Glyph | "A dot. Everything starts as a dot... don't you think?" |
+| 45 | Somlet | "Zzz..." | Fortizmo | "Somebody play that sleeper a lullaby. On me." |
+| 46 | Somlet | "Zzz... zzz..." | Etcher | "Even her snores I will etch. Softly." |
+| 47 | Somlet | "Zzz..." | Gemtoe | "Asleep on a pile of mail. What a waste of a pile." |
+| 48 | Somlet | "Zzz..." | Glyph | "'Zzz' is the oldest symbol of all... don't you think?" |
+| 49 | Fortizmo | "Quit etching my dancefloor, tentacles!" | Etcher | "It's data. Your floor remembers every step." |
+| 50 | Fortizmo | "Settle up in Blossoms, honey. Not gems." | Gemtoe | "Gems are worth countless flint! Your loss." |
+| 51 | Fortizmo | "What's that symbol on my menu mean?" | Glyph | "'Fresh'. Juice is symbols too... don't you think?" |
+| 52 | Etcher | "I am etching the age of your Avarice." | Gemtoe | "Etch it bigger. Avarice deserves big letters." |
+| 53 | Etcher | "Without your symbols I'd have nothing to etch." | Glyph | "And without your etching they'd blow away... don't you think?" |
+| 54 | Gemtoe | "Is there a symbol for 'all mine'?" | Glyph | "There's one for 'shared'. Try that one... don't you think?" |
+| 55 | Hennrick | "I hear you've studied this era's films." | Montgummery | "Mont eats many VHS. Mont knows much of humans." |
+| 56 | Mushroom | "Have you seen a human in this town?" | Montgummery | "Mont has seen no human. Mont is very busy." |
+| 57 | Anomalee | "Your SCREEN shows faces. Mine shows the PAST." | Montgummery | "Mont's screen shows robot. Robot is happy." |
+| 58 | King Dino | "Can you dance to my beat, robot?" | Montgummery | "Mont dances to all beats. Mont dances best." |
+| 59 | Gooward | "Gomp gomp!" | Montgummery | "Mont understands Gomp. Gomp means friend." |
+| 60 | Zollod | "Mind my seedlings when you dance, Mont." | Montgummery | "Mont will dance around them. Mont is careful." |
+| 61 | Somlet | "Zzz..." | Montgummery | "Mont will dance quietly. Small robot dance." |
+| 62 | Fortizmo | "You've got rhythm, Mont. Ever played horn?" | Montgummery | "Mont watched VHS of horn. Mont is ready." |
+| 63 | Etcher | "Your binary, Mont. May I etch it?" | Montgummery | "Etch gently. Mont is ticklish in binary." |
+| 64 | Gemtoe | "What will you take for that screen?" | Montgummery | "Mont's screen is not for trade. Mont needs face." |
+| 65 | Glyph | "My symbols move you, Mont... don't you think?" | Montgummery | "Mont thinks. Mont thinks yes." |
+| 66 | Mama Gorbo | "Hennrick, dear! A coupon for a goo burger?" | Hennrick | "A burger from this era! For the collection jar." |
+| 67 | Mama Gorbo | "Sheriff, you look peaky. Have a goo burger." | Mushroom | "A bribe? ...Make it a double." |
+| 68 | Mama Gorbo | "Always staring up there, sweetie." | Anomalee | "The WINDOW remembers. As do YOU, Mama." |
+| 69 | Mama Gorbo | "Play us something romantic, King Dino!" | King Dino | "For you and the hubby, baby? Slow and smooth." |
+| 70 | Mama Gorbo | "There's my handsome hubby!" | Gooward | "Gomp gomp... gooomp!" |
+| 71 | Mama Gorbo | "Zollod, dear! Which seeds for a beginner?" | Zollod | "Start small. Love them daily. They'll grow." |
+| 72 | Mama Gorbo | "Look at her. Sleeping like a baby." | Somlet | "Zzz..." |
+| 73 | Mama Gorbo | "Two carrot juices! For me and the hubby." | Fortizmo | "Blossoms first, Mama. House rules." |
+| 74 | Mama Gorbo | "Etch my burger menu, would you, dear?" | Etcher | "Every topping. For the age of Organics." |
+| 75 | Mama Gorbo | "A burger coupon for you too, Gemtoe!" | Gemtoe | "...Is it worth anything? Then it's mine." |
+| 76 | Mama Gorbo | "What does that symbol mean, dear?" | Glyph | "Family. The warmest symbol... don't you think?" |
+| 77 | Mama Gorbo | "Mont, you're too thin! Have a goo burger." | Montgummery | "Mont cannot eat burger. Mont eats VHS." |
+| 78 | Sparkakus | "Hennrick! Any news of the Ancients' era?" | Hennrick | "Much research is still needed, colleague." |
+| 79 | Sparkakus | "Sheriff, may the Library stay open?" | Mushroom | "For now. The Consortium is watching your books." |
+| 80 | Sparkakus | "The Ancient texts speak of an ORIGINATOR..." | Anomalee | "YES. Read them to me. SLOWLY." |
+| 81 | Sparkakus | "Is drumming in the Ancient texts?" | King Dino | "Not yet, baby. Write me in!" |
+| 82 | Sparkakus | "Please, no goo near the first editions." | Gooward | "Gomp... gomp." |
+| 83 | Sparkakus | "I've a book on Ancient gardens for you." | Zollod | "Read me the part about seeds. Twice." |
+| 84 | Sparkakus | "Shh. Even asleep, she's a patron of the Library." | Somlet | "Zzz..." |
+| 85 | Sparkakus | "A quiet juice, please. I've a reputation." | Fortizmo | "One quiet juice, librarian. Blossoms only." |
+| 86 | Sparkakus | "Your etchings would fill my Library twice." | Etcher | "And your Library would fill my tentacles." |
+| 87 | Sparkakus | "I collect books and call it a job, yes." | Gemtoe | "And I collect gems and call it Avarice." |
+| 88 | Sparkakus | "Your symbols would make a fine index." | Glyph | "An index is a symbol of symbols... don't you think?" |
+| 89 | Sparkakus | "Mont, return the VHS tapes you borrowed." | Montgummery | "Mont ate the VHS tapes. Mont is sorry." |
+| 90 | Sparkakus | "Mrs Gorbo, no burgers in the Library." | Mama Gorbo | "Just a little one, dear? For your research." |
+
+## Places: a gazetteer
+
+Every place the game shows or names, with who is there and what happens. Positions, sizes and looks are in
+"Environment design and style" below; this is the story side. The park is everything inside the iron fence; the town
+outside it is scenery, seen and never entered (FIXES A4).
+
+**In the park**
+
+| Place | Who | What happens there, and its words |
+| --- | --- | --- |
+| The Garden and the SUMMONING PILLAR | Everyone, at the Event | The park's round heart. "Use the Summoning Pillar" opens the GARDEN EVENT panel; without the Stone, the SUMMONING PILLAR box: "The runes stay dark.\|Only the Summoning Stone can wake them and start the gardening event." The runes wake when the panel is opened with the Stone in hand. |
+| POST OFFICE | Somlet | Somlet sleeps on a mound of letters; parcels "To Montreal", "To Cobourg", "To Bangkok", "To Ormstown" (A43) and one unlabelled. |
+| SHERIFF'S kiosk | Mushroom | Mushroom stands on his desk, up a ramp at its left end; WANTED posters (an alien; GLOOPERNAUGHT); toadstools everywhere; where the bribe is paid. |
+| GARDEN SUPPLIES | Zollod | Shut while he is shy; then "Shop at Garden Supplies" ("Welcome to our shop!"): Flower Hat, Sun Dress, Frog Shoes, the bagel seasoning packet. Shut during the Event. |
+| GOOWARD'S GALLERY | Gooward roams round it | Gooward's three-panel painting of the ages ("The gallery painting"), paint cans and splats, two easels. |
+| The LIBRARY | Sparkakus | Open to the sky: eight bookcases on a rug. The Artifact quest, the Speech, OVERCOMING SHYNESS, the first editions; a Blossom sets Sparkakus romping between the shelves. |
+| The JUICE BAR | Fortizmo; King Dino drums at its end | "We only accept Blossoms at this establishment." Carrot juice on the rocks; the tip jar; King Dino's tab. |
+| The dance floor | Etcher, Glyph, Montgummery | A purple night-club floor in the daylit park; the dance battles, "KING DINO on drums.", where Etcher's tentacles etch every step. |
+| Gemtoe's Gazebo | Gemtoe | An octagon with gold coins on its floor; a kiosk "in all regards" (the author, P33): it fades with the kiosks in the Event, its seven railed sides are walls and its doorway open to anyone (F-B65), and no Blossom or flint ever spawns inside it (B95, 4.0.33). The Gem trade happens here. |
+| The church, and the Cave inside | The Ancient; its visitors | A secret room, entered through the west wall where it is marked with a red X. Only the Ancient's twelve exchanges play inside, and only they. |
+| The Window | Anomalee, below it | The church's front stained-glass window *(inference: "The church and the Cave" below)*: "The WINDOW REMEMBERS the TRAVELER." |
+| The Portal | Hennrick roams round it | A stone gateway between eras, locked by the Consortium; it opens (a blue swirl) when the courier comes through. |
+| The TELEPHONE | (the Human) | "Call for pizza"; without the bribe, the PHONE box says "*connection to the Portal seems blocked*". Counts as a kiosk in the Event (A27). |
+| The pond | Backpacka, in the Event | Still water with stones round it (A33: no ripples or glow since 4.0.4). Backpacka drinks here. |
+| The two big trees by the church | The robin; the cardinal | The robin on the tree at (-16, 37) (A30), the cardinal on the one to its right (A37, A38), turned toward the robin (A40). Picked ("Robin", "Cardinal"), each flies off and returns. |
+
+**In the town outside the fence** (scenery; names from the signs, or *(inference)* from colours and objects, as in
+"The rest of the town" below)
+
+| Place | What the game says or shows |
+| --- | --- |
+| FIRST BANK OF GREEBLIS | Kept by Gemtoe: "A useful talent for the keeper of the First Bank of Greeblis." |
+| Mistergummery's | A drive-in diner with a teal M, the logo on Mama Gorbo's cap (A36). |
+| The Gooburger | Mama Gorbo's "local fast food joint"; a giant burger on a pole. |
+| King Dino's billboard | "A Prehistoric Era in Jazz!"; "Let King Dino take you / to the Jurassic / Greeblis Park!"; painted by Gooward. |
+| The Field Office | Hennrick's office in the far past (the author): a trailer with a sheriff's star and a flying saucer, a dish. |
+| The outer-ring houses | Eight houses, each in one townsperson's colours *(inference)*. |
+| The courthouse, school (with the Backpacka mural), fire station, hotel, gas station, video shop, curio shop with a sphinx, glasshouses, water tower, a roped-off landing ring, a fenced crystal patch | Scenery only; no words beyond the pictures. |
+
+**Named but never shown**: Greeblis City (Hennrick's era, "the towers of Greeblis City reach the clouds"); the
+Computer Core and the Great Sphinx that guarded it; Nextessa's inter-temporal pizza shop; the genealogical society
+(Sparkakus); the Greeblis-verse, where Gemtoe sells "digital plots".
+
+## Menus, panels and boxes
+
+The words of the game's own interface, in the order the player meets them (the landing screen is under "A session").
+
+- **The pick menu** over whatever the ray points at: "Talk to <NAME>" and, with a Blossom in hand and no Event,
+  "Give a blossom"; "Talk" for the Ancient; "Use the Summoning Pillar"; "Shop at Garden Supplies"; "Call for pizza";
+  "Take OVERCOMING SHYNESS"; "Robin"; "Cardinal". Talking to a townsperson shows their talk emote.
+- **The dialogue box** carries the speaker's display name in their colour and pages split at "|". Boxes not spoken by
+  a character: "PHONE" (the TELEPHONE) and "SUMMONING PILLAR".
+- **GARDEN EVENT** (the Pillar): "Summoning Stone ☐/☑", "Seeds ☐/☑", "Snacks ☐/☑", "Start gardening event?", "Yes",
+  "No".
+- **GARDEN SUPPLIES** (the shop): "Welcome to our shop!", the four goods, "Change out" on a worn outfit, "Flint: n",
+  "LEAVE".
+- **"DANCE BATTLE: MONTGUMMERY", "DANCE BATTLE: ETCHER", "DANCE BATTLE: GLYPH"**: "KING DINO on drums."; the dancer's move ("MONTGUMMERY rocks
+  out!", "… does the splits like scissors!", "… lays horizontal like paper!"); the player's three moves "Rock out!",
+  "Do the splits like scissors!", "Go horizontal like paper!" and "BOW OUT"; the stamina bar ("Robot steps left",
+  "Tentacle twists left", "Macarena moves left", 10 each); at the end "<NAME> awards you an Ancient Artifact!"
+  (a first win) or "<NAME> takes a bow." (a later one), or after BOW OUT "You take a bow." (or "The beat won't
+  let you go!"), then "TAKE A BOW".
+- **The watch**: "PRESS / Y / TO OPEN"; the inventory ("Currency, items and rewards").
+- Elsewhere: "CLOSE" and "DONE" on panels.
 
 ## Creature design and style
 
@@ -388,7 +764,8 @@ What the models have in common, as built:
   his flank.
 - **Face**: two shared eyes with yellow irises placed on the head with `hit()`, a glossy black nose, a mouth traced
   along the snout.
-- **Extras**: a collar with an orange "APP" coin; a pink-to-cyan mist trailing from his tail (90 particles, 2 s each).
+- **Extras**: a collar with an orange "APP" coin. The pink-to-cyan mist that trailed from his tail (90 particles) was
+  removed in 4.0.4 (A32: "Please remove the particle effect coming from Sparkakus' tail").
 - **Motion**: breathing, ear twitches, a full walk (stride, arm swing, roll and lean), and a dance with arms pumping
   overhead.
 
@@ -409,7 +786,7 @@ What the models have in common, as built:
 - **Palette**: cream felt (`#f2e4b4`), a navy postman's cap with white piping, a black visor and a gold envelope
   badge; plum tentacles.
 - **Face**: asleep by default: felt lids with lashes and creases, under-eye bags, a brow; a hidden open eye that
-  eases in when the player gives him a gift. A small "o" mouth that breathes and talks.
+  eases in when the player gives her a gift. A small "o" mouth that breathes and talks.
 - **Motion**: hovering, breathing, three "Z" sprites rising from him; when he is at home and idle he slowly rolls
   onto his side to lie down. Each frame his tentacles curl themselves out of the ground.
 
@@ -496,12 +873,12 @@ What the models have in common, as built:
 
 #### Fortizmo
 - **Body**: a pear body that widens at the bottom, a round head with long upright ears, a trumpet-bell muzzle, arms
-  with three-fingered hands; he rolls on two unicycle wheels with springs.
+  with three-fingered hands; she rolls on two unicycle wheels with springs.
 - **Palette and surface**: orange brush-stroke fur (`#e8742a`), a cream belly patch with seams and black studs, brass
   valves, chrome and black tyres. Every vertex jittered for a hand-made look.
 - **Face**: two glossy black eyes and four smaller matte black beauty marks beside them (the author).
-- **Motion**: the wheels roll with the distance travelled; when he plays, his muzzle morphs into a 3.7 m trumpet,
-  the valves pump at the Event's 88 beats a minute and his arms reach for the horn.
+- **Motion**: the wheels roll with the distance travelled; when she plays, her muzzle morphs into a 3.7 m trumpet,
+  the valves pump at the Event's 88 beats a minute and her arms reach for the horn.
 
 #### Hennrick
 - **Body**: a large egg body and broad head, ball shoulders, a beard of four tentacles, copper pipes curving up
@@ -530,7 +907,9 @@ What the models have in common, as built:
 #### The Ancient
 - **Body**: one long tube along a curved spine (140 x 22), flattened into a sole underneath, with a hump at the
   mantle, a keel ridge, up to 26 tubercles, a tail droplet and four stalks (two long, two short), squashed to .62 of
-  its height: a long, low, dark slug.
+  its height: a long, low, dark slug. Since 4.0.33 (A52) the core, mantle, head and stalks are 15% larger about its
+  ground point, and its skin and bump maps are painted at 1024 x 256 (were 512 x 128) with finer pores, creases,
+  scratches and sheen streaks over the same pattern.
 - **Palette and surface**: near-black (`#171310`) with a painted mottled skin and a separate bump map, shininess 90:
   wet and glossy. No eyes: dark knobs on the upper stalks.
 - **Motion**: slow, irregular life: periodic settles, tilts, tail curls, mantle ruffles and deep sighs on different
@@ -543,8 +922,9 @@ What the models have in common, as built:
   flicks its tail every 9 s, and when picked flies up, hides for 10-18 s and returns.
 
 #### The cardinal
-- A male cardinal (since 4.0.4, A38; from the author's photos) on a branch of the second park tree (-24.5, 34.5), facing
-  the park. The robin's body, wings, tail and head, in a cardinal's colours: bright red all over, a darker red-brown
+- A male cardinal (since 4.0.4, A38; from the author's photos) on a branch of the second park tree (-24.5, 34.5),
+  turned to face the robin since 4.0.7 (A40: "Please flip the Cardinal to be facing the opposite direction (towards
+  the Robin)"; it faced into the park before). The robin's body, wings, tail and head, in a cardinal's colours: bright red all over, a darker red-brown
   back, wings and tail, a tall swept-back crest, a black mask and bib round a thick orange-red bill, no eye rings and
   no white tail tips. It moves as the robin does (a few seconds out of step) and, picked, flies off and returns.
 
@@ -562,6 +942,8 @@ What the models have in common, as built:
 - In VR the player sees only their hands: cartoon three-fingered hands (skin `#f4dcc6`) with a white cuff and a
   sleeve in the dress colour. The full body (a yellow flowered dress, a navy belt, red-orange hair in two pigtails
   with a navy bow, freckles and blush) is built at boot and hidden in VR.
+- The left wrist wears a watch (since 4.0.4, A35): a dark strap, a small case and a face reading "PRESS / Y / TO
+  OPEN"; the inventory opens on the watch face itself (A41), 10 cm wide (A44).
 - Outfits from the shop are built hidden and switched on: the Flower Hat (in place of the bow), Frog Shoes (green
   frog-faced shoes) and the Sun Dress (the dress map swapped for suns on sky blue, with an orange hem).
 
@@ -587,7 +969,7 @@ places clears the hat (emotes at 2.4 m, speech bubbles at 3.1 m). No questions a
 
 ## Environment design and style
 
-How the world is built and how it looks, read from the current game file (`tools/uncompressed.html`, 3.15.67), as
+How the world is built and how it looks, read from the game file (`tools/uncompressed.html`, 3.15.67; later changes to 4.0.34 noted where they fall), as
 "Creature design and style" above does for the characters. Numbers are the code's own (metres, radians, seconds;
 colours as hex). Most buildings carry no name, so the building names below are the 3.15.44 builders' code names
 (`git show 21596f1:tools/uncompressed.html`: `STORE`, `FRONTIER`, `HOUSE`, `COURTHOUSE` and so on; minified since
@@ -917,9 +1299,11 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   (A5); small objects more than 26 m from the centre are hidden the same way; a UFO in flight leaves by its exit path
   (A6). Nothing pops in or out (the author, A5: "Nothing should ever appear to pop out or pop in"). The pond is never
   among them (F-B64).
-- **The fade groups** (P33, RULES.md 26): once the mist is up, each kiosk and the gazebo, and every tree with the robin and the cardinal,
-  fade out over 10 s and stay out until the Event ends, then fade back over 10 s; never the church and
-  Cave, the Ancient, Somlet, the pond or the Garden.
+- **The fade groups** (P33, RULES.md 26): once the mist is up, each kiosk, the gazebo ("count the Gazebo as a kiosk
+  as well. In all regards", the author), the phone booth and the Portal (A27), the park's trees with the robin and the
+  cardinal, and the town's trees fade out over 10 s and stay out until the Event ends, then fade back over 10 s; never
+  the church and Cave, the Ancient, Somlet, the pond or the Garden. In an Event without the Seeds only the town's
+  trees fade (F-B72: "If the user starts the Event without having completed 'Seeds', kiosks should NOT fade out").
 
 ### Special places
 
@@ -946,7 +1330,11 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   the chicory 4 more flowers, the milkweed two more umbels, the mallow three more flowers). Every plant's flowers take a
   random colour of its own, drawn anew each Event (A29); the stems, leaves, buds and the mayweed's yellow centres keep
   theirs. In a later Event the old flowers shrink away, take their new colour and grow back when watered (F-B43).
-- Pizza boxes stand in eight stacks round the Garden; Anomalee eats from her own open box (F-B49).
+- With the Snacks, pizza boxes stand in eight stacks round the Garden, fading in as the Event starts (A51) and out at
+  its end (A42); Anomalee eats from her own open box instead of planting (F-B49). Without the Snacks there is no box
+  and she plants.
+- With the Seeds, all but King Dino and Somlet take places (Sparkakus too); Fortizmo stands at the Garden's west edge
+  and plays rather than planting. Without them nobody gathers.
 - Fortizmo plays her horn; King Dino's drums slow to 88 beats a minute; Backpacka drinks at the pond, sprays the
   Garden and leaves low over the north-west fence into the mist (A7); the mist bank closes round the town.
 
