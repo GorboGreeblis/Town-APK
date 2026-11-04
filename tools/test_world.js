@@ -9,6 +9,7 @@
  *   spots     the pickup spawn picker never puts a Blossom or Flint inside a
  *             building, within 4.1 m of the Gazebo or in a kiosk, nor are the
  *             live pickups there (B95)
+ *   fade      a taken pickup fades out in place, no move and no shrink (A56)
  *   heal      a taken pickup left showing is hidden and logged (B97)
  *   ancient   the Ancient's size (15% larger), radii, visitor spot and skin
  *             textures (A52)
@@ -128,6 +129,20 @@ const SAMPLE_S = Number(process.argv[3] || 40);
     expect(`${name}: walking onto it picks it up (+1)`, r && r.took === 1 && r.taken, JSON.stringify(r));
     expect(`${name}: regrows after ${r && r.regrowS}s`, r && r.regrew, r && `${r.regrowWaitS}s`);
   }
+
+  // ---- a taken pickup fades out in place (A56, 4.0.36; the author: "I want the Blossoms and Flint to fade out in place,
+  //      not move towards the player in any way"): position and size unchanged while its fade value falls, then hidden
+  const fip = await page.evaluate(async () => {
+    const D = window.__dbg, out = {};
+    for (const [k, mod] of [['blossom', D.le], ['flint', D.ce]]) {
+      const p = mod.list.find((q) => !q.userData.taken && q.visible && q.userData.regrowT0 === undefined); if (!p) { out[k] = 'none'; continue; }
+      const p0 = p.position.clone(), s0 = p.scale.x; mod.take(p); const tk = []; let moved = 0, scaled = 0;
+      const t0 = performance.now(); while (p.visible && performance.now() - t0 < 3000) { await new Promise((r) => setTimeout(r, 30)); moved = Math.max(moved, p.position.distanceTo(p0)); scaled = Math.max(scaled, Math.abs(p.scale.x - s0)); if (p.userData.gcTk !== undefined) tk.push(+p.userData.gcTk.toFixed(2)); }
+      out[k] = { moved: +moved.toFixed(3), scaled: +scaled.toFixed(3), hidden: !p.visible, fell: tk.length > 1 && tk[0] > tk[tk.length - 1], tk: tk.slice(0, 6) };
+    }
+    return out;
+  });
+  expect('A56: a taken Blossom and Flint fade out in place (no move, no shrink; the fade value falls, then hidden)', ['blossom', 'flint'].every((k) => fip[k] && fip[k].moved < 1e-3 && fip[k].scaled < 1e-3 && fip[k].hidden && fip[k].fell), JSON.stringify(fip));
 
   // ---- a taken pickup still showing is hidden (B97, 4.0.35; the author: a Blossom picked by pointing "did not
   //      disappear ... Instead it became uninteractable"): one put in that state (taken, shown, no fade or regrow

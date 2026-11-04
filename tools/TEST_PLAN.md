@@ -47,6 +47,8 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Right stick snap turn 30°, no repeat while held | `test_input.js` | done |
 | The snap turn instant: the turn on the flick's frame, the view never dims (4.0.35; the blink of S37 taken out) | `test_input.js` | done |
 | A taken Blossom or Flint left showing is hidden and logged (B97) | `test_world.js` | done (4.0.35) |
+| A taken Blossom or Flint fades out in place: no move, no shrink (A56) | `test_world.js` | done (4.0.36) |
+| Sparkakus's romp stays above the floor and out of the Library's shelves (A57) | `test_input.js` | done (4.0.36) |
 | A flash mark logs the head guard line (B46 reopened, 4.0.35) | `test_flashlog.js` | done (4.0.35) |
 | Trigger/grip (`select`/`squeeze`): pick ray, pick range/cone, menu choice, UI buttons 4/5 | `test_input.js` (events only) | partial |
 | Controller mapping on real hardware (hand assignment; no haptics anywhere since 4.0.23, A50) | sideload | headset |

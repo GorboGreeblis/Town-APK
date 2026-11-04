@@ -1922,6 +1922,22 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.36, the author's asks**:
+  - **A55, more clouds** (the author: "Add more clouds to the sky"): 24 instead of 14 (seven until 3.15.68), built the
+    same way from the same seeded stream, so the first 14 stay where they were and ten more join them; the Event's
+    fade applies to all. Looking up the view draws 6 more calls (72 > 78), level views none; pictures in
+    `tools/.runs/shots/clouds_before_after.png`. `test_seeded.js` and `test_event_fade.js` count 24.
+  - **A56, pickups fade out in place** (the author: "I want the Blossoms and Flint to fade out in place, not move
+    towards the player in any way"): a taken pickup used to shrink to its base over 0.4 s; it now keeps its place and
+    size and fades out by opacity (a per-pickup fade value multiplied into its instance's alpha, the same channel as
+    the Event's fade, its halo or glint along), and a regrowing one fades in the same way instead of growing from
+    nothing. `test_world.js` checks no move and no shrink while the fade value falls.
+  - **A57, Sparkakus's romp clears the floor and the shelves** (the author: "he does not clip into the ground and into
+    bookshelves when doing his romp"): measured through a whole romp, his body went 0.6 m below the floor (a 66 degree
+    lean about his feet) and his path ran through two of the Library's shelf books. Now he leans 20 degrees, is lifted
+    by the lean's drop (0.6 m x sin), and runs a smaller loop (4.0 x 0.7 m, its centre 0.45 m back instead of 4.4 x 1.0
+    m at 0.78 m): his lowest point stays above the floor (0.06 m against 0.08 m standing) and he touches no shelf.
+    `test_input.js` checks both through the whole romp.
 - **4.0.35, the author's run on 4.0.34** (logs 865e1e9c and 9f51af63):
   - **B96 holds**: two hides (3 min and 20 s) came back cleanly; the native census held steady on every visibility
     change, 5 s after each return and every 60 s (textures 221, framebuffers 5, no growth); free memory steady.
