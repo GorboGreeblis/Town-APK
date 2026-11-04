@@ -264,6 +264,24 @@ const SAMPLE_S = Number(process.argv[3] || 40);
   });
   expect(`B2: ${b2.name || '?'} stuck in view for 8 stalls is moved to its target with a visible poof`, !b2.error && !b2.threw && b2.atTarget < 0.05 && b2.stuckN === 0, JSON.stringify(b2));
 
+  // 4.0.43, A63: the UFO's pilot is Ollaag (the author: "Please update this model to be Ollaag instead"): his poster's
+  // tan skin and blue robe, no green alien left; the saucer spins under him, but he faces the way it flies
+  const ufoP = await g.page.evaluate(async () => {
+    const D = window.__dbg, C = D.C, J = D.JGP, wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    let ufo = null; C.children.forEach((o) => { if (!ufo && o.userData.keepInFinale && o.userData.jgpKeep && o.children.length === 1 && o.children[0].children.length > 30) ufo = o; });
+    if (!ufo) return { error: 'no UFO' };
+    const cols = new Set(); ufo.traverse((o) => { if (o.isMesh && o.material && o.material.color) cols.add(o.material.color.getHexString()); });
+    const pilot = ufo.children[0].children.find((o) => o.isGroup); if (!pilot) return { error: 'no pilot group', cols: [...cols] };
+    if (D.me.active || !J.ufoNow) return { error: 'cannot fly the UFO now' };
+    J.ufoNow(); await wait(2500);
+    const p0 = ufo.position.clone(); await wait(500); ufo.updateMatrixWorld(true); const p1 = ufo.position.clone(), m = pilot.matrixWorld.elements, f = new THREE.Vector3(m[8], m[9], m[10]);   // his forward (+z) in the world (the matrices refreshed here: fastSim skips the draw that would)
+    const mv = new THREE.Vector3(p1.x - p0.x, 0, p1.z - p0.z).normalize(); f.y = 0; f.normalize();
+    const spin0 = ufo.children[0].rotation.y; await wait(300);
+    return { cols: [...cols].filter((c) => ['d2bc90', '3a64b4', '26478a', 'e8c040', 'b4c2ae', '7ad85a'].includes(c)), parts: pilot.children.length, facing: +f.dot(mv).toFixed(3), spun: +Math.abs(ufo.children[0].rotation.y - spin0).toFixed(2), flying: ufo.visible };
+  });
+  expect('A63: the UFO\'s pilot is Ollaag (tan skin, blue robe, gold studs, sage tablet; no green alien)', !ufoP.error && ['d2bc90', '3a64b4', '26478a', 'e8c040', 'b4c2ae'].every((c) => ufoP.cols.includes(c)) && !ufoP.cols.includes('7ad85a') && ufoP.parts >= 20, JSON.stringify(ufoP));
+  expect('A63: in flight the saucer spins under Ollaag but he faces the way it flies', !ufoP.error && ufoP.flying && ufoP.spun > 0.2 && ufoP.facing > 0.95, JSON.stringify(ufoP));
+
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   await g.close();
   console.log(failures.length ? `WORLD TEST FAILED (${failures.length})` : 'WORLD TEST PASSED');

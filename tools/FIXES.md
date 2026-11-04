@@ -1922,6 +1922,20 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.43**:
+  - **A63, Ollaag flies the UFO** (the author: "Please update this model to be Ollaag instead"; Ollaag, the leader of
+    the Alien Alliance, is the one who flies round in the UFO): the small green alien in the saucer's dome (a green
+    head and body, two black eyes, two antennae: 8 parts) is replaced by Ollaag as his WANTED poster paints him, in the
+    poster's own colours: a tan head (`#d2bc90`) with long ears pointing out to the sides, heavy dark brows, two
+    forehead lines, brown eye sockets with black pupils, a pointed nose and a thin mouth; a blue robe (`#3a64b4`) with
+    navy collar points, five gold diamond studs and a navy belt with gold checks; a sage tablet in both hands. 31
+    parts in one group under the saucer's spinning deck, all built at load from the shared shapes and clay materials
+    (no texture, no new shader). The deck spins 2.2 radians a second, and the green alien spun with it; Ollaag's group
+    is turned against the spin each frame (`gqPil.rotation.y = PI/2 - dir - deck spin`), so he faces the way the
+    saucer flies. Pictures before and after (`shots.js --preset ufo`, new). `test_world.js` checks his colours (and no
+    green left) and that in flight he faces within 18 degrees of the saucer's path while it spins under him.
+  - `test_content.js`'s Gooward check reads the gift's lines with `qt.skipAll`, so its 3.6 s window is spent scanning
+    (the 4.0.42 final pass, on a loaded machine: 2 scans in the window, 3 needed; the game was right, 0 targeted).
 - **4.0.42**: `JGP.slug.core` restored (4.0.41 had removed it as unread; `test_world.js` reads the Ancient's core for A52,
   and stopped there); `test_interactions.js`'s menu band 0.04 +/- 0.09 rad (Zollod's came 0.027 rad under the old
   band from where the ray landed; Mama Gorbo's old error was 0.25).

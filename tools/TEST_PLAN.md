@@ -60,6 +60,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Every interaction (every menu option of every character and place) in four states: no error, no soft-lock, no negative counter | `test_interactions.js` (standard tier) | done (4.0.40) |
 | Every menu, opened with the controller, stands the same angle above its character's highest point | `test_interactions.js` | done (4.0.40) |
 | Nextessa's route in the church under an open dialogue: no error | `test_interactions.js` | done (4.0.40) |
+| The UFO's pilot is Ollaag (his poster's colours, no green alien) and faces the way the saucer flies while it spins (A63) | `test_world.js` | done (4.0.43) |
 | Every menu stands the same distance above its character's highest point (Mama Gorbo's cap) | `test_world.js` | done (4.0.38) |
 | The head guard shows in a wall but not 10 cm from one | `test_safeties.js` | done (4.0.38) |
 | A flash mark logs the head guard line (B46 reopened, 4.0.35) | `test_flashlog.js` | done (4.0.35) |

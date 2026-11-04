@@ -132,7 +132,7 @@ const LONG = process.argv.includes('--long');
     const beside = () => { D.At.position.x = e.group.position.x + 1.4; D.At.position.z = e.group.position.z; };
     beside(); await H.wait(300); const before = D.xe.current === e;
     await H.act(e, /^Give a blossom$/, 300); const g0 = e.giftAt || performance.now();
-    let n = 0, hit = 0; while (performance.now() - g0 < 3600) { beside(); await H.wait(120); if (D.qt.isOpen) { D.qt.advance(); continue; } D.xe.scan(); n++; if (D.xe.current === e) hit++; }   // the scan run here (it does not run while a dialogue is open); the gift's lines are read on as a player would, so the window is not spent waiting on them (the 4.0.25 final pass: 2 scans in the window)
+    let n = 0, hit = 0; while (performance.now() - g0 < 3600) { beside(); await H.wait(120); if (D.qt.isOpen) { D.qt.skipAll(); continue; } D.xe.scan(); n++; if (D.xe.current === e) hit++; }   // the scan run here (it does not run while a dialogue is open); the gift's lines are read on as a player would, so the window is not spent waiting on them (the 4.0.25 and 4.0.42 final passes: 2 scans in the window; since 4.0.43 every line is skipped at once with qt.skipAll)
     // after the barrage (gcGooUntil, 4 s of wall time from the gift): the gift's dialogue may close late on a loaded machine and Gooward may
     // wander meanwhile, so the player is put beside him again right before each scan, for up to 3 s
     while (performance.now() - g0 < 4300) await H.wait(100); while (D.qt.isOpen) await H.wait(100);

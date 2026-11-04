@@ -9,7 +9,8 @@
 //   three-quarter, feet), mama (Mama Gorbo's cap: front, side, three-quarter, back, above, and from a standing player's eyes), birds (the robin and the
 //   cardinal on the park's two trees), mist (the Event's mist at full: four sides of the fence from 4 m and 1 m, seated and standing),
 //   church (the Event's mist at full: approaching the church roof from six distances), park (the whole park from above
-//   and its four corners, in play and in the Event with the fade groups in full and hidden), pond (the water at four
+//   and its four corners, in play and in the Event with the fade groups in full and hidden), ufo (the UFO parked in the sky: its pilot front, face, side,
+//   three-quarter, from below and above), pond (the water at four
 //   moments 1.5 s apart, from 7 m and 3 m), stands (the Event's stands
 //   fading, P33: three views from the Garden's edge at 100, 60, 30 and 0%).
 // --event starts the planting Event and waits for its mist to be full before the free views.
@@ -64,6 +65,14 @@ const out = path.join(root, 'tools/.runs/shots'); fs.mkdirSync(out, { recursive:
         // A36: Mama Gorbo's cap, with her facing +z
         place('p_mamagorbo', 0, -28); D.It.byId.p_mamagorbo.group.rotation.y = 0; await go(8, -36);
         shoot('Mama Gorbo front', [0, 3.2, -23.2], [0, 2.6, -28]); shoot('Mama Gorbo side', [4.8, 3.2, -28], [0, 2.6, -28]); shoot('Mama Gorbo three-quarter', [3.4, 3.6, -24.6], [0, 2.7, -28]); shoot('Mama Gorbo back', [0, 3.6, -32.8], [0, 2.7, -28]); shoot('Mama Gorbo from above, close on the cap', [1.6, 4.6, -25.6], [0, 2.9, -28]); shoot('Mama Gorbo front, from a standing player\'s eyes', [0.6, 1.7, -24], [0, 2.7, -28]); shoot('Mama Gorbo three-quarter, from a standing player\'s eyes', [3.2, 1.7, -25.4], [0, 2.7, -28]);
+      } else if (p === 'ufo') {
+        // the UFO's pilot (4.0.43: Ollaag), the saucer parked still in the sky, its pilot facing +z
+        let ufo = null; C.children.forEach((o) => { if (!ufo && o.userData.keepInFinale && o.children.length === 1 && o.children[0].children.length > 30) ufo = o; });   // the saucer: one spinning group of 40-odd parts
+        if (ufo) {
+          ufo.visible = true; ufo.position.set(0, 20, -40); ufo.children[0].rotation.set(0, 0, 0); ufo.updateMatrixWorld(true); await wait(300);
+          shoot('UFO pilot, front', [0, 22.2, -35.6], [0, 21.4, -40]); shoot('UFO pilot, close on the face', [0, 21.6, -37.4], [0, 21.5, -40]); shoot('UFO pilot, side', [4.4, 22, -40], [0, 21.3, -40]); shoot('UFO pilot, three-quarter', [3.2, 22.4, -36.8], [0, 21.3, -40]); shoot('UFO from below, a player looking up', [0, 1.6, -10], [0, 20, -40]); shoot('UFO from above', [0, 27, -34], [0, 20.8, -40]);
+          ufo.visible = false;
+        }
       } else if (p === 'birds') {
         // A30, A37, A38: the robin and the cardinal on the park's two trees
         await go(-8, 22);

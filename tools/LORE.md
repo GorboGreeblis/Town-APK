@@ -339,7 +339,7 @@ editions.") and the Ancient texts.
 - **Mama Gorbo and Gooward's meeting**: every 20-40 s they walk to each other, face each other and trade goo arcs
   with a "blorp" and pink hearts. A Blossom to Gooward ("GOOMP") turns his goo on the Human: eight volleys that
   splat on the view, and he cannot be spoken to until it is over (A39).
-- **The UFO**: a saucer with a green alien inside crosses the sky every 600 s, hovers and leaves (never in the
+- **The UFO**: a saucer with Ollaag inside (A63, 4.0.43) crosses the sky every 600 s, hovers and leaves (never in the
   Event, A6). Ollaag, the leader of the Alien Alliance, is the one who flies round in it (the author, 2026-11-04)
   *(inference: the "UFO sightings" the Sheriff investigates)*.
 
@@ -984,13 +984,19 @@ What the models have in common, as built:
 
 #### The UFO's pilot
 - **Who**: Ollaag, the leader of the Alien Alliance, is the one who flies round in the UFO (the author, 2026-11-04);
-  the game gives the pilot no lines. The model in the dome is a small green alien with antennae, unlike Ollaag's
-  WANTED poster (tan skin, side-pointing ears, a blue robe).
-- **Body**: a round green head (`#7ad85a`, a little taller than wide) on a short tapered green body, seated in the
-  middle of the saucer under a pale cyan glass dome (45% see-through); two thin antennae ending in glowing yellow
-  balls. Matte clay (shininess 50).
-- **Face**: two large glossy black eyes, tall and tilted outward; no mouth.
-- **Motion**: none of its own; it rides the saucer across the sky, hovering and leaving with it.
+  the game gives the pilot no lines. Since 4.0.43 (A63; the author: "Please update this model to be Ollaag instead")
+  the model in the dome is Ollaag as his WANTED poster paints him; until then it was a small green alien (`#7ad85a`)
+  with two antennae tipped in yellow and big black eyes.
+- **Body**: seated in the middle of the saucer under a pale cyan glass dome (45% see-through), about 1.2 m tall from
+  the deck to the top of his head. A blue robe (`#3a64b4`, a cone widening to the deck) with rounded shoulders, two
+  dark navy collar points (`#26478a`) and five gold diamond studs (`#e8c040`), one at the throat and two each side of
+  the chest; a navy belt with four gold checks across the front. He holds a sage tablet (`#b4c2ae`) tilted up in both
+  tan hands at his chest. 31 parts, all made at load; matte clay.
+- **Face**: a tan head (`#d2bc90`, a little taller than wide) on a short neck; long flat ears pointing out to the sides
+  and a little up; heavy dark brows (`#4a3820`) slanting down to the middle, two forehead lines (`#8a7048`); brown eye
+  sockets (`#6a5434`) with small glossy black pupils; a small pointed nose and a thin straight mouth.
+- **Motion**: none of his own; he rides the saucer across the sky, hovering and leaving with it. The saucer spins
+  under him (2.2 radians a second) but he is turned against the spin, so he always faces the way it flies.
 - **The saucer** (for scale): a chrome hull about 8 m across (`#a8aeb8`) under a grey upper deck, two dark raised
   rings and a dark rim, eight warm window lights, 18 rim bulbs cycling red, yellow and cyan, three round dark pods
   underneath and a pale green glowing disc (`#9affb0`) in its belly.
@@ -1414,7 +1420,7 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
 - **Stars** (`gcRnd("stars")`): 700 points at least 4.6 degrees above the horizon, white, 1.6 px; they show only as
   the world dims.
 - **The UFO** (`JGP.ufoNow`): a chrome saucer about 8 m across with 18 rim bulbs cycling red, yellow and cyan, a glass
-  dome and a green alien inside; every 600 s it crosses the sky 35-48 m up, hovers and leaves. None starts during the
+  dome and Ollaag inside (until 4.0.43 a green alien); every 600 s it crosses the sky 35-48 m up, hovers and leaves. None starts during the
   Event (A6).
 - **What is seeded** (the same on every launch): textures, windows, trees, tufts, pond stones, the Garden's ground, the
   Cave's stones, the kiosks' dressing, clouds, stars, the mist. **What is random** by the author's word: where Blossoms
@@ -1655,7 +1661,7 @@ of A5.
 | The fog | 70-300 m | the horizon colour | darkens with the sky at dusk; the mist's colour follows it | A12 |
 | The clouds | 40-95 m out, 50-72 m up | 24, each three to five flattened white spheres with a grey underside | circle the town every 12-26 minutes; dimmed at night; hidden in the Event | A5, A24, A25, A55 |
 | The stars | above 4.6 degrees | 700 white points | show only as the world dims | R5 |
-| The UFO | crosses the sky 35-48 m up | a chrome saucer, rim bulbs cycling red, yellow and cyan, a glass dome, a green alien | every 600 s; none starts in the Event, one in flight leaves by its path | A6 |
+| The UFO | crosses the sky 35-48 m up | a chrome saucer, rim bulbs cycling red, yellow and cyan, a glass dome, Ollaag at the controls (A63) | every 600 s; none starts in the Event, one in flight leaves by its path | A6 |
 | Dusk | everywhere | the Speech's dimming to 70% of night | windows, lamps, the church glass and the TELEPHONE sign glow | |
 
 ### The author's decisions about the environment
