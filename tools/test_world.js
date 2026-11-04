@@ -9,7 +9,9 @@
  *   spots     the pickup spawn picker never puts a Blossom or Flint inside a
  *             building, within 4.1 m of the Gazebo or in a kiosk, nor are the
  *             live pickups there (B95)
- *   fade      a taken pickup fades out in place, no move and no shrink (A56)
+ *   fade      a taken pickup fades out in place, no move and no shrink (A56), with no sound (A59)
+ *   birds     picking the robin or the cardinal tweets once (A60)
+ *   book      taking OVERCOMING SHYNESS plays its own sound once, not the pickup sound (A61)
  *   heal      a taken pickup left showing is hidden and logged (B97)
  *   ancient   the Ancient's size (15% larger), radii, visitor spot and skin
  *             textures (A52)
@@ -136,13 +138,30 @@ const SAMPLE_S = Number(process.argv[3] || 40);
     const D = window.__dbg, out = {};
     for (const [k, mod] of [['blossom', D.le], ['flint', D.ce]]) {
       const p = mod.list.find((q) => !q.userData.taken && q.visible && q.userData.regrowT0 === undefined); if (!p) { out[k] = 'none'; continue; }
-      const p0 = p.position.clone(), s0 = p.scale.x; mod.take(p); const tk = []; let moved = 0, scaled = 0;
+      const p0 = p.position.clone(), s0 = p.scale.x, G = D.G, pk0 = G.pickup; let pk = 0; G.pickup = function () { pk++; return pk0.apply(this, arguments); }; mod.take(p); G.pickup = pk0; const tk = []; let moved = 0, scaled = 0;
       const t0 = performance.now(); while (p.visible && performance.now() - t0 < 3000) { await new Promise((r) => setTimeout(r, 30)); moved = Math.max(moved, p.position.distanceTo(p0)); scaled = Math.max(scaled, Math.abs(p.scale.x - s0)); if (p.userData.gcTk !== undefined) tk.push(+p.userData.gcTk.toFixed(2)); }
-      out[k] = { moved: +moved.toFixed(3), scaled: +scaled.toFixed(3), hidden: !p.visible, fell: tk.length > 1 && tk[0] > tk[tk.length - 1], tk: tk.slice(0, 6) };
+      out[k] = { moved: +moved.toFixed(3), scaled: +scaled.toFixed(3), hidden: !p.visible, fell: tk.length > 1 && tk[0] > tk[tk.length - 1], tk: tk.slice(0, 6), sound: pk };
     }
     return out;
   });
   expect('A56: a taken Blossom and Flint fade out in place (no move, no shrink; the fade value falls, then hidden)', ['blossom', 'flint'].every((k) => fip[k] && fip[k].moved < 1e-3 && fip[k].scaled < 1e-3 && fip[k].hidden && fip[k].fell), JSON.stringify(fip));
+  expect('A59: taking a Blossom or Flint makes no sound', ['blossom', 'flint'].every((k) => fip[k] && fip[k].sound === 0), JSON.stringify(['blossom', 'flint'].map((k) => fip[k] && fip[k].sound)));
+  // ---- the birds tweet when picked (A60, 4.0.37; the author: "Add a tweet tweet sound effect for interacting with either
+  //      bird"): one tweet per pick, none while the bird is already away
+  const tw = await page.evaluate(async () => {
+    const D = window.__dbg, G = D.G, t0 = G.tweet; if (!t0) return { error: 'no tweet' }; let n = 0; G.tweet = function () { n++; return t0.apply(this, arguments); };
+    const out = {}; for (const id of ['robin', 'cardinal']) { const z = D.z.list.find((q) => q.id === id); if (!z) { out[id] = 'none'; continue; } const n0 = n; z.run(); z.run(); out[id] = n - n0; }
+    G.tweet = t0; return out;
+  });
+  expect('A60: picking the robin or the cardinal plays a tweet once (not again while it is away)', tw.robin === 1 && tw.cardinal === 1, JSON.stringify(tw));
+  // ---- the shyness book's own sound (A61, 4.0.37; the author: "Add a special sound effect for picking up the
+  //      Overcoming Shyness book"): one book sound when taken, no pickup sound, none on a second pick
+  const bk = await page.evaluate(() => {
+    const D = window.__dbg, G = D.G, z = D.z.list.find((q) => q.id === 'shybook'); if (!z || !G.book) return { error: !z ? 'no book zone' : 'no book sound' };
+    const b0 = G.book, p0 = G.pickup; let b = 0, p = 0; G.book = function () { b++; return b0.apply(this, arguments); }; G.pickup = function () { p++; return p0.apply(this, arguments); };
+    let err = null; try { z.run(); z.run(); } catch (e) { err = String(e); } G.book = b0; G.pickup = p0; return { book: b, pickup: p, err };
+  });
+  expect('A61: taking OVERCOMING SHYNESS plays its own sound once (not the pickup sound)', bk.book === 1 && bk.pickup === 0 && !bk.err, JSON.stringify(bk));
 
   // ---- a taken pickup still showing is hidden (B97, 4.0.35; the author: a Blossom picked by pointing "did not
   //      disappear ... Instead it became uninteractable"): one put in that state (taken, shown, no fade or regrow

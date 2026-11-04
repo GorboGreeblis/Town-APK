@@ -13,7 +13,7 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Where | Reproduce | Status |
 | --- | --- | --- | --- | --- |
-| B46 | Flashes (full-screen, one or two frames): closed 2026-11-03 after the blink snap, reopened 2026-11-04 on 4.0.34 (the author's log 865e1e9c: two marks, "Possibly related to pickups?"; "The remaining flash is a blocker") | not in anything the game draws or records: every frame drawn, no layer change, no matrix fault, no compositor tear beyond chance, no camera cycle, no snap turn needed | the author's runs; mark 2 during rapid point-and-select pickups | 4.0.35: the blink taken out (it did not stop them), the head guard's level added to each mark's record; open, MUST FIX (blocker) |
+| B46 | Flashes (full-screen, one or two frames): closed 2026-11-03 after the blink snap, reopened 2026-11-04 on 4.0.34 (the author's log 865e1e9c: two marks, "Possibly related to pickups?"; "The remaining flash is a blocker") | not in anything the game draws or records: every frame drawn, no layer change, no matrix fault, no compositor tear beyond chance, no camera cycle, no snap turn needed | the author's runs; mark 2 during rapid point-and-select pickups | 4.0.35: the blink taken out (it did not stop them), the head guard's level added to each mark's record; 4.0.37: the latest one bright/white, whole view, very quick (the author); the pickup sound removed (A59; it cannot draw); log 47ab0c91 (one mark, 4.0.36): the game's records clean, the head guard not shown, nothing in the system log, a Blossom taken 1.1 s before (2 of the last 3 marks during quick pickups); the author: the flash does not occur in other applications; open, MUST FIX (blocker) |
 
 ## Fixed
 

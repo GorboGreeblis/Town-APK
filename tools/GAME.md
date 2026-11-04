@@ -61,7 +61,7 @@ The HTML is 8 lines since the minification (3.15.45; it was 93 before); most of 
   (`Math.PI/6`), pick range 16, UI distance 11.5, fixed foveation 0 (one value, set at VR entry, never changed: F-B83),
   the framebuffer scale native (1), target 72 Hz with a frame-time average (`targetHz`, `emaAlpha`) and a
   frames-over-budget flag that only logs (`sosFrac`, `sosFrames`); the quality levels are gone (L1, 4.0.14).
-- Pickups: 32 blossoms (regrow 12 s), 40 flint (regrow 12 s; called acorns in the code, flint in the game's own text and the Store).
+- Pickups: 32 blossoms (regrow 12 s), 40 flint (regrow 12 s; taken, each fades out in place and fades back in when it regrows, A56; called acorns in the code, flint in the game's own text and the Store).
   No pickup spot lies inside a building, a kiosk's area (the phone booth, the portal) or within 4.1 m of the Gazebo's
   centre (B95, 4.0.33; a Blossom had been seen on the Gazebo's inner edge). `test_world.js`.
 - Finale: 190 s of planting (180 s until 3.15.57, A9), NPC chatter every 3-7 s, the far plane at `finaleFar` (300) for the Event's far-object safeguard.
@@ -192,8 +192,8 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   walking up to the fence never clears it (A9); the ground is in the mist's colour from 1.5 m beyond the fence, where
   the mist's first wall stands, so the mist over the fence does not thin as the player comes near (A19); the planting lasts 190 s; the clouds and every Blossom and Flint fade out over 2.5 s (A5); a UFO in flight leaves by its exit path and
   none starts (A6). At the end Backpacka flies off into the mist (his show is 88 s, A7), the mist rolls back out over
-  30 s and everything fades back in. In a second or later Event the garden's flowers shrink away at the start and grow back
-  when watered (F-B43). Nothing is shown or hidden at once. `test_event_fade.js`.
+  30 s and everything fades back in. In a second or later Event the garden's flowers fade out at the start (full size, by
+  opacity over 1.2 s; A58, 4.0.37, they shrank until then) and grow back when watered (F-B43). Nothing is shown or hidden at once. `test_event_fade.js`.
 - **The Event's fade groups (3.15.66, P33; RULES.md 30).** Once the mist is past 15%, each kiosk (every building but the
   church) and the gazebo fade out over 10 s, each on its own and only once its owner has left home (6 m), and every
   tree with the robin as one group; all of a group's parts fade together. Once out, a group stays out until the Event
@@ -214,7 +214,10 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   one beyond 66 m, whichever it had in between. `test_lod.js`.
 - **Sound.** One audio context, made on VR entry; every note is an oscillator and a gain that disconnect
   themselves when the note ends. A suspended context (headset off, app in the background) resumes when the
-  page is shown, visible or focused again, and on pointer or key input. `test_audio.js`.
+  page is shown, visible or focused again, and on pointer or key input. Taking a Blossom or Flint makes no sound
+  (A59, 4.0.37); picking the robin or the cardinal plays a soft two-note tweet tweet as it flies off (A60);
+  taking OVERCOMING SHYNESS plays its own page riffle and rising chime (A61).
+  `test_audio.js`, `test_world.js`.
 
 ## Safeties (what keeps a frame whole)
 

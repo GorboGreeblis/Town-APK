@@ -234,7 +234,7 @@ cardinal on a branch in the top right corner.
 | Summoning Stone | Gemtoe trades it for the Gem: "That Gem you have… It’s worthless… trust me.\|I’ll trade this rock I found for it. You’re better off!" then "* Summoning Stone obtained! *". Wakes the Summoning Pillar's runes ("The runes stay dark.\|Only the Summoning Stone can wake them and start the gardening event."). Not used up: the Event can be held again. |
 | Seeds | The "bagel seasoning packet", 25 flint at Garden Supplies ("You bought the bagel seasoning packet! SEEDS quest complete!"; again: "You already have the bagel seasoning packet."). With them the town gathers and plants at the Event. |
 | Snacks | "+20 Snacks" per pizza delivery (one is enough). With them the Event has pizza: eight stacks of boxes round the Garden and Anomalee's own open box. |
-| OVERCOMING SHYNESS | A book on the Library's shelves ("Take OVERCOMING SHYNESS"); it frees Zollod from his shyness; it leaves the shelf when taken. |
+| OVERCOMING SHYNESS | A book on the Library's shelves ("Take OVERCOMING SHYNESS"); it frees Zollod from his shyness; it leaves the shelf when taken, with a page riffle and a rising chime of its own (A61, 4.0.37). |
 | Outfits | Flower Hat, Sun Dress, Frog Shoes, 3 flint each, worn by the player ("You bought the Flower Hat and put it on. Take a look in the mirror!"; "You put on the …", "You take off the …"; short: "You need 2 more flint for the Sun Dress."). |
 | King Dino's coins | "not legal tender"; "He stamps those coins himself."; "Stamped by the King, baby. Legal enough." |
 | Goo burger coupons | Mama Gorbo hands them out ("Please take a coupon for my famous goo burger."). |
@@ -299,9 +299,10 @@ editions.") and the Ancient texts.
   gather in three rings round the Garden (all but King Dino, who drums on at 88 beats a minute, and Somlet, who
   sleeps on at the Post Office; Sparkakus leaves the Library to join them), wait for each other, then plant for 190 s
   (dig, pat or scatter, each their own way) and go home; spoken to, each says their gardening line (below). In the
-  first Event each plants a flower; in later ones the old flowers shrink away, take new colours and grow back
-  (F-B43, A29). **Without the Seeds** no one gathers or plants and no kiosk or park tree fades (F-B72); the mist,
-  the fades of the town and Backpacka still come. **With the Snacks** eight stacks of pizza boxes fade in round the
+  first Event each plants a flower; in later ones the old flowers fade away (A58), take new colours and grow back
+  (F-B43, A29). **Without the Seeds** no one gathers or plants, there is no music or dancing, no flower grows and no kiosk
+  or park tree fades (F-B72); the mist, the fades of the town, Backpacka and (with the Snacks) the pizza boxes still
+  come, as the author intends (2026-11-04). **With the Snacks** eight stacks of pizza boxes fade in round the
   Garden as it starts (A51) and Anomalee, instead of planting, sets down her own open box (fading in) and eats a
   slice every 22 s, leaving the last two (F-B49); without them she plants like everyone else. The boxes fade out at
   the end (A42). While the town gathers, neighbours in the ring trade little emotes ("♥", "✿", "!", "~").
@@ -312,7 +313,8 @@ editions.") and the Ancient texts.
   north-west fence into the mist (the animation's own stages: arrive, down, drink, up, to the garden, splay, spray,
   gone; 88 s, A7). While the horn plays the ring dances (Gemtoe twirls, Gooward bounces, Mushroom shimmies,
   Anomalee stomps, Zollod grooves, Mama Gorbo jellies, Hennrick and the three dancers their own dances). Without the Seeds there is no
-  horn, but the code still sends him *(read from the start condition, which only the horn checks)*.
+  horn, no dancing and no planting, but he still comes (the author, 2026-11-04: "without Seeds: the pizza boxes and
+  Backpacka should still appear"; "No planting, no music, no dancing, and no flowers grow").
 - **Pizza**: the TELEPHONE calls Nextessa's inter-temporal pizza shop; a courier delivers, even into the
   church where the Ancient lives.
 - **The Speech**: with all three Artifacts, Sparkakus stops, a giant light bulb lights over him and the world
@@ -357,7 +359,7 @@ from the steps that need an earlier one, the order is the player's.
     town to plant, the Snacks bring the pizza. The mist rolls in, the town plants (190 s), Fortizmo plays her horn,
     Backpacka waters the Garden and flies into the mist, and everything comes back.
 11. **After.** The Event can be started again from the Pillar, as often as the Human likes: the flowers already
-    planted shrink away, take new colours and grow back when Backpacka waters them (F-B43, A29). Sparkakus now
+    planted fade away (A58), take new colours and grow back when Backpacka waters them (F-B43, A29). Sparkakus now
     answers only "Well done, Human!".
 
 ## Cast
@@ -919,14 +921,14 @@ What the models have in common, as built:
 - A plump songbird (about .45 m) on a bark branch of the big tree beside the church (since 4.0.3, A30), facing the
   park: rusty breast, dark back and head, white throat with streaks, a
   yellow bill, white eye-rings and brows, three tail feathers. All matte clay, no textures. It breathes, looks about,
-  flicks its tail every 9 s, and when picked flies up, hides for 10-18 s and returns.
+  flicks its tail every 9 s, and when picked tweets twice (A60, 4.0.37), flies up, hides for 10-18 s and returns.
 
 #### The cardinal
 - A male cardinal (since 4.0.4, A38; from the author's photos) on a branch of the second park tree (-24.5, 34.5),
   turned to face the robin since 4.0.7 (A40: "Please flip the Cardinal to be facing the opposite direction (towards
   the Robin)"; it faced into the park before). The robin's body, wings, tail and head, in a cardinal's colours: bright red all over, a darker red-brown
   back, wings and tail, a tall swept-back crest, a black mask and bib round a thick orange-red bill, no eye rings and
-  no white tail tips. It moves as the robin does (a few seconds out of step) and, picked, flies off and returns.
+  no white tail tips. It moves as the robin does (a few seconds out of step) and, picked, tweets twice (A60), flies off and returns.
 
 #### Backpacka
 - **Body**: a horizontal lathe body with seven colour patches, a ten-segment neck, a head with a jaw and tongue, a
@@ -1329,7 +1331,7 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   taller, A20), each with more open blooms of its own kind (A28: the thistle 5 more heads, the mayweed 8 more daisies,
   the chicory 4 more flowers, the milkweed two more umbels, the mallow three more flowers). Every plant's flowers take a
   random colour of its own, drawn anew each Event (A29); the stems, leaves, buds and the mayweed's yellow centres keep
-  theirs. In a later Event the old flowers shrink away, take their new colour and grow back when watered (F-B43).
+  theirs. In a later Event the old flowers fade away (A58), take their new colour and grow back when watered (F-B43).
 - With the Snacks, pizza boxes stand in eight stacks round the Garden, fading in as the Event starts (A51) and out at
   its end (A42); Anomalee eats from her own open box instead of planting (F-B49). Without the Snacks there is no box
   and she plants.
