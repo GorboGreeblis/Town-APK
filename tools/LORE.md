@@ -110,6 +110,9 @@ organ (A53), the birds' flight (A54) and Nextessa filled in; corrected: there ar
   Fortizmo's bar and watches Sparkakus's books. Faced with the Ancient, the
   Sheriff can only stammer: "Th-the Consortium will be informed." The Consortium is run by Maltoe and
   Mushroom (the author, 2026-10-28).
+- **The Alien Alliance.** The group of all the other alien factions, led by **Ollaag**, who is the one flying round
+  in the UFO; the Alliance is in conflict with the Consortium (the author, 2026-11-04). Ollaag is on one of the
+  Sheriff's WANTED posters.
 - **Gree-mail.** "When you see creatures exchanging symbols, that’s
   Gree-mail." (Glyph)
 - **The player** is "Human", a visitor the Sheriff is hunting ("Mont will
@@ -336,7 +339,8 @@ editions.") and the Ancient texts.
   with a "blorp" and pink hearts. A Blossom to Gooward ("GOOMP") turns his goo on the Human: eight volleys that
   splat on the view, and he cannot be spoken to until it is over (A39).
 - **The UFO**: a saucer with a green alien inside crosses the sky every 600 s, hovers and leaves (never in the
-  Event, A6) *(inference: the "UFO sightings" the Sheriff investigates)*.
+  Event, A6). Ollaag, the leader of the Alien Alliance, is the one who flies round in it (the author, 2026-11-04)
+  *(inference: the "UFO sightings" the Sheriff investigates)*.
 
 ## A session, from the first visit to the Event
 
@@ -978,8 +982,9 @@ What the models have in common, as built:
   frog-faced shoes) and the Sun Dress (the dress map swapped for suns on sky blue, with an orange hem).
 
 #### The UFO's pilot
-- **Who**: the green alien seen in the UFO's glass dome every 600 s ("The sky" under "Nature and set dressing"); the
-  game gives them no name and no lines.
+- **Who**: Ollaag, the leader of the Alien Alliance, is the one who flies round in the UFO (the author, 2026-11-04);
+  the game gives the pilot no lines. The model in the dome is a small green alien with antennae, unlike Ollaag's
+  WANTED poster (tan skin, side-pointing ears, a blue robe).
 - **Body**: a round green head (`#7ad85a`, a little taller than wide) on a short tapered green body, seated in the
   middle of the saucer under a pale cyan glass dome (45% see-through); two thin antennae ending in glowing yellow
   balls. Matte clay (shininess 50).
@@ -1002,7 +1007,8 @@ Creatures that exist only as paint, for completeness; none moves.
   blond hair, a gold earring, a brown jacket over a sage shirt and white collar; *Ollaag* (`olag`), tan skin, ears
   pointing out to the sides, heavy brows and forehead lines, a blue robe with dark collar points and gold diamond
   studs, a gold-and-navy checked belt, holding a sage tablet. Who they are is not told: GLOOPERNAUGHT has a backstory this game
-  does not tell (the author's answer 4 below); Ollaag is not among the names the author has answered for.
+  does not tell (the author's answer 4 below); Ollaag is the leader of the Alien Alliance, which is in conflict with the
+  Consortium, and is the one who flies round in the UFO (the author's answer 9 below).
 - **Gooward's painting**: its creatures and motifs (`cubeJar`, `glitch`, `paisley`, `water`, `mise`, the butterflies,
   a robin) are in "The gallery painting".
 - **The school mural**: Backpacka over a meadow, and a duck on the pond ("Pictures in the town").
@@ -1692,7 +1698,7 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 | The church, its glass, the Cave | `"church"` (`CHURCH`, `lancet`, `paintTravelerWindow`, `paintGardenWindow`, `stainedKit`), `id:"slug"` |
 | Night glow, the UFO, the Speech's bulb | `.emissive.setRGB(.95*` (the lit windows; `BIN.lit` in 3.15.44), `JGP.ufoNow`, `Bulb.start` |
 
-## The author's answers (2026-10-28)
+## The author's answers (2026-10-28; 9 added 2026-11-04)
 
 1. **Mama W** is a name for Mama Gorbo.
 2. **Flint** and the code's acorns are the same thing; flint is the game's word.
@@ -1704,6 +1710,8 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 6. **The Ancient** is not the Originator.
 7. **Backpacka:** where he comes from, and why Fortizmo composes for him, is not known.
 8. **The mayor** under the Sheriff's cap in the painting is Montgummery in the near future.
+9. **Ollaag** (2026-11-04) is the leader of the Alien Alliance, a group of all the other alien factions; he is the one
+   who flies around in the UFO; the Alien Alliance is in conflict with the Consortium.
 
 ## Left open on purpose
 
