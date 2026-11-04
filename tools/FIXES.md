@@ -1942,7 +1942,7 @@ frame already hands the game (no GL call added, RULES.md 28):
     Event without Seeds after one with them; it cannot happen in play (the author: "It should never be possible to
     lose Seeds between Events?"): the Seeds are only ever set by buying them, nothing takes them away, and flowers are
     only planted in an Event with them, so every Event after the first with flowers has the Seeds. The two checks are
-    kept as a guard and change nothing a player can reach.
+    kept as a guard and change nothing a player can reach (the author: "Keep the code").
   - **The romp's jingle looped on when the romp paused** (the engine and logic reviews): the riff checked only that the
     romp existed, and the romp does not advance while the headset menu is up, after leaving VR or while the headset
     sleeps; it stops now when VR is left, blurred or hidden.
