@@ -181,7 +181,7 @@ are the code's.
 - Teal hexagon figures, the **Synthetics** (`synth`, three of them), with a crystal shard (`shard`) and
   an organic shape (`organic`).
 - Gold circuit traces run along the ground across the whole bottom of the painting.
-- At the bottom: a long, dark **slug with eye stalks** *(inference: the Ancient)*. A golden thread runs
+- At the bottom: a long, dark **slug with eye stalks**: the Ancient (the author's answer 15). A golden thread runs
   from it to a glowing gold point in the far corner (`dot`).
 
 **Centre panel: the present (warm light).**
@@ -689,7 +689,7 @@ outside it is scenery, seen and never entered (FIXES A4).
 | The Gooburger | Mama Gorbo's "local fast food joint"; a giant burger on a pole. |
 | King Dino's billboard | "A Prehistoric Era in Jazz!"; "Let King Dino take you / to the Jurassic / Greeblis Park!"; painted by Gooward. |
 | The Field Office | Hennrick's office in the far past (the author): a trailer with a sheriff's star and a flying saucer, a dish. |
-| The outer-ring houses | Eight houses, each in one townsperson's colours *(inference)*. |
+| The outer-ring houses | Eight houses, each belonging to the townsperson whose colours it wears (the author's answer 15). |
 | The courthouse, school (with the Backpacka mural), fire station, hotel, gas station, video shop, curio shop with a sphinx, glasshouses, water tower, a roped-off landing ring, a fenced crystal patch | Scenery only; no words beyond the pictures. |
 
 **Named but never shown**: Greeblis City (Hennrick's era, "the towers of Greeblis City reach the clouds"); the
@@ -1139,7 +1139,7 @@ What the environment has in common, as built:
   Gemtoe's Gazebo, JUICE BAR, TELEPHONE, MENU, STOP, King Dino's billboard and its banner, the WANTED posters.
 - **The cast lives in the colours.** The outer town repeats the townsfolk's signature colours and belongings: a row
   of houses each in one character's colours, shops built round their trades, a water tower in Mama Gorbo's peach.
-  *(inference: no building is labelled with a name; the matches are colour for colour, below.)*
+  No building is labelled with a name; the houses' owners go colour for colour, below (the author's answer 15).
 - **Faceted nature, smooth people.** Tree crowns, rocks, pebbles and flint are polyhedra (icosahedra and
   dodecahedra) whose faces shade flat, so nature reads as cut facets beside the smooth, clay-like characters.
 - **Iron, cream and stone as the frame.** Dark iron (`#1e2226`) for the fence, lamp posts, railings and balconies;
@@ -1319,9 +1319,10 @@ The town outside is made from a handful of builders that share proportions, so t
 #### The outer-ring houses
 
 The eight houses on the north side differ in their colours, roofs, porches and yards, and each pair of colours is a
-townsperson's (the signature colours in CREATURES.md section 1) *(inference: whose house is whose is not stated)*:
+townsperson's (the signature colours in CREATURES.md section 1). Each house belongs to the townsperson whose colours
+it wears (the author's answer 15; the game itself names no owner):
 
-| x | Walls / roof / door / shutters | Porch and yard | Whose *(inference)* |
+| x | Walls / roof / door / shutters | Porch and yard | Whose (answer 15) |
 | --- | --- | --- | --- |
 | -82 | yellow `#f2d84a` / teal / teal `#38b8b0` / teal | A teal crown on the roof; a red drum and a gold cymbal; three stacks of gold coins; a mug of carrot juice | King Dino |
 | -64 | blue `#2c4cc0` / navy / yellow `#f2c21a` / pink | A band of painted vines; daffodils; a reading chair with an open book; a bone; a pile of books | Sparkakus |
@@ -1361,7 +1362,7 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
 | 78, -38 | `GOOBURGER` | A giant burger on a 10 m pole. *(inference: Mama Gorbo's Gooburger, as a roadside sign)* |
 | -55, -55 | `BILLBOARD` | King Dino's billboard (below). |
 | -33.5, 73.5 | `FIELD_OFFICE` | A grey trailer with a sheriff's star and a flying saucer on its front, and a satellite dish on a 12 m mast. (Hennrick's office in the far past, the author.) |
-| -29, 85 | (none) | A dark ring 7.4 m across, roped off by orange stakes and yellow tape, with two floodlights. *(inference: a UFO landing site)* |
+| -29, 85 | (none) | A dark ring 7.4 m across, roped off by orange stakes and yellow tape, with two floodlights: a UFO landing site (the author's answer 15). |
 | 15, 94 / 40, 96 | `NURSERY` / (none) | Two glasshouses, each with a giant flower (about 9 m and 18 m tall) growing up through its roof; the nursery's roof has broken panes round the stem, potted plants at its door and a potting bench. |
 | -33, 96 | (none) | Six purple crystals 2.2-5.2 m tall inside a ring of posts and wire, a sign with a gold padlock. |
 
@@ -1712,7 +1713,7 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 | The church, its glass, the Cave | `"church"` (`CHURCH`, `lancet`, `paintTravelerWindow`, `paintGardenWindow`, `stainedKit`), `id:"slug"` |
 | Night glow, the UFO, the Speech's bulb | `.emissive.setRGB(.95*` (the lit windows; `BIN.lit` in 3.15.44), `JGP.ufoNow`, `Bulb.start` |
 
-## The author's answers (2026-10-28; 9 to 14 added 2026-11-04)
+## The author's answers (2026-10-28; 9 to 15 added 2026-11-04)
 
 1. **Mama W** is a name for Mama Gorbo.
 2. **Flint** and the code's acorns are the same thing; flint is the game's word.
@@ -1735,6 +1736,9 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
     kind, GLOOPERNAUGHT's goo kind and the uniformed rabbit's kind.
 14. **The blond stranger** on the WANTED poster (the code's `stranger`) is the other human; the girl is the first
     (2026-11-04).
+15. **Three guesses confirmed** (2026-11-04): the roped-off dark ring with floodlights outside the town is a UFO
+    landing site; the slug with eye stalks in Gooward's painting is the Ancient; each outer-ring house belongs to the
+    townsperson whose colours it wears.
 
 ## Left open on purpose
 
