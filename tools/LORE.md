@@ -856,7 +856,8 @@ What the models have in common, as built:
   curling tails that stand in for legs and each cradle a gem; two pairs of fanned wings; a round feathered head with
   a hooked parrot bill.
 - **Palette**: reds (`#b8282e` and its shades) with a yellow-orange crest; amber eyes; purple gems with yellow
-  sparkles. *(inference: the palette variable is still named `teal`, so the model was once teal.)*
+  sparkles. She has always been red (the author, 2026-11-04); the code's name `teal` for her red is only a leftover
+  name.
 - **Face**: side-set amber eyes with slit pupils and feathered lids, scaly brows, a beak that opens while she talks.
 - **Motion**: hovers (a little above the ground, on purpose: the author, 2026-10-30), the head looks about, the wings flap faster when she moves, the sparkles twinkle.
 - **Tie** (3.15.57, the author: "a neck tie. no shirt, just a tie"): a knot under the bill and a pointed blade down
