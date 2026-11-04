@@ -32,6 +32,16 @@ the gallery painting, Backpacka, the Library's books, the WANTED posters, the bi
 gardening lines and the quests, and corrected the first: Zollod is the shy one, the Gem trade is Gemtoe's, and "OF
 ORSON", "OF APPTERIX", PATCHOOLEE, STAPLERS and RANGER are Library book covers.
 
+**Later additions (2026-11-04, checked against the 4.0.40 game script):** the environment is broken down element by
+element ("Every environmental element (inventory)": the park, the Garden, the Library, the church and Cave, the outer
+town, the edge and the sky, each with where, looks, behaviour and its fix ID), and the thin parts filled in: King
+Dino's drum kit, the juice bar's furniture, the Library's bookcases, books, covers, curios and the Speech's props, the
+phone booth and the Portal, Backpacka's water and rainbow, the fade groups (A26, the Portal in 4.0.38) and pickups
+fading in place (A56). Every creature is broken down too ("Every creature (inventory)"), with new entries for the
+UFO's pilot and the faces in pictures; Sparkakus's romp (A57, A62), Gooward's barrage (A39), the Ancient's breathing
+organ (A53), the birds' flight (A54) and Nextessa filled in; corrected: there are eight WANTED posters of six kinds
+(adding the saucer, the rabbit, the girl, the stranger and Ollaag), and Somlet is she in her design entry too.
+
 ## The world
 
 - **A digital world** (author): Greeblis Town is a digital world and its townsfolk are digital monsters;
@@ -57,9 +67,11 @@ ORSON", "OF APPTERIX", PATCHOOLEE, STAPLERS and RANGER are Library book covers.
   a church (the Ancient's home, below), a pond and the billboard.
 - **The billboard:** "A Prehistoric Era in Jazz!", with a banner: "Let King
   Dino take you / to the Jurassic / Greeblis Park!"
-- **WANTED posters:** two kinds. One shows an alien face; the other shows a goo
-  creature and the name **GLOOPERNAUGHT**. *(inference: the alien is how the
-  Sheriff pictures the Human he is hunting.)*
+- **WANTED posters:** eight on the Sheriff's back wall, six kinds: an alien face (twice), a flying saucer, a goo
+  creature named **GLOOPERNAUGHT**, a rabbit in a uniform, a girl in a yellow flowered dress, a blond stranger in a
+  brown jacket, and a pointed-eared figure in a blue robe named **Ollaag**; each "WANTED" above and "REWARD" below
+  (looks in "Creature design and style", "Faces in pictures"). *(inference: the alien is how the Sheriff pictures the
+  Human he is hunting; the girl, the code's `visitor`, has the player's hair, freckles and dress.)*
 - **The robin and the cardinal:** a robin and a cardinal perch on the park's two big trees beside the church (the
   robin moved there in 4.0.3, A30; the cardinal and its tree came in 4.0.4, A37, A38), the cardinal turned to face the
   robin (4.0.7, A40); pick either ("Robin", "Cardinal") and it flies off and comes back. A robin and a cardinal also
@@ -644,7 +656,7 @@ outside it is scenery, seen and never entered (FIXES A4).
 | --- | --- | --- |
 | The Garden and the SUMMONING PILLAR | Everyone, at the Event | The park's round heart. "Use the Summoning Pillar" opens the GARDEN EVENT panel; without the Stone, the SUMMONING PILLAR box: "The runes stay dark.\|Only the Summoning Stone can wake them and start the gardening event." The runes wake when the panel is opened with the Stone in hand. |
 | POST OFFICE | Somlet | Somlet sleeps on a mound of letters; parcels "To Montreal", "To Cobourg", "To Bangkok", "To Ormstown" (A43) and one unlabelled. |
-| SHERIFF'S kiosk | Mushroom | Mushroom stands on his desk, up a ramp at its left end; WANTED posters (an alien; GLOOPERNAUGHT); toadstools everywhere; where the bribe is paid. |
+| SHERIFF'S kiosk | Mushroom | Mushroom stands on his desk, up a ramp at its left end; eight WANTED posters (an alien twice, a saucer, GLOOPERNAUGHT, a rabbit, a girl, a stranger, Ollaag); toadstools everywhere; where the bribe is paid. |
 | GARDEN SUPPLIES | Zollod | Shut while he is shy; then "Shop at Garden Supplies" ("Welcome to our shop!"): Flower Hat, Sun Dress, Frog Shoes, the bagel seasoning packet. Shut during the Event. |
 | GOOWARD'S GALLERY | Gooward roams round it | Gooward's three-panel painting of the ages ("The gallery painting"), paint cans and splats, two easels. |
 | The LIBRARY | Sparkakus | Open to the sky: eight bookcases on a rug. The Artifact quest, the Speech, OVERCOMING SHYNESS, the first editions; a Blossom sets Sparkakus romping between the shelves, to a plucked-guitar riff of his own (A62, 4.0.38). |
@@ -755,7 +767,8 @@ What the models have in common, as built:
   housing, a pink rim, glowing lilac glass, eight beads round each). They do not blink.
 - **Extras**: two gold crests, two flat-shaded crystal wings, the ring's "AP" tag. The beret is bent onto a sphere so it hugs its lump.
 - **Motion**: squash and stretch `sin(2.1t)`, a bob, the ring floating and rolling, wings fluttering, the tongue
-  wagging harder while he talks. No walk cycle.
+  wagging harder while he talks. No walk cycle. A Blossom sets off his goo barrage (eight volleys over 2.7 s that
+  splat on the player's view); for 4 s he cannot be picked again (A39).
 
 #### Sparkakus
 - **Body**: a blob body of 6 parts (belly, chest, hips, neck, head, a long tilted snout); clawed legs (`KIT.leg`),
@@ -769,7 +782,11 @@ What the models have in common, as built:
 - **Extras**: a collar with an orange "APP" coin. The pink-to-cyan mist that trailed from his tail (90 particles) was
   removed in 4.0.4 (A32: "Please remove the particle effect coming from Sparkakus' tail").
 - **Motion**: breathing, ear twitches, a full walk (stride, arm swing, roll and lean), and a dance with arms pumping
-  overhead.
+  overhead. He stands in the Library at 1.16 times size, shows a yellow "!" when the player comes within 6 m, and
+  turns to face the player while they talk or his menu is open. **The romp** (after a Blossom, at the Library): he goes back to his home spot, leans 20
+  degrees, lifted by the lean's drop so he never sinks into the floor, and runs a loop 3.8 x 0.6 m between the shelves
+  without touching a book (A57, 4.0.36-4.0.38: "he does not clip into the ground and into bookshelves"), to a
+  plucked-guitar riff in E that stops with the romp (A62).
 
 #### Zollod
 - **Body**: the same blob plan as Sparkakus with a short round snout and a trunk; four-fingered arms, pad feet, a
@@ -789,8 +806,8 @@ What the models have in common, as built:
   badge; plum tentacles.
 - **Face**: asleep by default: felt lids with lashes and creases, under-eye bags, a brow; a hidden open eye that
   eases in when the player gives her a gift. A small "o" mouth that breathes and talks.
-- **Motion**: hovering, breathing, three "Z" sprites rising from him; when he is at home and idle he slowly rolls
-  onto his side to lie down. Each frame his tentacles curl themselves out of the ground.
+- **Motion**: hovering, breathing, three "Z" sprites rising from her; when she is at home and idle she slowly rolls
+  onto her side to lie down. Each frame his tentacles curl themselves out of the ground.
 
 #### Mushroom
 - **Body**: a lathe stem (about 1.1 across) under a broad, flat cap (about 2.5 across) with 60 gills, a scalloped
@@ -894,9 +911,14 @@ What the models have in common, as built:
 
 #### Nextessa
 - **Body**: spheres only: a three-lobed base, a stacked column of three neck spheres with side cones, a small round
-  head with a box snout, the pizza box carried on her head; no limbs.
-- **Palette**: oranges (`#f47a3a`, `#f09460`), yellow eyes with white highlights.
-- **Motion**: she hops with squash and stretch; her segments wave; she nods once when she speaks.
+  head with a box snout, the pizza box carried on her head; no limbs. About 3.5 m tall; each neck sphere carries a
+  pair of short pale cones (`#eea06c`) at its sides, and the snout is a darker orange box (`#e3875a`).
+- **Palette**: oranges (`#f47a3a`, `#f09460`), yellow eyes with white highlights. Clay, a soft sheen (shininess 26),
+  no textures.
+- **Motion**: she hops with squash and stretch (0.12 m high, the base spreading as it lands); her segments wave, in
+  order up the neck, faster while she moves; standing, she breathes (1.5%) and her head turns a little; she nods
+  once when she speaks (0.8 s). Her phase is seeded (`gcRnd("nextessaPhase")`). She is the game's one courier: she
+  comes through the Portal when called for pizza and goes back through it (`kind: "courier"`, `pk_nextessa`).
 
 #### Montgummery
 - **Body**: a dark rounded tape-like torso (superellipsoid) under a transparent shell of scrolling code, high-top
@@ -916,12 +938,18 @@ What the models have in common, as built:
   wet and glossy. No eyes: dark knobs on the upper stalks.
 - **Motion**: slow, irregular life: periodic settles, tilts, tail curls, mantle ruffles and deep sighs on different
   periods (17-37 s), the head looking about, the stalks retracting every 11 s; when it talks the head and stalks lift.
+- **The breathing organ**: a small round organ on its right side swells with each breath; since 4.0.35 it wears the
+  body's own skin and bump maps, smoother (A53: "It's a little brown untextured round organ. Please texture this
+  organ, the same as its body").
 
 #### The robin
 - A plump songbird (about .45 m) on a bark branch of the big tree beside the church (since 4.0.3, A30), facing the
   park: rusty breast, dark back and head, white throat with streaks, a
   yellow bill, white eye-rings and brows, three tail feathers. All matte clay, no textures. It breathes, looks about,
   flicks its tail every 9 s, and when picked tweets twice (A60, 4.0.37), flies up, hides for 10-18 s and returns.
+  In flight it beats its wings, turns to face where it is going over the first fifth of the flight and back to its
+  perch heading over the last quarter of the return (A54, 4.0.35; shared with the cardinal). It fades with the park's
+  trees in the Event.
 
 #### The cardinal
 - A male cardinal (since 4.0.4, A38; from the author's photos) on a branch of the second park tree (-24.5, 34.5),
@@ -948,6 +976,75 @@ What the models have in common, as built:
   OPEN"; the inventory opens on the watch face itself (A41), 10 cm wide (A44).
 - Outfits from the shop are built hidden and switched on: the Flower Hat (in place of the bow), Frog Shoes (green
   frog-faced shoes) and the Sun Dress (the dress map swapped for suns on sky blue, with an orange hem).
+
+#### The UFO's pilot
+- **Who**: the green alien seen in the UFO's glass dome every 600 s ("The sky" under "Nature and set dressing"); the
+  game gives them no name and no lines.
+- **Body**: a round green head (`#7ad85a`, a little taller than wide) on a short tapered green body, seated in the
+  middle of the saucer under a pale cyan glass dome (45% see-through); two thin antennae ending in glowing yellow
+  balls. Matte clay (shininess 50).
+- **Face**: two large glossy black eyes, tall and tilted outward; no mouth.
+- **Motion**: none of its own; it rides the saucer across the sky, hovering and leaving with it.
+- **The saucer** (for scale): a chrome hull about 8 m across (`#a8aeb8`) under a grey upper deck, two dark raised
+  rings and a dark rim, eight warm window lights, 18 rim bulbs cycling red, yellow and cyan, three round dark pods
+  underneath and a pale green glowing disc (`#9affb0`) in its belly.
+
+#### Faces in pictures
+Creatures that exist only as paint, for completeness; none moves.
+- **The WANTED posters** (the Sheriff's back wall, eight sheets 0.62 x 0.78 m of cream paper, "WANTED" and "REWARD" in
+  brown Georgia): *the alien* (twice), a grey domed head narrowing to a chin, two big slanted black eyes and a short
+  mouth line; *the saucer*, grey with a cyan dome, a row of yellow and cyan lights and a yellow beam; *GLOOPERNAUGHT*,
+  a green goo mound with dripping feet and two arm lobes, round white eyes with black pupils, a shine and three
+  bubbles; *the rabbit* (`rabbit`), brown with long pink-lined ears, a white muzzle, pink nose and whiskers, in a navy
+  coat with gold epaulettes and buttons, red collar tabs and a wide navy hat edged in gold with a red, white and blue
+  rosette; *the girl* (`visitor`), fair skin with freckles and a small smile, red-orange hair with a pigtail and a navy
+  bow, and a yellow dress with white flowers *(inference: the player)*; *the stranger* (`stranger`), fair skin, swept
+  blond hair, a gold earring, a brown jacket over a sage shirt and white collar; *Ollaag* (`olag`), tan skin, ears
+  pointing out to the sides, heavy brows and forehead lines, a blue robe with dark collar points and gold diamond
+  studs, a gold-and-navy checked belt, holding a sage tablet. Who they are is not told: GLOOPERNAUGHT has a backstory this game
+  does not tell (the author's answer 4 below); Ollaag is not among the names the author has answered for.
+- **Gooward's painting**: its creatures and motifs (`cubeJar`, `glitch`, `paisley`, `water`, `mise`, the butterflies,
+  a robin) are in "The gallery painting".
+- **The school mural**: Backpacka over a meadow, and a duck on the pond ("Pictures in the town").
+- **King Dino's billboard** and the theatre's marquee bill (a yellow dinosaur head, a crown, drumsticks), and
+  Montgummery's face on the video shop's roof screen (`s_montface`).
+- **Statues**: the stone sphinx at the curio shop's door (two unlike eyes) and the topiary dinosaur before the
+  courthouse ("The rest of the town").
+
+### Every creature (inventory)
+
+Everyone and everything with a face in the game, with the code's id (a hint, not canon: the naming rule at the top).
+
+| Creature | Id in the code | Where it lives | Entry |
+| --- | --- | --- | --- |
+| Gooward | `gorbo` (the one companion; `born_gooward`) | roams the park round his Gallery | Gooward |
+| Sparkakus | `keeper` / `stump` (`born_sparkakus`, the Library's own build) | the Library | Sparkakus |
+| Zollod | `cutebex` (the one `kind: "creature"`; `born_zollod`) | Garden Supplies | Zollod |
+| Somlet | `m_somlet` (`born_somlet`) | asleep on the mail at the Post Office | Somlet |
+| Mushroom | `drifter` (`born_mushroom`) | on his desk at the Sheriff's | Mushroom |
+| King Dino | `m_kingdino` (`born_kingdino`) | at his drums by the Juice Bar | King Dino |
+| Etcher | `p_etcher` (`born_etcher`) | roams the dance floor | Etcher |
+| Gemtoe | `p_gemtoe` (`born_gemtoe`) | the Gazebo | Gemtoe |
+| Glyph | `p_glyph` (`born_glyph`) | roams the dance floor | Glyph |
+| Mama Gorbo | `p_mamagorbo` (`born_mamagorbo`) | roams the park | Mama Gorbo |
+| Anomalee | `blinker` (`anomaleePeg`) | before the church, gazing up | Anomalee |
+| Fortizmo | `frog` (`fortizmoPick`) | behind the Juice Bar | Fortizmo |
+| Hennrick | `gratelet` (`pk_hennrick`) | roams round the Portal | Hennrick |
+| Nextessa | `kind: "courier"` (`pk_nextessa`) | comes through the Portal with the pizza | Nextessa |
+| Montgummery | `w_mont` (`pk_mont`) | roams the dance floor | Montgummery |
+| The Ancient | `slug` | the Cave inside the church | The Ancient |
+| The robin | `robin` | the park tree at -16, 37 | The robin |
+| The cardinal | `cardinal` | the park tree at -24.5, 34.5 | The cardinal |
+| Backpacka | `JGP.backpacka` | only in the Event: the pond, the Garden, the mist | Backpacka |
+| The player | (the rig) | wherever the player is | The player |
+| The UFO's pilot | `JGP.ufoNow` (the UFO) | the sky, every 600 s | The UFO's pilot |
+| The WANTED posters' faces | `alien`, `ufo`, `goo`, `rabbit`, `visitor`, `stranger`, `olag` | the Sheriff's back wall | Faces in pictures |
+| The painting's, mural's and billboard's creatures; the sphinx and the topiary dinosaur | (motif names in "The gallery painting") | the Gallery, the school, the billboard, the curio shop, the courthouse | Faces in pictures |
+
+The Ancient's visitors are townsfolk from this list (A3). The game builds no other animals beyond the worm in the
+moss on Zollod's back and the two rooted specimens in Garden Supplies' jars: no butterflies, fish or insects outside
+the pictures, and the roaming critters of `test_roam.js` are six of the townsfolk (Mama Gorbo,
+Gooward, Hennrick, Etcher, Glyph, Montgummery).
 
 ### The author's answers about the models
 
@@ -1118,10 +1215,44 @@ Outside the fence:
 - **The Library** (`buildLibrary`): open to the sky, no walls or roof: eight bookcases on a large Persian rug
   (11 x 7.8 m; paisleys in red `#8a1822`, navy, gold and teal, with a fringe), and a LIBRARY board on two white posts
   4.3 m high.
+  - *The bookcases*: each 2.24 m wide, 2.13 m tall and about 0.6 m deep, in brown wood (`#6a4424`, a darker
+    `#4a2e18` base and back), with four shelves (0.12, 0.62, 1.12 and 1.62 m up) filled from both faces. Four stand
+    in two pairs in the middle of the rug, two more at each end turned crosswise.
+  - *The books*: drawn by a seeded stream, 6-14 cm thick and 32-44 cm tall, in ten cloth colours (wine, blue, green,
+    gold, purple, rust, navy, cream, brown, tan); about one in fourteen leans over, and four in ten carry a gilt band.
+    The eight face-out covers ("The Library's books" above) are painted cloth boards with a double ruled border, the
+    title in bold Georgia and a simple line emblem in the ink colour: WORKS OF PATCHOOLEE green with lime ink (a
+    screen on a stand), ADVENTURES OF APPTERIX red with gold (a domed saucer over a wavy line), SONGS OF ORSON navy
+    with gold (two notes over a small box), STAPLERS grey with dark ink and no emblem ("by Walter Bigsby"), RANGER
+    BOBERT green with cream (a pine tree under a ranger's hat), Zortoe's Home Cooking orange (a bowl), Traveler's
+    Truth navy (an outlined triangle with a line down its middle), and OVERCOMING SHYNESS pink (`#e8b8c8`) with plum
+    ink, "OVERCOMING" on a cream band, a little larger than the rest. *(The emblems' readings are descriptions of the
+    drawn shapes, not stated by the game.)*
+  - *The three curios on the shelves*: the wish Blossom, a terracotta pot with a green stem and leaf and a glowing
+    teal crystal that spins inside a pale teal ring bobbing round it; the electric Blossom, six yellow petals round a
+    pale cyan core on a silver stand, spinning, with a yellow ring bobbing round it; and an acorn, brown with a dark
+    cap, a stalk and a small glint, tipped on its side.
+  - *The Speech's props*: the giant light bulb over Sparkakus ("Light, time of day and atmosphere" below), and the Eye
+    being made: a white glue bottle with a red "GLUE" label and an orange nozzle rises and turns over while the three
+    teal gem pieces circle beneath it, glue drips fall, the pieces close into one, and the finished Eye spins and
+    flies to the player (`ARTS.assemble`).
 - **The juice bar** (`buildJuiceBar`): an 18 m counter along the west fence, with a gap 2.2 m wide to walk in (A17);
   shelves of bottles behind it; fruit everywhere (oranges, apples, lemons, limes, pineapples, bananas, watermelons) in
   crates and bowls; juice cups; and a JUICE BAR sign 8.1 x 1.4 m (white letters outlined red on a yellow-to-orange
-  board with orange and lime slices) on two posts, with a giant orange, lemon and strawberry on top.
+  board with orange and lime slices) on two posts, with a giant orange, lemon and strawberry on top. In more detail:
+  a plank floor under the whole bar; two counter runs (the gap between them) 0.98 m high with a pale wood top, a
+  chrome edge and a chrome foot rail, round ends, and a front of vertical slats in orange, yellow, lime, pink and
+  purple, the colour changing every 1.12 m; chrome stools with seats in the same colours every 1.6 m along the front
+  (none in the gap); juice glasses with striped straws and a fruit slice; white and blue fruit bowls; a pineapple and
+  a bunch of five bananas on the counter; behind it a back counter with cream panels, two blender-like jars with
+  chrome lids and a pink jar on a blue base, and a back wall 2.1 m high with posts every 3 m and two shelves (1.65 and
+  2.4 m) of bottles in seven colours.
+- **King Dino's drum kit** (at -34.8, 19.2, at the bar's north end, facing east, built at 1.35 times size): a bass
+  drum 1 m across with a red shell (`#c23b3b`), cream heads and silver hoops, its front head lettered "KING DINO" in
+  red-orange on cream; two rack toms, a snare and a floor tom in the same red; a gold hi-hat and a gold ride cymbal
+  (`#d8a93a`) on silver stands; all on a round rug of two dark red discs (`#5e2222` under `#7e3628`). It plays itself
+  in time with King Dino's jazz (104 beats a minute; 88 in the Event): each drum hit swells and squashes the drum it
+  falls on, the hi-hat dips and the cymbal rocks (`JGP.jazz`).
 - **The dance floor**: 10 x 32 tiles of 1.2 m (12 x 38.4 m), dark purple (`#24103c` on `#12081f` grout, a lighter
   top-left edge), slightly glossy: a night-club floor set into the daylight park.
 - **Gemtoe's Gazebo**: an octagon 7.6 m across, white posts and rails (open on one side: its doorway, open to anyone; the railed sides solid walls since 3.15.67), a plank floor, a green
@@ -1129,10 +1260,13 @@ Outside the fence:
   and seven stacks of gold coins on the floor.
 - **The TELEPHONE**: an aluminium booth 1 m square and 2.2 m tall with glass on three sides, a payphone (keypad,
   handset on a coiled cord), "TELEPHONE" in white on blue (`#1c3c8c`) on all four sides of its crown, and a beacon on
-  top.
+  top. It stands on a pale concrete pad 1.2 m square; the fourth side is a two-leaf folding glass door; the glass is a
+  faint blue, barely there (22%); a shelf under the payphone holds a yellow phone book. The crown's letters glow a
+  little by day and more at dusk. When the player calls, the handset lifts off its hook and settles back over 2.4 s.
 - **The Portal**: two grey stone piers (0.85 m square, 3.7 m) under a 5.2 m lintel, with cyan indicator tiles
   (`#35e0f0`). When it opens, a swirling disc grows in the arch (pale cyan to deep blue, white spiral arms, rings rising
-  outward) with a blue light (`#3aa8ff`, 11 m).
+  outward) with a blue light (`#3aa8ff`, 11 m). It opens in 0.75 s, overshooting a little before it settles, and
+  closes in 0.5 s, each with a short run of notes.
 
 #### The outer town's kit
 
@@ -1261,7 +1395,9 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   on it moves (A33, 4.0.4; its bobbing, colour pulse, drifting rings and ripples, A21, were removed at the author's
   word).
 - **Blossoms**: the 32 pickups, each a stem with leaves and a flower of seven red, five orange and three gold petals
-  with a soft orange halo.
+  with a soft orange halo. A taken Blossom or flint fades out where it lies, keeping its place and size, and a
+  regrowing one fades in the same way (A56, 4.0.36: "I want the Blossoms and Flint to fade out in place, not move
+  towards the player in any way"); taking one makes no sound (A59).
 - **Clouds** (`gcRnd("clouds")`): twenty-four (seven until 3.15.68, A24; fourteen until 4.0.35, A55), each three to five white spheres (white with a
   light grey underside, a soft glow against the ground light's green, dimmed at night: A25) (3-5.5 m, flattened to 0.62) circling the
   town 40-95 m out and 50-72 m up, a full circle every 12-26 minutes.
@@ -1306,6 +1442,15 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   cardinal, and the town's trees fade out over 10 s and stay out until the Event ends, then fade back over 10 s; never
   the church and Cave, the Ancient, Somlet, the pond or the Garden. In an Event without the Seeds only the town's
   trees fade (F-B72: "If the user starts the Event without having completed 'Seeds', kiosks should NOT fade out").
+  The kiosk groups are the buildings of the game's registry other than the church: the Post Office, the Sheriff's,
+  Garden Supplies, the Gallery, the Library (the registry's `shop`) and the juice bar (the drum kit and the dance
+  floor stay). A kiosk waits
+  for its keeper to leave home before it fades; once out it stays out until the Event ends, even if
+  the player walks up to it (A26: "Just keep everything faded out until things fade back in. I don't care if there is
+  invisible collision"). The Portal's swirl and light fade with the Portal; while Nextessa's trip through it is under
+  way the Portal does not start to fade, and a fade under way returns to full if she comes through (the author,
+  4.0.38: "If Nextessa has passed through the Portal, do not fade it early, until she has passed back out of the
+  Portal").
 
 ### Special places
 
@@ -1339,6 +1484,15 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   and plays rather than planting. Without them nobody gathers.
 - Fortizmo plays her horn; King Dino's drums slow to 88 beats a minute; Backpacka drinks at the pond, sprays the
   Garden and leaves low over the north-west fence into the mist (A7); the mist bank closes round the town.
+- **Backpacka's water** (the environment's side of his show): while he drinks, three pale rings (`#e8f6ff`) spread
+  across the pond from his mouth, growing from 0.2 to 1.8 m and fading as they go, and splashes leap where his head
+  meets the water; flying off, water drips from his mouth. Over the Garden four jets arc from his feet: pale blue
+  (`#d8f2ff`), half see-through and glossy, their texture running along them, with drops (up to 420 at once, falling
+  under gravity) thrown from the jets and splashing where they land. With the Seeds, a plant within about 1.6 m of a
+  jet's landing is watered and blooms. **The rainbow** (only with the Seeds): a half ring 12.2-14.2 m in radius in
+  seven bands from red (`#e8302a`) to violet (`#a04ad8`), arching east to west across the Garden 7 m south of its
+  centre, its foot 2.5 m below the ground so its top is about 11.7 m up; it fades in to 42% strength 3-7 s after he spreads his wings
+  and out as he leaves. The jets, drops and rainbow are drawn over the mist, so they show against it (F-B74).
 
 #### The church and the Cave
 
@@ -1386,6 +1540,116 @@ townsperson's (the signature colours in CREATURES.md section 1) *(inference: who
   poles with a catwalk and two lamps, the cloth banner ("Let King Dino take you / to the Jurassic / Greeblis Park!")
   draped below it on ropes, a ladder against it, and three paint cans (cyan, pink, lime) with spills and a brush at its
   foot *(inference: Gooward's tools; King Dino: "Gooward, that wild cat painted my billboard!")*.
+
+### Every environmental element (inventory)
+
+Every piece of the world, grouped by area, checked against the 4.0.40 game script. Positions are (x, z) in metres;
+the full descriptions are in the subsections above. Characters, the player's hands, the watch and the menus are not
+environment and are left out (the robin and the cardinal are listed only as perches). "Fades in the Event" means the
+fade groups (10 s, once the mist is up, only with the Seeds unless stated); "hidden in the Event" means the 2.5 s fade
+of A5.
+
+**The park (inside the fence)**
+
+| Element | Where | What it is / looks like | Behaviour | Source |
+| --- | --- | --- | --- | --- |
+| The lawn | the whole park | 26 mown stripes 2.92 m wide, `#4a7a2c` and `#3f6c26`, grass texture | still | |
+| Grass tufts and tiny flowers | scattered, off the walks and the Garden | 1,750 nine-blade tufts in four greens; every sixth with a white or yellow five-petal flower | still; seeded | R1, R5 |
+| The ring walk | 16.6-18.4 m round the Garden | a concrete ring (`#a8a296`) | still | |
+| The radial walks and the cross-walk | to the Post Office pair, Garden Supplies, the Library, the Gallery, the church | concrete 2.6 m wide; a 14.4 m cross-walk along the Post Office pair's fronts | still | |
+| POST OFFICE kiosk | 28.1, -19.8 | the kiosk frame in blue and navy, pink tin roof; 2,300 letters, pigeonholes, parcels | fades in the Event | A43 |
+| SHERIFF'S kiosk | 19.8, -28.1 | brown, a red spotted mushroom-cap roof, the raised desk and ramp, the star, WANTED posters, toadstools, the flag | fades in the Event | A13, A14, F-B39 |
+| GARDEN SUPPLIES kiosk | 27.5, 34.5 | green, rust roof; pots, seed trays, two specimen jars, one hanging basket | fades in the Event; shut while Zollod is shy and during the Event | A46, A49 |
+| GOOWARD'S GALLERY | 31, 14.5 | cream and plum, purple roof; the painting in its gold frame, paint cans, 58 splats, brushes, two easels | fades in the Event | F-B34, F-B47 |
+| Gemtoe's Gazebo | 5, -31 | a white octagon 7.6 m across, green shingle roof, cupola, gold ball, gold-on-plum board, seven stacks of gold coins | fades in the Event; its seven railed sides are walls; no pickup within 4.1 m of its centre | P33, F-B65, B95 |
+| The TELEPHONE booth | -7.2, 23.9 | aluminium, glass on three sides and a folding door, payphone, yellow phone book, lit TELEPHONE crown, beacon | fades in the Event; the handset lifts when calling; the crown glows at dusk | A27 |
+| The Portal | first clear spot near -9.4, -29.6 | two stone piers and a lintel, cyan tiles; the blue swirl and its light when open | opens in 0.75 s, closes in 0.5 s; fades in the Event with its swirl, not during Nextessa's trip | A27, 4.0.38 |
+| The pond | 29.6, -2.6 | grass rim 4.9 m, soil bank 4.1 m, still water 3.7 m round (deep teal, wave streaks, glints) | nothing moves on it; never fades | A21, A33, F-B64 |
+| The pond's stones | its bank | 20 stones in three greys painted flat on the bank | still; seeded | A23 |
+| The two park trees | -16, 37 and -24.5, 34.5 | big trees of the town kit; the robin's and the cardinal's perches | fade in the Event, birds and all | A30, A31, A37, A38, A40 |
+| Blossoms | anywhere clear in the park | 32: a stem, leaves, a red, orange and gold flower, an orange halo | taken: fade out in place; regrow after 12 s; hidden in the Event | A5, A56, A59 |
+| Flint | anywhere clear in the park | 40 dark faceted stones with a glint, lying any way | as the Blossoms | A5, A56, A59 |
+| The JUICE BAR | along the west fence, x -34, z -9.45 to 9.45 | an 18 m counter with a 2.2 m gap, coloured slats, chrome stools, fruit, juice glasses, blenders, bottle shelves, the JUICE BAR sign with giant fruit | fades in the Event | A17 |
+| King Dino's drum kit | -34.8, 19.2 | a red kit with gold cymbals on a round red rug, "KING DINO" on the bass drum | each hit swells its drum, dips the hi-hat, rocks the cymbal; stays in the Event | |
+| The dance floor | -33.1 to -21.1, -9.6 to 28.8 | 10 x 32 dark purple tiles of 1.2 m, slightly glossy | still; stays in the Event | |
+| The hydrant and the mailbox | north sidewalk by the church (3.2, 52.2 / -3.2, 52.3) | a red hydrant; a blue mailbox on four iron legs | still | |
+
+**The Garden**
+
+| Element | Where | What it is / looks like | Behaviour | Source |
+| --- | --- | --- | --- | --- |
+| The soil disc | 0, 0, 15 m round | soil `#5a3e26` | still | |
+| The painted ground | over the disc, 15.9 m round | six furrow rings, four stepping-stone paths of 12 stones, a ring of 72 rocks (every fourth mossy) | flat for everyone; never fades | F-B57 |
+| The Summoning Pillar | the centre | a six-sided purple-grey stone pillar 2.3 m tall with a pointed cap, on a ten-sided plinth and a moss step | three faces of cyan runes: dim, then pulsing once the Stone wakes them, full and whitened in the Event | |
+| The Event's flowers | three rings at 3.5, 7.5 and 11.5 m | five kinds of wild plant, 3.2 times size, 15% taller | grow when watered; a new random colour each Event; in a later Event the old ones fade out (1.2 s) and grow back | A20, A28, A29, A58, F-B43 |
+| The pizza boxes | eight stacks of one to three at 15.95 m round the Garden | flat boxes 0.44 m square | with the Snacks only: fade in at the Event's start and out at its end | A42, A51, F-B49 |
+| Backpacka's ripples | the pond | three pale rings spreading from his mouth | only while he drinks | |
+| Backpacka's jets and drops | his feet, over the Garden | four pale blue glossy arcs and up to 420 falling drops, splashes where they land | only while he sprays; water the plants they land near | F-B74 |
+| The rainbow | across the Garden, 7 m south of its centre | a half ring 12.2-14.2 m in radius, seven bands red to violet | with the Seeds only: fades in to 42% as he sprays, out as he leaves | F-B74 |
+
+**The Library** (-24.75, -24.75; open to the sky; a kiosk like the others: the registry's building `shop`, so it fades out in the Event once Sparkakus has left and back in after it, Sparkakus himself excepted)
+
+| Element | Where | What it is / looks like | Behaviour | Source |
+| --- | --- | --- | --- | --- |
+| The rug | the Library's floor | a Persian rug 11 x 7.8 m: navy border, green band, red field of paisleys, a central medallion, cream fringes at both ends | still | |
+| The bookcases | on the rug, four in the middle and two crosswise at each end | brown wood, 2.24 x 2.13 m, four shelves, filled on both faces | still | A57 (Sparkakus's romp clears them) |
+| The books | the shelves | seeded rows in ten cloth colours, some leaning, some gilt-banded; eight painted face-out covers | still | |
+| The curios | the shelves | the wish Blossom (a pot with a spinning teal crystal), the electric Blossom (yellow petals on a silver stand), an acorn | the two Blossoms spin and their rings bob | |
+| OVERCOMING SHYNESS | a shelf | a pink book with plum ink | taken by pointing or by walking up to it; plays its own sound | A61 |
+| The LIBRARY board | the back, on two white posts 4.3 m high | blue serif name on cream | still | |
+| The Speech's bulb | over Sparkakus | a giant glowing bulb, a cone of light, a warm lamp | only in the Speech; the world dims to 70% of night | |
+| The Eye's making | before Sparkakus, in the Speech | a GLUE bottle, three teal gem pieces, glue drips | assembles over about 15 s, spins, flies to the player | |
+
+**The church and the Cave** (0, 30.4)
+
+| Element | Where | What it is / looks like | Behaviour | Source |
+| --- | --- | --- | --- | --- |
+| The church's body | 12 x 18 m, 9.3 m high | grey stone, cream trim, slate roof to 14.3 m with an iron crest, stepped buttresses, gold-balled pinnacles | never fades; misting does not reach it | A4 |
+| The tower | the front, 4.4 m square | a red door in three stone arches up four steps, a pointed window, a louvred belfry, battlements, four pinnacles, a stone cap at 18.1 m | still | A47, A48 |
+| The side windows | each side, near the ends | wine-red and blue glass under diamond lights | glow more at dusk | |
+| The Traveler window | the front, 4.2 to 13.2 m up | the winged figure with a glowing screen in a beam of light over a dark town | glows of its own, more at dusk | |
+| The garden windows | each side | a robed figure in a flower garden beside a peach goo-shape | as above | |
+| The red X | the west wall, under its window | two crossed red strokes marking a 2.6 m stretch the player walks through | the way in (only the player) | |
+| The Cave | inside, 11.3 x 16.3 x 9.2 m | one painted grey-brown canvas on floor, walls and ceiling | its floor 5 mm above the town ground | F-B60 |
+| The Cave's stones | its floor | about 1,360 pebbles, slabs, fragments, straw and twigs, grit | drawn only within 4 m of the church; none raised by the walkway | F-B60 |
+
+**The outer town** (scenery, never entered: A4)
+
+| Element | Where | What it is / looks like | Behaviour | Source |
+| --- | --- | --- | --- | --- |
+| The streets | z -45 and 57, x ±45 | asphalt 8 m wide, yellow centre dashes, sandy verges, concrete sidewalks, zebra crossings | still | |
+| STOP signs | three park corners | red octagons on grey poles | still | |
+| Lamp posts | every 15 m round the park, and rows at x ±50.6 | iron posts, cream globes 4.7 m up; pink flower baskets on the east; small marquee boards | globes glow at dusk | |
+| Paw prints and goo puddles | the south-west sidewalk; the south-east corner | six prints; four puddles in cyan, pink, purple and lime | still | |
+| The shop rows | x ±52.6, z -37 to 49 | seven buildings each side: store blocks and false fronts with pictogram bands, awnings and roof objects | lit windows glow at dusk | F-B47 |
+| The eight houses | z 72 | each in one townsperson's colours, with its own porch and yard | lit windows glow at dusk | F-B47 |
+| The civic row | z -58 to -64 | courthouse with clock tower, fire station, hotel, school with the mural, gas station, video shop | still | NOTES 48 |
+| Mistergummery's | 65, -27 | the red and cream drive-in with teal arches, lot, MENU board, tables, playground | still | A36 |
+| The landmarks | further out | the water tower, the Gooburger, King Dino's billboard, the Field Office, the roped landing ring, two glasshouses, the crystal patch, a pink ice-cream parlour, an inn | still | |
+| Town trees | 66, within 100 m, off the streets and buildings | the same three tree shapes, coarser beyond 80 m | fade in the Event (with or without the Seeds) | F-B72 |
+| The ground | 640 m square | mottled greens to 140 m, olive beyond | fades into the fog without a line | |
+
+**The edge**
+
+| Element | Where | What it is / looks like | Behaviour | Source |
+| --- | --- | --- | --- | --- |
+| The iron fence | round the whole park, no gate | black pickets on two rails, capped posts every 3.2 m, 1.04 m high | beyond 18-28 m drawn as a flat pattern; drawn over the mist | F-B73 |
+| The brick pillars | the four corners and the middle of the north side | `#9a4a36`, 1.3 m, stone caps, iron balls | still | |
+| The mist bank | four bands 1.5-16 m outside the fence | soft grey walls 22-34 m tall, dense at the foot | only in the Event: rolls in over 30 s, stays 190 s, rolls out over 30 s; drifts sideways | A4, A9, A12, A16, A19 |
+| The misting beyond the fence | everything standing outside | the fog's grey, by where a thing stands, not how far the player is | only in the Event; nothing inside the fence | A4, A9, A19 |
+
+**The sky**
+
+| Element | Where | What it is / looks like | Behaviour | Source |
+| --- | --- | --- | --- | --- |
+| The sky dome | round the camera | a gradient from `#d6e6ef` at the horizon to `#3f86d6` overhead | turns to night blues at dusk | |
+| The sun | 58 degrees up in the north-east | a pale disc (`#fff6c8`) with a soft glow | hidden at dusk | |
+| The lights | | a sky light, a warm sun, a cool fill; no shadows | moonlight at dusk | |
+| The fog | 70-300 m | the horizon colour | darkens with the sky at dusk; the mist's colour follows it | A12 |
+| The clouds | 40-95 m out, 50-72 m up | 24, each three to five flattened white spheres with a grey underside | circle the town every 12-26 minutes; dimmed at night; hidden in the Event | A5, A24, A25, A55 |
+| The stars | above 4.6 degrees | 700 white points | show only as the world dims | R5 |
+| The UFO | crosses the sky 35-48 m up | a chrome saucer, rim bulbs cycling red, yellow and cyan, a glass dome, a green alien | every 600 s; none starts in the Event, one in flight leaves by its path | A6 |
+| Dusk | everywhere | the Speech's dimming to 70% of night | windows, lamps, the church glass and the TELEPHONE sign glow | |
 
 ### The author's decisions about the environment
 

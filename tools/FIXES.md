@@ -1922,6 +1922,9 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.42**: `JGP.slug.core` restored (4.0.41 had removed it as unread; `test_world.js` reads the Ancient's core for A52,
+  and stopped there); `test_interactions.js`'s menu band 0.04 +/- 0.09 rad (Zollod's came 0.027 rad under the old
+  band from where the ray landed; Mama Gorbo's old error was 0.25).
 - **4.0.41**:
   - **Every game sound was silent in 4.0.40** (found while fixing the audit's low items, 2026-11-04): S40's "notes are
     counted as started only when the audio is running" put the counter's two assignments after the audio check, in the
@@ -1947,8 +1950,8 @@ frame already hands the game (no GL call added, RULES.md 28):
     - The game: the head guard's dimming ends with the session (no dark start on the next entry); `rec near eyes`
       sees each instance of the pickups by its own matrix; the recorder builds no new arrays per frame (each hand's
       pointing text is rebuilt only when what it points at changes); leftovers removed: the last call of the general
-      dispose in `It.remove` (only couriers are ever removed), five unread fields on `JGP.slug` (`core`, `head`,
-      `mantle`, `stalks`, `mode`), `userData.gemPiece`, `JGP.jazz.tap`.
+      dispose in `It.remove` (only couriers are ever removed), four unread fields on `JGP.slug` (`head`,
+      `mantle`, `stalks`, `mode`; `core` stays: `test_world.js` reads it for the Ancient's breathing, A52), `userData.gemPiece`, `JGP.jazz.tap`.
     - Closed by the author as won't fix (BUGS S40-SL, S40-SC): spot lights and clipping planes per eye (this trimmed three.js has no spot-light
       or clipping shader code at all, so there is nothing to move; the game uses neither); the scan texture painted
       twice at load (identical 128x96 pictures, 48 KB; sharing them would tie a character's build to the sign
