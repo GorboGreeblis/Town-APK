@@ -1922,6 +1922,50 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.38**:
+  - **A62, a jingle for the romp** (the author: "Please add a jingle that plays during Sparkakus' romp (after being given
+    a Blossom) animation (only)"; "make this a guitar sounding synth jingle"): a plucked-guitar voice (a sawtooth and a
+    slightly detuned square through a lowpass that closes in 0.2 s, a 4 ms attack and a 0.3 s decay; each note's
+    oscillators, filter and gain freed at its end) plays a 16-step riff in E (a step every 0.15 s, a bass pluck on each
+    beat, an octave sparkle every half bar) from the romp's start, checking before each step that the romp is still on,
+    so it stops with the romp. `test_input.js` checks the steps through a whole romp and none after.
+  - **B46, more logging** (the author: "add the extra logging to track down the flash"; the flash does not occur in
+    other applications; 2 of the last 3 marks came during quick pickups): the recorder keeps, per frame, what each
+    hand's ray points at, how many pickups are fading, whether their materials are see-through and the panels' redraw
+    count; each mark logs their changes over the last 3 s (`rec pointing and pickups (3 s)`), and 1.5 s after the mark
+    the frames drawn since it (`rec after the mark`: slow frames, calls, the head guard, program/texture/geometry
+    changes and the same pointing and pickup changes), since the author presses after seeing a flash. `rec near eyes`
+    now also checks sprites and lines. JavaScript only, no GL call (RULES.md 28). `test_flashlog.js` checks both lines.
+    The boot now logs `build v4.0.38` (read from the gate's version text), so every log names its build.
+    Sound too (the author: "I personally think the way sound is handled could have caused the flash but I have no idea
+    how"): every note started is counted with its pitch, and each wake of the audio while it was not running; the mark
+    logs them per frame in `rec pointing, pickups and sound (3 s)` (with the audio's state and the notes started in the
+    3 s) and again in `rec after the mark`, and every change of the audio's state is logged at once (`audio running`,
+    `audio suspended`, with its latencies) and kept in `rec events`. Sound can reach the picture only indirectly (the
+    browser's audio thread holding up the game's frame, or the system restarting audio output), and nothing recorded
+    it before.
+  - **B46 closed by the author** ("For now: let's close out the flash issue"), with none in the two runs since the pickup
+    sound was removed; everything the recorder logs for it stays.
+  - **The romp from a browse spot** (A57 again): the full test caught a 0.26 m touch on the Library's back shelf. At a
+    browse spot Sparkakus stands facing the books, and the romp leaned him 20 degrees forward right there, into them;
+    it then ran straight from that spot onto the loop. He now goes back to his home spot first, leans there, and runs
+    the loop from it (the start that was always clear); the contact his outline already makes with the books while he
+    browses, before the romp, is left out of the check.
+  - **The Portal in an Event** (the author: "Please make sure that the Portal animation fades out with the Portal, if
+    Nextessa hasn't passed through it (spawned in the Park) already. If Nextessa has passed through the Portal, do not
+    fade it early, until she has passed back out of the Portal"): the swirl (its two planes, the rings and the blue
+    light) is kept out of the Portal's fade group (its own per-frame opacities would fight the group's), so it drew
+    at full strength while the frame faded round it. Its strength is now the Portal's opening times the Portal's fade,
+    and it is hidden once the Portal is out. The Portal does not start fading while Nextessa's trip is under way (from
+    her arrival through it until she has gone back out); a fade under way returns to full if she comes through. Once
+    her trip is over it fades as the other kiosks do. `test_portal_fade.js` (new) checks both cases.
+  - **Menus the same height above every head** (the author: "Mama Gorbo's interact menu now appears too high over her
+    head. All interact menus should appear with the same distance above the NPC's head"): a menu stands on the
+    character's head top, measured once from its bounding box; Mama Gorbo's cap (made larger in A36, tilted back 0.5
+    rad and stretched 2.85 times) has a box whose corners reach 4.2 m, against the cap's real top at 3.4 m, so her menu
+    stood 0.8 m higher than everyone's. The head top is now the highest visible vertex (the same 0.07 m below it):
+    Mama Gorbo 3.36 m (was 4.18), Somlet 2.25 (was 2.69), everyone else within 0.04 m of before. `test_world.js` checks
+    every character.
 - **4.0.37, the author's asks**:
   - **A57 refined**: the 4.0.36 test caught his box reaching the Library's shelf books (0.06 m) from a romp started off
     the middle; measured from six starts, two (2.5 m either side, 0.3 m forward) touched the books at about z -3.07
@@ -1935,7 +1979,8 @@ frame already hands the game (no GL call added, RULES.md 28):
   - **A59, no pickup sound** (the author: "Remove the sound effects from the Blossom and Flint pickups"): taking one is
     silent; the counts, the fade and the HUD are unchanged. The author asked whether the sound could cause a flash:
     it cannot draw anything (it is an oscillator in the audio context, no GL), and no mark lined up with one more than
-    by chance, but it is gone anyway. `test_world.js` checks no pickup sound on a take.
+    by chance, but it is gone anyway. `test_world.js` checks no pickup sound on a take. The author, after 4.0.37: "I'm
+    happy with no sound effects for Blossom and Flint pickups" (settled).
   - **A60, a tweet tweet for the birds** (the author: "Add a tweet tweet sound effect for interacting with either
     bird"): picking the robin or the cardinal plays two quick high chirps (three rising sine notes each, 2.6-3.75 kHz,
     soft) as it flies off; a pick while it is away plays nothing. Synthesised like every sound (one oscillator and gain

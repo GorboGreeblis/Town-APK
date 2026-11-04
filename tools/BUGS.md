@@ -13,7 +13,6 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Where | Reproduce | Status |
 | --- | --- | --- | --- | --- |
-| B46 | Flashes (full-screen, one or two frames): closed 2026-11-03 after the blink snap, reopened 2026-11-04 on 4.0.34 (the author's log 865e1e9c: two marks, "Possibly related to pickups?"; "The remaining flash is a blocker") | not in anything the game draws or records: every frame drawn, no layer change, no matrix fault, no compositor tear beyond chance, no camera cycle, no snap turn needed | the author's runs; mark 2 during rapid point-and-select pickups | 4.0.35: the blink taken out (it did not stop them), the head guard's level added to each mark's record; 4.0.37: the latest one bright/white, whole view, very quick (the author); the pickup sound removed (A59; it cannot draw); log 47ab0c91 (one mark, 4.0.36): the game's records clean, the head guard not shown, nothing in the system log, a Blossom taken 1.1 s before (2 of the last 3 marks during quick pickups); the author: the flash does not occur in other applications; open, MUST FIX (blocker) |
 
 ## Fixed
 
@@ -164,6 +163,7 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Why closed | Date |
 | --- | --- | --- | --- |
+| B46 | Flashes (full-screen, one or two frames; the last ones bright, "very quick"): reopened 2026-11-04 on 4.0.34, seen on 4.0.36 (log 47ab0c91, during quick pickups); none in the author's last two runs (log a0ed741e/d8e9ca00) | closed by the author on 2026-11-04 ("For now: let's close out the flash issue"): no cause found in anything the game draws or records; not seen in other applications. The recorder keeps everything added for it (4.0.38: pointing, pickup fades, panel redraws, every sound started and each audio wake-up or state change, the frames after the mark), so a new mark can be read at once | 2026-11-04 |
 | B74 | `Ut.warm()` runs at every VR entry and adds a material and two meshes each time, never removed (one entry per session in practice) | closed 4.0.27 (S33): no change needed; the emotes' warm-up reuses its pool of sixteen sprites since S11, and run again adds no sprite, mesh or material (`test_s33.js`) | 2026-11-03 |
 | B90 | S30's uncleared colour buffer (4.0.24) may have made the Quest's tiled GPU load both eye images back every frame (about 24 MB), with a benefit resting on the browser keeping the images' old contents (the third audit) | closed 4.0.25: the no-clear was taken out at the author's word ("The next build should not have the no clear addition"); the colour is cleared to black each frame again (S18) |
 | B87 | The meeting's seek flag and the moved home stay set while a partner is busy or an Event runs (the second review, low) | by design (4.0.21): the seek toward the partner is what makes Mama Gorbo walk again after a recovery reset; dropping it (4.0.19, two forms) left her standing (`test_recover.js`) | 2026-11-02 |
