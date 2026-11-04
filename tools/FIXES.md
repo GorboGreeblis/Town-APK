@@ -1946,7 +1946,14 @@ frame already hands the game (no GL call added, RULES.md 28):
     about 1.4 s, quiet like the rest. `test_world.js` checks it plays once, and the pickup sound does not.
   - **B46 noted**: the author's latest flash was "a white / bright flash", "seemingly the whole screen but also very
     quick" (the earlier ones read as dark). Nothing the game draws can whiten the whole view: the only full-view
-    object is the head guard, which is black.
+    object is the head guard, which is black. Log 47ab0c91 (4.0.36, one mark): every frame drawn, no layer change, no
+    matrix fault, the head guard not shown, nothing near the eyes, draw calls steady (158); a Flint taken 1.6 s and a
+    Blossom 1.1 s before (2 of the last 3 marks during quick pickups), the Cave left 5.8 s before; the full system log
+    shows nothing at the mark and the tracking camera's cycle ended 4.8 s before. The author: the flash does not
+    occur in other applications.
+  - **Without the Seeds** (the author: "the current behavior is intended. No planting, no music, no dancing, and no
+    flowers grow"; "the pizza boxes and Backpacka should still appear"): confirmed as built; `test_noseeds.js` now
+    starts its Event with the Snacks and checks the boxes and Backpacka come, and no one plants or dances.
 - **4.0.36, the author's asks**:
   - **A55, more clouds** (the author: "Add more clouds to the sky"): 24 instead of 14 (seven until 3.15.68), built the
     same way from the same seeded stream, so the first 14 stay where they were and ten more join them; the Event's

@@ -53,6 +53,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Taking a Blossom or Flint makes no sound (A59) | `test_world.js` | done (4.0.37) |
 | Picking the robin or the cardinal plays one tweet each, none while it is away (A60) | `test_world.js` | done (4.0.37) |
 | Taking OVERCOMING SHYNESS plays its own sound once, not the pickup sound (A61) | `test_world.js` | done (4.0.37) |
+| Without the Seeds: the pizza boxes (with the Snacks) and Backpacka still come; no planting, dancing or growing | `test_noseeds.js` | done (4.0.37) |
 | A flash mark logs the head guard line (B46 reopened, 4.0.35) | `test_flashlog.js` | done (4.0.35) |
 | Trigger/grip (`select`/`squeeze`): pick ray, pick range/cone, menu choice, UI buttons 4/5 | `test_input.js` (events only) | partial |
 | Controller mapping on real hardware (hand assignment; no haptics anywhere since 4.0.23, A50) | sideload | headset |

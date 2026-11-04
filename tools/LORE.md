@@ -300,8 +300,9 @@ editions.") and the Ancient texts.
   sleeps on at the Post Office; Sparkakus leaves the Library to join them), wait for each other, then plant for 190 s
   (dig, pat or scatter, each their own way) and go home; spoken to, each says their gardening line (below). In the
   first Event each plants a flower; in later ones the old flowers fade away (A58), take new colours and grow back
-  (F-B43, A29). **Without the Seeds** no one gathers or plants and no kiosk or park tree fades (F-B72); the mist,
-  the fades of the town and Backpacka still come. **With the Snacks** eight stacks of pizza boxes fade in round the
+  (F-B43, A29). **Without the Seeds** no one gathers or plants, there is no music or dancing, no flower grows and no kiosk
+  or park tree fades (F-B72); the mist, the fades of the town, Backpacka and (with the Snacks) the pizza boxes still
+  come, as the author intends (2026-11-04). **With the Snacks** eight stacks of pizza boxes fade in round the
   Garden as it starts (A51) and Anomalee, instead of planting, sets down her own open box (fading in) and eats a
   slice every 22 s, leaving the last two (F-B49); without them she plants like everyone else. The boxes fade out at
   the end (A42). While the town gathers, neighbours in the ring trade little emotes ("♥", "✿", "!", "~").
@@ -312,7 +313,8 @@ editions.") and the Ancient texts.
   north-west fence into the mist (the animation's own stages: arrive, down, drink, up, to the garden, splay, spray,
   gone; 88 s, A7). While the horn plays the ring dances (Gemtoe twirls, Gooward bounces, Mushroom shimmies,
   Anomalee stomps, Zollod grooves, Mama Gorbo jellies, Hennrick and the three dancers their own dances). Without the Seeds there is no
-  horn, but the code still sends him *(read from the start condition, which only the horn checks)*.
+  horn, no dancing and no planting, but he still comes (the author, 2026-11-04: "without Seeds: the pizza boxes and
+  Backpacka should still appear"; "No planting, no music, no dancing, and no flowers grow").
 - **Pizza**: the TELEPHONE calls Nextessa's inter-temporal pizza shop; a courier delivers, even into the
   church where the Ancient lives.
 - **The Speech**: with all three Artifacts, Sparkakus stops, a giant light bulb lights over him and the world
