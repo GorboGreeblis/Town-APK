@@ -1979,7 +1979,8 @@ frame already hands the game (no GL call added, RULES.md 28):
   - **A59, no pickup sound** (the author: "Remove the sound effects from the Blossom and Flint pickups"): taking one is
     silent; the counts, the fade and the HUD are unchanged. The author asked whether the sound could cause a flash:
     it cannot draw anything (it is an oscillator in the audio context, no GL), and no mark lined up with one more than
-    by chance, but it is gone anyway. `test_world.js` checks no pickup sound on a take.
+    by chance, but it is gone anyway. `test_world.js` checks no pickup sound on a take. The author, after 4.0.37: "I'm
+    happy with no sound effects for Blossom and Flint pickups" (settled).
   - **A60, a tweet tweet for the birds** (the author: "Add a tweet tweet sound effect for interacting with either
     bird"): picking the robin or the cardinal plays two quick high chirps (three rising sine notes each, 2.6-3.75 kHz,
     soft) as it flies off; a pick while it is away plays nothing. Synthesised like every sound (one oscillator and gain
