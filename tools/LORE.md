@@ -39,7 +39,7 @@ Dino's drum kit, the juice bar's furniture, the Library's bookcases, books, cove
 phone booth and the Portal, Backpacka's water and rainbow, the fade groups (A26, the Portal in 4.0.38) and pickups
 fading in place (A56). Every creature is broken down too ("Every creature (inventory)"), with new entries for the
 UFO's pilot and the faces in pictures; Sparkakus's romp (A57, A62), Gooward's barrage (A39), the Ancient's breathing
-organ (A53), the birds' flight (A54) and Nextessa filled in; corrected: there are eight WANTED posters of six kinds
+organ (A53), the birds' flight (A54) and Nextessa filled in; corrected: there are eight WANTED posters of seven designs
 (adding the saucer, the rabbit, the girl, the stranger and Ollaag), and Somlet is she in her design entry too.
 
 ## The world
@@ -67,11 +67,13 @@ organ (A53), the birds' flight (A54) and Nextessa filled in; corrected: there ar
   a church (the Ancient's home, below), a pond and the billboard.
 - **The billboard:** "A Prehistoric Era in Jazz!", with a banner: "Let King
   Dino take you / to the Jurassic / Greeblis Park!"
-- **WANTED posters:** eight on the Sheriff's back wall, six kinds: an alien face (twice), a flying saucer, a goo
+- **WANTED posters:** eight on the Sheriff's back wall, seven designs: an alien face (twice), a flying saucer, a goo
   creature named **GLOOPERNAUGHT**, a rabbit in a uniform, a girl in a yellow flowered dress, a blond stranger in a
   brown jacket, and a pointed-eared figure in a blue robe named **Ollaag**; each "WANTED" above and "REWARD" below
   (looks in "Creature design and style", "Faces in pictures"). The girl (the code's `visitor`) is the player's avatar (the
-  author, 2026-11-04). *(inference: the alien is how the Sheriff pictures the Human he is hunting.)*
+  author, 2026-11-04). The posters show several aliens, two of them humans (the author's answer 11 below); the grey
+  alien is one of the aliens in its own right, not a picture of the Human *(inference: the two humans are the girl
+  and the blond stranger, the only two drawn as people)*.
 - **The robin and the cardinal:** a robin and a cardinal perch on the park's two big trees beside the church (the
   robin moved there in 4.0.3, A30; the cardinal and its tree came in 4.0.4, A37, A38), the cardinal turned to face the
   robin (4.0.7, A40); pick either ("Robin", "Cardinal") and it flies off and comes back. A robin and a cardinal also
@@ -1013,7 +1015,9 @@ Creatures that exist only as paint, for completeness; none moves.
   bow, and a yellow dress with white flowers: the player's avatar (the author, 2026-11-04); *the stranger* (`stranger`), fair skin, swept
   blond hair, a gold earring, a brown jacket over a sage shirt and white collar; *Ollaag* (`olag`), tan skin, ears
   pointing out to the sides, heavy brows and forehead lines, a blue robe with dark collar points and gold diamond
-  studs, a gold-and-navy checked belt, holding a sage tablet. Who they are is not told: GLOOPERNAUGHT has a backstory this game
+  studs, a gold-and-navy checked belt, holding a sage tablet. They are several aliens, two of them humans (the
+  author's answer 11 below; *inference: the girl and the stranger*); the grey alien is an alien of its own, not the
+  Sheriff's picture of the Human (an earlier guess here). Who they are is not told: GLOOPERNAUGHT has a backstory this game
   does not tell (the author's answer 4 below); Ollaag is the leader of the Alien Alliance, which is in conflict with the
   Consortium, and is the one who flies round in the UFO (the author's answer 9 below).
 - **Gooward's painting**: its creatures and motifs (`cubeJar`, `glitch`, `paisley`, `water`, `mise`, the butterflies,
@@ -1705,7 +1709,7 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 | The church, its glass, the Cave | `"church"` (`CHURCH`, `lancet`, `paintTravelerWindow`, `paintGardenWindow`, `stainedKit`), `id:"slug"` |
 | Night glow, the UFO, the Speech's bulb | `.emissive.setRGB(.95*` (the lit windows; `BIN.lit` in 3.15.44), `JGP.ufoNow`, `Bulb.start` |
 
-## The author's answers (2026-10-28; 9 and 10 added 2026-11-04)
+## The author's answers (2026-10-28; 9 to 11 added 2026-11-04)
 
 1. **Mama W** is a name for Mama Gorbo.
 2. **Flint** and the code's acorns are the same thing; flint is the game's word.
@@ -1720,6 +1724,8 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 9. **Ollaag** (2026-11-04) is the leader of the Alien Alliance, a group of all the other alien factions; he is the one
    who flies around in the UFO; the Alien Alliance is in conflict with the Consortium.
 10. **The girl** on the WANTED poster (the code's `visitor`) is the player's avatar (2026-11-04).
+11. **The WANTED posters** show several aliens, two of them humans (2026-11-04). The grey alien face is not the
+    Sheriff's picture of the Human.
 
 ## Left open on purpose
 
