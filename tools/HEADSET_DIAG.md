@@ -250,7 +250,8 @@ throw while hiding a character the head is inside, caught before the draw).
 Snap turns are counted in the recorder's dumps (`snap`) and marked S in `rec timeline` (instant since 4.0.35; the
 blink of 4.0.31-4.0.34 is gone). Since 4.0.35 each mark also logs `rec head guard (3 s): not shown`, or `the view
 dimmed by the head guard (head near a wall), peak P, last -T s`: the head guard is the one full-view darkening left in
-the game, so a dark flash with it shown means the head passed near a building part. A taken Blossom or Flint that was
+the game, so a dark flash with it shown means the head passed near a building part (since 4.0.38 it starts only 3 cm
+from a part and is full 5 cm inside; it was 0.2 m and 0.08 m). A taken Blossom or Flint that was
 still showing logs `recovery: a taken Blossom was still showing: hidden (B97) at X,Z` (B97).
 Since 4.0.38 (B46, the flash during quick pickups) each mark also logs `rec pointing, pickups and sound (3 s): now
 pointing L:blossom R:-, fading N, pickups see-through on|off, audio running, notes started N; ...` (each `sound N note(s)

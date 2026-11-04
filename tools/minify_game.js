@@ -21,14 +21,34 @@ const args = process.argv.slice(2), check = args.includes('--check');
 const file = path.resolve(args.find((a) => !a.startsWith('--')) || path.join(root, 'tools/uncompressed.html'));
 const RESERVED = [...new Set([...HOOK_NAMES, 'Ge', 'VIGS', 'F', 'W', 't', 'bend', 'park'])];
 // reduce_funcs off: a function used once stays a function (test_bend_exact.js runs `bend` on its own; 447 bytes)
-const OPTIONS = { ecma: 2020, compress: { passes: 2, reduce_funcs: false }, mangle: { reserved: RESERVED }, keep_classnames: true, format: { comments: false } };
+const OPTIONS = { ecma: 2020, compress: { passes: 3, reduce_funcs: false }, mangle: { reserved: RESERVED }, keep_classnames: true, format: { comments: false } };
+// The game's own script (the one that starts "use strict";window.__jgpBlocked) also has its top-level names shortened
+// (4.0.39, the author: "As much as possible: Please apply Minification to the game code"), except those another script
+// or a tool names: each of its top-level names found in the page's other scripts, or (longer than two letters) in any
+// tool, keeps its name, as do RESERVED. terser's unsafe options are not used (float maths, functions to arrows: a
+// change of behaviour for about 1 KB).
+const acorn = require('acorn');
+const toolsText = () => [...fs.readdirSync(path.join(root, 'tools')).filter((f) => /\.(js|py|sh)$/.test(f)).map((f) => path.join(root, 'tools', f)), path.join(root, 'tools/lib/harness.js')]
+  .map((f) => fs.readFileSync(f, 'utf8')).join('\n');
+function gameOptions(code, others) {
+  const top = new Set();
+  for (const n of acorn.parse(code, { ecmaVersion: 2022 }).body) {
+    if (n.type === 'VariableDeclaration') n.declarations.forEach((d) => d.id && d.id.name && top.add(d.id.name));
+    else if ((n.type === 'FunctionDeclaration' || n.type === 'ClassDeclaration') && n.id) top.add(n.id.name);
+  }
+  const tools = toolsText(), word = (n) => new RegExp('(^|[^\\w$])' + n.replace(/\$/g, '\\$') + '($|[^\\w$])');
+  const keep = [...top].filter((n) => word(n).test(others) || (n.length > 2 && word(n).test(tools)));
+  return { ...OPTIONS, toplevel: true, compress: { ...OPTIONS.compress, toplevel: true }, mangle: { reserved: [...new Set([...RESERVED, ...keep])], toplevel: true } };
+}
 
 async function minifyHtml(html) {
   // the HTML around the scripts: only whitespace between tags goes (the stylesheet is already one line)
   const outer = (h) => h.replace(/>\s+</g, '><').replace(/\s+$/, '\n');
   let out = '', at = 0;
-  for (const m of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)) {
-    const r = await minify(m[2], OPTIONS);
+  const all = [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)];
+  for (const m of all) {
+    const game = /^\s*"use strict";window\.__jgpBlocked/.test(m[2]);
+    const r = await minify(m[2], game ? gameOptions(m[2], all.filter((x) => x !== m).map((x) => x[2]).join('\n')) : OPTIONS);
     out += outer(html.slice(at, m.index)) + `<script${m[1]}>${r.code}</script>`; at = m.index + m[0].length;
   }
   return out + outer(html.slice(at));
