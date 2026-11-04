@@ -1949,7 +1949,7 @@ frame already hands the game (no GL call added, RULES.md 28):
       pointing text is rebuilt only when what it points at changes); leftovers removed: the last call of the general
       dispose in `It.remove` (only couriers are ever removed), five unread fields on `JGP.slug` (`core`, `head`,
       `mantle`, `stalks`, `mode`), `userData.gemPiece`, `JGP.jazz.tap`.
-    - Not changed, with the reason: spot lights and clipping planes per eye (this trimmed three.js has no spot-light
+    - Closed by the author as won't fix (BUGS S40-SL, S40-SC): spot lights and clipping planes per eye (this trimmed three.js has no spot-light
       or clipping shader code at all, so there is nothing to move; the game uses neither); the scan texture painted
       twice at load (identical 128x96 pictures, 48 KB; sharing them would tie a character's build to the sign
       textures' load order for no visible change).
