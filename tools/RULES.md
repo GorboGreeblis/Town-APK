@@ -205,6 +205,12 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     full tier on the final build, the comparison against 4.0.46 under rule 31, and the closing code audit) does not
     start until the author has tested that candidate on the headset and reported back. What the headset shows comes
     first; whatever it turns up is fixed in a new candidate, which waits for its own headset test.
+33. **Nothing that could fail Store review** (2026-11-05: "Anything that could fail Store review is ruled out"; "As a
+    rule"). No change, performance or otherwise, that a Meta Store review could fail the game for: no tricks around the
+    platform's own controls (raising the CPU's clock level by keeping cores busy with work that does nothing, for one;
+    the headset picks its clock levels from the CPU's utilization, and the game's work is on one thread, so it mostly
+    runs at the lowest level, 1382 MHz), nothing that wastes battery or heat on purpose, nothing against the VRC
+    requirements. When in doubt, it is put to the author first.
 
 ## Priorities
 
