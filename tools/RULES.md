@@ -240,6 +240,10 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
   loader stays whole for the session; no layer is destroyed and no context lost while a session runs.
 - A test build without the depth discard (P14, the layer's end): closed (2026-11-03, "'Test a build without the
   depth discard' close out this option"). The discard stays in every build; no experiment build drops it.
+- Fewer draws by merging more of them into the batch path: closed (2026-11-05, "Let's close out option 4"; option 4 of
+  the list of next performance options put to the author that day: a census of the remaining draws and merging the ones
+  that could join a batch). The batch path does its sums on the GPU, so merges risked changing pixels; no build tries it.
+  Texture arrays (option 5) stay open on rule 31's terms.
 - The Event's headroom by fading more scenery: closed (2026-11-03, "let's close out this option altogether. I don't
   want anything that will effect user experience negatively"); the measurement (FIXES S30) showed nothing to take
   without hiding what the player sees, and nothing that costs the player's view is taken for performance from here on.
