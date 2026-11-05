@@ -558,3 +558,12 @@ a margin. The Quest 3 (same CPU, about 30% more pixels) may be held by its GPU i
 4.0.47: P34 (the townsfolk out of view skipped), P35 (the dancers' fit), the batcher's visibility once a frame; about 9%
 in the town at the slowest spot, 3% in the Event (FIXES 4.0.47).
 
+4.0.47 on the headset (764bd9d7, on battery at the same clocks): town median 67 fps (65), the Event 62 with 16% of its
+seconds under 60 (28%). Measured part by part (`frame_parts.js`, medians, the switch toggled in one session), P34 cut
+the matrix walk 8-29% at the town's spots but that is only 2-3% of the frame: the estimate of 9% had weighed the walk
+from the profiler's samples, which overstate it. A town frame headless: the draw path 4-6 ms (about 45%), the rest of
+the render (culling, sorting, lights) 1.8 ms, the batcher 1.5 ms, the game's update 1.5 ms, the matrix walk 1.3 ms.
+
+4.0.48: P36 (the opaque draws grouped by program again: program switches about halved, GL calls -8 to -10%, about
+-5% a frame) and P37 (texture UV transforms only when they change); estimate on 764bd9d7: Quest 3S town median 68.5,
+the Event 64 with about 6% of seconds under 60.

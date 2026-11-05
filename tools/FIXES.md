@@ -1922,6 +1922,29 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.48** (the author's 4.0.47 run 764bd9d7: town median 67 fps on battery, the Event 62; "Please fix this
+  bundled three.js sort bug"; RULES.md 31, the picture as in 4.0.46, with the depth-tie allowance).
+  - **P36: the draws are grouped by program again.** three.js sorts the opaque draws by group, render order, program,
+    material and distance, so that draws with one shader program run together; this bundled version read the
+    program from a field it no longer sets (`program`; the renderer keeps `currentProgram`), so every draw counted
+    as program -1 and the order fell to the material's number: about 99 program switches a frame for 40 programs at
+    the battery run's slowest town spot (each switch re-sends the camera, the second eye's matrices and the lights).
+    The render list now reads `currentProgram`: 40 switches; at four town spots program switches per frame 110 -> 52,
+    126 -> 61, 113 -> 48, 141 -> 61, all GL calls -8 to -10%, uniform uploads -7%; `frame_parts.js` about -5% a
+    frame over seven views (the draw path about -7%). The order of opaque draws changes, which can decide
+    differently which of two surfaces at exactly one depth wins a pixel: `pixel_ab.js` found 1 pixel in 2 of 52
+    views, within rule 31's allowance (added for this by the author). `window.__gcPS = false` gives the old order.
+  - **P37: texture UV transforms only when they change.** On every material switch three.js worked out the texture's
+    UV transform again (a sine and a cosine); it is now worked out when the offset, repeat, rotation or centre
+    changed. `pixel_ab.js`: 0 pixels in 28 views. `window.__gcTU = false` restores the old path.
+  - **B101: a second Event right after the first builds nothing in play.** The kept batch shapes (S42) are a list per
+    content, so several boxes, or two Events overlapping, each take a copy; after the warm-up drops its batches, every
+    shape no batch uses gets a spare copy, uploaded at load ("batch shapes kept for a second Event at once: 4").
+    `test_play_uploads.js` ends an Event with the Snacks and starts another at once: nothing uploaded, held or made.
+  - Estimate (`fps_estimate.js` on 764bd9d7 with about 5%): Quest 3S town median 67 -> 68.5, seconds under 60 3% ->
+    1%; the Event median 62 -> 64, 16% -> about 6%; the Quest 3 about the same.
+  - Tools: `pixel_ab.js` (new; the rule 31 gate: one frame rendered twice with a switch off and on, both eyes,
+    compared pixel for pixel), `frame_parts.js` (new; the frame's parts as medians, with a switch toggled in turns).
 - **4.0.47** (the author's wireless run 14b455ce on 4.0.46, on battery: town median 65 fps, 16 of 117 readings under 60;
   "failing the above 60 fps bar is a blocker"; "can we meet this without losing quality?"). On battery the headset ran
   the CPU at 1382-1920 MHz (2208 plugged in, the earlier runs) and the game is limited by the CPU (the GPU had room:
