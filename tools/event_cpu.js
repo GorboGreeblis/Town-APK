@@ -18,27 +18,30 @@ const { boot } = require('./lib/harness');
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
 const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : undefined;
 const [AX, AZ] = arg('--at', '-33,-7').split(',').map(Number);
-const YAW = +arg('--yaw', '80') * Math.PI / 180, SECS = +arg('--secs', '12'), TOP = +arg('--top', '30');
+const YAW = +arg('--yaw', '80') * Math.PI / 180, SECS = +arg('--secs', '12'), TOP = +arg('--top', '30'), TOWN = process.argv.includes('--town');
 
 (async () => {
   const g = await boot({ file, vr: true, fastSim: false });
   const page = g.page;
   const src = fs.readFileSync(file || path.join(__dirname, 'android/app/src/main/assets/index.html'), 'utf8').split('\n');
-  const ready = await page.evaluate(async ({ AX, AZ, YAW }) => {
+  const ready = await page.evaluate(async ({ AX, AZ, YAW, TOWN }) => {
     const D = window.__dbg, J = D.JGP, wait = (ms) => new Promise((r) => setTimeout(r, ms));
     setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250);
     await wait(1500);
-    const Kt = D.Kt; Kt.rewards.stone = Kt.rewards.seeds = Kt.rewards.snacks = true; D.oe.open(); await wait(400);
-    const y = ((D._t.state && D._t.state.items) || []).find((i) => i.label === 'Yes'); if (y) y.onClick();
-    const t0 = performance.now(); while (!D.me.active && performance.now() - t0 < 20000) await wait(50);
-    while (J.mist.p() < 1 && performance.now() - t0 < 120000) await wait(200);
+    const t0 = performance.now();
+    if (!TOWN) {
+      const Kt = D.Kt; Kt.rewards.stone = Kt.rewards.seeds = Kt.rewards.snacks = true; D.oe.open(); await wait(400);
+      const y = ((D._t.state && D._t.state.items) || []).find((i) => i.label === 'Yes'); if (y) y.onClick();
+      while (!D.me.active && performance.now() - t0 < 20000) await wait(50);
+      while (J.mist.p() < 1 && performance.now() - t0 < 120000) await wait(200);
+    }
     D.At.position.set(AX, D.At.position.y, AZ); window.__fakeXR.pose.yaw = YAW;
     await wait(4000);
     // frame timing over the profile: the whole XR frame callback and three.js's render inside it
     const X = window.__gtXR, O = D.O, R = O.render, st = window.__evCpu = { frames: 0, render: 0, renders: [] };
     O.render = function () { const a = performance.now(); try { return R.apply(this, arguments); } finally { const d = performance.now() - a; st.render += d; st.renders.push(d); st.frames++; } };
     return { active: !!D.me.active, mist: J.mist.p(), draws: O.info.render.calls };
-  }, { AX, AZ, YAW });
+  }, { AX, AZ, YAW, TOWN });
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Profiler.enable'); await cdp.send('Profiler.setSamplingInterval', { interval: 200 });
   const f0 = await page.evaluate(() => window.__fakeXR.frames), w0 = Date.now();
@@ -77,7 +80,7 @@ const YAW = +arg('--yaw', '80') * Math.PI / 180, SECS = +arg('--secs', '12'), TO
     const seen = new Set(); let p = id;
     while (p !== undefined) { const cf = byId.get(p).callFrame, k = where(cf); if (!seen.has(k)) { seen.add(k); const e = incl.get(k) || { t: 0, cf }; e.t += t; incl.set(k, e); } p = parent.get(p); }
   }
-  console.log(`Event at (${AX}, ${AZ}) yaw ${Math.round(YAW * 180 / Math.PI)}: active ${ready.active}, mist ${ready.mist.toFixed(2)}; ${frames} XR frames in ${wall.toFixed(1)} s (${(frames / wall).toFixed(1)} fps headless); render ${ft.renderMs.toFixed(2)} ms a frame (p90 ${ft.p90.toFixed(2)}), ${ft.draws} draws, ${ft.tris} triangles`);
+  console.log(`${TOWN ? 'Town' : 'Event'} at (${AX}, ${AZ}) yaw ${Math.round(YAW * 180 / Math.PI)}: active ${ready.active}, mist ${ready.mist.toFixed(2)}; ${frames} XR frames in ${wall.toFixed(1)} s (${(frames / wall).toFixed(1)} fps headless); render ${ft.renderMs.toFixed(2)} ms a frame (p90 ${ft.p90.toFixed(2)}), ${ft.draws} draws, ${ft.tris} triangles`);
   console.log(`main thread busy ${(100 * busy / total).toFixed(0)}% of ${(total / 1e6).toFixed(1)} s; ${(busy / 1000 / Math.max(1, frames)).toFixed(2)} ms busy a frame`);
   for (const [k, t] of Object.entries(cats).sort((a, b) => b[1] - a[1])) if (k !== '(idle)') console.log(`  ${(100 * t / busy).toFixed(1).padStart(5)}%  ${(t / 1000 / Math.max(1, frames)).toFixed(2)} ms/frame  ${k}`);
   console.log(`top ${TOP} game and three.js functions by inclusive time (with what they call):`);

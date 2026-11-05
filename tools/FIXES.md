@@ -1922,6 +1922,36 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.47** (the author's wireless run 14b455ce on 4.0.46, on battery: town median 65 fps, 16 of 117 readings under 60;
+  "failing the above 60 fps bar is a blocker"; "can we meet this without losing quality?"). On battery the headset ran
+  the CPU at 1382-1920 MHz (2208 plugged in, the earlier runs) and the game is limited by the CPU (the GPU had room:
+  6.7 ms of the 13.9 ms frame). Nothing in this round changes the picture.
+  - **P34: the townsfolk out of view skip their matrix walk, culling and batch work.** Each frame in VR, before the
+    scene is drawn, every character's bounding sphere (its whole body measured, 1.25 times plus 0.9 m; measured again
+    one character a frame in turn) is tested against this frame's two eye views (three.js sets each eye's pose and
+    projection from the headset before the game's frame runs, so walking, snap turns, head turns and a recentred view
+    are exact). A character wholly outside both is skipped for the frame (`gcOff`): the matrix walk and culling stop at
+    its group, and its batched parts count as hidden (their slots cleared, so nothing is drawn from a stale matrix).
+    Its pose and behaviour still run every frame (P28's rule). Code that asks for a world position
+    (`getWorldPosition`, `localToWorld`) works it out on demand as before; picking a skipped character the controller
+    ray can reach first brings its matrices up to date. About 7-9 of the 13 characters are skipped a frame in the
+    town (fewer in the Event, where everyone gathers in view). `__gcOff.st.on = false` turns it off.
+  - **P35: the dancers' ground fit.** A dancer out of view skips the fit (a walk of its whole body to find its lowest
+    point) and is fitted as it comes back into view, before it is drawn; a fit that lifts a dancer moves the matrices
+    it has just worked out by the lift instead of walking the whole body a second time.
+  - The batcher's pass asks whether a part's ancestors are all visible once a frame per node (`gcVis`) instead of
+    walking up from every part.
+  - Measured by counting the work (the headless timings swing 15% between identical runs; `cpu_bench.js` notes why):
+    at the battery run's slowest town spot facing the centre, the characters out of view carry 38% of the matrix walk,
+    culling and batch work of the characters, about 9% of the frame; looking outward more. Estimate
+    (`fps_estimate.js` on 14b455ce with 9% in the town and 3% in the Event): Quest 3S town median 65 -> 68, seconds
+    under 60 3% -> 1%; Event median 62 -> 63, 28% -> 19% under 60; Quest 3 about the same. Not enough alone: more
+    savings follow.
+  - `test_offview.js` (standard tier, new): over walking, snap turns, fast head turns and the Event, after every frame
+    no skipped character's exact box meets the frame's real view (27,362 checks); a pick brings a skipped character up
+    to date; every dancer in view has been fitted and its matrices equal a fresh walk (to 1e-15).
+  - Tools (new): `cpu_bench.js` (the frame's main-thread time at fixed views; two files, or one switch toggled in one
+    session), `fps_estimate.js` (Quest 3S and Quest 3 estimates from a headset log and a saving), `event_cpu.js --town`.
 - **4.0.46**:
   - **S42: nothing built on the GPU in the Speech or an Event with the Snacks** (the author's logs 284613aa and
     971128fc on 4.0.43 and 4.0.45: "geometry held for one frame: 1 object(s) uploaded between frames: mesh of 148

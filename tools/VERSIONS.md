@@ -6,6 +6,7 @@ Details live in `NOTES.md` (numbers in brackets) and `BUGS.md`.
 
 | Version | versionCode | What changed | Headset |
 | --- | --- | --- | --- |
+| 4.0.47 | 116 | CPU savings for the battery clocks (the author's run 14b455ce: town median 65 fps on battery): the townsfolk wholly out of both eyes' views skip the matrix walk, culling and batch work (P34); the dancers out of view skip their ground fit and are fitted as they come back, a lift no longer walks the body twice (P35); the batcher's visibility walk once a frame. New tools: `cpu_bench.js`, `fps_estimate.js`, `test_offview.js`. | not yet run |
 | 4.0.46 | 115 | Nothing built on the GPU in the Speech or an Event with the Snacks (B100, S42): the glue band's merged copy at load, the pizza batches' shapes kept and reused; the held-upload log names its owner; the trail's "gem" is "bulb". | not yet run |
 | 4.0.45 | 114 | Back from the system menu without a 0.4 s stall (B99, S41): the menu's return skips the texture check (from hidden it still runs). King Dino's drums go funk at 98 bpm, 2-minute round with a solo in the middle (A64); he plays what is heard, the horn song's drums too (A65). | not yet run |
 | 4.0.43 | 112 | Ollaag flies the UFO (A63): his poster's look in place of the green alien, facing the way the saucer flies while it spins. | not yet run |
