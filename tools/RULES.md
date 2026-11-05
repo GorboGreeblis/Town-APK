@@ -199,6 +199,13 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     pixel (the same surfaces, a tie that already shimmers as the head moves in 4.0.46). That is acceptable when it
     touches only isolated pixels: `pixel_ab.js` allows a switch marked as a draw-order change at most 4 differing
     pixels a view (both eyes, at its 320 x 180 a eye); anything more, or any other kind of difference, still fails.
+    **Relaxed** (2026-11-05: "let's do what we can but with the goal of changing as little of the visuals as possible.
+    all changes must be tested against a previous build, before and after"): a saving may now change the picture,
+    as little as it can; one that changes nothing is always preferred. Every change is tested against the build
+    before it: the same frame with the change off and on (`pixel_ab.js`, both eyes), pictures of both builds at the
+    same fixed views put side by side for the author, and the speed of both builds measured. What a change does to
+    the picture is stated with it. The closed options (Decisions below: more draws merged into the batch path, the
+    Event's headroom by fading scenery, posing less often) stay closed.
 32. **The final pass waits for the author's headset test of the final build candidate** (2026-11-05: "Do not continue
     the final pass after that until I've tested the final build candidate in headset. This is a rule going
     forward"). When a build is put forward as the final build candidate, the work stops there: the final pass (the
