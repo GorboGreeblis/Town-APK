@@ -1922,6 +1922,46 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.51** (the author's 4.0.50 run ac3e97d5 on a Quest 3: town median 67 fps, the Event 63, 10 readings under 60;
+  "Please begin working through the remaining options"; "If anything else is needed to improve Performance logging:
+  Please add it"; RULES.md 31).
+  - **What the run measured** (the 4.0.49 performance log on the headset): the game's own CPU a frame was a median of
+    8.2 ms in the town and 10.2 ms in the Event, under the 13.9 ms budget in 99.3% of frames, yet the frame rate fell
+    short; 10 s at a time the frame rate follows the game's CPU closely (correlation -0.94): 2.4 fps a millisecond, full
+    rate (72) up to about 6.4 ms, 60 fps at about 11.4 ms. The browser needs about 5-6 ms of each frame for itself
+    (WebXR, the GPU process, submission), so every millisecond the game saves still counts. The render was 6.8 ms of the
+    town's 8.2 and 8.5 of the Event's 10.2.
+  - **B103 fixed (P42): the Event's song (the Horn song, which King Dino drums to) no longer builds a whole bar in one frame.** Each bar's notes are queued in the
+    order the bar asks for them and built a share each frame (paced by the real time between frames), all of them by
+    0.25 s before the bar starts; each note keeps its absolute start, stop and ramp times, so the song sounds the same.
+    The music stopping builds what is queued at once (as the old code had built it), the audio context lost or replaced
+    drops it (as the old code disconnected it). `window.__gcMQ = false` gives the old way.
+  - **B104 fixed: King Dino's drums no longer build a bar in one frame** (the author: "Please ensure that similar
+    issues do not occur with the Drum song or the Guitar romp song"; "King Dino has his Dance floor / battle Drum
+    music"). His drums play whenever the player is within 45 m of his stand (and in the dance battles) and were
+    scheduled up to 3 s ahead, each bar's hits built at once: about 95 audio nodes in one frame at every bar, 167 on
+    walking into earshot. Each hit now waits in a queue sorted by time and is built 0.3-1.5 s before it plays (every hit
+    due within 0.3 s at once, at most three more a frame), with its own time and values; the queue is dropped when he
+    stops being heard or the audio context changes (as the old code silenced the hits already built). 629 audio nodes
+    over 101 frames, at most 16 in one (744 in 7 frames, at most 167, before). `window.__gcJQ = false` gives the old way.
+    The other songs checked: the Horn song is the Event's song (B103, King Dino drumming to its hits); Sparkakus's guitar
+    romp builds one step of one to three notes every 150 ms (at most 12 audio nodes at a time); the dance battles' hit
+    sounds and the jingles are a handful of tones each. Nothing else builds a bar at once.
+  - **P41: a shape's per-frame update check stamped on the shape.** For every mesh drawn, three.js looked a shape up in
+    two maps each frame to see whether it was updated this frame; a frame number on the shape (cleared when the shape is
+    disposed or the renderer's objects are reset) answers the same. The render 2.1% shorter on the mean of seven views
+    (`render_ab.js`); `pixel_ab.js` 0 pixels. `window.__gcOU = false`.
+  - **The performance log (debug builds) adds**: the render by stage (matrix walk, batcher, culling and sorting, setup,
+    opaque draws, see-through draws) and the draws a frame, in every 10 s line and the slow-frame lines ("[render:
+    opaque 17.5, ...]"); the gaps between frames (median, 90%, over 20 ms). `perf_log.js` prints them by scene and fits the
+    frame rate against the game's CPU (fps a millisecond, the CPU time at full rate and at 60 fps).
+  - **Looked at and left**: the memory each frame makes (option 7): with the colour uniforms sent from a reused array
+    (faster per call) and equal values not stored again, the Event still made 148 KB a frame (147 before): what is left
+    comes from the WebGL bindings and the game's collision code, so nothing was kept. The batcher (option 2) copies the
+    world matrices as they are (no sums to skip). Sending a batch's part data only when it changed (option 6): only 8-14 of
+    about 60 uploads a frame are unchanged, and batches sharing a shader overwrite each other's copy, so nothing to gain.
+    Texture arrays (option 5) would put textured draws into the batch path, as the closed option 4 would.
+  - New `test_music_queue.js` (standard tier).
 - **4.0.50** (the author, 2026-11-05: "Let's apply the remaining tasks under 'where it comes from' now"; RULES.md 31:
   every change below draws the same picture, `pixel_ab.js` 0 pixels in 28 views each, both orders).
   - **P39: two jobs done once a draw list instead of once a draw.** In two-eye (multiview) drawing three.js worked out,

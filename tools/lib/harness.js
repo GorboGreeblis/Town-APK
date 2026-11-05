@@ -95,7 +95,7 @@ function serve(body, standalone) {
 async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/index.html'), vr = true, fastSim = true, noVisits = true, renderEvery = 1, timeoutMs = 300000, onBeforeGrant = null, initScripts = [], standalone = false } = {}) {
   const srv = await serve(hooked(path.resolve(file)), standalone);
   const url = `http://127.0.0.1:${srv.address().port}/`;
-  const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--autoplay-policy=no-user-gesture-required'] });
+  const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--autoplay-policy=no-user-gesture-required', ...(process.env.GT_JSFLAGS ? ['--js-flags=' + process.env.GT_JSFLAGS] : [])] });
   // GT_DEVICE=quest2|quest3s|quest3: that headset's user agent and GPU limits (tools/fakexr.js S.DEVICES).
   const device = process.env.GT_DEVICE || '';
   const ua = device ? UA.replace('Quest 3', { quest2: 'Quest 2', quest3s: 'Quest 3S', quest3: 'Quest 3' }[device] || 'Quest 3') : UA;

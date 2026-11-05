@@ -581,6 +581,16 @@ the vertex layout check 1.5 ms, the hold check 0.3 ms. The render 6.9% shorter (
 estimate on 764bd9d7 with about 10% saved since 4.0.47: town median 69.8 (0-1% of seconds under 60), the Event 65.8 (2%),
 the Quest 3 the same.
 
+4.0.50 on the headset (ac3e97d5, a Quest 3, the CPU at 1382 MHz for most of the run): town median 67, the Event 63. The
+performance log measured the game's CPU a frame for the first time: a median of 8.2 ms in the town and 10.2 in the Event,
+over 13.9 ms in under 1% of frames, and yet the frame rate falls short, because the browser needs about 5-6 ms of each
+frame for itself. Ten seconds at a time the frame rate follows the game's CPU (correlation -0.94): 2.4 fps for each
+millisecond, full rate up to about 6.4 ms, 60 fps at about 11.4 ms (`perf_log.js` prints this fit for every run). That
+is the estimate model from here on: a saving of s ms in the game's median CPU is about 2.4 s fps. To hold 60 everywhere
+the Event's heaviest 10 s (10.8 ms) needs about 0.5-1 ms off, and the song's bar spikes (B103) gone.
+
+4.0.51: B103 fixed (P42), B104 fixed (King Dino's drums: a bar's hits in one frame, in the town too), P41 (2% of the render), the render by stage in the log.
+
 Left, and why: the matrix walk already passes over unchanged parts (P32: about 90% of the 2,200-3,100 local matrices a
 frame are unchanged and not rebuilt); the rest is parts that moved. Posing characters on the GPU: single-precision sums
 move vertices by rounding, so edges change (rule 31). Memory: about 147 KB a frame in the Event (WebGL call arguments,

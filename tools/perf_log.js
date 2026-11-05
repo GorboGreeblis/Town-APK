@@ -119,7 +119,7 @@ for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w
   }
   {
     // the game's own CPU time a frame (4.0.49 on, debug builds): a line every 10 s, by scene, and the parts of slow frames
-    const cpu = ev.filter((x) => x.what.startsWith('cpu ms a frame')).map((x) => { const m = x.what.match(/median ([\d.]+), 90% ([\d.]+), 99% ([\d.]+), max ([\d.]+); over 13\.9 ms: (\d+) of (\d+)( event)?; mean by part: (.*)$/); return m && { med: +m[1], p90: +m[2], p99: +m[3], max: +m[4], over: +m[5], n: +m[6], ev: !!m[7], parts: m[8] }; }).filter(Boolean);
+    const cpu = ev.filter((x) => x.what.startsWith('cpu ms a frame')).map((x) => { const m = x.what.match(/median ([\d.]+), 90% ([\d.]+), 99% ([\d.]+), max ([\d.]+); over 13\.9 ms: (\d+) of (\d+)( event)?; mean by part: ([^;]*)(?:; render by part: ([^;]*))?(?:; frame gap ms: median ([\d.]+), 90% ([\d.]+), over 20 ms: (\d+))?/); return m && { med: +m[1], p90: +m[2], p99: +m[3], max: +m[4], over: +m[5], n: +m[6], ev: !!m[7], parts: m[8], rparts: m[9] || '', gapMed: m[10] ? +m[10] : null, gap90: m[11] ? +m[11] : null, gapOver: m[12] ? +m[12] : null }; }).filter(Boolean);
     for (const [label, pick] of [['town', (c) => !c.ev], ['the Event', (c) => c.ev]]) {
       const sel = cpu.filter(pick); if (!sel.length) continue;
       const md = (a) => { const t = a.slice().sort((x, y) => x - y); return t[Math.floor(t.length / 2)]; };
@@ -127,6 +127,18 @@ for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w
       const parts = {}; for (const c of sel) for (const kv of c.parts.split(', ')) { const [k, v] = kv.split(' '); (parts[k] = parts[k] || []).push(+v); }
       const top = Object.entries(parts).map(([k, v]) => [k, v.reduce((a, b) => a + b, 0) / v.length]).sort((a, b) => b[1] - a[1]).slice(0, 5);
       console.log(`game CPU a frame, ${label} (${sel.length} lines of 10 s): median ${md(sel.map((c) => c.med)).toFixed(1)} ms, 90% ${md(sel.map((c) => c.p90)).toFixed(1)}, 99% ${md(sel.map((c) => c.p99)).toFixed(1)}, worst ${Math.max(...sel.map((c) => c.max)).toFixed(1)}; over the 13.9 ms budget: ${over} of ${n} frames (${(100 * over / Math.max(1, n)).toFixed(1)}%); the biggest parts: ${top.map(([k, v]) => k + ' ' + v.toFixed(2)).join(', ')}`);
+      // 4.0.51 on: the render by stage (matrix walk, batcher, culling and sorting, setup, opaque and see-through draws, draws a frame) and the gaps between frames
+      const rp = {}; for (const c of sel) if (c.rparts) for (const kv of c.rparts.split(', ')) { const [k, v] = kv.split(' '); (rp[k] = rp[k] || []).push(+v); }
+      if (Object.keys(rp).length) console.log(`  the render by stage, ${label}: ${Object.entries(rp).map(([k, v]) => k + ' ' + (v.reduce((a, b) => a + b, 0) / v.length).toFixed(k === 'draws' ? 0 : 2)).join(', ')} (ms a frame; draws a frame)`);
+      const gl = sel.filter((c) => c.gapMed != null); if (gl.length) console.log(`  the gap between frames, ${label}: median ${md(gl.map((c) => c.gapMed)).toFixed(1)} ms, 90% ${md(gl.map((c) => c.gap90)).toFixed(1)}; gaps over 20 ms: ${gl.reduce((a, c) => a + c.gapOver, 0)} of ${gl.reduce((a, c) => a + c.n, 0)}`);
+    }
+    // the frame rate against the game's CPU time, 10 s at a time (frames run in the 10 s against their median CPU): on
+    // the headset the browser needs time of its own each frame, so the game's real budget is below 13.9 ms
+    if (cpu.length >= 6) {
+      const xs = cpu.map((c) => c.med), ys = cpu.map((c) => c.n / 10), n = xs.length, mx = xs.reduce((a, b) => a + b) / n, my = ys.reduce((a, b) => a + b) / n;
+      let sxy = 0, sxx = 0, syy = 0; for (let i = 0; i < n; i++) { sxy += (xs[i] - mx) * (ys[i] - my); sxx += (xs[i] - mx) ** 2; syy += (ys[i] - my) ** 2; }
+      const b1 = sxy / sxx, b0 = my - b1 * mx, r = sxy / Math.sqrt(sxx * syy);
+      console.log(`frame rate against game CPU (${n} lines of 10 s): ${b1.toFixed(2)} fps a ms of median CPU (correlation ${r.toFixed(2)}); full rate (72) at about ${((72 - b0) / b1).toFixed(1)} ms, 60 fps at about ${((60 - b0) / b1).toFixed(1)} ms`);
     }
     const slow = ev.filter((x) => x.what.startsWith('slow frame: cpu'));
     if (slow.length) { const by = {}; for (const x of slow) { const m = x.what.match(/\(([a-z ]+?) [\d.]+/); if (m) by[m[1]] = (by[m[1]] || 0) + 1; } console.log(`slow frames (over 20 ms of game CPU, at most one in 2 s): ${slow.length}; the biggest part in them: ${Object.entries(by).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ' ' + v).join(', ')}`); }
