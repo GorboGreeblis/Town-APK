@@ -5,7 +5,8 @@
 // on-render first, so a saving that fell behind in play shows). A pair with the switch off both times gives the floor
 // (what two renders of one frame differ by on their own, normally nothing). Views: the town at the battery run's
 // slowest spots, in four directions each, and the planting Event with the mist full at its slowest and heaviest spots.
-// Passes when no view differs by more than the floor.
+// Passes when no view differs by more than the floor (plus a switch's draw-order allowance). A switch with a setting
+// of its own runs in a session of its own (P44: anisotropic filtering off on both sides, see SWITCHES).
 //
 //   node tools/pixel_ab.js [asset] [--switch name] [--save]
 //     --switch: one of SWITCHES, or several by prefix separated by commas (default: all of them, each in turn); --save writes the pairs that differ
@@ -19,6 +20,8 @@ let file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(p
 const save = process.argv.includes('--save'), outDir = path.join(root, 'tools/.runs/pixel_ab');
 // each switch: [name, the expression that sets it (X = true for on), the pixels a view it may change: 0, or for a
 // draw-order change at most 4 (RULES.md 31's allowance: which of two surfaces at exactly one depth wins a pixel)]
+// anisotropic filtering off on every texture and texture array (for a switch that runs in a session of its own)
+const ANISO1 = '(() => { const D = window.__dbg, seen = new Set(); D.C.traverse((o) => { const m = o.material; if (!m || Array.isArray(m)) return; for (const k of ["map", "bumpMap"]) { const t = m[k]; if (t && !seen.has(t)) { seen.add(t); if (t.anisotropy > 1) { t.anisotropy = 1; t.needsUpdate = true; } } } }); D.gcEB.list.forEach((b) => { const A = b.mat.userData.gcArr; if (A && !seen.has(A)) { seen.add(A); A.anisotropy = 1; A.needsUpdate = true; } }); return seen.size; })()';
 const SWITCHES = [
   ['P34 townsfolk out of view skipped', '__gcOff.st.on = X'],
   ['P36 opaque draws grouped by program', 'window.__gcPS = X', 4],
@@ -30,16 +33,28 @@ const SWITCHES = [
   ['P40 light flags set only when they change', 'window.__gcNL = X'],
   ['P40 shader-hold check cached', 'window.__gcPN = X'],
   ['P41 shape updates stamped once a frame', 'window.__gcOU = X'],
+  ['P43 batcher writes only the matrix when a moving part\'s colour is unchanged', 'window.__gcQC = X'],
+  ['P43 light probe sent only when it changes', 'window.__gcLP = X'],
+  // P44: the headless renderer (SwiftShader) filters a texture array anisotropically a little differently from a 2D
+  // texture (up to 8 levels in 255 on steep character surfaces; the headset's GPU samples both in the same texture
+  // hardware), so P44 runs in a session of its own with anisotropic filtering off everywhere, on and off alike, and
+  // the draw-order allowance (its batches group the parts differently: a tie at one depth can change hands)
+  ['P44 character textures in arrays (the batches rebuilt per texture when off)', 'window.__gcArrSet(X)', 4, ANISO1],
 ];
 const only = arg('--switch', null);
 const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[26, -23], [-9, 35], [-28.3, -28.3], [-33, -7]];
 
 (async () => {
   const { expect, note, failures } = reporter();
+  const swAll = SWITCHES.filter((s) => !only || only.split(',').some((o) => s[0].startsWith(o)));
+  const results = {}, errors = [];
+  // a switch with a setting of its own (the fourth field) runs in a session of its own
+  const sessions = [swAll.filter((s) => !s[3]), ...swAll.filter((s) => s[3]).map((s) => [s])].filter((l) => l.length);
+  for (const sw of sessions) {
   const g = await boot({ file, vr: true, fastSim: false });
   const page = g.page;
   await page.waitForTimeout(2500);
-  const sw = SWITCHES.filter((s) => !only || only.split(',').some((o) => s[0].startsWith(o)));
+  if (sw[0][3]) { await page.evaluate(sw[0][3]); await page.waitForTimeout(1500); }
   const pair = (expr, a, b, label) => page.evaluate(({ expr, a, b, label, save }) => {
     const D = window.__dbg, O = D.O, C = D.C, B = D.B, X = window.__gtXR, gl = O.getContext();
     const set = new Function('X', expr);
@@ -64,7 +79,6 @@ const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[
     return { label, calls: [ca, cb], eyes, err: gl.getError() };
   }, { expr, a, b, label, save });
   const place = (x, z, yaw) => page.evaluate(([x, z, yaw]) => { const D = window.__dbg; D.At.position.x = x; D.At.position.z = z; window.__fakeXR.pose.yaw = yaw; }, [x, z, yaw]);
-  const results = {};
   const views = async (list, tag) => {
     for (const [x, z] of list) for (let k = 0; k < (tag === 'town' ? 4 : 2); k++) {
       const yaw = Math.atan2(x, z) + k * Math.PI / 2; await place(x, z, yaw); await page.waitForTimeout(500);
@@ -76,7 +90,7 @@ const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[
         const ba = await pair(expr, true, false, label);
         const floor = await pair(expr, false, false, label), ab0 = await pair(expr, false, true, label);
         const ab = (ba.eyes[0].n + ba.eyes[1].n) > (ab0.eyes[0].n + ab0.eyes[1].n) ? ba : ab0;
-        if (name.startsWith('P38')) {   // the batcher's part data after play with the fast path, against a full pass
+        if (name.startsWith('P38') || name.startsWith('P43 batcher')) {   // the batcher's part data after play with the fast path, against a full pass
           const bad = await page.evaluate(() => { const D = window.__dbg, EB = D.gcEB, C = D.C; const before = EB.list.map((b) => Float32Array.from(b.R)); const was = window.__gcQF; window.__gcQF = false; try { C.onBeforeRender(D.O, C, D.B); } finally { window.__gcQF = was; } let n = 0; EB.list.forEach((b, i) => { for (let k = 0; k < b.R.length; k++) if (Math.fround(b.R[k]) !== before[i][k]) { n++; break; } }); return n; });
           if (bad) (results[name] || (results[name] = { views: 0, worse: [], floorPx: 0, abPx: 0, lit: [] })).worse.push(`${label}: ${bad} batch(es) whose part data differ from a full pass`);
         }
@@ -97,13 +111,14 @@ const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[
     while (D.JGP.mist.p() < 1 && performance.now() - t0 < 150000) await wait(250); await wait(3000);
   });
   await views(EVENT, 'Event');
-  for (const [name] of sw) {
+  errors.push(...g.errors); await g.close();
+  }
+  for (const [name] of swAll) {
     const r = results[name]; if (!r) continue;
     const litMin = Math.min(...r.lit);
     note(`${name}: ${r.views} views, ${r.abPx} px differing with the switch in ${r.viewsDiff || 0} of them (floor ${r.floorPx}); the least-drawn view ${litMin}% lit`);
     expect(`${name}: the same picture with the switch on and off (no view differs beyond what two renders of a frame do)`, r.worse.length === 0 && litMin > 20, r.worse.slice(0, 6).join(' | ') || 'ok');
   }
-  expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
-  await g.close();
+  expect('no page errors', errors.length === 0, errors.slice(0, 3).join(' | '));
   console.log(failures.length ? `PIXEL A/B FAILED (${failures.length})` : 'PIXEL A/B PASSED'); process.exit(failures.length ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });
