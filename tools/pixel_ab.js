@@ -29,6 +29,7 @@ const SWITCHES = [
   ['P40 vertex layouts checked by version', 'window.__gcVL = X'],
   ['P40 light flags set only when they change', 'window.__gcNL = X'],
   ['P40 shader-hold check cached', 'window.__gcPN = X'],
+  ['P41 shape updates stamped once a frame', 'window.__gcOU = X'],
 ];
 const only = arg('--switch', null);
 const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[26, -23], [-9, 35], [-28.3, -28.3], [-33, -7]];
