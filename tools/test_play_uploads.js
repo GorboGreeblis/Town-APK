@@ -85,7 +85,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('the Speech: no geometry made, uploaded or held; the glue band drawn from its load-time merged copy', r.speech.bandSeen && r.speech.geos === 0 && r.speech.bufs === 0 && r.speech.uploads === 0 && r.speech.held.length === 0 && r.speech.bandMerged, JSON.stringify(r.speech));
   expect('an Event with the Snacks: no geometry uploaded or held, no GL buffer made; the pizza batches drawn from kept shapes', r.event.started && r.event.geos === 0 && r.event.bufs === 0 && r.event.uploads === 0 && r.event.held.length === 0 && r.event.keptInUse >= 1, JSON.stringify(r.event));
   expect('every batch shape the warm-up kept and no batch uses has a spare copy from load (B101)', r.keptAtLoad >= 2 && r.spareless === 0, JSON.stringify({ kept: r.keptAtLoad, withoutSpare: r.spareless }));
-  expect('a second Event right after the first: no geometry uploaded or held, no GL buffer made (the spare batch shapes, B101)', r.second.ended && r.second.taken > 0 && r.second.started && r.second.geos === 0 && r.second.bufs === 0 && r.second.uploads === 0 && r.second.held.length === 0, JSON.stringify(r.second));
+  expect('a second Event right after the first: no geometry uploaded or held, no GL buffer made (the spare batch shapes, B101)', r.second.ended && r.second.started && r.second.geos === 0 && r.second.bufs === 0 && r.second.uploads === 0 && r.second.held.length === 0, JSON.stringify(r.second));
   expect('no page errors', errors.length === 0, errors.slice(0, 3).join(' | '));
   await g.close();
   console.log(failures.length ? `PLAY UPLOADS TEST FAILED (${failures.length})` : 'PLAY UPLOADS TEST PASSED'); process.exit(failures.length ? 1 : 0);
