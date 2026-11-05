@@ -16,10 +16,11 @@ const { boot, reporter, root } = require('./lib/harness');
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
 let file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : path.join(root, 'tools/android/app/src/main/assets/index.html');
 const save = process.argv.includes('--save'), outDir = path.join(root, 'tools/.runs/pixel_ab');
-// each switch: [name, the expression that sets it (X = true for on)]
+// each switch: [name, the expression that sets it (X = true for on), the pixels a view it may change: 0, or for a
+// draw-order change at most 4 (RULES.md 31's allowance: which of two surfaces at exactly one depth wins a pixel)]
 const SWITCHES = [
   ['P34 townsfolk out of view skipped', '__gcOff.st.on = X'],
-  ['P36 opaque draws grouped by program', 'window.__gcPS = X'],
+  ['P36 opaque draws grouped by program', 'window.__gcPS = X', 4],
   ['P37 texture UV transforms cached', 'window.__gcTU = X'],
 ];
 const only = arg('--switch', null);
@@ -59,12 +60,12 @@ const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[
   const views = async (list, tag) => {
     for (const [x, z] of list) for (let k = 0; k < (tag === 'town' ? 4 : 2); k++) {
       const yaw = Math.atan2(x, z) + k * Math.PI / 2; await place(x, z, yaw); await page.waitForTimeout(500);
-      for (const [name, expr] of sw) {
+      for (const [name, expr, allow = 0] of sw) {
         const label = `${tag} (${x},${z}) yaw ${Math.round(yaw * 180 / Math.PI)}`;
         const floor = await pair(expr, false, false, label), ab = await pair(expr, false, true, label);
         const r = results[name] || (results[name] = { views: 0, worse: [], floorPx: 0, abPx: 0, lit: [] });
-        r.views++; const fp = floor.eyes[0].n + floor.eyes[1].n, ap = ab.eyes[0].n + ab.eyes[1].n; r.floorPx += fp; r.abPx += ap; r.lit.push(ab.eyes[0].lit);
-        if (ap > fp) { r.worse.push(`${label}: ${ap} px (floor ${fp}), max ${Math.max(ab.eyes[0].mx, ab.eyes[1].mx)}, calls ${ab.calls.join('/')}, at ${JSON.stringify(ab.eyes.map((e) => e.at))}`);
+        r.views++; const fp = floor.eyes[0].n + floor.eyes[1].n, ap = ab.eyes[0].n + ab.eyes[1].n; r.floorPx += fp; r.abPx += ap; r.lit.push(ab.eyes[0].lit); if (ap > fp) r.viewsDiff = (r.viewsDiff || 0) + 1;
+        if (ap > fp + allow) { r.worse.push(`${label}: ${ap} px (floor ${fp}), max ${Math.max(ab.eyes[0].mx, ab.eyes[1].mx)}, calls ${ab.calls.join('/')}, at ${JSON.stringify(ab.eyes.map((e) => e.at))}`);
           if (save) { fs.mkdirSync(outDir, { recursive: true }); ab.eyes.forEach((e, i) => e.png && fs.writeFileSync(path.join(outDir, `${name.split(' ')[0]}_${label.replace(/[^\w]+/g, '_')}_${i ? 'right' : 'left'}.png`), Buffer.from(e.png.split(',')[1], 'base64'))); } }
       }
     }
@@ -82,7 +83,7 @@ const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[
   for (const [name] of sw) {
     const r = results[name]; if (!r) continue;
     const litMin = Math.min(...r.lit);
-    note(`${name}: ${r.views} views, ${r.abPx} px differing with the switch (floor ${r.floorPx}); the least-drawn view ${litMin}% lit`);
+    note(`${name}: ${r.views} views, ${r.abPx} px differing with the switch in ${r.viewsDiff || 0} of them (floor ${r.floorPx}); the least-drawn view ${litMin}% lit`);
     expect(`${name}: the same picture with the switch on and off (no view differs beyond what two renders of a frame do)`, r.worse.length === 0 && litMin > 20, r.worse.slice(0, 6).join(' | ') || 'ok');
   }
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));

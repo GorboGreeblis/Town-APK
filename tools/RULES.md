@@ -194,6 +194,11 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     pixel for pixel, `pixel_ab.js`, frame for frame where it can be), and the final build is tested against 4.0.46
     (the full tier on both, pictures and a scripted session compared). A saving that changes the picture is not
     built; one that changes how motion looks (posing less often) counts as changing it.
+    **The one allowance** (2026-11-05: "Alter the Rule so that instances like this are acceptable"): a change in the
+    order opaque things are drawn may decide differently which of two surfaces at exactly the same depth wins a
+    pixel (the same surfaces, a tie that already shimmers as the head moves in 4.0.46). That is acceptable when it
+    touches only isolated pixels: `pixel_ab.js` allows a switch marked as a draw-order change at most 4 differing
+    pixels a view (both eyes, at its 320 x 180 a eye); anything more, or any other kind of difference, still fails.
 
 ## Priorities
 
