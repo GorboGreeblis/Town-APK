@@ -199,6 +199,12 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     pixel (the same surfaces, a tie that already shimmers as the head moves in 4.0.46). That is acceptable when it
     touches only isolated pixels: `pixel_ab.js` allows a switch marked as a draw-order change at most 4 differing
     pixels a view (both eyes, at its 320 x 180 a eye); anything more, or any other kind of difference, still fails.
+32. **The final pass waits for the author's headset test of the final build candidate** (2026-11-05: "Do not continue
+    the final pass after that until I've tested the final build candidate in headset. This is a rule going
+    forward"). When a build is put forward as the final build candidate, the work stops there: the final pass (the
+    full tier on the final build, the comparison against 4.0.46 under rule 31, and the closing code audit) does not
+    start until the author has tested that candidate on the headset and reported back. What the headset shows comes
+    first; whatever it turns up is fixed in a new candidate, which waits for its own headset test.
 
 ## Priorities
 

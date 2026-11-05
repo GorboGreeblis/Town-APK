@@ -60,6 +60,9 @@ Worked around until the author can do them (the author, 2026-10-31).
   (TEST_PLAN "Latest results"). The final-build process started on the 4.0.30 asset (`tools/.runs/final_4.0.30.sh`, log
   `tools/.runs/full_4.0.30.log`) was overtaken by 4.0.31-4.0.34; no full tier is recorded for 4.0.29-4.0.34 yet
   (VERSIONS.md).
+- **The final pass waits for the headset (RULES.md 32, 2026-11-05):** once a build is put forward as the final build
+  candidate, the full tier, the comparison against 4.0.46 and the closing code audit wait until the author has tested
+  that candidate on the headset. Until then the CPU pass goes on (4.0.49, PR #83).
 - **Next:** the author's headset-off run on 4.0.34 (B96; HEADSET_DIAG.md "Confirming B96"); a full tier on 4.0.34,
   recorded in TEST_PLAN.md (RULES.md 23), fixing what it finds (T18, T23, T24); then the author's full code review and
   the leftovers analysis (the dead-code census before the final build, RULES.md 25).
