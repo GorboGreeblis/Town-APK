@@ -567,3 +567,22 @@ the render (culling, sorting, lights) 1.8 ms, the batcher 1.5 ms, the game's upd
 4.0.48: P36 (the opaque draws grouped by program again: program switches about halved, GL calls -8 to -10%, about
 -5% a frame) and P37 (texture UV transforms only when they change); estimate on 764bd9d7: Quest 3S town median 68.5,
 the Event 64 with about 6% of seconds under 60.
+
+4.0.49: P38 (the batcher passes over still parts: the town's batcher median 5-18% lower at three spots, none at the fourth; nothing in the Event, where
+most parts move); the performance log measures each frame's game CPU time on the headset (a line every 10 s by part),
+so the next estimates start from measured frame times instead of the model's spread.
+
+4.0.50: P39 (the lights' view directions and the second eye's offset once a draw list; normal matrices only where a
+shader reads them) and P40 (vertex layouts checked by a version, the lights' update flags set only when they change, the
+shader-compile hold's check kept while nothing it reads changes). Where a draw's 25-30 us went (town (21, 25), headless,
+sampled): the material switch on almost every draw (189 materials for about 195 draws: three.js copies the material's
+values into its uniforms and walks every uniform to compare and send) about 3.5 ms a frame, the per-draw matrices 1 ms,
+the vertex layout check 1.5 ms, the hold check 0.3 ms. The render 6.9% shorter (`render_ab.js`), about 5% of a frame;
+estimate on 764bd9d7 with about 10% saved since 4.0.47: town median 69.8 (0-1% of seconds under 60), the Event 65.8 (2%),
+the Quest 3 the same.
+
+Left, and why: the matrix walk already passes over unchanged parts (P32: about 90% of the 2,200-3,100 local matrices a
+frame are unchanged and not rebuilt); the rest is parts that moved. Posing characters on the GPU: single-precision sums
+move vertices by rounding, so edges change (rule 31). Memory: about 147 KB a frame in the Event (WebGL call arguments,
+the batcher), the collector 1.4-1.8%; the performance log on the headset decides whether it is behind slow frames.
+

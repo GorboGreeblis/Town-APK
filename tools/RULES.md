@@ -199,6 +199,12 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     pixel (the same surfaces, a tie that already shimmers as the head moves in 4.0.46). That is acceptable when it
     touches only isolated pixels: `pixel_ab.js` allows a switch marked as a draw-order change at most 4 differing
     pixels a view (both eyes, at its 320 x 180 a eye); anything more, or any other kind of difference, still fails.
+32. **The final pass waits for the author's headset test of the final build candidate** (2026-11-05: "Do not continue
+    the final pass after that until I've tested the final build candidate in headset. This is a rule going
+    forward"). When a build is put forward as the final build candidate, the work stops there: the final pass (the
+    full tier on the final build, the comparison against 4.0.46 under rule 31, and the closing code audit) does not
+    start until the author has tested that candidate on the headset and reported back. What the headset shows comes
+    first; whatever it turns up is fixed in a new candidate, which waits for its own headset test.
 
 ## Priorities
 
@@ -234,6 +240,10 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
   loader stays whole for the session; no layer is destroyed and no context lost while a session runs.
 - A test build without the depth discard (P14, the layer's end): closed (2026-11-03, "'Test a build without the
   depth discard' close out this option"). The discard stays in every build; no experiment build drops it.
+- Fewer draws by merging more of them into the batch path: closed (2026-11-05, "Let's close out option 4"; option 4 of
+  the list of next performance options put to the author that day: a census of the remaining draws and merging the ones
+  that could join a batch). The batch path does its sums on the GPU, so merges risked changing pixels; no build tries it.
+  Texture arrays (option 5) stay open on rule 31's terms.
 - The Event's headroom by fading more scenery: closed (2026-11-03, "let's close out this option altogether. I don't
   want anything that will effect user experience negatively"); the measurement (FIXES S30) showed nothing to take
   without hiding what the player sees, and nothing that costs the player's view is taken for performance from here on.

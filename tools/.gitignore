@@ -7,3 +7,4 @@ android/keystore/
 android/keystore.properties
 *.jks
 node_modules/
+final.html

@@ -65,7 +65,7 @@ for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w
 }
 // Flash marks (B on the right controller, 3.15.48): each with what the log shows in the 3 s before it
 {
-  const ev = []; let e2; const re2 = /m=(\d+)ms (MARK flash seen[^\n]*|long frame \d+ ms[^\n]*|uploaded \d+ texture[^\n]*|multiview: \d+ shader program[^\n]*|multiview: \w+ while a frame draws[^\n]*|frame \d+: \d+ geometry buffer[^\n]*|ev [^\n]*|xr visibility [^\n]*|rec [^\n]*|frame gap \d+ ms[^\n]*|frame \d+ drew \d+ calls[^\n]*|frame \d+: the camera matrix[^\n]*|governor level [^\n]*|geometry held for one frame[^\n]*|shader held for one frame[^\n]*|no progress: [^\n]*|head inside [^\n]*|\[draw hook\][^\n]*|\[entity:[^\n]*|\[world\][^\n]*|\[render\][^\n]*)/g;
+  const ev = []; let e2; const re2 = /m=(\d+)ms (cpu ms a frame[^\n]*|slow frame: cpu[^\n]*|MARK flash seen[^\n]*|long frame \d+ ms[^\n]*|uploaded \d+ texture[^\n]*|multiview: \d+ shader program[^\n]*|multiview: \w+ while a frame draws[^\n]*|frame \d+: \d+ geometry buffer[^\n]*|ev [^\n]*|xr visibility [^\n]*|rec [^\n]*|frame gap \d+ ms[^\n]*|frame \d+ drew \d+ calls[^\n]*|frame \d+: the camera matrix[^\n]*|governor level [^\n]*|geometry held for one frame[^\n]*|shader held for one frame[^\n]*|no progress: [^\n]*|head inside [^\n]*|\[draw hook\][^\n]*|\[entity:[^\n]*|\[world\][^\n]*|\[render\][^\n]*)/g;
   while ((e2 = re2.exec(text))) ev.push({ ms: +e2[1], what: e2[2].trim() });
   const marks = ev.filter((x) => x.what.startsWith('MARK'));
   if (marks.length) {
@@ -116,6 +116,20 @@ for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w
   {
     const longs = ev.filter((x) => x.what.startsWith('long frame'));
   if (longs.length) console.log(`long frames (over 28 ms, at most two a second): ${longs.length}; longest ${Math.max(...longs.map((x) => +x.what.match(/\d+/)[0]))} ms`);
+  }
+  {
+    // the game's own CPU time a frame (4.0.49 on, debug builds): a line every 10 s, by scene, and the parts of slow frames
+    const cpu = ev.filter((x) => x.what.startsWith('cpu ms a frame')).map((x) => { const m = x.what.match(/median ([\d.]+), 90% ([\d.]+), 99% ([\d.]+), max ([\d.]+); over 13\.9 ms: (\d+) of (\d+)( event)?; mean by part: (.*)$/); return m && { med: +m[1], p90: +m[2], p99: +m[3], max: +m[4], over: +m[5], n: +m[6], ev: !!m[7], parts: m[8] }; }).filter(Boolean);
+    for (const [label, pick] of [['town', (c) => !c.ev], ['the Event', (c) => c.ev]]) {
+      const sel = cpu.filter(pick); if (!sel.length) continue;
+      const md = (a) => { const t = a.slice().sort((x, y) => x - y); return t[Math.floor(t.length / 2)]; };
+      const over = sel.reduce((a, c) => a + c.over, 0), n = sel.reduce((a, c) => a + c.n, 0);
+      const parts = {}; for (const c of sel) for (const kv of c.parts.split(', ')) { const [k, v] = kv.split(' '); (parts[k] = parts[k] || []).push(+v); }
+      const top = Object.entries(parts).map(([k, v]) => [k, v.reduce((a, b) => a + b, 0) / v.length]).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      console.log(`game CPU a frame, ${label} (${sel.length} lines of 10 s): median ${md(sel.map((c) => c.med)).toFixed(1)} ms, 90% ${md(sel.map((c) => c.p90)).toFixed(1)}, 99% ${md(sel.map((c) => c.p99)).toFixed(1)}, worst ${Math.max(...sel.map((c) => c.max)).toFixed(1)}; over the 13.9 ms budget: ${over} of ${n} frames (${(100 * over / Math.max(1, n)).toFixed(1)}%); the biggest parts: ${top.map(([k, v]) => k + ' ' + v.toFixed(2)).join(', ')}`);
+    }
+    const slow = ev.filter((x) => x.what.startsWith('slow frame: cpu'));
+    if (slow.length) { const by = {}; for (const x of slow) { const m = x.what.match(/\(([a-z ]+?) [\d.]+/); if (m) by[m[1]] = (by[m[1]] || 0) + 1; } console.log(`slow frames (over 20 ms of game CPU, at most one in 2 s): ${slow.length}; the biggest part in them: ${Object.entries(by).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ' ' + v).join(', ')}`); }
   }
 }
 if (!rows.length) {

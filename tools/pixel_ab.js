@@ -1,13 +1,14 @@
 // Pixel A/B for a performance switch (standard tier for the switches in SWITCHES; RULES.md 31, 2026-11-05: "Anything
 // that impacts visual quality is not an option"). Renders the same frame twice in one synchronous step, nothing in
 // the game moving in between, with a switch off and then on, into a two-slice multiview texture (both eyes, as the
-// headset draws), and compares each eye pixel for pixel. A first pair with the switch off both times gives the floor
+// headset draws), and compares each eye pixel for pixel, in both orders (the switch kept on through play and the
+// on-render first, so a saving that fell behind in play shows). A pair with the switch off both times gives the floor
 // (what two renders of one frame differ by on their own, normally nothing). Views: the town at the battery run's
 // slowest spots, in four directions each, and the planting Event with the mist full at its slowest and heaviest spots.
 // Passes when no view differs by more than the floor.
 //
 //   node tools/pixel_ab.js [asset] [--switch name] [--save]
-//     --switch: one of SWITCHES (default: all of them, each in turn); --save writes the pairs that differ
+//     --switch: one of SWITCHES, or several by prefix separated by commas (default: all of them, each in turn); --save writes the pairs that differ
 const path = require('path');
 const fs = require('fs');
 process.env.GT_MULTIVIEW = '1';
@@ -22,6 +23,12 @@ const SWITCHES = [
   ['P34 townsfolk out of view skipped', '__gcOff.st.on = X'],
   ['P36 opaque draws grouped by program', 'window.__gcPS = X', 4],
   ['P37 texture UV transforms cached', 'window.__gcTU = X'],
+  ['P38 batcher skips still parts', 'window.__gcQF = X'],
+  ['P39 lights and eye offset set once a draw list', 'window.__gcLV = X'],
+  ['P39 normal matrices only where a shader reads them', 'window.__gcNM = X'],
+  ['P40 vertex layouts checked by version', 'window.__gcVL = X'],
+  ['P40 light flags set only when they change', 'window.__gcNL = X'],
+  ['P40 shader-hold check cached', 'window.__gcPN = X'],
 ];
 const only = arg('--switch', null);
 const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[26, -23], [-9, 35], [-28.3, -28.3], [-33, -7]];
@@ -31,7 +38,7 @@ const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[
   const g = await boot({ file, vr: true, fastSim: false });
   const page = g.page;
   await page.waitForTimeout(2500);
-  const sw = SWITCHES.filter((s) => !only || s[0].startsWith(only));
+  const sw = SWITCHES.filter((s) => !only || only.split(',').some((o) => s[0].startsWith(o)));
   const pair = (expr, a, b, label) => page.evaluate(({ expr, a, b, label, save }) => {
     const D = window.__dbg, O = D.O, C = D.C, B = D.B, X = window.__gtXR, gl = O.getContext();
     const set = new Function('X', expr);
@@ -62,7 +69,16 @@ const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[
       const yaw = Math.atan2(x, z) + k * Math.PI / 2; await place(x, z, yaw); await page.waitForTimeout(500);
       for (const [name, expr, allow = 0] of sw) {
         const label = `${tag} (${x},${z}) yaw ${Math.round(yaw * 180 / Math.PI)}`;
-        const floor = await pair(expr, false, false, label), ab = await pair(expr, false, true, label);
+        // the switch on through play, then: on first and off second (a saving that fell behind in play shows here),
+        // and off first and on second
+        await page.evaluate((expr) => new Function('X', expr)(true), expr); await page.waitForTimeout(300);
+        const ba = await pair(expr, true, false, label);
+        const floor = await pair(expr, false, false, label), ab0 = await pair(expr, false, true, label);
+        const ab = (ba.eyes[0].n + ba.eyes[1].n) > (ab0.eyes[0].n + ab0.eyes[1].n) ? ba : ab0;
+        if (name.startsWith('P38')) {   // the batcher's part data after play with the fast path, against a full pass
+          const bad = await page.evaluate(() => { const D = window.__dbg, EB = D.gcEB, C = D.C; const before = EB.list.map((b) => Float32Array.from(b.R)); const was = window.__gcQF; window.__gcQF = false; try { C.onBeforeRender(D.O, C, D.B); } finally { window.__gcQF = was; } let n = 0; EB.list.forEach((b, i) => { for (let k = 0; k < b.R.length; k++) if (Math.fround(b.R[k]) !== before[i][k]) { n++; break; } }); return n; });
+          if (bad) (results[name] || (results[name] = { views: 0, worse: [], floorPx: 0, abPx: 0, lit: [] })).worse.push(`${label}: ${bad} batch(es) whose part data differ from a full pass`);
+        }
         const r = results[name] || (results[name] = { views: 0, worse: [], floorPx: 0, abPx: 0, lit: [] });
         r.views++; const fp = floor.eyes[0].n + floor.eyes[1].n, ap = ab.eyes[0].n + ab.eyes[1].n; r.floorPx += fp; r.abPx += ap; r.lit.push(ab.eyes[0].lit); if (ap > fp) r.viewsDiff = (r.viewsDiff || 0) + 1;
         if (ap > fp + allow) { r.worse.push(`${label}: ${ap} px (floor ${fp}), max ${Math.max(ab.eyes[0].mx, ab.eyes[1].mx)}, calls ${ab.calls.join('/')}, at ${JSON.stringify(ab.eyes.map((e) => e.at))}`);
