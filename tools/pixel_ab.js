@@ -46,10 +46,10 @@ const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[
     const rd = gl.createFramebuffer();
     const read = (fb, eye) => { const p = new Uint8Array(W * H * 4); gl.bindFramebuffer(gl.READ_FRAMEBUFFER, rd); gl.framebufferTextureLayer(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, fb.t, 0, eye); gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, p); return p; };
     const eyes = [0, 1].map((eye) => {
-      const x = read(P[0], eye), y = read(P[1], eye); let n = 0, mx = 0, lit = 0;
-      for (let i = 0; i < x.length; i += 4) { const d = Math.abs(x[i] - y[i]) + Math.abs(x[i + 1] - y[i + 1]) + Math.abs(x[i + 2] - y[i + 2]); if (d) n++; if (d > mx) mx = d; if (y[i] | y[i + 1] | y[i + 2]) lit++; }
+      const x = read(P[0], eye), y = read(P[1], eye); let n = 0, mx = 0, lit = 0; const at = [];
+      for (let i = 0; i < x.length; i += 4) { const d = Math.abs(x[i] - y[i]) + Math.abs(x[i + 1] - y[i + 1]) + Math.abs(x[i + 2] - y[i + 2]); if (d) { n++; at.length < 4 && at.push([(i / 4) % W, Math.floor(i / 4 / W)]); } if (d > mx) mx = d; if (y[i] | y[i + 1] | y[i + 2]) lit++; }
       let png = null; if (save && n) { const cv = document.createElement('canvas'); cv.width = 2 * W; cv.height = H; const cx = cv.getContext('2d'); [x, y].forEach((buf, k) => { const im = cx.createImageData(W, H); for (let r = 0; r < H; r++) im.data.set(buf.subarray((H - 1 - r) * W * 4, (H - r) * W * 4), r * W * 4); cx.putImageData(im, k * W, 0); }); png = cv.toDataURL('image/png'); }
-      return { n, mx, lit: +(100 * lit / (W * H)).toFixed(1), png };
+      return { n, mx, at, lit: +(100 * lit / (W * H)).toFixed(1), png };
     });
     gl.deleteFramebuffer(rd); gl.bindFramebuffer(gl.FRAMEBUFFER, null); try { O.state.reset(); } catch (e) {}
     return { label, calls: [ca, cb], eyes, err: gl.getError() };
@@ -64,7 +64,7 @@ const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[
         const floor = await pair(expr, false, false, label), ab = await pair(expr, false, true, label);
         const r = results[name] || (results[name] = { views: 0, worse: [], floorPx: 0, abPx: 0, lit: [] });
         r.views++; const fp = floor.eyes[0].n + floor.eyes[1].n, ap = ab.eyes[0].n + ab.eyes[1].n; r.floorPx += fp; r.abPx += ap; r.lit.push(ab.eyes[0].lit);
-        if (ap > fp) { r.worse.push(`${label}: ${ap} px (floor ${fp}), max ${Math.max(ab.eyes[0].mx, ab.eyes[1].mx)}, calls ${ab.calls.join('/')}`);
+        if (ap > fp) { r.worse.push(`${label}: ${ap} px (floor ${fp}), max ${Math.max(ab.eyes[0].mx, ab.eyes[1].mx)}, calls ${ab.calls.join('/')}, at ${JSON.stringify(ab.eyes.map((e) => e.at))}`);
           if (save) { fs.mkdirSync(outDir, { recursive: true }); ab.eyes.forEach((e, i) => e.png && fs.writeFileSync(path.join(outDir, `${name.split(' ')[0]}_${label.replace(/[^\w]+/g, '_')}_${i ? 'right' : 'left'}.png`), Buffer.from(e.png.split(',')[1], 'base64'))); } }
       }
     }
