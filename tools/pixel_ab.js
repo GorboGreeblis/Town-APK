@@ -8,7 +8,7 @@
 // Passes when no view differs by more than the floor.
 //
 //   node tools/pixel_ab.js [asset] [--switch name] [--save]
-//     --switch: one of SWITCHES (default: all of them, each in turn); --save writes the pairs that differ
+//     --switch: one of SWITCHES, or several by prefix separated by commas (default: all of them, each in turn); --save writes the pairs that differ
 const path = require('path');
 const fs = require('fs');
 process.env.GT_MULTIVIEW = '1';
@@ -24,6 +24,11 @@ const SWITCHES = [
   ['P36 opaque draws grouped by program', 'window.__gcPS = X', 4],
   ['P37 texture UV transforms cached', 'window.__gcTU = X'],
   ['P38 batcher skips still parts', 'window.__gcQF = X'],
+  ['P39 lights and eye offset set once a draw list', 'window.__gcLV = X'],
+  ['P39 normal matrices only where a shader reads them', 'window.__gcNM = X'],
+  ['P40 vertex layouts checked by version', 'window.__gcVL = X'],
+  ['P40 light flags set only when they change', 'window.__gcNL = X'],
+  ['P40 shader-hold check cached', 'window.__gcPN = X'],
 ];
 const only = arg('--switch', null);
 const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[26, -23], [-9, 35], [-28.3, -28.3], [-33, -7]];
@@ -33,7 +38,7 @@ const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[
   const g = await boot({ file, vr: true, fastSim: false });
   const page = g.page;
   await page.waitForTimeout(2500);
-  const sw = SWITCHES.filter((s) => !only || s[0].startsWith(only));
+  const sw = SWITCHES.filter((s) => !only || only.split(',').some((o) => s[0].startsWith(o)));
   const pair = (expr, a, b, label) => page.evaluate(({ expr, a, b, label, save }) => {
     const D = window.__dbg, O = D.O, C = D.C, B = D.B, X = window.__gtXR, gl = O.getContext();
     const set = new Function('X', expr);

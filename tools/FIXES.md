@@ -1922,6 +1922,43 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.50** (the author, 2026-11-05: "Let's apply the remaining tasks under 'where it comes from' now"; RULES.md 31:
+  every change below draws the same picture, `pixel_ab.js` 0 pixels in 28 views each, both orders).
+  - **P39: two jobs done once a draw list instead of once a draw.** In two-eye (multiview) drawing three.js worked out,
+    for every draw, the lights' directions in the left eye's view and the matrix from the left eye to the right; both
+    are the same for every draw of the list (the camera and the lights do not move while a list is drawn, and no
+    object's hook moves them). The two normal matrices of each draw (left eye, right eye: a 3x3 inverse each) are
+    now worked out where they are sent, and only when the draw's shader reads them (unlit materials do not; about 20%
+    of the draws). The same numbers reach the GPU. `window.__gcLV = false` and `window.__gcNM = false` give the old
+    path. Small: under 1% of the frame.
+  - **P40: three checks remembered while nothing they read has changed.**
+    - *Vertex layouts*: before each draw three.js walked the shape's vertex attributes (a `for...in` over them) to
+      see whether the vertex array object still matched. A shape's attribute set changes only through
+      `setAttribute`/`deleteAttribute` (the game assigns no other way; checked), which now bump the shape's layout
+      number; the walk is skipped when the layout number and the index are as at the last check (shapes with
+      interleaved attributes are always walked). The binding step's time about halved (1.5 to 0.85 ms a frame at the
+      town spot headless). `window.__gcVL = false`.
+    - *The lights' update flags*: on every material switch (almost every draw: 189 materials for about 195 draws)
+      three.js set ten flags on the material's light uniforms to the same value; now only when the value changes.
+      `window.__gcNL = false`.
+    - *The shader-compile hold's check* (S-series flash safety, `gcProgHold`): for every object in view, every frame,
+      the full program checklist was run to see whether drawing it would compile a shader. Its answer is now kept on
+      the object with what it read (the material, its version and its renderer state, the shape and its layout, and
+      one number for the lights, multiview, encoding, fog and clipping, renewed once a frame); while all are the same
+      the answer stands. Materials with an environment map, and objects with several materials, are always checked.
+      Over 207,891 checks through town play and an Event start, the kept answer equalled the full check every time.
+      `window.__gcPN = false`.
+  - **Measured** (`render_ab.js`, the render of one frozen frame drawn again and again with all five switches off and
+    on in turns, 30 blocks a side): the render 6.9% shorter on the mean of seven town and Event views (0.5-16% by view,
+    none slower), about 5% of a frame. Estimate (`fps_estimate.js` on 764bd9d7, about 10% saved since 4.0.47 in all):
+    Quest 3S and Quest 3 alike, town median 69.8 with 0-1% of seconds under 60, the Event 65.8 with 2%.
+  - **Looked at and left** (PERF 16): the matrix walk already skips a part whose position, turn and size are as last
+    frame (P32), so what is left of it is the work for parts that moved; posing the characters on the GPU would do the
+    same sums in the GPU's single precision, which moves vertices by rounding and so changes pixels at edges (rule 31);
+    the memory each frame makes is about 147 KB in the Event, mostly the numbers handed to WebGL calls and the batcher's,
+    and the collector takes 1.4-1.8% of the time: left for the headset's performance log to show whether it causes
+    slow frames.
+  - `pixel_ab.js` takes several switches by prefix (`--switch P39,P40`); new `render_ab.js`.
 - **4.0.49** (the author, 2026-11-05: "Let's apply the remaining tasks under 'where it comes from' now. And whatever
   bug fixes are needed"; "Feel free to remove the flash specific elements from logging, and add logging to help with
   FPS / performance work instead"; "Please fence off logging / debug tools so that they can be removed from the final
