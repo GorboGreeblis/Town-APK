@@ -1,0 +1,83 @@
+// FPS estimate for the Quest 3S and the Quest 3 (report; the author: "For every improvement: I want an estimate for FPS
+// on Quest 3 and Quest 3S"). From a headset run's log (the runtime's line every second: frames shown, refresh, the
+// app's GPU time) and a CPU saving measured headless (cpu_bench.js), it estimates what the same run would read with
+// the saving, second by second, in the town and in the planting Event.
+//
+// The model (fitted, not guessed): on the headset the game is limited by the CPU (the GPU has room). A frame whose CPU
+// time passes the refresh budget (13.9 ms at 72 Hz) is shown a refresh late, so a second at f fps had a share
+// p = refresh / f - 1 of late frames. Each frame's CPU time is the second's mean times (1 + e), e normal with spread
+// SIGMA; so p fixes the mean, a saving s scales it by (1 - s), and the new late share gives the new fps. SIGMA comes
+// from two runs of one build (4.0.46): plugged in (CPU about 2208 MHz, log 8d197bb0, median 71.6 fps) and on battery
+// (about 1600 MHz, log 14b455ce, median 65.4): the same work at 1.38 times the CPU time; the only spread that turns
+// one median into the other is 0.49 (the frames vary a lot: the per-frame and periodic work, the collector).
+// The Quest 3 has the same chip and about 30% more pixels: the same CPU, the GPU time times 1.3; a second whose GPU
+// time then passes the budget is held to what the GPU allows.
+//
+// Estimates, not measurements: the headset run after a change is the check (TASKS T3).
+//
+//   node tools/fps_estimate.js <headset log> [--town 12] [--event 10] [--sigma 0.49] [--q3gpu 1.3]
+//     --town / --event: the CPU saving in percent (cpu_bench.js's "saving" for the town and the Event views)
+const fs = require('fs');
+const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
+const file = process.argv[2];
+if (!file || file.startsWith('--')) { console.error('usage: node tools/fps_estimate.js <headset log> [--town %] [--event %]'); process.exit(2); }
+const S_TOWN = +arg('--town', '0') / 100, S_EV = +arg('--event', '0') / 100, SIGMA = +arg('--sigma', '0.49'), Q3GPU = +arg('--q3gpu', '1.3');
+
+let txt = fs.readFileSync(file);
+txt = (txt[0] === 0xff && txt[1] === 0xfe) ? txt.toString('utf16le') : txt.toString('utf8');
+const lines = txt.split(/\r?\n/);
+const ts = (l) => { const m = l.match(/^(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)\.(\d+)/); return m ? ((+m[3] * 60 + +m[4]) * 60 + +m[5]) + +('0.' + m[6]) : null; };
+// the game's runtime lines: FPS=a/b with b the refresh; the process that draws the game is the one whose lines sit
+// inside the game's session (between its first and last page line)
+const page = lines.filter((l) => /GreeblisServer: page: m=/.test(l)).map(ts).filter((t) => t !== null);
+const t0 = page[0], t1 = page[page.length - 1];
+// the Event's spans from the game's event trail
+const spans = []; let open = null;
+for (const l of lines) {
+  if (!/GreeblisServer: page: m=\d+ms ev event /.test(l)) continue;
+  const t = ts(l); if (/false > true/.test(l)) open = t; else if (/true > false/.test(l) && open !== null) { spans.push([open, t]); open = null; }
+}
+if (open !== null) spans.push([open, t1]);
+const inEvent = (t) => spans.some(([a, b]) => t >= a && t <= b);
+const secs = [];
+for (const l of lines) {
+  const m = l.match(/VrApi\s*: FPS=(\d+)\/(\d+).*?App=([\d.]+)ms/); if (!m) continue;
+  const t = ts(l); if (t === null || t < t0 + 15 || t > t1) continue;   // after the first 15 s (loading)
+  const f = +m[1], hz = +m[2], gpu = +m[3]; if (hz < 60 || f < 20) continue;
+  secs.push({ t, f: Math.min(f, hz), hz, gpu, ev: inEvent(t) });
+}
+if (!secs.length) { console.error('no runtime lines inside the game session'); process.exit(1); }
+
+// normal distribution helpers
+const erf = (x) => { const s = Math.sign(x); x = Math.abs(x); const t = 1 / (1 + 0.3275911 * x); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return s * y; };
+const Phi = (z) => 0.5 * (1 + erf(z / Math.SQRT2));
+const invPhi = (p) => { let lo = -8, hi = 8; for (let i = 0; i < 80; i++) { const m = (lo + hi) / 2; if (Phi(m) < p) lo = m; else hi = m; } return (lo + hi) / 2; };
+// a second at f of hz: the late share p, the mean CPU time as a share of the budget (a = budget / mean)
+const est = (s, saving, gpuScale) => {
+  const p = Math.min(0.999, Math.max(1e-4, s.hz / s.f - 1));
+  const z = invPhi(1 - p);                 // budget = mean * (1 + SIGMA * z)
+  const a = 1 + SIGMA * z;                 // budget / mean
+  const a2 = a / (1 - saving);             // the saving lowers the mean
+  const p2 = 1 - Phi((a2 - 1) / SIGMA);
+  let f2 = s.hz / (1 + p2);
+  if (!saving) f2 = s.f;                            // no saving: the second as run
+  const gpu = s.gpu * gpuScale, budget = 1000 / s.hz;
+  if (gpu > 0.92 * budget) f2 = Math.min(f2, s.hz * Math.min(1, (0.92 * budget) / gpu) + 0.5);
+  return Math.min(s.hz, f2);
+};
+const stats = (a) => { const s = a.slice().sort((x, y) => x - y), q = (k) => s[Math.min(s.length - 1, Math.max(0, Math.round(k * (s.length - 1))))]; return { n: s.length, min: s[0], p10: q(0.1), median: q(0.5), under60: s.filter((x) => x < 59.5).length }; };
+const fmt = (x) => `median ${x.median.toFixed(1)}, lowest 10% ${x.p10.toFixed(1)}, lowest ${x.min.toFixed(1)}, ${x.under60} of ${x.n} s under 60 (${(100 * x.under60 / x.n).toFixed(0)}%)`;
+
+console.log(`fps_estimate: ${file.split('/').pop()}: ${secs.length} s of play (${secs.filter((s) => s.ev).length} in the Event); saving town ${(100 * S_TOWN).toFixed(1)}%, Event ${(100 * S_EV).toFixed(1)}%; spread ${SIGMA}`);
+for (const [label, pick, sv] of [['town', (s) => !s.ev, S_TOWN], ['the Event', (s) => s.ev, S_EV]]) {
+  const sel = secs.filter(pick); if (!sel.length) continue;
+  const now = stats(sel.map((s) => s.f));
+  const q3s = stats(sel.map((s) => est(s, sv, 1)));
+  const q3now = stats(sel.map((s) => est(s, 0, Q3GPU)));
+  const q3 = stats(sel.map((s) => est(s, sv, Q3GPU)));
+  console.log(`  ${label}:`);
+  console.log(`    Quest 3S, as run:      ${fmt(now)}`);
+  console.log(`    Quest 3S, estimated:   ${fmt(q3s)}`);
+  console.log(`    Quest 3, as run (est): ${fmt(q3now)}`);
+  console.log(`    Quest 3, estimated:    ${fmt(q3)}`);
+}

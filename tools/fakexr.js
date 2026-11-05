@@ -21,7 +21,7 @@
  *                             its own depth buffer as on the headset (4x MSAA) and its end-of-frame depth discard runs
  */
 (function () {
-  const S = (window.__fakeXR = { poses: false, sessions: [], frames: 0, pose: { y: 1.6, yaw: 0 }, inputs: [], supportLocalFloor: true, fbMax: 320 });
+  const S = (window.__fakeXR = { poses: false, sessions: [], frames: 0, cbMs: 0, pose: { y: 1.6, yaw: 0 }, inputs: [], supportLocalFloor: true, fbMax: 320 });
 
   function perspective(fovDeg, aspect, near, far) {
     const f = 1 / Math.tan((fovDeg * Math.PI) / 360), m = new Float32Array(16);
@@ -153,7 +153,7 @@
     }
     requestAnimationFrame(cb) {
       const id = ++this._id;
-      const h = window.requestAnimationFrame((t) => { this._raf.delete(id); if (this.ended) return; S.frames++; S.inFrame = true; try { cb(t, new Frame(this)); } finally { S.inFrame = false; } });   // inFrame: the harness's frame-hazard watch
+      const h = window.requestAnimationFrame((t) => { this._raf.delete(id); if (this.ended) return; S.frames++; S.inFrame = true; const c0 = performance.now(); try { cb(t, new Frame(this)); } finally { S.inFrame = false; S.cbMs += performance.now() - c0; } });   // inFrame: the harness's frame-hazard watch; cbMs: the main thread's time in the frame callbacks (cpu_bench.js)
       this._raf.set(id, h); return id;
     }
     cancelAnimationFrame(id) { const h = this._raf.get(id); if (h != null) window.cancelAnimationFrame(h); this._raf.delete(id); }

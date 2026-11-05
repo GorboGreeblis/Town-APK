@@ -536,3 +536,25 @@ thistle +11%, the mayweed +21%, the chicory +112%, the milkweed +81%, the mallow
 (`.runs/plant_verts.js`) the plants shade 93,248 -> 134,582 vertices a frame (+41,000), in the same draws (one
 per plant, as before). A29 adds no draws: each plant already had its own draw; its own material adds a uniform upload
 per plant. The headset reading is the author's (the 60 fps bar is closed by the author's word, 2026-10-30).
+
+## 16. 4.0.47 on: the battery clocks (the author's wireless run 14b455ce on 4.0.46)
+
+On battery the headset ran the CPU at 1382-1920 MHz (the plugged-in runs: mostly 2208), no thermal limit (TA 0), and
+the game read a town median of 65 fps (71.6 plugged in, same build), 16 of 117 readings under 60, CPU-bound (GPU 6.7 ms
+of 13.9). Meta's Battery Saver turns the CPU boosts off (Quest 3/3S levels: L2 1.38, L4 1.92, L6 2.21 GHz): a run with
+it off, after the first 45 s (every app is boosted then), separates the setting from the game.
+
+Where a town frame goes (headless, `event_cpu.js --town` at (21, 25) facing the centre, 15.5 ms busy): three.js's
+render 53% (about 30 us a draw: 188 of 194 draws have materials of their own, so each refreshes its uniforms), the
+matrix walk 14% (2,723 nodes, most in the 13 characters), the batcher's pass 12% (1,257 parts), culling 10%, the
+game's update 7%, the collector 2%.
+
+The estimate model (`fps_estimate.js`): a frame late past the 13.9 ms budget is shown a refresh late; each frame's CPU
+time is its second's mean times (1 + e), e normal with spread 0.49 (the only spread that turns the plugged-in median
+into the battery median for the same work at 1.38 times the CPU time). On the battery run: a 10% saving gives the
+Quest 3S town a median of 68 with 1% of seconds under 60; 20% gives 71 and the Event 69 with none under 60; 30% leaves
+a margin. The Quest 3 (same CPU, about 30% more pixels) may be held by its GPU in a few of the Event's heaviest seconds.
+
+4.0.47: P34 (the townsfolk out of view skipped), P35 (the dancers' fit), the batcher's visibility once a frame; about 9%
+in the town at the slowest spot, 3% in the Event (FIXES 4.0.47).
+
