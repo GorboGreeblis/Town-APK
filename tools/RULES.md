@@ -256,7 +256,13 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 - Fewer draws by merging more of them into the batch path: closed (2026-11-05, "Let's close out option 4"; option 4 of
   the list of next performance options put to the author that day: a census of the remaining draws and merging the ones
   that could join a batch). The batch path does its sums on the GPU, so merges risked changing pixels; no build tries it.
-  Texture arrays (option 5) stay open on rule 31's terms.
+  Texture arrays (option 5) stay open on rule 31's terms. **Amended** (2026-11-05: "Let's try atlasing. But follow the
+  rule that it should impact visuals as little as possible. Update our other decisions to allow for this option"):
+  the characters' textures packed into one atlas a character, so that a character's textured parts can share its
+  batches, is allowed: it does join draws in the batch path, as option 4 would, but only those the atlas makes
+  possible, built to change the picture as little as it can (padding against bleeding at the atlas's edges, the
+  same texels, the same filtering) and tested against the build before (rule 31: the pixel count, pictures of both
+  builds, the speed). Merging other draws into the batch path stays closed.
 - The Event's headroom by fading more scenery: closed (2026-11-03, "let's close out this option altogether. I don't
   want anything that will effect user experience negatively"); the measurement (FIXES S30) showed nothing to take
   without hiding what the player sees, and nothing that costs the player's view is taken for performance from here on.
