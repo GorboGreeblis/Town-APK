@@ -1922,6 +1922,34 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.49** (the author, 2026-11-05: "Let's apply the remaining tasks under 'where it comes from' now. And whatever
+  bug fixes are needed"; "Feel free to remove the flash specific elements from logging, and add logging to help with
+  FPS / performance work instead"; "Please fence off logging / debug tools so that they can be removed from the final
+  build"; RULES.md 31).
+  - **P38: the batcher passes over a still part.** Each world matrix the matrix walk works out bumps the object's
+    version (`gcWV`, also P35's lift); the batcher's pass skips a part whose version, material, shape, material state,
+    colour (a per-material colour version, worked out once a frame) and visibility are all as at its last full check,
+    and checks every part in full every 60 frames anyway (a change that came another way is caught within a second).
+    `pixel_ab.js`: 0 pixels in 28 views in both orders (the switch on through play), and every batch's part data equal
+    to a full pass after play. About 60% of the parts move every frame (the townsfolk, the dancers, the flowers), so
+    the saving is in the town (the batcher's median 5-18% lower at three town spots, none at the fourth) and not in the Event. `window.__gcQF = false` gives the old pass.
+  - **B102 fixed**: the multi-material merger built its copy only when no material was see-through and remembered a
+    refusal for good, so a shape first seen fading in (the glue band in the Speech) was never merged. The copy now
+    depends on the shape only (the warm-up's scan builds and uploads it at load, outside any frame), and is put in place
+    once every material is opaque; a fade takes it out again and it may come back (as before).
+  - **The performance log** (debug builds): every subsystem the frame runs (`xr`, `input`, `player`, the townsfolk as
+    `entities`, `finale`, `render` and the rest) is timed; every 10 s a line "cpu ms a frame: median, 90%, 99%, max;
+    over 13.9 ms: n of m; mean by part"; a frame over 20 ms of game CPU (at most one in 2 s) logs its biggest parts
+    ("slow frame: cpu 27.0 ms (render 22.2, entities 3.5, ...)"). `perf_log.js` sums them by scene. On the headset this
+    measures what the estimates could only model: each frame's own CPU time.
+  - **The flight recorder trimmed**: the flash-only record each frame (whether the head was inside someone, pickups
+    fading, see-through pickups, what each controller pointed at, panel redraws, sound notes, the head's place and
+    heading, the sky and fog colours) is gone; the heap is read every 30th frame (each read makes a new object). The
+    frame times, draw calls, programs, textures and geometries are kept for the mark's dump and the frame gap lines.
+  - **The debug fence**: `<script>var GT_DEBUG=!0;</script>` comes first in the page; the performance log is built only
+    under it. `tools/final_build.js` writes `tools/final.html` with GT_DEBUG and `window.__gtLog` (outside the script
+    that defines it) taken as false, so terser drops the fenced code and every guarded log call with its text, then
+    minifies as the game file is; it checks none is left. The builds the author tests keep everything (RULES.md 23).
 - **4.0.48** (the author's 4.0.47 run 764bd9d7: town median 67 fps on battery, the Event 62; "Please fix this
   bundled three.js sort bug"; RULES.md 31, the picture as in 4.0.46, with the depth-tie allowance).
   - **P36: the draws are grouped by program again.** three.js sorts the opaque draws by group, render order, program,

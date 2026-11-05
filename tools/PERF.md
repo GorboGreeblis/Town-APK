@@ -567,3 +567,8 @@ the render (culling, sorting, lights) 1.8 ms, the batcher 1.5 ms, the game's upd
 4.0.48: P36 (the opaque draws grouped by program again: program switches about halved, GL calls -8 to -10%, about
 -5% a frame) and P37 (texture UV transforms only when they change); estimate on 764bd9d7: Quest 3S town median 68.5,
 the Event 64 with about 6% of seconds under 60.
+
+4.0.49: P38 (the batcher passes over still parts: the town's batcher median 5-18% lower at three spots, none at the fourth; nothing in the Event, where
+most parts move); the performance log measures each frame's game CPU time on the headset (a line every 10 s by part),
+so the next estimates start from measured frame times instead of the model's spread.
+
