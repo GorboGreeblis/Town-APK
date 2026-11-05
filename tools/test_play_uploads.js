@@ -16,6 +16,10 @@
 //     unchanged, the glue band drawn from its load-time merged copy;
 //   - an Event with the Stone, the Seeds and the Snacks, through the pizza boxes fading in and being batched: no
 //     geometry uploaded or held, no GL buffer made; the batches drawn from kept shapes;
+//   - B101 (4.0.48; the author's run 764bd9d7: a second Event 3 s after the first built 4 batch shapes): every batch
+//     shape the warm-up kept has a spare copy from load; a second Event started right after the first, the first
+//     copies marked taken, uploads nothing (headless the second Event's boxes are not batched within the window, so
+//     this part does not reproduce the author's sequence; the spare check does catch a build without spares);
 //   - no page errors.
 //
 //   node tools/test_play_uploads.js [file]
@@ -33,7 +37,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const logs = [], L0 = window.__gtLog; window.__gtLog = (s) => { logs.push(String(s)); try { L0 && L0(s); } catch (e) {} };
     const gl = O.getContext(); let bufs = 0; const cb = gl.createBuffer.bind(gl); gl.createBuffer = function () { bufs++; return cb(); };
     let ups = 0; const u0 = O.gcObjUpdate.bind(O); O.gcObjUpdate = function (o) { ups++; return u0(o); };
-    const out = { keptAtLoad: window.__gcBG ? [...window.__gcBG.values()].filter((e) => !e.n).length : -1 };
+    const flat = () => (window.__gcBG ? [...window.__gcBG.values()].flatMap((e) => (Array.isArray(e) ? e : [e])) : []);
+    const lists = () => (window.__gcBG ? [...window.__gcBG.values()].map((v) => (Array.isArray(v) ? v : [v])) : []);
+    const out = { keptAtLoad: window.__gcBG ? flat().filter((e) => !e.n).length : -1, spareless: lists().filter((l) => l.every((e) => !e.n) && l.length < 2).length };
     await wait(1500);
     // the Speech
     let t0 = performance.now(); while (!st.atHome() && performance.now() - t0 < 60000) await wait(200);
@@ -44,8 +50,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     while (performance.now() - t0 < 150000) {   // the Speech runs on the game's clock, slower than real time headless
       await wait(300);
       D.C.traverse((o) => { if (!band && o.isMesh && Array.isArray(o.material) && o.material.length === 3 && o.geometry.attributes.position && o.geometry.attributes.position.count === 148) band = o; });
-      if (band && !out.bandAt) out.bandAt = performance.now();
-      if (out.bandAt && performance.now() - out.bandAt > 6000) break;   // the band has been drawn for 6 s (the Speech's last lines are slow headless)
+      if (band && !out.bandAt) { out.bandAt = performance.now(); out.bandF = window.__fakeXR.frames; }
+      // the band drawn for 6 s and 150 frames (the merger looks every 120 frames; a slow machine draws fewer in 6 s)
+      if (out.bandAt && performance.now() - out.bandAt > 6000 && window.__fakeXR.frames - out.bandF > 150) break;
     }
     out.speech = { bandSeen: !!band, geos: O.info.memory.geometries - m0, bufs: bufs - b0, uploads: ups - p0, held: logs.slice(l0).filter((l) => /held for one frame/.test(l)), bandMerged: !!(band && band.geometry.__mmOf) };
     // an Event with the Snacks: the pizza boxes fade in and are batched
@@ -54,14 +61,31 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const y = ((D._t.state && D._t.state.items) || []).find((i) => i.label === 'Yes'); if (y) y.onClick();
     t0 = performance.now(); while (!D.me.active && performance.now() - t0 < 30000) await wait(100);
     await wait(25000);
-    const used = window.__gcBG ? [...window.__gcBG.values()].filter((e) => e.n > 0).length : 0;
+    const used = flat().filter((e) => e.n > 0).length;
     out.event = { started: D.me.active, geos: O.info.memory.geometries - m0, bufs: bufs - b0, uploads: ups - p0, held: logs.slice(l0).filter((l) => /held for one frame/.test(l)), keptInUse: used };
+    // B101 (the author's 4.0.47 run 764bd9d7: a second Event 3 s after the first built 4 geometries, 21 buffers): the
+    // Event ends (its length cut short) and a second one starts at once, the first's pizza boxes still on the ground
+    const F = D.t.finale, dur = F.durationS; F.durationS = 1;
+    t0 = performance.now(); while (D.me.active && performance.now() - t0 < 60000) await wait(100);
+    F.durationS = dur; const ended = !D.me.active;
+    // the first Event's boxes still out (as in the author's run, 3 s apart): the first copy of every kept shape no
+    // batch uses is marked taken, so the second Event must use the spares (without them it builds in play)
+    const taken = []; if (window.__gcBG) for (const v of window.__gcBG.values()) { const l = Array.isArray(v) ? v : [v]; if (l.length && l.every((e) => !e.n)) { l[0].n++; taken.push(l[0]); } }
+    m0 = O.info.memory.geometries; b0 = bufs; p0 = ups; l0 = logs.length;
+    D.oe.open(); await wait(400);
+    const y2 = ((D._t.state && D._t.state.items) || []).find((i) => i.label === 'Yes'); if (y2) y2.onClick();
+    t0 = performance.now(); while (!D.me.active && performance.now() - t0 < 30000) await wait(100);
+    await wait(25000);
+    taken.forEach((e) => e.n--);
+    out.second = { ended, taken: taken.length, started: D.me.active, geos: O.info.memory.geometries - m0, bufs: bufs - b0, uploads: ups - p0, held: logs.slice(l0).filter((l) => /held for one frame/.test(l)), spares: logs.find((l) => /batch shapes kept for a second Event/.test(l)) || null };
     return out;
   });
   note(JSON.stringify(r).slice(0, 700));
   expect('the warm-up keeps the batch shapes it built (the pizza boxes\' among them)', r.keptAtLoad >= 4, String(r.keptAtLoad));
   expect('the Speech: no geometry made, uploaded or held; the glue band drawn from its load-time merged copy', r.speech.bandSeen && r.speech.geos === 0 && r.speech.bufs === 0 && r.speech.uploads === 0 && r.speech.held.length === 0 && r.speech.bandMerged, JSON.stringify(r.speech));
   expect('an Event with the Snacks: no geometry uploaded or held, no GL buffer made; the pizza batches drawn from kept shapes', r.event.started && r.event.geos === 0 && r.event.bufs === 0 && r.event.uploads === 0 && r.event.held.length === 0 && r.event.keptInUse >= 1, JSON.stringify(r.event));
+  expect('every batch shape the warm-up kept and no batch uses has a spare copy from load (B101)', r.keptAtLoad >= 2 && r.spareless === 0, JSON.stringify({ kept: r.keptAtLoad, withoutSpare: r.spareless }));
+  expect('a second Event right after the first: no geometry uploaded or held, no GL buffer made (the spare batch shapes, B101)', r.second.ended && r.second.taken > 0 && r.second.started && r.second.geos === 0 && r.second.bufs === 0 && r.second.uploads === 0 && r.second.held.length === 0, JSON.stringify(r.second));
   expect('no page errors', errors.length === 0, errors.slice(0, 3).join(' | '));
   await g.close();
   console.log(failures.length ? `PLAY UPLOADS TEST FAILED (${failures.length})` : 'PLAY UPLOADS TEST PASSED'); process.exit(failures.length ? 1 : 0);

@@ -187,11 +187,24 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     serious issues and we're not taking this route"): every build, release or experiment, requests the WebXR
     `layers` feature and renders through the projection layer; no build drops it for the plain WebXR layer (the
     removed `nolayers` experiment, FIXES S36, log 4d0d3716).
+31. **Performance work never costs visual quality** (2026-11-05: "Please apply 1 to 8 but not at the expense of
+    quality. We need to remain on par with the pre-optimization build, for visual quality. Anything that impacts visual
+    quality is not an option. As a rule. We already cut enough visually. Now we need to work around what is left").
+    The reference is 4.0.46, the build before the optimization pass: every saving must draw the same picture (checked
+    pixel for pixel, `pixel_ab.js`, frame for frame where it can be), and the final build is tested against 4.0.46
+    (the full tier on both, pictures and a scripted session compared). A saving that changes the picture is not
+    built; one that changes how motion looks (posing less often) counts as changing it.
+    **The one allowance** (2026-11-05: "Alter the Rule so that instances like this are acceptable"): a change in the
+    order opaque things are drawn may decide differently which of two surfaces at exactly the same depth wins a
+    pixel (the same surfaces, a tie that already shimmers as the head moves in 4.0.46). That is acceptable when it
+    touches only isolated pixels: `pixel_ab.js` allows a switch marked as a draw-order change at most 4 differing
+    pixels a view (both eyes, at its 320 x 180 a eye); anything more, or any other kind of difference, still fails.
 
 ## Priorities
 
-- **Never below 60 fps on a Quest 3S and a Quest 3** (2026-10-30: "Tiny visual changes are ok to reach 60 fps.
-  Never below 60 fps is the goal"); PERF.md 14.
+- **Never below 60 fps on a Quest 3S and a Quest 3** (2026-10-30: "Never below 60 fps is the goal"; the 60 fps floor on
+  battery is a blocker, 2026-11-05); PERF.md 14, 16. Since 2026-11-05 without any visual change (rule 31; the earlier
+  "Tiny visual changes are ok to reach 60 fps" no longer holds).
 - **No full-screen flashes, ever** (the author, throughout): every flash found is a must-fix; the safeties S1 and S2
   (FIXES) back the fixes up. Any dark or bright frame is a flash (the snap turn's blink, the one deliberate dark frame
   of 4.0.31-4.0.34, is gone).
@@ -200,7 +213,7 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 
 ## Decisions that close an option
 
-- Texture arrays for batching: closed (2026-10-27, PERF.md 10).
+- Texture arrays for batching: closed (2026-10-27, PERF.md 10); reopened 2026-11-05 ("Please apply 1 to 8") on rule 31's terms only: each texture keeps its own pixels, mipmaps and filtering, the picture unchanged.
 - The Event's own render scale (P16, P17) and P18: removed (2026-10-28) [83].
 - The experiment-first rule (15): retired (2026-10-28, rule 22).
 - The randomness decision list: closed (2026-10-29, RANDOMNESS.md; FIXES R4-R6).
