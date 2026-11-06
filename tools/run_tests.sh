@@ -130,6 +130,7 @@ if [ "$TIER" != quick ]; then
   run "the flash record: no drawing without a head pose, tracking logged, the light record catches a staged one-frame flash at no frame cost, the mark never stalls, held geometry named (S15)" node "$ROOT/tools/test_flashlog.js" "$ASSET"
   run "the Event's pizza boxes fade out at its end with their own materials, no shader compiled (A42)" node "$ROOT/tools/test_pizza_fade.js" "$ASSET"
   run "a Blossom or Flint with the Gazebo behind it is taken by pointing at it (B97)" node "$ROOT/tools/test_gazebo_pick.js" "$ASSET"
+  run "the load-time draw merges hold: panel sheets, glass panes, Mama Gorbo's tubes still reshaped, every character part in its batch (P48-P51)" node "$ROOT/tools/test_merges.js" "$ASSET"
   run "no townsperson stays stuck: one walking to its Event spot or (Mushroom anywhere, the others on their way home) in the town and not moving is moved on (B117)" node "$ROOT/tools/test_unstick.js" "$ASSET"
   run "the game pauses every time the system menu opens: a window blur pauses, the focus or a trigger press resumes (B115)" node "$ROOT/tools/test_menu_pause.js" "$ASSET"
   run "far characters posed every other frame never draw a broken pose: Fortizmo with her horn up 40 m away posed every frame, the others still skipped (B114)" node "$ROOT/tools/test_far_pose.js" "$ASSET"

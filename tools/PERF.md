@@ -631,3 +631,10 @@ render's stages rose although the CPU ran at a higher clock: 4.0.53's cold-batch
 every cold batch each frame, about 1 ms. 4.0.54 reads only the batches' character roots, and P47 is off (its picture
 changed beyond the allowance). Headless, the three Event views measure 4.0.54 against 4.0.53 at -0.3, -0.3 and +1.0 ms
 a frame (within the software renderer's noise); the headset run decides.
+
+Load-time merges (4.0.59-4.0.60, for the town's slowest views at the CPU's lowest clock; about -2.5 fps a ms there):
+P48 packs each building's static painted panels into one sheet (16 draws), P49 merges each building's see-through
+panes that share one material (6), P50 draws Mama Gorbo's three CPU-reshaped goo tubes as one shape (2), and P51 puts
+Gemtoe's cape back in its batch (4; its picture's anisotropy kept it out from 4.0.53). Each draw saved is about
+0.02-0.03 ms of the CPU's frame on the headset (the render's per-draw state changes and calls). `test_merges.js`
+checks all four; pictures before and after show no change.

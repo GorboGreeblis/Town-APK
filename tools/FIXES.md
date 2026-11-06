@@ -1922,6 +1922,34 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.60** (the author: options 2 and 3, "For Mama Gorbo's tubes: merge them into one reshaped tube to save 2
+  draws"; "Any FPS under 60 fps is still considered a bug").
+  - **P49, glass panes together**: at load, the see-through panes of one building that share one material (the phone
+    booth's glass, the north buildings' windows and others) are merged into one shape in the building's space,
+    drawn in the same order as before. 6 draws fewer. They look the same (pictures of the phone booth, the north panes
+    and Gemtoe's porch before and after). `window.__gcGlass = false` before load turns it off.
+  - **P50, Mama Gorbo's tubes as one**: her three goo tubes, reshaped on the CPU every frame, were three draws; they are
+    now one shape whose three parts are still reshaped every frame the same way (their bounds grown 12 cm so the bulge
+    never leaves them). 2 draws fewer. They look and move the same (pictures from behind and the side).
+    `window.__gcTubes = false` turns it off.
+  - **P51, Gemtoe's cape back in its batch**: from 4.0.53 to 4.0.59 the cape's picture asked for a different sharpness
+    at an angle (anisotropy 8) than the batch's picture array (4), so the batcher drew its parts alone. The picture now
+    takes the array's setting (the same as every other batched part draws with). 4 draws fewer wherever Gemtoe is in
+    view.
+  - P48 is 4.0.59's panel sheets (numbered here). `test_merges.js` (standard tier, new) checks all four.
+  - **B119, Mushroom moved when he was not stuck** (found by `test_jitter.js` once fixed, below): B117's safety (4.0.58)
+    counted any 4 s in which Mushroom had not moved half a metre while he had a stop to walk to. It also counted the
+    times he waits on purpose: beside the player (the game holds a townsperson there for up to 12 s) and in a talk.
+    After an Event he stopped beside the player on his way home and was moved 22.7 m to his desk. That move cleared his
+    way home but not his next stop (the ramp's foot), so idle on his desk he was "stuck" again: every 8.5 s he
+    sparkled off the desk to the ramp's foot (a 1.5 m drop in one frame) and walked back up. The safety now counts only
+    while the townsperson is trying to walk (not held by the player, not talking), and a move in the town also clears
+    its stop. `test_unstick.js` checks both cases in the town and that a real stuck walk is still moved on, once.
+  - **test_jitter.js, "characters moved during the run [1]"** (failing since at least 4.0.57): a test fault, not the
+    game. Its harness mode ('matrices', no drawing) replaced the game's render wrapper, the code that clears the marks
+    for characters off screen or posed at half rate (P45). The marks set before the test began stood for the
+    whole run and froze those characters' drawn positions; only Fortizmo, posed in full by her horn, counted as moving.
+    The mode now clears the marks every frame, so every character is measured where a full update draws it.
 - **4.0.59** (the author: "Please work on a fix for that FPS drop in town. We need to ensure that drops like this do
   not happen"; "Please add more little mushrooms to the roof of Mushroom's kiosk").
   - **Panel sheets**: the town's slowest views (the 4.0.57 run: 57.5-59.8 fps at 145-161 draws; `draw_calls.js --at`
