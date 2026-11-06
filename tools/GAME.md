@@ -3,7 +3,8 @@
 Everything below was read from the game code (`tools/uncompressed.html`,
 4.0.34; checked against 4.0.61). Where the code did not make something explicit it is left out rather
 than guessed. Since 3.15.45 the file is minified (FIXES R2): top-level names
-(`t`, `G`, `It`, `JGP`, `gcEB` and the like) are as quoted, but names local to a
+(`t`, `G`, `It`, `JGP`, `gcEB` and the like) are as quoted (checked in 4.0.61; since 4.0.39 the minifier shortens
+long top-level names too, unless a tool reads them: `minify_game.js` `RESERVED`), but names local to a
 function were renamed, so routines are described by what they do.
 
 ## What it is
@@ -299,7 +300,7 @@ story, characters and looks are in `LORE.md` (section named); the fixes in `FIXE
 | --- | --- | --- | --- |
 | The park and the town | A cartoon town round Greeblis Park, inside a picket fence; the mist beyond it in the Event | LORE "The world", "Environment design and style" | `test_world.js`, `test_seams.js`, `test_zfight.js`, `test_coincident.js`; `shots.js --preset park` |
 | The Garden and the Summoning Pillar | The park's centre; the Pillar ("Use the Summoning Pillar") starts the Event with the Summoning Stone | LORE "The world", "Events" | `test_content.js` (zones), `test_noseeds.js`, `test_stands.js` |
-| The kiosks | Post Office, Sheriff's kiosk, Garden Supplies, Gooward's Gallery, Juice Bar, First Bank (with Gemtoe's Gazebo); the Phone Booth and the Portal count as kiosks | LORE "The world" | `test_npc_home.js`, `test_owner_exit.js`, `test_gazebo.js`, `test_stands.js` |
+| The kiosks | Post Office, Sheriff's kiosk, Garden Supplies, Gooward's Gallery, Juice Bar, First Bank (with Gemtoe's Gazebo); the Phone Booth and the Portal count as kiosks | LORE "The world" | `test_npc_home.js`, `test_owner_exit.js`, `test_gazebo.js`, `test_stands.js`, `test_mushroom_desk.js` (the Sheriff's desk and ramp), `test_merges.js` (their panel sheets and panes) |
 | The Post Office's mail pile | Behind the kiosk: letters, sacks and five parcels ("To Montreal", "To Cobourg", "To Bangkok", "To Ormstown", one blank) | LORE "The world"; FIXES A43 | `test_mailpile.js`; `shots.js` free views |
 | The church and the Cave | The Ancient's home; the Cave's walkway and visit spot; visitors come to the Ancient | LORE "The Ancient" | `test_cave.js`, `test_visits.js`; `shots.js --preset cave` |
 | The Library | Sparkakus's kiosk, its books (OVERCOMING SHYNESS, which shrinks away when taken), the Speech | LORE "The Library's books" | `test_content.js`, `test_progression.js`, `test_shybook.js` |

@@ -19,13 +19,31 @@ Worked around until the author can do them (the author, 2026-10-31).
 
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
-| T3 | Headset run of the latest build: 4.0.21 run on 2026-11-02 (logs 550715df and 09ba968c: no flashes in 27 minutes with two Events, the floor held); next, 4.0.22 (the cap, the basket, the church doorway and cross, S28) | open, author | `HEADSET_DIAG.md`, `RELEASE.md` sections 3 and 5 |
+| T3 | Headset run of the latest build: the last with frame-rate readings, 4.0.57 (run ae0f9a23, 2026-11-06: the Event at 60 or above in play, the town 4 readings at 57.5-59.8; the pause flickered with the headset off, the Horn song restarted, Mushroom stuck); the author also tested 4.0.58 (no flashes, the Gazebo's pickups all picked up) and 4.0.60 (its log and remarks led to 4.0.61, B120-B124); next, the final build candidate (4.0.61 or later), with the pause checks (`HEADSET_DIAG.md`, "Confirming the pause") | open, author | `HEADSET_DIAG.md`, `RELEASE.md` sections 3 and 5 |
 | T18 | Full pass on the final build (RULES.md 23), with `--resume`, and the Ordinals check on its compressed version (ordinals.com, ordiscan.com and Quest Browser) (the author: "Please treat this as the final build until I say otherwise"; "postpone the full pass until I can test in headset first") | the Ordinals check done on 4.0.9 (NOTES 100: all passed, both explorers' policies and the preview frame; the real Quest Browser on the headset is the author's); the full pass waiting on T3 | `TESTING.md`; the last finished full pass was 3.15.54 (NOTES 96) |
 | T4 | Store upload: the final build to the Alpha channel, then the age group (13+) on its build page (T16's frame rate now holds in the headset, 2026-10-31) | open, author; after T3 and T18 | `RELEASE.md` section 5; the listing, IARC rating, privacy page and supported devices are done |
-| T26 | The headset-confirmation backlog: confirmed by the author's 4.0.15 run (2026-11-02): F-B83 (no tiles at the edge of view), S18-S20 (no flashes), the FPS bar; the 4.0.21 run (logs 550715df, 09ba968c): S23 (nothing held at entry), S8 (the goo safety fired, no flash), S25/L1; confirmed by the author on 2026-11-03: A41/A44 (the HUD on the watch), A42 (pizza boxes fade), A43 (the Ormstown label), A45 (Mama Gorbo's cap), A47 (the church doorway), A48 (the cross removed); still to confirm when convenient: A46/A49 (the basket on the player's left), entering VR again after an exit (S31), P34 (the Event's start, a 46 ms frame on 4.0.21; trimmed again in S33) | open, author | VERSIONS.md 4.0.7-4.0.17 |
+| T26 | The headset-confirmation backlog (4.0.58-4.0.61, to confirm on the final build candidate: the pause on every system-menu opening and with the headset off until it is worn again, the music held with it (B115, B118, B121, B124), no stuck townsfolk (B117, B119), the town at 60 fps or above at its slowest views (4.0.59-4.0.60), the shyness book and the Library's books (B120, B122), Event flowers only at the ring (B123), Mushroom's desk and ramp, the easel paintings, the roof mushrooms): confirmed by the author's 4.0.15 run (2026-11-02): F-B83 (no tiles at the edge of view), S18-S20 (no flashes), the FPS bar; the 4.0.21 run (logs 550715df, 09ba968c): S23 (nothing held at entry), S8 (the goo safety fired, no flash), S25/L1; confirmed by the author on 2026-11-03: A41/A44 (the HUD on the watch), A42 (pizza boxes fade), A43 (the Ormstown label), A45 (Mama Gorbo's cap), A47 (the church doorway), A48 (the cross removed); still to confirm when convenient: A46/A49 (the basket on the player's left), entering VR again after an exit (S31), P34 (the Event's start, a 46 ms frame on 4.0.21; trimmed again in S33) | open, author | VERSIONS.md 4.0.7-4.0.17 |
 | T27 | Another full code review after this pass (the author, 2026-11-02): five reviews on 4.0.15 done 2026-11-02 (the entry script and layers shim, the three.js multiview patches, the engine side, the game logic, the leftovers): one high (B78), three medium (B80, B83, B84) and nine low findings; B78, B80, B81, B82 fixed in 4.0.17 (S24); the rest logged (B79, B83-B88) for T28; the leftovers found (a dead visit helper, write-only head-script fields, two diagnostic counters, stale doc wording) for 4.0.17 | done (2026-11-02) | FIXES S24; BUGS B78-B88 |
 
-## Resume point (4.0.34, 2026-11-04)
+## Resume point (4.0.61, 2026-11-06)
+
+- **Now:** the content is frozen for the final long test pass (game changes for performance and bugs only); the
+  tools, documentation and test cases are checked against 4.0.61 first (4.0.62 in progress). The author's last
+  run with frame-rate readings is 4.0.57's, and 4.0.60 was tested (T3); 4.0.61's fixes wait on the next run. When a
+  build is put forward as the final build candidate, the final pass waits for the author's headset test of it (RULES.md 32): then the full tier, the comparison
+  against 4.0.46 (RULES.md 31) and the closing code audit; the Store upload is its build without the debug code
+  (`final_build.js`, BUILD.md).
+- **Builds 4.0.35-4.0.61** (VERSIONS.md has each): 4.0.35-4.0.38 the instant snap back, the author's asks A53-A62
+  and B46 logging; 4.0.39 the head guard only from 3 cm, deeper minification; 4.0.40-4.0.42 the fourth code audit
+  (S40) and every sound restored; 4.0.43-4.0.45 Ollaag flies the UFO (A63), King Dino's funk (A64, A65), back from the
+  system menu without a stall (B99); 4.0.46 nothing built on the GPU in play (S42); 4.0.47-4.0.52 the CPU pass for the
+  battery clocks (P34-P44; RULES.md 31); 4.0.53 the 4.0.52 code audit's fixes and P45-P47; 4.0.54-4.0.57 more
+  frame-rate options (the rainbow removed), the pause with the system menu (B115), the Gazebo's pickups (B116);
+  4.0.58 the sound paused with the game (B118), stuck townsfolk moved on (B117); 4.0.59-4.0.60 the load-time merges
+  (P48-P51); 4.0.61 B120-B124, Mushroom's desk across the kiosk, the easel paintings, more roof mushrooms. B46 (the
+  flashes) is lived with (the author, 2026-11-06; RULES.md "Decisions").
+
+**The resume point of 4.0.34 (2026-11-04), kept for the record:**
 
 - **Builds since the author's last full headset run (4.0.21, logs 550715df and 09ba968c: no flashes, the floor held):**
   4.0.22 the cap closed (A45), the basket (A46), the church doorway's backing (A47), the cross gone (A48), S28; the
@@ -63,7 +81,7 @@ Worked around until the author can do them (the author, 2026-10-31).
 - **The final pass waits for the headset (RULES.md 32, 2026-11-05):** once a build is put forward as the final build
   candidate, the full tier, the comparison against 4.0.46 and the closing code audit wait until the author has tested
   that candidate on the headset. Until then the CPU pass goes on (4.0.49, PR #83).
-- **Next:** the author's headset-off run on 4.0.34 (B96; HEADSET_DIAG.md "Confirming B96"); a full tier on 4.0.34,
+- **Next** (then): the author's headset-off run on 4.0.34 (B96; HEADSET_DIAG.md "Confirming B96"; done, the census steady); a full tier on 4.0.34,
   recorded in TEST_PLAN.md (RULES.md 23), fixing what it finds (T18, T23, T24); then the author's full code review and
   the leftovers analysis (the dead-code census before the final build, RULES.md 25).
 

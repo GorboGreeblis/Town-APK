@@ -1,7 +1,7 @@
 #!/bin/sh
 # Greeblis Town test passes. Four tiers share the same scripts:
 #
-#   tools/run_tests.sh --smoke     the standard stages but the courier ones and the Mushroom's desk, shorter soaks (over an hour)
+#   tools/run_tests.sh --smoke     the standard stages but two courier ones (behind the Ancient, the Gem) and the Mushroom's desk, shorter soaks (over an hour)
 #   tools/run_tests.sh             standard pass (default), about 1.5-2 hours on a 4-core machine (95 min on 3.15.45)
 #   tools/run_tests.sh --full      FULL pass: every scenario, long soak times.
 #                                  Every build, until the author says otherwise (RULES.md 23; about 3.5 hours, TESTING.md).
@@ -104,7 +104,7 @@ if [ "$TIER" != quick ]; then
   run "No townsfolk stuck: doorway routes only for a real home, visits to and from all four (F-B55)" node "$ROOT/tools/test_stuck.js" "$ASSET"
   run "No jitter, bumps or floating models through the Event (F-B56, F-B57)" node "$ROOT/tools/test_jitter.js" "$ASSET"
   run "A never-compiled shader is compiled between frames, never inside one (S2)" node "$ROOT/tools/test_shaderhold.js" "$ASSET"
-  run "The Event's stands fade out and back slowly, never while their owners are home; the church, the Ancient, the pond, Somlet and the Garden never fade (P33)" node "$ROOT/tools/test_stands.js" "$ASSET"
+  run "The Event's stands fade out and back slowly, one after another, never while their owners are home; the church, the Ancient, the pond, Somlet and the Garden never fade (P33)" node "$ROOT/tools/test_stands.js" "$ASSET"
   run "recovery: a townsperson that keeps failing or loses its position is reset, a failing batcher pass is stepped down and frames keep drawing (S4, S5)" node "$ROOT/tools/test_recover.js" "$ASSET"
   run "the flash safeties: the head inside a character hides it for the frame only; a throwing draw hook does not stop the frame (S1); the head guard compiles no shader when it first shows (B47)" node "$ROOT/tools/test_safeties.js" "$ASSET"
   run "the gazebo: its seven railed sides stop the player, its doorway open to anyone; Gemtoe talkable from outside and home through the doorway (F-B65)" node "$ROOT/tools/test_gazebo.js" "$ASSET"
@@ -132,12 +132,13 @@ if [ "$TIER" != quick ]; then
   run "a Blossom or Flint with the Gazebo behind it is taken by pointing at it (B97)" node "$ROOT/tools/test_gazebo_pick.js" "$ASSET"
   run "OVERCOMING SHYNESS leaves the shelf when taken and stays gone after an Event (B120)" node "$ROOT/tools/test_shybook.js" "$ASSET"
   run "the Horn song carries on after a pause without playing over itself (B124)" node "$ROOT/tools/test_horn_pause.js" "$ASSET"
+  run "no sound after the VR session ends: held until a new session presents (B125)" node "$ROOT/tools/test_end_sound.js" "$ASSET"
   run "Event flowers only at the planter's spot in the ring (B123)" node "$ROOT/tools/test_plant_spot.js" "$ASSET"
-  run "the load-time draw merges hold: panel sheets, glass panes, Mama Gorbo's tubes still reshaped, every character part in its batch (P48-P51)" node "$ROOT/tools/test_merges.js" "$ASSET"
+  run "the load-time draw merges hold: panel sheets, glass panes, Mama Gorbo's tubes still reshaped, every character part in its batch, every merged shape fades with its building (P48-P51, B122)" node "$ROOT/tools/test_merges.js" "$ASSET"
   run "no townsperson stays stuck: one walking to its Event spot or (Mushroom anywhere, the others on their way home) in the town and not moving is moved on (B117)" node "$ROOT/tools/test_unstick.js" "$ASSET"
-  run "the game pauses every time the system menu opens: a window blur pauses, the focus or a trigger press resumes (B115)" node "$ROOT/tools/test_menu_pause.js" "$ASSET"
+  run "the game pauses every time the system menu opens: all input gone or a window blur pauses, and the sound with it; input back resumes only with the head moving, a trigger press only a blur's pause (B115, B118, B121)" node "$ROOT/tools/test_menu_pause.js" "$ASSET"
   run "far characters posed every other frame never draw a broken pose: Fortizmo with her horn up 40 m away posed every frame, the others still skipped (B114)" node "$ROOT/tools/test_far_pose.js" "$ASSET"
-  run "Backpacka's water shows against the mist: the drip from his mouth at the pond and in flight, the jets, drops and rainbow over the Garden, each with a mist wall behind (F-B74)" node "$ROOT/tools/test_bp_water.js" "$ASSET"
+  run "Backpacka's water shows against the mist: the drip from his mouth at the pond and in flight, the jets and drops over the Garden, each with a mist wall behind; no rainbow (F-B74, 4.0.55)" node "$ROOT/tools/test_bp_water.js" "$ASSET"
   run "Nextessa's visits build nothing: two pizza orders bring the same Nextessa and box, no GL buffer made or deleted (S12)" node "$ROOT/tools/test_courier.js" "$ASSET"
   run "speech bubbles clear both speakers in every text scene, drawn over everything (F-B77)" node "$ROOT/tools/test_bubble_clear.js" "$ASSET"
   run "text scenes cause no flash: every pair played in VR on the headset's render path, the player walking round: no GPU work in a frame, no shader made, bubbles never filling the view (S9, S11)" node "$ROOT/tools/test_vig_flash.js" "$ASSET"

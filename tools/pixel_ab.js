@@ -1,4 +1,4 @@
-// Pixel A/B for a performance switch (standard tier for the switches in SWITCHES; RULES.md 31, 2026-11-05: "Anything
+// Pixel A/B for a performance switch (run by hand, not in a tier: for each switch in SWITCHES; RULES.md 31, 2026-11-05: "Anything
 // that impacts visual quality is not an option"). Renders the same frame twice in one synchronous step, nothing in
 // the game moving in between, with a switch off and then on, into a two-slice multiview texture (both eyes, as the
 // headset draws), and compares each eye pixel for pixel, in both orders (the switch kept on through play and the

@@ -1,8 +1,10 @@
 # Performance analysis of the APK build
 
 Started as an analysis (sections 1-6); sections 6-13 record the changes that
-were applied, each listed in FIXES.md (section 15 is the latest: 3.15.65 to 4.0.2, P31-P33, A26, A28; section 14 3.15.53-3.15.63; the author closed the frame-rate
-task on 2026-10-31, "The FPS now fully passes the bar, in headset", TASKS D22, and no section has been added since). The render path itself is described in
+were applied, each listed in FIXES.md (section 16 is the latest: 4.0.47 to 4.0.61, P34-P51, the battery clocks and the
+Event's 60 fps floor reopened; section 15 3.15.65 to 4.0.2, P31-P33, A26, A28; section 14 3.15.53-3.15.63; the author
+had closed the frame-rate task on 2026-10-31, "The FPS now fully passes the bar, in headset", TASKS D22, until the
+battery run of 4.0.46 reopened it). The render path itself is described in
 RENDERING.md. Numbers from the headless harness (software GL) are marked as such: draw calls, triangle counts, program counts
 and JS time are meaningful there, GPU time is not. Headset measurements: the author's 3.15.33-3.15.34 run on a
 Quest 3S (section 10) and the 3.15.41, noswap and deferupload runs (section 13, NOTES 79-81), which showed the frame rate
@@ -13,9 +15,12 @@ section 14 are estimates until the author's next run.
 
 **Performance is now the top priority** (RULES.md "Priorities", the author: "once all other tasks are completed,
 performance should be our focus"; the biggest blocker for the Store submission): the planting Event on a Quest 3S,
-steadily above 60 fps (TASKS.md T16).
+steadily above 60 fps (TASKS.md T16, done 2026-10-31 as D22; reopened by the battery run on 4.0.46, section 16: "Any FPS
+under 60 fps is still considered a bug", 2026-11-06).
 
-Code names in the tables below (`Ge`, `gcEB`, `Qe`, `Ae`, `bend`) are those of the build measured. Since 3.15.45 the game
+Code names in the tables below (`Ge`, `gcEB`, `Qe`, `Ae`, `bend`) are those of the build measured; since 4.0.39 the
+minifier shortens long top-level names too, and the stable handles for a change are its `window.__gc...` switches
+(FIXES.md). Since 3.15.45 the game
 file is minified (FIXES R2): top-level names such as `Ge`, `gcEB`, `Qe` (the batcher's per-part placement) and `bend`
 survive, but three.js's internals were renamed (its projectObject, `Ae` below, is now `Pt`, and three.js has its own
 `Qe`), so a profile of the current build names some functions differently.
@@ -625,6 +630,12 @@ frame are unchanged and not rebuilt); the rest is parts that moved. Posing chara
 move vertices by rounding, so edges change (rule 31). Memory: about 147 KB a frame in the Event (WebGL call arguments,
 the batcher), the collector 1.4-1.8%; the performance log on the headset decides whether it is behind slow frames.
 
+4.0.53: the Event's frame rate with minor picture changes, approved by the author (RULES.md 31's Event relaxation):
+P45 (characters in view more than 20 m away posed every other frame, `window.__gcHalf`), P46 (unbatched static details
+under 2.5 px hidden in the Event, `window.__gcTiny`), P47 (near-identical character materials keyed alike: 36
+character batches to 28, `window.__gcKN`); exact savings beside them (hidden clouds not moved, the periodic passes
+spread, Etcher's tentacles not bent off view).
+
 4.0.53 on the headset (92180e1c, a Quest 3): the Event median 63.5 fps (62.3 in 4.0.52), the slowest reading 58.8
 (53.6), 3 readings under 60 (9-13); the town 68.2 (68.5). P45 and P46 cut the Event's frame as estimated, but the
 render's stages rose although the CPU ran at a higher clock: 4.0.53's cold-batch wake check (B113) hashed every part of
@@ -632,9 +643,31 @@ every cold batch each frame, about 1 ms. 4.0.54 reads only the batches' characte
 changed beyond the allowance). Headless, the three Event views measure 4.0.54 against 4.0.53 at -0.3, -0.3 and +1.0 ms
 a frame (within the software renderer's noise); the headset run decides.
 
+4.0.54 on the headset (77dec865, a Quest 3, the CPU mostly at its lowest clock, 1382 MHz): the Event median 64.9 fps,
+lowest 54.5; the town median 65.4, lowest 54.1; the readings under 60 at views with 180-240 draws. The author: "I'm
+open to more minor visual differences to get the FPS up"; "Let's apply all options".
+
+4.0.55 (all options): far characters' small unbatched parts hidden past 25 m (A, `__gcFarCh`), P45 from 15 m (B,
+`__gcNear`), every third frame past 35 m (C, `__gcThird`), P46 at 4 px and in the town too (D, `__gcTiny4`), the
+scenery's near-identical materials keyed alike (E, `__gcSN`), cold batches checked every 8th frame (F, `__gcCold8`),
+P47 back on (`pixel_ab.js` allows it 40 px a view). On the headset (9fad15df): the town median 67.4 (65.4), lowest
+58.9, 1 reading under 60 (11); the Event median 63.0, lowest 57.9, 4 under 60 (8); draws a frame town 114 (147),
+Event 125 (137).
+
+4.0.56: P45 from 12 m, every third frame from 25 m; P46's size check spread over 12 frames; the batcher checks a moving
+part's material and shape every 4th frame (`__gcSig4`). On the headset (50bece55): the town median 67.5, lowest 59.8;
+the Event median 64.7, lowest 57.9, 4 readings under 60, all from the park's north-west.
+
+4.0.57: P46 at 5 px (shown again above 5.5 px). On the headset (ae0f9a23, the CPU at 1382 MHz almost all run): the
+Event at 60 or above in play (median 63.2; every reading under 60 fell in pauses with the headset off); the town 4
+readings at 57.5-59.8 (median 69.4), at its slowest views (145-161 draws).
+
 Load-time merges (4.0.59-4.0.60, for the town's slowest views at the CPU's lowest clock; about -2.5 fps a ms there):
 P48 packs each building's static painted panels into one sheet (16 draws), P49 merges each building's see-through
 panes that share one material (6), P50 draws Mama Gorbo's three CPU-reshaped goo tubes as one shape (2), and P51 puts
 Gemtoe's cape back in its batch (4; its picture's anisotropy kept it out from 4.0.53). Each draw saved is about
 0.02-0.03 ms of the CPU's frame on the headset (the render's per-draw state changes and calls). `test_merges.js`
-checks all four; pictures before and after show no change.
+checks all four; pictures before and after show no change. 4.0.59 also poses characters less often nearer (every other
+frame from 10 m, every third from 20 m, small parts hidden from 18 m), for the 57.5 reading. In 4.0.61 the shyness book
+is kept out of every merge (one draw more in the Library, B120) and each merged shape fades with its building in the
+Event (B122). 4.0.58-4.0.61 have not been run on the headset yet (VERSIONS.md).

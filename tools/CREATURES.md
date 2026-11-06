@@ -3,8 +3,10 @@
 How every character model in the game is constructed and the shared kit they are built from. The design and style
 breakdown (the house style the models share, each character's look, the author's answers about them) is in the Lore
 Bible, LORE.md "Creature design and style" (moved there in 3.15.57, the author's request). Read from the current game file (`tools/uncompressed.html`; the fixes in
-FIXES.md do not change any model's look, apart from two the author asked for: Gemtoe's tie, F-B59, where only the
-feathers under it lie flat, and Mama Gorbo's goo, F-B58, which follows the ground under it). Numbers are the code's own (metres, radians, seconds; `sin(2.1t)` means
+FIXES.md do not change any model's look, apart from those the author asked for: Gemtoe's tie, F-B59, where only the
+feathers under it lie flat; Mama Gorbo's goo, F-B58, which follows the ground under it; her cap, A36, A45, F-B80;
+Sparkakus's tail mist removed, A32; the cardinal, A38, A40; the Ancient larger with its breathing organ, A52, A53; the
+birds' flight, A54; Ollaag in the UFO, A63; LORE.md "Creature design and style" has each). Numbers are the code's own (metres, radians, seconds; `sin(2.1t)` means
 a sine of 2.1 radians per second). Anything the code does not state is marked *(inference)*. The author's rule for
 the models (RELEASE.md 6, RULES.md 7): the designs are final; fixes must not change how anyone looks.
 
@@ -46,6 +48,8 @@ random colors"): heart pink, note lime, flower, `!`, star and sparkle yellow, `?
 | Montgummery | `w_mont` | `pk_mont` (`PK_MONT.mont` in 3.15.44) | packaged (own module) | 3.3 | .9 | .86 | `#55b8c6` | superellipsoid body, CRT head |
 | The Ancient | `slug` | `JGP.slug` | world prop | .9 | 1.75 (spine) | 1.4 | `#9a7a5a` (label) | one tube along a spine |
 | The robin | n/a | `robin()` | world prop | about .45 | 1.15 | n/a | rusty breast `#c05a20` | small primitives on a branch |
+| The cardinal (since 4.0.4, A38) | n/a | the robin's builder in a cardinal's colours | world prop | about .45 | n/a | n/a | bright red | the robin's body, wings, tail and head, a crest, a black mask |
+| Ollaag, the UFO's pilot (since 4.0.43, A63) | n/a | the UFO's module | world prop | about 1.2 | n/a | n/a | blue robe `#3a64b4` | 31 primitives seated under the saucer's dome |
 | Backpacka | n/a | `BP.buildModel` | Event actor | n/a | n/a | n/a | skin `#d48e64` | horizontal lathe, neck segments, wings |
 | The player | `At` | `W()` (hands), body at boot | player | about 2.3 | 1 | .6 | dress `#f3c43a` | cylinders and spheres |
 
@@ -69,7 +73,7 @@ The town's characters come from three kinds of builder, registered in one table,
 - **Every builder is fenced**: if one throws, the registry logs it, empties the model and returns a plain 2 m
   placeholder, so one broken model cannot stop the town from loading.
 
-The Ancient, the robin, Backpacka and the player are built by their own modules, outside the registry.
+The Ancient, the robin and the cardinal, Ollaag in the UFO, Backpacka and the player are built by their own modules, outside the registry.
 
 ## 3. The shared toolkit
 

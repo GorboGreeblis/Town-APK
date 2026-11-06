@@ -103,9 +103,12 @@ Meta's 2D app mode (one manifest change), where the player clicks the panel
 once to enter VR.
 
 Before the upload, one more headset pass against what the Store's reviewers do:
-press the system button in the town (the system menu pauses the app), wait ten
-seconds, resume, and confirm the game continues with sound; take the headset off
-and put it back on; leave the Guardian boundary and come back. Note anything that
+press the system button in the town (the system menu pauses the app and its music,
+the first time too: B115, B118), wait ten seconds, resume, and confirm the game
+continues with sound; take the headset off (the game and its music pause), pick a
+controller up and press its trigger with the headset still off (the game must stay
+paused: B121), then put the headset back on (it resumes); leave the Guardian
+boundary and come back (`tools/HEADSET_DIAG.md`, "Confirming the pause"). Note anything that
 does not come back cleanly in `tools/BUGS.md`.
 
 7. The VRC confirmations (`tools/VRC.md` has the full check; these are the ones
@@ -119,9 +122,9 @@ does not come back cleanly in `tools/BUGS.md`.
      number down either way (the OS splash before the page starts also counts as a
      VR loading indicator, and the number goes into the submission notes).
    - **Universal Menu** (Input.4, Functional.2): with the game running, press the Meta
-     button: the town keeps rendering behind the menu with no hands or rays and does
-     not react to the sticks; close the menu: hands and rays are back and the game
-     resumes. Then Quick Settings, Enter Passthrough, and back: everything paused,
+     button: the town keeps rendering behind the menu with no hands or rays, does
+     not react to the sticks and its music stops; close the menu: hands and rays are
+     back and the game and its music resume. Then Quick Settings, Enter Passthrough, and back: everything paused,
      everything resumes.
    - **Recentre** (Functional.9): turn your body 180 degrees, long-press the Meta
      button; the town faces you again.
@@ -132,9 +135,9 @@ does not come back cleanly in `tools/BUGS.md`.
      supported): with Auto Enable Hands on, put the controllers down for ten seconds
      and pick them up; the game waits and continues.
    - **The Event's frame rate**: the live log answers this now: `perf_log.js` gives a
-     CPU- or GPU-bound verdict per scene from the runtime's `VrApi` lines. The 3.15.47
-     log: CPU-bound (app GPU time 9.3 of a 13.9 ms frame, GPU 62% busy; NOTES 91), so
-     the work is fewer draws and less script per frame (`tools/PERF.md` section 13).
+     CPU- or GPU-bound verdict per scene from the runtime's `VrApi` lines, and since
+     4.0.49 the game's own CPU a frame (the performance log). The game is CPU-bound;
+     the runs since 4.0.46 are in `tools/PERF.md` section 16.
      (This item asked for two OVR Metrics readings after the author's 38 fps in the
      Event, before multiview; superseded.)
    The updated privacy page (`tools/store/privacy.html`, section 8 on deletion
@@ -156,12 +159,21 @@ does not come back cleanly in `tools/BUGS.md`.
    (`tools/BUILD.md` lists the steps it runs.) Every store upload needs a higher `versionCode`; `--bump` raises it
    and `versionName` together. Add the version's row to `tools/VERSIONS.md`.
 5. `tools/run_tests.sh --full --resume` after every build (RULES.md 23; Node and Playwright needed; "`--full`
-   before an upload" is superseded); the result is recorded in `tools/TEST_PLAN.md` before the work moves on.
+   before an upload" is superseded); the result is recorded in `tools/TEST_PLAN.md` before the work moves on. For the
+   final build candidate the final pass waits for your headset test of it (RULES.md 32).
+6. The Store upload is the final build without the debug code: `node tools/final_build.js` writes `tools/final.html`
+   (the performance log, the flight recorder's records and every log call taken out; the builds you test keep
+   them). `build.sh` packs the game file itself; putting `final.html` into the Store APK in its place is a step of its
+   own, not yet scripted.
 
 ## 5. Upload to the Meta Quest Store
 
-**Upload candidate: 4.0.1 (versionCode 70), the final build** (the author, 2026-10-30: "let's bump this build to v4.0.0"; "please treat this as if it were the final build"), the root `GreeblisTown-release.apk`
-(always the latest build; the author: "treat this as the final build until I say otherwise", 2026-10-30). New since
+**Upload candidate: the latest build, 4.0.61 (versionCode 130) on 2026-11-06**, the root `GreeblisTown-release.apk`
+(always the latest build; the author: "treat this as the final build until I say otherwise", 2026-10-30). Its headset
+test comes first, then the final pass (RULES.md 32); the upload is its build without the debug code (section 4, step 6).
+New since 4.0.1, build by build: `tools/VERSIONS.md` (the flash safeties and records, the code audits, the frame-rate
+work for the battery clocks P34-P51, the pause and sound with the system menu and the headset off B115-B121, the
+content the author asked for, A27-A65 and 4.0.61's). The text below is the 4.0.1 candidate's. New in 4.0.1 since
 3.15.52 (VERSIONS.md has each build): the Event's mist bank beyond the fence, rolling in and out over 30 s (A4, A16),
 with the clouds, Blossoms, Flint and the UFO fading out and back (A5-A8) and Backpacka flying into it; the mist no
 longer thins at the fence top as the player comes close (A19); the flash fixes for anything new on screen (F-B48,
@@ -169,7 +181,7 @@ F-B51, F-B54) and the safeties behind them (S1 head-inside guard and draw-hook g
 Mushroom's ramp and desk (F-B39, F-B52, F-B56: P28 removed); Fortizmo and every doorway home never stuck (F-B55);
 the flat Garden (F-B57), the Cave floor level with the town (F-B60), Mama Gorbo's goo (F-B58), Gemtoe's tie (A10,
 F-B59); a wider bar opening (A17); the batcher's quiet-batch skip (P27, P29); the version on the landing page and
-the VR loading box (A18); the dead code removed (R8); the full pass's two fixes, F-B61 and F-B62 (3.15.64); F-B63 and P31 (3.15.65); the Event's fade groups (P33: each kiosk and the gazebo, and every tree with the robin, fade out and back; RULES.md 26), the still-group matrix walk (P32), the pond never faded (F-B64), taller Event flowers and the pond's ripples (A20, A21; 3.15.66); the gazebo's walls solid with its doorway open (F-B65), the fade-in safety (S3) and more colourful Event flowers (A22; 3.15.67); the pond's stones painted flat (A23), fourteen clouds (A24), and the recovery safeties (S4, S5; 3.15.68); white clouds (A25, 4.0.0); the fade groups stay out until the Event ends (A26, 4.0.1). Before that, new since 3.15.41 (VERSIONS.md has each build): no texture is made during play (F-B29,
+the VR loading box (A18); the dead code removed (R8); the full pass's two fixes, F-B61 and F-B62 (3.15.64); F-B63 and P31 (3.15.65); the Event's fade groups (P33: each kiosk and the gazebo, and every tree with the robin, fade out and back; RULES.md 26), the still-group matrix walk (P32), the pond never faded (F-B64), taller Event flowers and the pond's ripples (A20, A21; 3.15.66; the ripples went in 4.0.4, A33); the gazebo's walls solid with its doorway open (F-B65), the fade-in safety (S3) and more colourful Event flowers (A22; 3.15.67); the pond's stones painted flat (A23), fourteen clouds (A24), and the recovery safeties (S4, S5; 3.15.68); white clouds (A25, 4.0.0); the fade groups stay out until the Event ends (A26, 4.0.1). Before that, new since 3.15.41 (VERSIONS.md has each build): no texture is made during play (F-B29,
 F-B30, 3.15.42), the Event's pizza batched (P20); native render scale and no layer swaps (F-B31), the Event scale
 removed, the Ancient left out from outside the church (P21), Gooward's translucent parts merged (P22, 3.15.43);
 painted textures seeded so the build is rebuildable from the game file (R1, 3.15.44); the game file minified, the same world bit for bit (R2, 3.15.45). Since then: no texture made

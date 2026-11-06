@@ -149,6 +149,10 @@ beyond the VR-entry fix.
    WebXR session; the Quest Browser then asks the launcher to
    `finishAndRemoveTask`, which `LauncherActivity` honours. Worth a manual
    check that no stray 2D browser panel remains.
+   **Since 4.0.56-4.0.61** (B115, B118, B121; VRC.md Functional.2): the game pauses every time the system menu opens
+   (the first opening changes no session visibility, so a window blur or all input gone pauses it too), its sound is
+   held with every pause, and with the headset off it resumes only once the headset moves again (GAME.md "Boot and
+   VR entry").
 
 ## Things noticed in the game code (not changed)
 
@@ -168,6 +172,8 @@ beyond the VR-entry fix.
 10. **No persistent save.** The game uses no `localStorage`, `sessionStorage`
     or IndexedDB; every launch starts fresh. Noted because the loopback port
     strategy was chosen to keep the origin stable in case that changes.
+    **Since 4.0.34** (B96): the log's black box keeps up to 150 unsent log lines in `localStorage` (`gtBB`) for the
+    next launch; still no game state is saved.
 11. **Compressed release build.** `tools/index.compressed.html` unpacks the
     game asynchronously (with a "LOADING nn%" counter) and then
     `document.write`s it. In that build an immersive grant arriving during

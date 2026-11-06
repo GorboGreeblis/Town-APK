@@ -229,11 +229,12 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 ## Priorities
 
 - **Never below 60 fps on a Quest 3S and a Quest 3** (2026-10-30: "Never below 60 fps is the goal"; the 60 fps floor on
-  battery is a blocker, 2026-11-05); PERF.md 14, 16. Since 2026-11-05 without any visual change (rule 31; the earlier
-  "Tiny visual changes are ok to reach 60 fps" no longer holds).
+  battery is a blocker, 2026-11-05; "Any FPS under 60 fps is still considered a bug", 2026-11-06); PERF.md 14, 16.
+  Since 2026-11-05 with as little visual change as possible (rule 31 and its relaxations; the earlier "Tiny visual
+  changes are ok to reach 60 fps" no longer holds).
 - **No full-screen flashes, ever** (the author, throughout): every flash found is a must-fix; the safeties S1 and S2
   (FIXES) back the fixes up. Any dark or bright frame is a flash (the snap turn's blink, the one deliberate dark frame
-  of 4.0.31-4.0.34, is gone).
+  of 4.0.31-4.0.34, is gone). The rare unexplained flash of B46 is lived with since 2026-11-06 (Decisions below).
 - **Performance is the biggest blocker for the Store submission** (2026-10-28: "once all other tasks are completed,
   performance should be our focus"): after the open tasks, work goes to the frame rate (the Event on a Quest 3S).
 
@@ -244,6 +245,12 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 - Tiny far details (P46) in the town too (2026-11-06, first "No, only the below 60 FPS issues are a problem", then, the
   4.0.54 run having shown the town under 60 at its busiest views: "Since the FPS drops that low in town too: Let's apply
   '2' there as well"): from 4.0.55 P46 runs everywhere, its list rebuilt when an Event starts or ends.
+- The 4.0.55 options (2026-11-06, after the 4.0.54 run: "I'm open to more minor visual differences to get the FPS up";
+  "Let's apply all options"; "FPS is the biggest blocker we have"): far characters' small parts hidden, characters
+  posed every other frame nearer and every third frame far off, P46 at a larger size, the scenery's near-identical
+  materials keyed alike, still batches checked less often. 4.0.56-4.0.59 moved the same settings further for the
+  readings still under 60 ("Any FPS under 60 fps is still considered a bug"): posed every other frame from 10 m, every
+  third from 20 m, small parts hidden from 18 m, P46 at 5 px (FIXES 4.0.55-4.0.59).
 - P47 (near-identical character materials keyed alike) is back on (2026-11-06, after the author's 4.0.53 run with it on:
   "P47 was acceptable when I tested. Let's bring it back"): its picture change, up to about 40 px a view at the check's size,
   is accepted.
@@ -252,7 +259,8 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 - The experiment-first rule (15): retired (2026-10-28, rule 22).
 - The randomness decision list: closed (2026-10-29, RANDOMNESS.md; FIXES R4-R6).
 - The Garden stays flat (2026-10-30: "regardless of anything else we will be keeping the flat version"; F-B57).
-- P28, far characters posed every other frame: removed (2026-10-30, F-B56).
+- P28, far characters posed every other frame: removed (2026-10-30, F-B56); reopened in another form as P45 (4.0.53,
+  rule 31's Event relaxation, the 4.0.55 options above).
 - Hiding a lost frame's draw: of the four options put to the author on 2026-11-03 (no colour clear; MSAA 2 on the
   layer; the classic two-eye path; skipping a late frame), only the first goes ahead (4.0.24, S30): "let's close out
   options 2, 3, and 4"; "I don't want to try option 3 at any point" (the classic two-eye path stays closed for good);

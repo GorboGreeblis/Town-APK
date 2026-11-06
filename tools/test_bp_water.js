@@ -39,14 +39,14 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     if (!D.me.active) return { noEvent: true };
     t0 = performance.now(); while (J.mist.p() < 0.97 && performance.now() - t0 < 300000) await wait(250);
     const mist = []; (J.mist && J.mist.group ? J.mist.group : C).traverse((o) => { if (o.isMesh && (J.mist && J.mist.group ? true : o.renderOrder === -3)) mist.push(o); });
-    // the water: his module's parts (the ripples round his mouth, the jets, the drops, the rainbow)
+    // the water: his module's parts (the ripples round his mouth, the jets, the drops; a rainbow, removed in 4.0.55, must be none)
     if (!BP.water || !BP.water()) { BP.prewarm && BP.prewarm(); }
     const W = () => { const P = (BP.water && BP.water()) || {}; return { ripples: P.ripples || [], jets: (P.jets || []).map((j) => j.m || j), drops: P.drops || null, rainbow: P.rainbow || null, head: P.head || null }; };
     const N = 400, M = 300, cam = new T.PerspectiveCamera(70, N / M, 0.1, 320), buf = () => new Uint8Array(N * M * 4);
     const draw = (b) => { const xr = O.xr.enabled; O.xr.enabled = false; O.state.bindXRFramebuffer && O.state.bindXRFramebuffer(null); O.setRenderTarget(null); const Wd = O.domElement.width, Hd = O.domElement.height; O.setViewport(0, 0, N, M); O.setScissor(0, 0, N, M); O.setScissorTest(true); O.render(C, cam); O.setScissorTest(false); gl.readPixels(0, 0, N, M, gl.RGBA, gl.UNSIGNED_BYTE, b); O.setViewport(0, 0, Wd, Hd); O.xr.enabled = xr; return b; };
     const pics = []; const pic = (b, label) => { const cv = document.createElement('canvas'); cv.width = N; cv.height = M; const cx = cv.getContext('2d'), im = cx.createImageData(N, M); for (let yy = 0; yy < M; yy++) im.data.set(b.subarray((M - 1 - yy) * N * 4, (M - yy) * N * 4), yy * N * 4); cx.putImageData(im, 0, 0); cx.fillStyle = '#000b'; cx.fillRect(0, 0, N, 18); cx.fillStyle = '#fff'; cx.font = '12px sans-serif'; cx.fillText(label, 4, 13); pics.push(cv.toDataURL('image/png')); };
     const diff = (a, b) => { let n = 0, s = 0; for (let i = 0; i < a.length; i += 4) { const d = Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]); if (d > 24) { n++; s += d / 3; } } return { n, mean: n ? s / n : 0 }; };
-    const moments = [['drinking at the pond (his ripples)', 28], ['lifting off the pond (drip from his mouth)', 36.5], ['flying to the Garden (drip from his mouth)', 41], ['spraying the Garden (jets, drops, rainbow)', 60], ['spraying the Garden, later (drops, rainbow)', 66]];
+    const moments = [['drinking at the pond (his ripples)', 28], ['lifting off the pond (drip from his mouth)', 36.5], ['flying to the Garden (drip from his mouth)', 41], ['spraying the Garden (jets, drops)', 60], ['spraying the Garden, later (drops, rainbow)', 66]];
     const out = { moments: [], mistWalls: mist.length, hasWater: !!(BP.water && BP.water()) };
     const allParts = (w) => [...w.ripples, ...w.jets, w.drops, w.rainbow].filter(Boolean);
     const measure = async (w, m, c, eyes, parts, tag) => {

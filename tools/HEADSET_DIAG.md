@@ -35,7 +35,8 @@ when the app's GPU time is under 80% of the frame budget, GPU-bound otherwise; t
 
 B96 (found on 4.0.32, the author's logs b42c9cfb and a7fc5e95): after the headset slept 35 s the headset ran out of
 memory within seconds of the return and the game froze head-locked. 4.0.34 has the fix (the loader kept whole, the
-old shim freed at a session's end); this run confirms it on the headset:
+old shim freed at a session's end); this run confirms it on the headset (the author's 4.0.34 run did: two hides, the
+census steady; it stays on the Store checklist for the build to be uploaded, BUILD.md):
 
 1. Start the live capture above (`capture_log.ps1` / `capture_log.sh`, or `adb logcat -c` then
    `adb logcat -v threadtime -s GreeblisServer VrApi > run.txt`), then launch the game.
