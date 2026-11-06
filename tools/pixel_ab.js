@@ -43,7 +43,7 @@ const SWITCHES = [
   // P45 and P46 change the picture by design (the author, 2026-11-06: the Event's frame rate, minor losses allowed):
   // P45 within its allowance (a far character drawn at the frame before's pose), P46 under a pixel at this size
   ['P45 far characters posed every other frame', 'window.__gcHalf = X', 120],   // a far figure a frame behind: at most 120 px a view (54 the most in 4.0.53's 28 views)
-  ['P46 tiny far details hidden in the Event', 'window.__gcTiny = X'],
+  ['P46 tiny far details hidden (the Event and, from 4.0.55, the town)', 'window.__gcTiny = X'],
   // P47 changes the picture by design too (near-identical character materials keyed alike: a one-sided part in a
   // double-sided batch shows its inside at silhouettes; bump strength to 0.05); off in 4.0.54 for 481 px over 28 views,
   // back in 4.0.55 (the author, 2026-11-06: "P47 was acceptable when I tested. Let's bring it back"): at most 40 px a view

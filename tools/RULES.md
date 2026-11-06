@@ -241,7 +241,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 
 - Flashes (B46): the author, 2026-11-06, after two clean marks in the 4.0.54 run: "No, let's live with the flash. Maybe we
   will never fix it. Could just be related to the Browser." The light record stays off (no test build turns it on).
-- Tiny far details (P46) stay in the Event only (2026-11-06: "No, only the below 60 FPS issues are a problem").
+- Tiny far details (P46) in the town too (2026-11-06, first "No, only the below 60 FPS issues are a problem", then, the
+  4.0.54 run having shown the town under 60 at its busiest views: "Since the FPS drops that low in town too: Let's apply
+  '2' there as well"): from 4.0.55 P46 runs everywhere, its list rebuilt when an Event starts or ends.
 - P47 (near-identical character materials keyed alike) is back on (2026-11-06, after the author's 4.0.53 run with it on:
   "P47 was acceptable when I tested. Let's bring it back"): its picture change, up to about 40 px a view at the check's size,
   is accepted.
