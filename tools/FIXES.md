@@ -1922,6 +1922,22 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.59** (the author: "Please work on a fix for that FPS drop in town. We need to ensure that drops like this do
+  not happen"; "Please add more little mushrooms to the roof of Mushroom's kiosk").
+  - **Panel sheets**: the town's slowest views (the 4.0.57 run: 57.5-59.8 fps at 145-161 draws; `draw_calls.js --at`
+    finds up to 178 draws there, about 90 unbatched) draw many small painted panels one by one (signs, posters, book
+    spines: each its own canvas). At load, the static panels of one building with the same material are drawn from one
+    sheet: their pictures packed with a 4-pixel border copied from their edges, their shapes merged into the building's
+    space. 16 draws fewer in the town; at the slow views 8-12 fewer (178 to 170, 163 to 155, 134 to 122). The panels
+    look the same (pictures of the Sheriff's posters and the library's shelves before and after). A repainted panel
+    redraws its part of the sheet; the sheet is repainted after the headset sleeps like any canvas.
+    `window.__gcAtlas = false` before load turns it off.
+  - **Characters posed less often, nearer** (the author: "The 57.5 drop must be fixed"; that reading, at 16,22 with the
+    CPU at its lowest clock, needs about 1 ms more than the panel sheets give): every other frame from 10 m (12 m in
+    4.0.56-4.0.58), every third frame from 20 m (25 m), far characters' small parts hidden from 18 m (25 m).
+  - **More little mushrooms on Mushroom's kiosk roof**: 16 more in seven new clusters on both slopes (the earlier ones
+    unchanged).
+  - The author on 4.0.58's run: no flashes; the pickups by the Gazebo all picked up (B116 confirmed).
 - **4.0.58** (the author, on 4.0.57: "Mushroom got stuck in the corner where his ramp meets the front of his desk";
   "NPCs should never become stuck"; "Mushroom needs special safeties"; "Extend Mushroom's desk all the way to the front
   of the kiosk"; "Music must pause as soon as the Universal Menu is opened"; "Music should also pause when the headset
