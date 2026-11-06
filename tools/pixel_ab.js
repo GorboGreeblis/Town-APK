@@ -40,6 +40,10 @@ const SWITCHES = [
   // hardware), so P44 runs in a session of its own with anisotropic filtering off everywhere, on and off alike, and
   // the draw-order allowance (its batches group the parts differently: a tie at one depth can change hands)
   ['P44 character textures in arrays (the batches rebuilt per texture when off)', 'window.__gcArrSet(X)', 4, ANISO1],
+  // P45 and P46 change the picture by design (the author, 2026-11-06: the Event's frame rate, minor losses allowed):
+  // their counts and saved pairs are for the author, not a pass/fail on identity
+  ['P45 far characters posed every other frame', 'window.__gcHalf = X'],
+  ['P46 tiny far details hidden in the Event', 'window.__gcTiny = X'],
 ];
 const only = arg('--switch', null);
 const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[26, -23], [-9, 35], [-28.3, -28.3], [-33, -7]];
