@@ -17,8 +17,8 @@ const visits = +(process.argv.find((a) => /^\d+$/.test(a)) || 4);
 
 (async () => {
   const { expect, note, failures } = reporter();
-  // the player in front of the desk (kiosk-local 0.3, 1.9)
-  const g = await boot({ file, vr: true, initScripts: ['window.__front=[0.3,1.9]'] });
+  // the player in front of the desk (kiosk-local 0.3, 3.0; 1.9 before the desk reached the kiosk's front in 4.0.58)
+  const g = await boot({ file, vr: true, initScripts: ['window.__front=[0.3,3.0]'] });
   const r = await g.page.evaluate(async (N) => {
     const D = window.__dbg, J = D.JGP, F = D.F, wait = (ms) => new Promise((res) => setTimeout(res, ms));
     window.__adv = setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250);
@@ -27,7 +27,7 @@ const visits = +(process.argv.find((a) => /^\d+$/.test(a)) || 4);
     const ev = []; let prevY = m.group.position.y, frames = 0;
     const tick = () => { frames++; const p = m.group.position, [lx, lz] = loc(p.x, p.z), dy = p.y - prevY;
       // the counter: x -1.09..2.86, z .48..1.2 (kiosk-local), top 1.545; his body radius about .42
-      const inDesk = lx > -1.04 && lx < 2.86 && lz > .05 && lz < 1.5 && p.y < 1.4 && p.y > .05;   // the desk and its front margin, not the ramp
+      const inDesk = lx > -1.04 && lx < 2.86 && lz > .05 && lz < 2.6 && p.y < 1.4 && p.y > .05;   // 4.0.58: the desk reaches the kiosk's front (z 2.3)   // the desk and its front margin, not the ramp
       if (dy > 0.12) ev.push(['rise', +D.Re.t.toFixed(1), +lx.toFixed(2), +lz.toFixed(2), +prevY.toFixed(2), +p.y.toFixed(2), m.visiting ? 'v' : m.hosting ? 'h' : '-']);
       if (inDesk) ev.push(['inDesk', +D.Re.t.toFixed(1), +lx.toFixed(2), +lz.toFixed(2), +p.y.toFixed(2), m.visiting ? 'v' : m.hosting ? 'h' : '-']);
       prevY = p.y; if (window.__run) requestAnimationFrame(tick); };

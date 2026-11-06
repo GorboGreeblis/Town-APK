@@ -1922,6 +1922,26 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.58** (the author, on 4.0.57: "Mushroom got stuck in the corner where his ramp meets the front of his desk";
+  "NPCs should never become stuck"; "Mushroom needs special safeties"; "Extend Mushroom's desk all the way to the front
+  of the kiosk"; "Music must pause as soon as the Universal Menu is opened"; "Music should also pause when the headset
+  is taken off"; "the Horn song started multiple times while my headset was off"; "Audio not pausing is also a
+  submission failure").
+  - **B117, no townsperson stays stuck**: in an Event, one walking to its spot that has not moved half a metre for 8 s
+    is moved on, with a sparkle (logged "unstuck: ..."); in the town, one on its way home that has not moved for 15 s
+    is moved to the end of its way; Mushroom gets 4 s, in the town on any walk. `window.__gcUnstick = false` turns it
+    off. `test_unstick.js` (standard tier, new).
+  - **Mushroom's desk reaches the kiosk's front** (z 2.3; 1.18 before): the corner between the ramp and the desk's
+    front is gone. His height map, the desk's collision and the visitors' spot in front of the kiosk move with it.
+    `test_mushroom_desk.js` (the player now in front of the longer desk).
+  - **B118, the sound pauses with the game**: the audio is suspended whenever the game is paused (the system menu, all
+    input gone, the window unfocused, the page hidden) and whenever frames stop (the headset off), and nothing can
+    resume it until play does. A song held this way continues where it was instead of stopping (so the Horn song and
+    King Dino's drums no longer start again and again).
+  - **B115, the pause flickered with the headset off**: the 4.0.57 log shows the controllers waking for a fraction of a
+    second again and again while the headset was off; each woke the game for a frame or two (and restarted the Horn
+    song). Input must now be back for 0.6 s before the game resumes. `test_menu_pause.js` checks it and the sound.
+  - A missed pick is logged only for a pickup that is not taken (4.0.57 logged every press after a quick pickup).
 - **4.0.57** (the author, on 4.0.56: "The Pause still does not work the first time the Universal Menu is opened" —
   "after having the headset off for a bit and then remounting it"; "A Flint in the back left of the Gazebo still cannot
   be picked up"; "Walking over it also does not pick it up"; "It appeared before the Event"; "Please ensure that the
