@@ -4,7 +4,10 @@
 // neither the session's visibility nor the window's focus; every opening took all input sources away. The game now
 // pauses while all input is gone (and while the window has lost focus). In VR:
 //   - all input sources going (the system menu, the headset off) stops the game's clock and holds the sound; a
-//     controller back for a moment does not resume it; input back for 0.6 s does, and the sound with it (B118);
+//     controller back for a moment does not resume it; input back while the headset lies still (off the head) does
+//     not, nor a trigger press (B121, 4.0.61: the author: "Moving a Controller or pressing a button on a Controller
+//     should not unpause the game if the headset is off"); input back for 0.6 s with the head moving does, and the
+//     sound with it (B118);
 //   - a window blur stops the game's clock (no update while it lasts);
 //   - the focus coming back starts it again, without a jump;
 //   - a trigger press while paused also resumes (the app has input focus, so no menu is open);
@@ -29,7 +32,13 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const out = { before: await run() };
     window.__fakeXR.setInputs([]); await wait(100); out.noInput = await run(); out.soundHeld = !!window.__gcAudHold;
     window.__fakeXR.setInputs([ctl('right')]); await wait(150); window.__fakeXR.setInputs([]); await wait(150); out.flap = await run();   // a controller waking for a moment (the headset off): no resume
-    window.__fakeXR.setInputs([ctl('left'), ctl('right')]); await wait(800); out.inputBack = await run(); out.soundBack = !window.__gcAudHold;
+    // B121 (4.0.61): input back while the headset lies still (off the head): the game and the sound stay paused, a trigger press too
+    window.__fakeXR.setInputs([ctl('left'), ctl('right')]); await wait(1200); out.stillBack = await run(); out.stillSound = !!window.__gcAudHold;
+    window.__fakeXR.sessions.at(-1).pressSelect(1); await wait(100); out.stillPress = await run();
+    // the headset worn again: the head moves a little all the time
+    let k = 0; const jig = setInterval(() => { window.__fakeXR.pose.yaw = 0.01 * Math.sin(k++ / 3); }, 16);
+    window.__fakeXR.setInputs([]); await wait(150); window.__fakeXR.setInputs([ctl('left'), ctl('right')]); await wait(900); out.inputBack = await run(); out.soundBack = !window.__gcAudHold;
+    clearInterval(jig); window.__fakeXR.pose.yaw = 0;
     window.dispatchEvent(new Event('blur')); await wait(100); out.blurred = await run();
     window.dispatchEvent(new Event('focus')); await wait(100); const a = t(); await wait(100); out.jump = +(t() - a).toFixed(2); out.focused = await run();
     window.dispatchEvent(new Event('blur')); await wait(100); window.__fakeXR.sessions.at(-1).pressSelect(1); await wait(100); out.afterSelect = await run();
@@ -37,7 +46,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   });
   note(JSON.stringify(r));
   expect('the game runs before (its clock advances about 1 s a second)', r.before > 0.8, String(r.before));
-  expect('B115: all input gone (the system menu, the headset off) pauses the game; a controller back for a moment does not resume it; input back for 0.6 s does', r.noInput < 0.05 && r.flap < 0.05 && r.inputBack > 0.8, JSON.stringify(r));
+  expect('B115: all input gone (the system menu, the headset off) pauses the game; a controller back for a moment does not resume it; input back for 0.6 s with the head moving does', r.noInput < 0.05 && r.flap < 0.05 && r.inputBack > 0.8, JSON.stringify(r));
+  expect('B121: input back with the headset lying still (off the head) does not resume the game or its sound, nor does a trigger press', r.stillBack < 0.05 && r.stillSound && r.stillPress < 0.05, JSON.stringify(r));
   expect('B118: the sound is paused with the game (the system menu, the headset off) and resumes with it', r.soundHeld && r.soundBack, JSON.stringify(r));
   expect('B115: a window blur (the system menu) pauses the game: its clock stands still', r.blurred < 0.05, String(r.blurred));
   expect('B115: the focus coming back resumes it, without a jump', r.focused > 0.8 && r.jump < 0.3, JSON.stringify(r));

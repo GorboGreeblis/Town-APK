@@ -1922,6 +1922,63 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.61** (the author, testing 4.0.60: "The 'Overcoming Shyness' book did not disappear after being picked up ...
+  The book should fade out after being selected"; "Books with names and the Library sign did not fade out with
+  everything else for the Event" — "It's the books facing out with actual names"; "Moving a Controller or pressing a
+  button on a Controller should not unpause the game if the headset is off ... this is a submission failure"; "Music
+  seems to overlap, after a pause (observed with the Horn song)"; "an Event Flower grew in front of Mushroom's ramp";
+  "All issues above must be fixed for the final build").
+  - **B120, the shyness book stayed on the shelf**: 4.0.59's panel sheets (P48) merged the book's painted cover into
+    the Library's sheet at load, so taking the book hid the book but left its cover. The book is now kept out of every
+    load-time merge (one draw more in the Library), and taken it shrinks away over 0.4 s, as a Blossom does (a size
+    change only: no material change, so nothing is compiled). `test_shybook.js` (standard tier, new).
+  - **B122, the Library's face-out named books and its sign did not fade with the Event**: the Event's fade groups
+    collect the materials to fade while loading, before the load-time merges run; the panel sheets draw with a copy of
+    their panels' material, so the merged panels stayed solid while the Library faded (and vanished at the end). Each
+    merge (panel sheets, glass panes) now hands its merged shape to the fade groups that held its pieces: the shape
+    and its material fade with the building. Making a material see-through does not change its shader here, so
+    nothing is compiled. `test_merges.js` checks every merged shape is in its building's fade group.
+  - **B121, the game resumed with the headset off**: the 4.0.60 log shows the headset taken off as all input going
+    (the controllers put down), the game's frames stopping, and no change in the session's visibility; picking a
+    controller up brought it back as input (and the frames), and after 0.6 s the game and the Horn song resumed. The
+    browser gives no headset-worn signal. What differs is the headset itself: lying off the head it is still, on a
+    head it always moves a little. After input comes back, the game now resumes only once the headset has moved more
+    than 1.5 mm or 0.25 degrees (measured since input came back); a trigger press does not resume it either. Each
+    hold and each resume is logged with the movement measured, so the next headset run confirms the thresholds.
+    `test_menu_pause.js` checks it.
+  - **B124, the Horn song overlapped after a pause**: the song schedules a bar (2.7 s) ahead in the sound's clock;
+    from 4.0.58 (B118) a pause holds the sound and the song instead of stopping it, but every held frame reset the
+    next bar's time, so on resume the next bar started at once, over the notes already scheduled. The song now keeps
+    its schedule while it plays: the sound's clock stands still during the hold, so it carries on where it was.
+    King Dino's drums cut their notes when the sound stops (no overlap). `test_horn_pause.js` (standard tier, new).
+  - **B123, an Event flower in front of Mushroom's ramp**: a dancer plants 0.9 m in front of where it stands still
+    while the planting is live, and nothing checked that it stood at its spot in the ring; Mushroom stopping at the
+    foot of his ramp on his way down planted there (three Events headless planted all 30 flowers at the ring: it
+    takes a stop on the way, as in the author's run of two Events close together). A dancer now plants only within
+    1.5 m of its own spot. `test_plant_spot.js` (standard tier, new).
+  - **B120 follow-up**: an Event's fade shows its buildings' groups again at its end; the taken book is one of the
+    Library's (4.0.60 showed it again after any Event). The taken book now stays hidden. A census of every group the
+    fade shows again found no other thing the game hides during play.
+  - **Mushroom's desk and ramp as one shape** (the author: "connect the ramp and the desk so that they appear as one
+    cohesive shape ... the desk should extend all the way across the kiosk and the ramp should end at the top of the
+    desk"; "We can extend the length of the ramp outward"): the desk now spans the whole kiosk (5.72 m, wall to wall;
+    3.95 m before, beside the ramp), and the ramp starts at the desk's front edge at its top and runs outward, at the
+    same slope, to the ground 2.55 m in front of the kiosk (it rose from the kiosk's front to its back wall before).
+    His height map, his way up and down (across the desk to the ramp's top, down it and out), and the collision follow:
+    the ramp's lane inside the kiosk is desk; the ramp outside the kiosk is a building of its own, so the other
+    townsfolk walk round it while Mushroom, its resident, walks on it. Pictures before and after (front, side, above,
+    at the desk).
+  - **Gooward's gallery: the two easel paintings** (the author: "one painting of a forest and another painting of a
+    futuristic city ... The large painting or any other painting should NOT be altered"): the two small paintings on the
+    easels in front of the gallery (one painter, two halves of one picture) are now a forest (pines in three rows from
+    misty hills to the front, a path, light through the trees) and a futuristic city at dusk (a ringed planet, glowing
+    towers with spires and lit windows, an elevated rail, flying craft, the water in front). Only that painter changed;
+    the mural and every other painting are as they were (pictures before and after). The pre-painted textures are
+    painted again by the build.
+  - **More little mushrooms on Mushroom's kiosk roof** (the author: "Please add more small mushrooms to the roof of
+    Mushroom's kiosk"): 24 more in twelve new clusters, six on each slope, in the gaps between the others (those
+    unchanged: the new ones draw after them from the same seeded sequence). They are part of the kiosk's merged shape
+    (no draw added). Pictures before and after.
 - **4.0.60** (the author: options 2 and 3, "For Mama Gorbo's tubes: merge them into one reshaped tube to save 2
   draws"; "Any FPS under 60 fps is still considered a bug").
   - **P49, glass panes together**: at load, the see-through panes of one building that share one material (the phone
