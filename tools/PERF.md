@@ -671,3 +671,16 @@ checks all four; pictures before and after show no change. 4.0.59 also poses cha
 frame from 10 m, every third from 20 m, small parts hidden from 18 m), for the 57.5 reading. In 4.0.61 the shyness book
 is kept out of every merge (one draw more in the Library, B120) and each merged shape fades with its building in the
 Event (B122). 4.0.58-4.0.61 have not been run on the headset yet (VERSIONS.md).
+
+
+## 17. 4.0.62: the Event's opening, one group at a time (P52)
+
+The author's 4.0.61 run (wired, Quest 3) had one second at 59 (VrApi 15:19:24), 12 s into the Event at (-21,23) facing
+the town, the CPU at 1382 MHz; every other second under 60 was a pause. Its perf lines read 58.8 there and 59.6 at
+15:20:41, where the headset counted 66-69: the line's fps was a smoothed snapshot. In the dip's 10 s the see-through
+draws cost 1.21-1.36 ms a frame (0.48 ms before the Event) and 18 frames went over 20 ms (2 before): all eleven fade
+groups were see-through and sorted at once for 10 s, on top of the town fully drawn and the townsfolk walking. P52
+fades them one after another (each 10 s, 3 s apart; at most four at a time). Headless at the dip's place (-21,23, both eyes, two runs each, the frame's CPU in 3 s bins from the Event's start): over the Event's first 12 s the slowest tenth of frames took 5.7-8.6 ms with the groups one after another and 7.2-9.7 ms all at once, the busiest 3 s 5.8 ms a frame on average against 6.5 ms; the cost moves later instead (15-35 s: 4.0-5.5 ms against 3.2-4.6 ms), all of it under the opening's old peak. The perf line's fps now counts
+the frames delivered over its 10 s, with `low1s=` the slowest second (`perf_log.js` lists them). The spacing costs
+nothing to look at but time: the Event's start and end take about 40 s each (the author: "The start and end feel a
+little fast anyway").

@@ -105,9 +105,10 @@ The HTML is 8 lines since the minification (3.15.45; it was 93 before); most of 
    count as input). With input back, it resumes only after 0.6 s and once the headset itself has moved more than
    1.5 mm or 0.25 degrees (lying off the head it is still; a trigger press does not resume it then). The sound is
    suspended while the game is paused or its frames stop, and nothing resumes it until play does; a song held so carries
-   on where it was (the Horn song keeps its schedule, B124). Each pause and resume is logged.
+   on where it was (the Horn song keeps its schedule, B124). After the VR session ends (the system ends it a while after
+   the headset comes off) the sound stays held until a new session presents (B125, 4.0.62). Each pause and resume is logged.
    `test_play.js`, `test_input.js`, `test_audio.js`, `test_b96.js`, `test_menu_pause.js`, `test_menu_return.js`,
-   `test_horn_pause.js`.
+   `test_horn_pause.js`, `test_end_sound.js`.
 4. On non-Quest user agents the gate shows "This game is designed for the Meta Quest Browser. Please open this
    file in the Quest Browser on your Meta Quest headset." with the version below it, and nothing else runs (A15,
    A18).
@@ -219,7 +220,9 @@ Read from the code and checked by the tests named; numbers are game seconds and 
 - **The Event's fade groups (3.15.66, P33; RULES.md 30).** Once the mist is past 15%, each kiosk (every building but the
   church) and the gazebo fade out over 10 s, each on its own and only once its owner has left home (6 m), and every
   tree with the robin as one group; all of a group's parts fade together. Once out, a group stays out until the Event
-  ends, however near the player comes (A26), and all come back after it over 10 s. A building's load-time merged
+  ends, however near the player comes (A26), and all come back after it over 10 s. The groups go one after another
+  (4.0.62, P52): each starts 3 s after the one before (the farthest from the player first; back, the nearest first), so
+  at most four fade at a time and the Event's start and end each take about 40 s. A building's load-time merged
   shapes (its panel sheet and glass panes, PERF.md P48, P49) are in its group and fade with it (B122, 4.0.61: the
   Library's face-out named books and its sign had stayed solid); the taken shyness book stays hidden when the
   Library comes back. The church and Cave, the Ancient, Somlet, the pond (F-B64: the

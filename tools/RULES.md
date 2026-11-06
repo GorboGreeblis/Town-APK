@@ -59,7 +59,8 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 30. **The Event's fade groups** (numbered 26 until 2026-11-04, when that number was found given twice; references to "RULES.md 26" about the fade groups in FIXES.md, VERSIONS.md, LORE.md and RELEASE.md mean this rule) (2026-10-30; P33, F-B64; `window.__gcSt` in the game, `test_stands.js`). During the
     Event, once the mist is up, these fade out slowly and back after it (2026-10-30: "we can hide things as long as we
     give them time to fade out and then give them time to fade in"; "We don't want to do it too quickly": at least 9 s
-    out). Each group fades as one, every part at the same time and never in parts ("all parts of Kiosks [and] other
+    out; since 4.0.62 one after another, 3 s apart, each still over 10 s: "we can increase the time it takes for the
+    Event to start and end. Have things happen more spaced out", 2026-11-06). Each group fades as one, every part at the same time and never in parts ("all parts of Kiosks [and] other
     fading structures, fade out and fade in at the same time, and not in parts"). The grouping stands for future work
     ("Please note this grouping of all kiosks and all trees for future work"):
     - **All kiosks**: every building but the church (the post office, the Sheriff's kiosk, Garden Supplies, the gallery,

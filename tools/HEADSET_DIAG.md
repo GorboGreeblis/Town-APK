@@ -185,7 +185,9 @@ page: m=perf fps=71.8 fov=0 calls=118 tris=201240 at=-36,-20
 page: m=perf fps=41.2 fov=0 calls=131 tris=266812 event at=2,-3
 ```
 
-`fps` is 1000 over the governor's frame-time average, `fov` the layer's fixed foveation read back (0 since 4.0.13;
+`fps` is the frames delivered over the line's 10 s (since 4.0.62; gaps over 200 ms, a pause, left out; before, 1000
+over the frame-time average at the moment of writing, a snapshot), `low1s=` at the line's end the slowest whole second
+among them (4.0.62), `fov` the layer's fixed foveation read back (0 since 4.0.13;
 `level=`, the governor's quality level, until the levels went in 4.0.14, L1),
 `calls` and `tris` the last frame's draw calls and triangles (both eyes),
 `event` while the planting Event runs, `at` the player's x,z. Read it with

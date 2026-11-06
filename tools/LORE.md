@@ -1472,7 +1472,8 @@ it wears (the author's answer 15; the game itself names no owner):
   among them (F-B64).
 - **The fade groups** (P33, RULES.md 26): once the mist is up, each kiosk, the gazebo ("count the Gazebo as a kiosk
   as well. In all regards", the author), the phone booth and the Portal (A27), the park's trees with the robin and the
-  cardinal, and the town's trees fade out over 10 s and stay out until the Event ends, then fade back over 10 s; never
+  cardinal, and the town's trees fade out over 10 s and stay out until the Event ends, then fade back over 10 s (one after
+  another since 4.0.62: each 3 s after the one before, the farthest first out and the nearest first back); never
   the church and Cave, the Ancient, Somlet, the pond or the Garden. In an Event without the Seeds only the town's
   trees fade (F-B72: "If the user starts the Event without having completed 'Seeds', kiosks should NOT fade out").
   The kiosk groups are the buildings of the game's registry other than the church: the Post Office, the Sheriff's,
