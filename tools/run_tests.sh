@@ -66,9 +66,16 @@ VER=$(sed -n 's/^ *versionName "\([^"]*\)".*/\1/p' "$ROOT/tools/android/app/buil
 echo "Greeblis Town test pass: $TIER${ONLY:+ (only stages matching /$ONLY/)}; build ${VER:-unknown}; $(date -u +%Y-%m-%dT%H:%MZ)"; T_ALL=$(date +%s)
 HAZ="$ROOT/tools/.runs/frame_hazards.log"; mkdir -p "$ROOT/tools/.runs"; [ -n "$RESUME" ] || : > "$HAZ"   # every test's frame-hazard watch (lib/harness.js) appends here
 GLE="$ROOT/tools/.runs/gl_errors.log"; [ -n "$RESUME" ] || : > "$GLE"   # and every test's closing WebGL error check (F-B61)
+# the final (Store) build ships tools/final.html, the game file without its debug code (RULES.md 34): then the copies
+# are not the game file by design, and check_final.sh proves they are its final build instead (4.0.63)
+FINALCOPIES=""; python3 -I "$ROOT/tools/sync_game.py" --check >/dev/null 2>&1 || FINALCOPIES=1
+if [ -z "$FINALCOPIES" ]; then
 run "the shipped copies (index.html, the APK asset) are the game file tools/uncompressed.html (sync_game.py --check)" python3 -I "$ROOT/tools/sync_game.py" --check
+else
+run "the shipped copies (index.html, the APK asset, the root APK, index.compressed.html) are the final build of the game file, debug and logging removed, the version build.gradle's (check_final.sh)" sh "$ROOT/tools/check_final.sh"
+fi
 run "the game file is minified, not compressed (minify_game.js --check, RULES.md 19)" node "$ROOT/tools/minify_game.js" --check
-run "the compressed version unpacks to the game file exactly (build_compressed.js --check, RULES.md 20)" node "$ROOT/tools/build_compressed.js" --check
+[ -n "$FINALCOPIES" ] || run "the compressed version unpacks to the game file exactly (build_compressed.js --check, RULES.md 20)" node "$ROOT/tools/build_compressed.js" --check
 run "every experiment applies to the game file (experiment.py --check)" python3 -I "$ROOT/tools/experiment.py" --check
 run "loopback server harness" "$ROOT/tools/test_server.sh"
 run "docs consistency (check_docs.py)" python3 -I "$ROOT/tools/check_docs.py"
