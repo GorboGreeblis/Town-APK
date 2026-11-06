@@ -591,6 +591,29 @@ the Event's heaviest 10 s (10.8 ms) needs about 0.5-1 ms off, and the song's bar
 
 4.0.51: B103 fixed (P42), B104 fixed (King Dino's drums: a bar's hits in one frame, in the town too), P41 (2% of the render), the render by stage in the log.
 
+4.0.51 on the headset (457e96dd, a Quest 3, the CPU mostly at 1382 MHz): town median 67, the Event 61.5, the slowest
+10 s 54; the song spikes gone. The game's CPU a frame: town 8.7 ms, Event 10.2. The render by stage in the Event: walk
+1.15, batcher 1.95, culling 1.18, setup 0.04, opaque draws 3.41, see-through 0.82 ms, 173 draws (town 130): about 24 us
+a draw for the draws themselves. 2.57 fps a ms, full rate at about 6.7 ms.
+
+4.0.52: P44, the characters' textures in texture arrays (atlasing allowed by the author, with the least change to the
+picture; editing the bundled three.js allowed). Parts alike in every way but their painted texture now share a batch:
+16 batches of 230 parts; the Event 200 -> 159 draws at its busiest spot (188 -> 156 at the south-west), the town 195
+-> 180. The render 9.3% shorter on the mean of seven views, the Event 15-23% (0.5-1.0 ms headless), the town 0-10%
+(`render_ab.js --settle`). Of the characters' other batches, 18 are untextured (an array cannot merge them) and two
+hold a 32x32 and a 512x512 texture (two draws at most); the 64 character meshes outside the batcher are option 4's
+(closed). GPU memory 13.7 MB more. Estimate (the 4.0.51 run, about 24 us a draw on the headset, 29-36 fewer draws in
+the Event and about 10 in the town, 2.57 fps a ms): the Event 0.55-1.0 ms less, +1.5-2.5 fps (median about 63-64, the
+slowest 10 s about 55.5-57); the town 0.15-0.3 ms, +0.5-1 fps. The same gain on the Quest 3S (the same chip and CPU;
+both CPU-bound). P43 adds about 1% of the render.
+
+The picture with P44: the arrays' texels equal the 2D textures' at every mip level (read back from the GPU). With
+anisotropic filtering equal on both sides `pixel_ab.js` finds 24 of 28 views identical and four with 1-3 pixels (a tie
+at one depth now in different draws). With the game's anisotropic filtering the headless renderer (SwiftShader) filters
+an array slightly differently from a 2D texture (up to 8 levels in 255 on steep character surfaces, 0.07% of pixels);
+the headset's GPU samples both in the same texture hardware. `pixel_ab.js` therefore checks P44 in a session of its own
+with anisotropic filtering off everywhere and the 4-pixel draw-order allowance.
+
 Left, and why: the matrix walk already passes over unchanged parts (P32: about 90% of the 2,200-3,100 local matrices a
 frame are unchanged and not rebuilt); the rest is parts that moved. Posing characters on the GPU: single-precision sums
 move vertices by rounding, so edges change (rule 31). Memory: about 147 KB a frame in the Event (WebGL call arguments,

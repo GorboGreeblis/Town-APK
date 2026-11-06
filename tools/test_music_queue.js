@@ -32,11 +32,13 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const play = async (on) => {
       window.__gcMQ = on; const rec = []; window.__gcMQrec(rec);
       const f0 = X.frames;
+      // the song's update runs once a frame: the notes each call builds (index ranges into rec)
+      const calls = [], up = D.ee.update; D.ee.update = function () { const i = rec.length; try { return up.apply(this, arguments); } finally { calls.push([i, rec.length]); } };
       D.ee.start(); const t0 = performance.now();
       // twelve bars or 40 s
       while (performance.now() - t0 < 40000 && new Set(rec.map((n) => n[2])).size < 12) await wait(200);
-      D.ee.stop(); await wait(1500); window.__gcMQrec(null);
-      return { rec, frames: X.frames - f0 };
+      D.ee.stop(); await wait(1500); window.__gcMQrec(null); D.ee.update = up;
+      return { rec, calls, frames: X.frames - f0 };
     };
     const a = await play(true), b = await play(false);
     window.__gcMQ = true;
@@ -51,12 +53,12 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     if (Ab.length !== Bb.length) diff = `notes ${Ab.length} vs ${Bb.length}`;
     else for (let i = 0; i < Ab.length && !diff; i++) { const x = Ab[i], y = Bb[i]; if (x.f !== y.f || x.bar !== y.bar || x.args.length !== y.args.length) diff = `note ${i}: ${JSON.stringify(x)} vs ${JSON.stringify(y)}`; else for (let k = 0; k < x.args.length; k++) { const u = x.args[k], v = y.args[k]; if (typeof u === 'number' ? Math.abs(u - v) > 1e-9 : JSON.stringify(u) !== JSON.stringify(v)) { diff = `note ${i} arg ${k}: ${u} vs ${v} (${x.f})`; break; } } }
     // each note built before it plays (queue on), from the second bar (the song's first bar is asked for 0.08 s
-    // ahead, queue or not): the build time against its start; and the notes built in one frame (one audio clock
-    // reading), from the second bar
+    // ahead, queue or not): the build time against its start; and the notes built in one frame (one call of the
+    // song's update), from the second bar
     const bar1 = [...new Set(a.rec.map((n) => n[2]))][1], bar1b = [...new Set(b.rec.map((n) => n[2]))][1];
     let late = 0, worst = 1e9; for (const x of a.rec) { if (x[2] < bar1) continue; const start = x[1][ti(x)]; const lead = start - x[3]; worst = Math.min(worst, lead); if (lead < 0.2) late++; }
-    const perFrame = (rec, from) => { const m = {}; for (const x of rec) if (x[2] >= from) m[x[3]] = (m[x[3]] || 0) + 1; return Math.max(0, ...Object.values(m)); };
-    a.maxPerFrame = perFrame(a.rec, bar1); b.maxPerFrame = perFrame(b.rec, bar1b);
+    const perFrame = (run, from) => { let m = 0; for (const [i, j] of run.calls) { let c = 0; for (let k = i; k < j; k++) if (run.rec[k][2] >= from) c++; m = Math.max(m, c); } return m; };
+    a.maxPerFrame = perFrame(a, bar1); b.maxPerFrame = perFrame(b, bar1b);
     // King Dino's drums (his dance floor and the dance battles, B104): scheduled up to 3 s ahead; each hit now built
     // 0.3-1.5 s before it plays, a few a frame. In earshot with the queue on and then off: every scheduled hit built
     // exactly once with its own time and values, before it plays; the audio nodes made in one frame against the off run

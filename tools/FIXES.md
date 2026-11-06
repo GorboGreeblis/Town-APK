@@ -1922,6 +1922,36 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.52** (the author's 4.0.51 run 457e96dd on a Quest 3: town median 67 fps, the Event 61.5, the slowest 10 s
+  54; the song spikes gone, 8 slow frames where there had been 31; "We want to improve FPS as much as possible"; "Let's
+  try atlasing. But follow the rule that it should impact visuals as little as possible"; editing the bundled three.js
+  allowed; RULES.md 31 as relaxed on 2026-11-05).
+  - **P44: the characters' textures in texture arrays.** The batcher merges parts that share a material into one draw
+    (a uniform array of 27 parts each), but the characters' parts carry 41 different 256x256 painted textures, so parts
+    alike in every other way were split into a batch per texture. An atlas (one big texture) would bleed at the edges:
+    these textures repeat 2-18 times across a part. A texture array keeps each texture whole as its own layer, sampled
+    with the same filtering, wrap and mipmaps: the batch's shader reads the layer each vertex carries (`gcLayer`, flat)
+    and the part's repeat and offset baked into its UVs; the bump map (the same texture on 236 of 237 parts) reads the
+    same layer through three.js's own bump chunk. Built once at load (two arrays: 34 layers repeating, 7 mirrored), only
+    for the characters' batches; a texture that is redrawn is checked against its layer and its parts drop out of the
+    batch if it no longer matches. The bundled three.js now exports its `DataTexture2DArray` and `ShaderChunk`.
+    16 batches hold 230 parts in arrays; 20 character batches are left as they were (18 untextured, two odd sizes).
+    Draws: the town 195 -> 180 at its busiest spot, the Event 200 -> 159 and 188 -> 156. The render 9.3% shorter on the
+    mean of seven views (the Event 15-23%, the town 0-10%; `render_ab.js --settle`). GPU memory: 13.7 MB more (the
+    arrays; the textures themselves stay uploaded, since a part that leaves its batch draws with its own, and nothing may
+    upload in play). `window.__gcArrSet(false)` rebuilds the characters' batches per texture.
+  - **The picture**: `pixel_ab.js` with anisotropic filtering equal on both sides: 24 of 28 views identical, four differ
+    by 1-3 pixels (two surfaces at one depth, now in different draws; the 4-pixel draw-order allowance). With the game's
+    anisotropic filtering, the headless renderer (SwiftShader) filters an array a little differently from a 2D texture:
+    up to 8 levels in 255 on steep character surfaces, 0.07% of the pixels; the headset filters both in the same
+    texture hardware. Not a change in what is drawn: the arrays' texels equal the 2D textures' at every mip level
+    (read back from the GPU), and the repeat moved to the GPU (as three.js does it) or a low-precision sampler changed
+    nothing.
+  - **P43**: the batcher writes only a moving part's matrix when its colour is unchanged (`window.__gcQC`); the light
+    probe is sent only when it changes (`window.__gcLP`). Both 0 pixels in 28 views; the render about 1% shorter
+    (`render_ab.js`), the Event's frame up to 6% (`frame_parts.js`).
+  - Checked: `test_play_uploads.js`, `test_shaderhold.js`, `warm_coverage.js` (nothing uploaded or compiled in play),
+    `uniform_budget.js`, `opt_identity.js`, `test_recover.js`, `test_lod.js`, `test_s33.js`, `test_stands.js`.
 - **4.0.51** (the author's 4.0.50 run ac3e97d5 on a Quest 3: town median 67 fps, the Event 63, 10 readings under 60;
   "Please begin working through the remaining options"; "If anything else is needed to improve Performance logging:
   Please add it"; RULES.md 31).

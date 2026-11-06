@@ -106,6 +106,12 @@ absolute limits (p99 12 / 16 ms, max 120 ms) by the ratio to the machine they we
 on the same machine, and only after comparing it with the previous build back to back on one machine: 3.15.40
 and 3.15.41 matched within noise, which is what showed the old baseline, not the build, was off [77].
 
+A performance switch is timed with `render_ab.js` (the same frozen frame, the switch flipped every block) and its
+picture checked with `pixel_ab.js`. A switch that rebuilds what it draws (P44's `__gcArrSet`, the characters' texture
+arrays) needs `render_ab.js --settle`, so the upload of the rebuilt shapes is not timed. The headless renderer
+(SwiftShader) filters a texture array anisotropically a little differently from a 2D texture, so `pixel_ab.js` checks
+P44 in a session of its own with anisotropic filtering off on both sides.
+
 ## 4. Writing a test
 
 Most tests follow the same shape (see `test_greet.js`, the shortest):
