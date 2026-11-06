@@ -1922,6 +1922,24 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.54** (the author's 4.0.53 run 92180e1c on a Quest 3: "From a distance: Fortizmo's arms now glitch out as she
+  plays the horn during the Event"; "The Fortizmo issue gets worse the further you are"; "Keep working until the 60 FPS
+  bar is met"; the Event median 63.5 fps, the slowest reading 58.8, 3 readings under 60).
+  - **B114, Fortizmo's arms glitched from a distance** (a regression of P45, 4.0.53). Her horn pose resets her arms'
+    rotations, forces a matrix update of her whole body and then aims each arm at the horn with its rotation. On a
+    frame P45 skipped (she was more than 20 m away) the matrices were not rebuilt after the aim, so every other frame
+    her arms were drawn at rest while her body held the horn: up to 1.9 m off, and seen only from afar because P45
+    only skips far characters. She is now posed every frame while her horn is up (`hornK` above 0.002); the other far
+    characters still are every other frame. `test_far_pose.js` (standard tier, new): on 4.0.53 she was skipped on 40
+    of 80 frames with her arms 1.94 m off; now 0 frames and 0 mm.
+  - **The cold batches' wake check cost about 1 ms a frame.** 4.0.53's check (B113: a cold batch wakes the frame its
+    characters are shown or hidden, or a part's colour or visibility changes) hashed every part of every cold batch
+    every frame: on the headset the render's stages rose although the CPU ran at a higher clock. It now reads only each
+    batch's character roots (shown and in the scene), for batches of up to 6 characters; a larger batch, or a part's
+    colour or visibility, is picked up by the every-4th-frame pass as before 4.0.53 (up to 3 frames late, never seen).
+  - **P47 is off** (`window.__gcKN`, now opt-in): `pixel_ab.js` found near-identical materials keyed alike changed 481
+    pixels over 28 views, up to 39 in one view, beyond the 4-pixel draw-order allowance. Its saving (36 character
+    batches to 28) is left for a way with no picture change. Its entry is removed from `pixel_ab.js`.
 - **4.0.53** (the author, 2026-11-06: "Let's run through all passes and checks, as if this were the final build, fix
   any bugs as you go. This pass includes the code audit"; "Fix all findings, even the low risk ones"; "Please fully
   investigate ways to improve the FPS during the Event. I'm open to minor losses in visual quality"; "We want to be

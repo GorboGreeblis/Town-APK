@@ -625,3 +625,9 @@ frame are unchanged and not rebuilt); the rest is parts that moved. Posing chara
 move vertices by rounding, so edges change (rule 31). Memory: about 147 KB a frame in the Event (WebGL call arguments,
 the batcher), the collector 1.4-1.8%; the performance log on the headset decides whether it is behind slow frames.
 
+4.0.53 on the headset (92180e1c, a Quest 3): the Event median 63.5 fps (62.3 in 4.0.52), the slowest reading 58.8
+(53.6), 3 readings under 60 (9-13); the town 68.2 (68.5). P45 and P46 cut the Event's frame as estimated, but the
+render's stages rose although the CPU ran at a higher clock: 4.0.53's cold-batch wake check (B113) hashed every part of
+every cold batch each frame, about 1 ms. 4.0.54 reads only the batches' character roots, and P47 is off (its picture
+changed beyond the allowance). Headless, the three Event views measure 4.0.54 against 4.0.53 at -0.3, -0.3 and +1.0 ms
+a frame (within the software renderer's noise); the headset run decides.
