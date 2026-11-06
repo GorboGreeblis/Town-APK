@@ -239,6 +239,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 
 ## Decisions that close an option
 
+- Flashes (B46): the author, 2026-11-06, after two clean marks in the 4.0.54 run: "No, let's live with the flash. Maybe we
+  will never fix it. Could just be related to the Browser." The light record stays off (no test build turns it on).
+- Tiny far details (P46) stay in the Event only (2026-11-06: "No, only the below 60 FPS issues are a problem").
 - Texture arrays for batching: closed (2026-10-27, PERF.md 10); reopened 2026-11-05 ("Please apply 1 to 8") on rule 31's terms only: each texture keeps its own pixels, mipmaps and filtering, the picture unchanged.
 - The Event's own render scale (P16, P17) and P18: removed (2026-10-28) [83].
 - The experiment-first rule (15): retired (2026-10-28, rule 22).
