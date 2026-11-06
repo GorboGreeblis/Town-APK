@@ -13,6 +13,7 @@ were retired in 3.15.43 (NOTES 87); their code is in the game file.
 
 | # | Bug | Where | Reproduce | Status |
 | --- | --- | --- | --- | --- |
+| B97 | A Blossom could not be picked (reopened: the author, 2026-11-06, testing 4.0.54: "Had another Blossom to the far left of the Gazebo not be interactable. Not sure what causes this but it still occurs"; first seen on 4.0.34 to the right of the Gazebo) | Pickups near the Gazebo | Not reproduced yet; the run's log (pickup lines, the self-heal's "taken pickup still showing" line) may show whether it was taken, hidden from the ray, or behind the Gazebo's collision | open: to investigate after the 60 fps work (the author) |
 
 ## Fixed
 
