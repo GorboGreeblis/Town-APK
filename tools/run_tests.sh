@@ -129,6 +129,8 @@ if [ "$TIER" != quick ]; then
   run "memory after the headset sleeps: the loader never released, the native census on each visibility change with no growth, the log's black box (B96)" node "$ROOT/tools/test_b96.js" "$ASSET"
   run "the flash record: no drawing without a head pose, tracking logged, the light record catches a staged one-frame flash at no frame cost, the mark never stalls, held geometry named (S15)" node "$ROOT/tools/test_flashlog.js" "$ASSET"
   run "the Event's pizza boxes fade out at its end with their own materials, no shader compiled (A42)" node "$ROOT/tools/test_pizza_fade.js" "$ASSET"
+  run "a Blossom or Flint with the Gazebo behind it is taken by pointing at it (B97)" node "$ROOT/tools/test_gazebo_pick.js" "$ASSET"
+  run "the game pauses every time the system menu opens: a window blur pauses, the focus or a trigger press resumes (B115)" node "$ROOT/tools/test_menu_pause.js" "$ASSET"
   run "far characters posed every other frame never draw a broken pose: Fortizmo with her horn up 40 m away posed every frame, the others still skipped (B114)" node "$ROOT/tools/test_far_pose.js" "$ASSET"
   run "Backpacka's water shows against the mist: the drip from his mouth at the pond and in flight, the jets, drops and rainbow over the Garden, each with a mist wall behind (F-B74)" node "$ROOT/tools/test_bp_water.js" "$ASSET"
   run "Nextessa's visits build nothing: two pizza orders bring the same Nextessa and box, no GL buffer made or deleted (S12)" node "$ROOT/tools/test_courier.js" "$ASSET"

@@ -26,8 +26,8 @@ android {
         // VRC.Quest.Packaging.4: minSdk 29-34, targetSdk 32-34 for immersive apps.
         minSdk 29
         targetSdk 32
-        versionCode 124
-        versionName "4.0.55"
+        versionCode 125
+        versionName "4.0.56"
 
         resValue 'string', 'app_name', 'GREEBLIS TOWN'
 

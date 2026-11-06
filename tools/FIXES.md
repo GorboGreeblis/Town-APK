@@ -1922,6 +1922,25 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.56** (the author, on 4.0.55: "The first time that the Universal Menu is opened, the game does not pause ... It
+  needs to pause every time"; "For the Gazebo: A Flint in the front left and a Blossom in the back left were
+  uninteractable").
+  - **B115, the game pauses every time the system menu opens.** The 4.0.55 log: the menu opened twice (00:14:47.9 and
+    00:14:50.5 in the system log); the session's visibility changed only the second time, so the first time the game
+    ran on. The game now also pauses while the browser's window has lost focus, and resumes when it comes back or on a
+    trigger or grip press (the app has the input, so no menu is open); its clock restarts without a jump. Window,
+    page and input-source changes are logged, so the next run shows which signal each opening sends.
+    `test_menu_pause.js` (standard tier, new).
+  - **B97, pickups by the Gazebo**: pointing took any townsperson or kiosk the ray met, at any distance, before it
+    looked at pickups, so a pickup with something pickable behind it could lose the pick. A pickup the ray passes
+    through, nearer than anything else it meets, now wins. `test_gazebo_pick.js` (standard tier, new) passes on 4.0.55
+    too: the author's case is not reproduced headless, and this may not be its cause.
+  - **The frame rate** (the author: "Any FPS under 60 fps is still considered a bug"; 4.0.55's run: 4 Event readings
+    at 57.9-59.9, 1 in the town at 58.9, the CPU at its lowest clock): P45 from 12 m (15 m in 4.0.55), every third
+    frame from 25 m (35 m); P46's size check takes a twelfth of its list each frame instead of all of it every 6th (each
+    detail checked every 12 frames; the Event's world hooks rose 0.25 ms a frame in 4.0.55 with P46 in the town and on
+    characters); the batcher checks a moving part's material and shape for changes every 4th frame instead of every
+    frame (`window.__gcSig4 = false`: every frame; a change can show up to 3 frames late).
 - **4.0.55** (the author's 4.0.54 run 77dec865: the town and the Event under 60 fps at the busiest views, the CPU at its
   lowest clock; "I'm open to more minor visual differences to get the FPS up"; "Let's apply all options"; "FPS is the
   biggest blocker we have").
