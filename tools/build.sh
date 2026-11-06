@@ -126,7 +126,8 @@ check "$ROOT/tools/check_apk.sh" "$APK"
 # test_compressed.js given the page checks it as it is (sync_game.py --check above unpacked it against the final build)
 [ -z "$TEST" ] || if [ -n "$FINAL" ]; then check node "$ROOT/tools/test_compressed.js" "$ROOT/index.compressed.html"; else check node "$ROOT/tools/test_compressed.js"; fi
 [ -z "$TEST" ] || [ -z "$FINAL" ] || check node "$ROOT/tools/test_final.js" "$SHIP"
+[ -z "$FINAL" ] || check "$ROOT/tools/check_final.sh"
 if [ -n "$FINAL" ]; then
   echo "BUILD DONE: $name ($code), the final build (tools/final.html: no debug code) in the root APK, index.html and index.compressed.html"
-  echo "  (the copies are not the game file now: sync_game.py --check and the pre-commit hook expect it; tools/build.sh without --final ships the game file again)"
+  echo "  (the copies are the final build, not the game file: sync_game.py --check fails by design; the pre-commit hook and tools/check_final.sh accept them; tools/build.sh without --final ships the game file again)"
 else echo "BUILD DONE: $name ($code)"; fi

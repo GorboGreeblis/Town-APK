@@ -11,7 +11,9 @@
 // (about 1600 MHz, log 14b455ce, median 65.4): the same work at 1.38 times the CPU time; the only spread that turns
 // one median into the other is 0.49 (the frames vary a lot: the per-frame and periodic work, the collector).
 // The Quest 3 has the same chip and about 30% more pixels: the same CPU, the GPU time times 1.3; a second whose GPU
-// time then passes the budget is held to what the GPU allows.
+// time then passes the budget is held to what the GPU allows. The run's headset is read from the perf line (dev=):
+// a Quest 3 run gives the Quest 3S with the GPU time divided by 1.3 (4.0.63). Seconds while the game is paused (the
+// system menu, the headset off) are left out, a second either side.
 //
 // Estimates, not measurements: the headset run after a change is the check (TASKS T3).
 //
@@ -39,10 +41,24 @@ for (const l of lines) {
 }
 if (open !== null) spans.push([open, t1]);
 const inEvent = (t) => spans.some(([a, b]) => t >= a && t <= b);
+// the game's pauses (all input gone, the window's focus lost, the session blurred: the system menu or the headset off)
+// with a second either side: those seconds are the system's, not the game's (4.0.63)
+const pauses = []; let pOpen = null;
+for (const l of lines) {
+  if (!/GreeblisServer: page: m=/.test(l)) continue;
+  const t = ts(l);
+  if (/the game pauses|xr visibility visible-blurred|window blur/.test(l)) { if (pOpen === null) pOpen = t; }
+  else if (/the game resumes|xr visibility visible$|window focus/.test(l) && pOpen !== null) { pauses.push([pOpen - 1, t + 1]); pOpen = null; }
+}
+if (pOpen !== null) pauses.push([pOpen - 1, t1 + 1]);
+const paused = (t) => pauses.some(([a, b]) => t >= a && t <= b);
+// the headset the run was on (the perf line's dev=): the estimate is made for the other one too
+const devM = lines.map((l) => (l.match(/ perf fps=.* dev=(\S+)/) || [])[1]).find(Boolean) || 'Quest_3S';
+const BASE_Q3 = /^Quest_3$/.test(devM);
 const secs = [];
 for (const l of lines) {
   const m = l.match(/VrApi\s*: FPS=(\d+)\/(\d+).*?App=([\d.]+)ms/); if (!m) continue;
-  const t = ts(l); if (t === null || t < t0 + 15 || t > t1) continue;   // after the first 15 s (loading)
+  const t = ts(l); if (t === null || t < t0 + 15 || t > t1 || paused(t)) continue;   // after the first 15 s (loading); not while paused
   const f = +m[1], hz = +m[2], gpu = +m[3]; if (hz < 60 || f < 20) continue;
   secs.push({ t, f: Math.min(f, hz), hz, gpu, ev: inEvent(t) });
 }
@@ -68,16 +84,18 @@ const est = (s, saving, gpuScale) => {
 const stats = (a) => { const s = a.slice().sort((x, y) => x - y), q = (k) => s[Math.min(s.length - 1, Math.max(0, Math.round(k * (s.length - 1))))]; return { n: s.length, min: s[0], p10: q(0.1), median: q(0.5), under60: s.filter((x) => x < 59.5).length }; };
 const fmt = (x) => `median ${x.median.toFixed(1)}, lowest 10% ${x.p10.toFixed(1)}, lowest ${x.min.toFixed(1)}, ${x.under60} of ${x.n} s under 60 (${(100 * x.under60 / x.n).toFixed(0)}%)`;
 
-console.log(`fps_estimate: ${file.split('/').pop()}: ${secs.length} s of play (${secs.filter((s) => s.ev).length} in the Event); saving town ${(100 * S_TOWN).toFixed(1)}%, Event ${(100 * S_EV).toFixed(1)}%; spread ${SIGMA}`);
+console.log(`fps_estimate: ${file.split('/').pop()} (run on ${devM.replace('_', ' ')}; ${pauses.length} pauses left out): ${secs.length} s of play (${secs.filter((s) => s.ev).length} in the Event); saving town ${(100 * S_TOWN).toFixed(1)}%, Event ${(100 * S_EV).toFixed(1)}%; spread ${SIGMA}`);
 for (const [label, pick, sv] of [['town', (s) => !s.ev, S_TOWN], ['the Event', (s) => s.ev, S_EV]]) {
   const sel = secs.filter(pick); if (!sel.length) continue;
   const now = stats(sel.map((s) => s.f));
-  const q3s = stats(sel.map((s) => est(s, sv, 1)));
-  const q3now = stats(sel.map((s) => est(s, 0, Q3GPU)));
-  const q3 = stats(sel.map((s) => est(s, sv, Q3GPU)));
+  // the run's own headset as run; the other with its GPU time scaled (the Quest 3 1.3 times the 3S's), the same CPU
+  const other = BASE_Q3 ? 1 / Q3GPU : Q3GPU, [mine, theirs] = BASE_Q3 ? ['Quest 3', 'Quest 3S'] : ['Quest 3S', 'Quest 3'];
+  const mineEst = stats(sel.map((s) => est(s, sv, 1)));
+  const theirsNow = stats(sel.map((s) => est(s, 0, other)));
+  const theirsEst = stats(sel.map((s) => est(s, sv, other)));
   console.log(`  ${label}:`);
-  console.log(`    Quest 3S, as run:      ${fmt(now)}`);
-  console.log(`    Quest 3S, estimated:   ${fmt(q3s)}`);
-  console.log(`    Quest 3, as run (est): ${fmt(q3now)}`);
-  console.log(`    Quest 3, estimated:    ${fmt(q3)}`);
+  console.log(`    ${(mine + ', as run:').padEnd(22)} ${fmt(now)}`);
+  console.log(`    ${(mine + ', estimated:').padEnd(22)} ${fmt(mineEst)}`);
+  console.log(`    ${(theirs + ', as run (est):').padEnd(22)} ${fmt(theirsNow)}`);
+  console.log(`    ${(theirs + ', estimated:').padEnd(22)} ${fmt(theirsEst)}`);
 }

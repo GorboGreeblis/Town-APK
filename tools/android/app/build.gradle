@@ -26,10 +26,16 @@ android {
         // VRC.Quest.Packaging.4: minSdk 29-34, targetSdk 32-34 for immersive apps.
         minSdk 29
         targetSdk 32
-        versionCode 131
-        versionName "4.0.62"
+        versionCode 132
+        versionName "4.0.63"
 
         resValue 'string', 'app_name', 'GREEBLIS TOWN'
+
+        // The final (Store) build: tools/build.sh --final passes -PfinalBuild=true. Its page never reports to the
+        // game server's /log endpoint (the debug code is taken out, tools/final_build.js), so the endpoint is
+        // compiled out too (BuildConfig.PAGE_LOG false: /log answers 404 like any unknown path).
+        def finalBuild = project.hasProperty('finalBuild') && project.property('finalBuild') == 'true'
+        buildConfigField 'boolean', 'PAGE_LOG', finalBuild ? 'false' : 'true'
 
         // Launch mode: 'immersive' (direct to WebXR, needs a verified origin) or
         // '2D' (browser panel; the game's own "Press A" enters VR).
@@ -69,6 +75,10 @@ android {
         debug {
             applicationIdSuffix ''
         }
+    }
+
+    buildFeatures {
+        buildConfig true
     }
 
     compileOptions {

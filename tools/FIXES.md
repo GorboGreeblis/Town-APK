@@ -1951,6 +1951,21 @@ frame already hands the game (no GL call added, RULES.md 28):
     `/log` endpoint (`BuildConfig.PAGE_LOG`; the page never calls it; `test_server.sh --final` checks it is a 404).
     `Log.e`/`Log.i` lines for the server itself and `console.error` for the game's real errors stay.
   - **`test_final.js`**: the final build played as shipped, with no test hook (`boot({hook: false})`, new).
+  - **`check_final.sh`** (new; the author: "All 3 versions of the game in root need to be confirmed to be the latest
+    version of the game (final version with debug removed)"): makes the final build again from the game file and
+    checks the root `index.html`, the APK's asset and the root APK's `assets/index.html` are byte for byte it,
+    `index.compressed.html` unpacks to it, none holds a debug or logging marker, the version shown and the APK's are
+    build.gradle's, and the APK's `/log` page logging is compiled out. `build.sh --final` runs it last. The pre-commit
+    hook accepts copies equal to the final build of the current game file.
+  - **Tools kept up to date** (the author: "Please update tools as you go"): `fps_estimate.js` reads the run's headset
+    from the perf line (a Quest 3 run gives the Quest 3S with the GPU time divided by 1.3) and leaves out the seconds
+    while the game is paused; `test_flashlog.js` no longer checks B46's `rec pointing, pickups and sound` line (removed
+    in 4.0.49/4.0.53, B110: the check failed on 4.0.62 too) and allows the mark's dump 30 ms headless (25 ms measured on
+    4.0.62 and on the fenced file alike).
+  - **Measured**: the fenced game file builds the same world as 4.0.62, object for object (`minify_identity.js`);
+    `test_flashlog`, `test_menu_pause`, `test_end_sound`, `test_play_uploads`, `test_standalone`, `test_world` pass on
+    it. `cpu_bench.js`, the game file against the final build (two rounds, nine views, noisy: single views moved by
+    up to 23% either way): 9.9% less CPU a frame in the town, 3.9% in the Event.
 - **4.0.62** (the author, testing 4.0.61: "The two under 60 fps readings must be fixed for submission"; "If it helps
   with performance, we can increase the time it takes for the Event to start and end. Have things happen more spaced
   out"; "The start and end feel a little fast anyway"; "Horn song and headset off behavior still need more
