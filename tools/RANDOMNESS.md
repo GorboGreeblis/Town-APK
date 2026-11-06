@@ -14,6 +14,12 @@ The author's decision list (TASKS T17, 2026-10-29, 3.15.50). Every item is decid
 | The dance battle's BOW OUT (the player's button to leave a battle early; it worked 70% of the time) | "a random 80% chance of working makes sense for the Bow Out button" | 80% in 3.15.52 (FIXES R6), still random |
 | The dance battle opponent's move (Glyph, Etcher, Montgummery: rock, scissors or paper each round, shown before the player picks) | "For the Dancer's moves: what they pick should always be random" | Stays random; no change |
 
+**Since the list closed** (`random_census.js` on 4.0.61, 2026-11-06: 75 sites, every one of a kind decided above or in
+the appendix): one kind was added later at the author's request and is random by design: each Garden plant's flower
+colour, drawn when it is planted and again at each later Event's start (A29, 4.0.2: "can we randomize the flower colors
+for every Event?"). c5, Sparkakus's tail mist, is still filled at load but never shown or updated since 4.0.4 (A32).
+King Dino's drums are a funk song since 4.0.45 (A64); their noise buffer is the same (a).
+
 Positions below are those of 3.15.49's game file (120 sites); since R4 and R5 (3.15.51) the census finds 81. After an
 edit, `node tools/random_census.js` lists them again; `test_seeded.js` (standard tier) guards the seeded items.
 

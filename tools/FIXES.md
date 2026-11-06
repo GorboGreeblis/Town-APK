@@ -1922,6 +1922,43 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.62** (the author, testing 4.0.61: "The two under 60 fps readings must be fixed for submission"; "If it helps
+  with performance, we can increase the time it takes for the Event to start and end. Have things happen more spaced
+  out"; "The start and end feel a little fast anyway"; "Horn song and headset off behavior still need more
+  investigation"; the sound after the session ended: "This is something that I would like fixed for the coming build").
+  No content changed (the author: "We won't be adding or changing any content past this point").
+  - **The Event's opening dip (P52)**: the run's two perf lines under 60 were 58.8 (15:19:21) and 59.6 (15:20:41). The
+    headset's own count (VrApi, every second) shows one second at 59 (15:19:24), about 12 s into the Event at the
+    heaviest view (-21,23, the town still drawn, its kiosks fading, the townsfolk walking to the ring) with the CPU at its
+    lowest clock (1382 MHz); the 59.6 line was a snapshot while the headset counted 66-69. Every other second under 60
+    in the run is a pause (the headset off or the system menu: the app stops sending frames). In that window the
+    see-through draws took 1.21-1.36 ms a frame against 0.48 ms before the Event, and frames over 20 ms went from 2 to
+    18 in 10 s: all eleven fade groups (RULES.md 30) faded at once, each drawn see-through and sorted for 10 s. The
+    groups now fade one after another: each still over 10 s (RULES.md 30's 9 s), each starting 3 s after the one
+    before, the farthest from the player first; at the end the nearest comes back first. At most four fade at a time
+    (eleven before); the Event's start and end each take about 40 s (10 s before), as the author allowed. A group
+    whose owner leaves home late takes the next start. `window.__gcStag=false` restores all at once (for comparison).
+    Headless at the dip's place (-21,23, both eyes, two runs each, the frame's CPU in 3 s bins from the Event's start): over the Event's first 12 s the slowest tenth of frames took 5.7-8.6 ms with the groups one after another and 7.2-9.7 ms all at once, the busiest 3 s 5.8 ms a frame on average against 6.5 ms; the cost moves later instead (15-35 s: 4.0-5.5 ms against 3.2-4.6 ms), all of it under the opening's old peak. `test_stands.js` checks the 9 s and the order (at most 4 at a time).
+  - **The perf line's fps**: it was 1000 over the frame-time average at the moment of writing (a snapshot, smoothed over
+    the last few frames). It is now the frames delivered over the line's 10 s (gaps over 200 ms, a pause, left out),
+    with `low1s=` the slowest whole second among them, so the line agrees with the headset's own count. `perf_log.js`
+    lists the slowest seconds.
+  - **B125, the sound came back after the VR session ended**: the 4.0.61 log shows the headset taken off (the game
+    paused, the sound held), the system ending the session 32 s later, and the sound resuming at once: the hold only
+    held while a session was presenting. With the headset off it played until the app was opened again. The sound is
+    now held after a session ends until a new one presents ("Press A to Continue." resumes it). `test_end_sound.js`
+    (standard tier, new) fails on 4.0.61 and passes.
+  - **B121 and the Horn song (B124)**: every resume in the run came with the headset moving 2.4-54 mm and 0.8-32
+    degrees (on a head); the log has no resume with the headset still. The one sound the log shows with the headset off
+    is B125's (the sound resumed after the session ended). The author's next run decides both.
+  - **Tools, tests and docs against the current game** (the author: "Before we start the final long test pass: Please
+    ensure that the tools, documentation, and test cases reflect the current state of the game"): every doc in tools/
+    and every test checked against the game and FIXES 4.0.40-4.0.61. Tests: the Mushroom desk, Event, unstick and home
+    tests use the 4.0.61 desk and ramp (they checked the old desk, and most of the new ramp was never checked); two new
+    `test_npc_home.js` starts at the ramp; headers and README rows match what each test checks. Docs: the removed rainbow
+    and pond ripples, the pause (B115-B121), the merges and far posing, the frame-rate history to 4.0.61, the Store
+    checklist, VRC.md's status; B97 moved to Fixed (B116, confirmed on 4.0.58); VERSIONS' headset column filled for
+    4.0.58, 4.0.60 and 4.0.61.
 - **4.0.61** (the author, testing 4.0.60: "The 'Overcoming Shyness' book did not disappear after being picked up ...
   The book should fade out after being selected"; "Books with names and the Library sign did not fade out with
   everything else for the Event" — "It's the books facing out with actual names"; "Moving a Controller or pressing a

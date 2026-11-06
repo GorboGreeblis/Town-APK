@@ -1,6 +1,6 @@
 # Greeblis Town, Meta Quest APK
 
-Self-contained Android package of the Greeblis Town WebXR game (v3.15.x, see
+Self-contained Android package of the Greeblis Town WebXR game (v4.0.x, see
 `tools/VERSIONS.md`) for the
 Meta Quest Store. No web hosting is involved: the whole game ships inside the
 APK and is served to the Quest Browser's immersive WebXR activity from a
@@ -22,6 +22,7 @@ tools/
   build_compressed.js      builds index.compressed.html from the game file; --check
   sync_game.py             updates every copy: index.html (root), the APK's asset, index.compressed.html; --check
   experiment.py            diagnostic variants of a copy (measurement only, RULES.md 22)
+  final_build.js           writes tools/final.html: the game without its debug code (GT_DEBUG), for the Store upload
   test_*.js, *.sh          test suite (see tools/README.md)
   RULES.md                 the author's rules: read before any change
   BUILD.md                 this file: how the APK works, building, signing, testing
@@ -47,8 +48,8 @@ tools/
    `com.oculus.browser.WebXRCustomTabActivity`.
 3. The game's entry script (see below) requests the VR session at page start,
    draws our own loading screen into it while the world builds, and hands the
-   session to the game when it is ready. The game makes no further network
-   requests after the first load.
+   session to the game when it is ready. The game makes no requests beyond the
+   loopback server: its pre-painted textures (`tex/`) and the `/log` endpoint.
 
 ## Changes to the game: the entry script, the loading screen, and the gameplay fixes
 
@@ -182,7 +183,12 @@ Windows); see `tools/HEADSET_DIAG.md`.
 - `tools/check_apk.sh` reproduces the manifest, signature, SDK-level, size
   and 64-bit checks from the VRC document.
 - The final build has a full tier pass recorded in `tools/TEST_PLAN.md` ("Latest results"; RULES.md 23), after the
-  dead-code census and its removals (RULES.md 25).
+  dead-code census and its removals (RULES.md 25), and only after the author's headset test of that candidate
+  (RULES.md 32).
+- The uploaded game is the final build without the debug code (the performance log, the flight recorder's records,
+  every log call): `node tools/final_build.js` writes `tools/final.html` from the game file (since 4.0.49; the builds
+  the author tests keep everything). `build.sh` packs the game file itself; putting `final.html` into the APK in its
+  place is not yet scripted.
 - **Headset off and on (sleep) check** on the APK to be uploaded: play 1 minute, take the headset off for 35 s or more,
   put it back on and play 2 minutes, with the log captured live. The game must come back drawing and answering, the
   runtime's `Free=` must hold, the `native census` lines must stay steady with no `(GROWTH)`, and every census must

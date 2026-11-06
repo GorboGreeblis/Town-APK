@@ -4,8 +4,10 @@
 // the ramp"; FIXES F-B46). Mushroom (`drifter`) makes back-to-back visits (he visits, is visited, visits again at once),
 // with the player standing in front of his desk, where the author stood; every animation frame:
 //   - a rise: his height going up more than 12 cm in one frame (a jump; the ramp climbs a few centimetres a frame);
-//   - inside the desk: his position over the desk or its front margin (kiosk-local x -1.04..2.86, z .05..1.5) with
-//     his height between 5 cm and 1.4 m (below the desk's top, 1.545 m, and above the ground);
+//   - inside the desk: his position over the desk (since 4.0.61 across the whole kiosk: kiosk-local x -2.86..2.86,
+//     z .05..2.3) or its front margin beside the ramp (x -1.04..2.86, z to 2.6) with his height between 5 cm and 1.4 m
+//     (below the desk's top, 1.545 m, and above the ground); the ramp runs outward from the desk's front edge at
+//     x -2.86..-1.04 (z 2.3 to 4.85) and is not the desk;
 // expected: no rise, never inside the desk, home and on top (1.54 m) after each visit; no page errors.
 // On 3.15.56: 4 rises and 175 frames inside the desk in 6 visits.
 //
@@ -26,8 +28,9 @@ const visits = +(process.argv.find((a) => /^\d+$/.test(a)) || 4);
     const loc = (x, z) => [(x - B.x) * c - (z - B.z) * s, (x - B.x) * s + (z - B.z) * c];
     const ev = []; let prevY = m.group.position.y, frames = 0;
     const tick = () => { frames++; const p = m.group.position, [lx, lz] = loc(p.x, p.z), dy = p.y - prevY;
-      // the counter: x -1.09..2.86, z .48..1.2 (kiosk-local), top 1.545; his body radius about .42
-      const inDesk = lx > -1.04 && lx < 2.86 && lz > .05 && lz < 2.6 && p.y < 1.4 && p.y > .05;   // 4.0.58: the desk reaches the kiosk's front (z 2.3)   // the desk and its front margin, not the ramp
+      // the desk (kiosk-local, the game's rampY): x -2.86..2.86, z .05..2.3 since 4.0.61 (wall to wall, deskW 5.72; it reached
+      // the kiosk's front, z 2.3, in 4.0.58), top 1.545; its front margin beside the ramp to z 2.6; not the ramp (x < -1.04, z >= 2.3)
+      const inDesk = lz > .05 && p.y < 1.4 && p.y > .05 && ((lx > -2.86 && lx < 2.86 && lz < 2.3) || (lx > -1.04 && lx < 2.86 && lz < 2.6));
       if (dy > 0.12) ev.push(['rise', +D.Re.t.toFixed(1), +lx.toFixed(2), +lz.toFixed(2), +prevY.toFixed(2), +p.y.toFixed(2), m.visiting ? 'v' : m.hosting ? 'h' : '-']);
       if (inDesk) ev.push(['inDesk', +D.Re.t.toFixed(1), +lx.toFixed(2), +lz.toFixed(2), +p.y.toFixed(2), m.visiting ? 'v' : m.hosting ? 'h' : '-']);
       prevY = p.y; if (window.__run) requestAnimationFrame(tick); };

@@ -1,9 +1,10 @@
 # Greeblis Town, basic game documentation
 
 Everything below was read from the game code (`tools/uncompressed.html`,
-4.0.34). Where the code did not make something explicit it is left out rather
+4.0.34; checked against 4.0.61). Where the code did not make something explicit it is left out rather
 than guessed. Since 3.15.45 the file is minified (FIXES R2): top-level names
-(`t`, `G`, `It`, `JGP`, `gcEB` and the like) are as quoted, but names local to a
+(`t`, `G`, `It`, `JGP`, `gcEB` and the like) are as quoted (checked in 4.0.61; since 4.0.39 the minifier shortens
+long top-level names too, unless a tool reads them: `minify_game.js` `RESERVED`), but names local to a
 function were renamed, so routines are described by what they do.
 
 ## What it is
@@ -43,7 +44,7 @@ The HTML is 8 lines since the minification (3.15.45; it was 93 before); most of 
 
 | Line | Content |
 | --- | --- |
-| 1 | `<head>`: the license notice (CC0 and three.js's MIT notice), viewport, styles (ink `#0d0d1a` palette), the head script (requests the VR session at page start and draws the loading screen, `window.__gtXR`; FIXES.md entry edits), the 2D gate (`#gate`, `#gateTitle`, `#gateText`, `#gateVer`) and hidden dialogue/panel containers. |
+| 1 | `<head>`: the license notice (CC0 and three.js's MIT notice), viewport, the debug fence (`<script>var GT_DEBUG=!0;</script>`, the first script since 4.0.49; `tools/final_build.js` writes a build without the debug code), styles (ink `#0d0d1a` palette), the head script (requests the VR session at page start and draws the loading screen, `window.__gtXR`; FIXES.md entry edits), the 2D gate (`#gate`, `#gateTitle`, `#gateText`, `#gateVer`) and hidden dialogue/panel containers. |
 | 2 | Console de-duplication shim. |
 | 3 | three.js (bundled, with its WebXR manager). |
 | 4 | Patches three.js Phong/Lambert/Basic materials to default to `DoubleSide`. |
@@ -98,7 +99,16 @@ The HTML is 8 lines since the minification (3.15.45; it was 93 before); most of 
    game keeps rendering but skips its update (no movement, no NPC time, no input) and hides the controllers; while
    it is `hidden` the browser sends no frames. Back to `visible`, frames resume where they stopped and a suspended
    audio context is resumed. Each change is logged (`xr visibility ...`) with the native census (Safeties below).
-   `test_play.js`, `test_input.js`, `test_audio.js`, `test_b96.js`.
+   **Paused** (B115, B118, B121; VRC.md): the game also pauses (draws, but no update and a stopped clock) while the
+   browser's window has lost focus (a trigger or grip press or the focus resumes it) and while the session has no input
+   source left (the system menu takes them all; the headset taken off leaves the controllers put down; tracked hands
+   count as input). With input back, it resumes only after 0.6 s and once the headset itself has moved more than
+   1.5 mm or 0.25 degrees (lying off the head it is still; a trigger press does not resume it then). The sound is
+   suspended while the game is paused or its frames stop, and nothing resumes it until play does; a song held so carries
+   on where it was (the Horn song keeps its schedule, B124). After the VR session ends (the system ends it a while after
+   the headset comes off) the sound stays held until a new session presents (B125, 4.0.62). Each pause and resume is logged.
+   `test_play.js`, `test_input.js`, `test_audio.js`, `test_b96.js`, `test_menu_pause.js`, `test_menu_return.js`,
+   `test_horn_pause.js`, `test_end_sound.js`.
 4. On non-Quest user agents the gate shows "This game is designed for the Meta Quest Browser. Please open this
    file in the Quest Browser on your Meta Quest headset." with the version below it, and nothing else runs (A15,
    A18).
@@ -154,7 +164,10 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   1 try in 10 also considers only the Ancient's visits (A3); the Cave is checked at each try. Sparkakus is only
   picked as a visitor once the player has the Gem or the Stone (F-B42). Mushroom reaches his desk by its ramp
   (F-B39) and leaves it the same way, never hopping; no step of his rises or drops more than 0.3 m, so the desk is
-  solid to him (F-B46). `test_mushroom_desk.js`. A vignette ends at once if a speaker becomes busy or the player talks to one of them; Sparkakus is
+  solid to him (F-B46). Since 4.0.61 the desk spans the whole kiosk (5.72 m, wall to wall) and the ramp starts at
+  its front edge, at its top, and runs outward to the ground 2.55 m in front of the kiosk; he walks across the desk
+  to the ramp's top and down it. The ramp outside the kiosk is a building of its own: the other townsfolk walk round
+  it. `test_mushroom_desk.js`. A vignette ends at once if a speaker becomes busy or the player talks to one of them; Sparkakus is
   busy whenever he walks to his shelves. `test_visits.js`, `test_content.js`.
 - **The drums.** King Dino's kit plays a funk song at 98 beats a minute (a bar of 2.45 s; since 4.0.45, A64; until then
   a swung jazz pattern at 104): a 4-bar intro, then a 48-bar round of 8-bar parts (about 2 minutes): groove, ghost, break, a
@@ -163,7 +176,8 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   snare crescendo), a cowbell-like bell in the drive, a laid-back pocket to close, and a fill and a crash at each
   part's turn. Dancers in town bob at the same 98. King Dino's arms swing as hard as each hit (the right hand on
   the hi-hats too) and the kick nods him; during the horn song he plays its drum part along with it (A65). Heard (on the dance floor, at the kit, or in
-  a battle) it is scheduled on the audio clock 3 s ahead; within 45 m it runs on the game clock only, to move the
+  a battle) it is scheduled on the audio clock 3 s ahead, each hit built 0.3-1.5 s before it plays, a few a frame (B104,
+  4.0.51; a bar at once before); within 45 m it runs on the game clock only, to move the
   drummer's sticks; 1.5 s after the player stops hearing it, it switches clocks and starts the bars again. It is
   silent while the horn plays. `test_jazz.js`.
 - **Dance battles.** Glyph, Etcher and Montgummery: rock, scissors or paper each round, the dancer's move picked at
@@ -185,6 +199,10 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   outside (F-B55).
 - **Stuck.** A townsfolk that wants to move and gets no 0.3 m closer to its target in 5 s is stuck: it is re-planned,
   then placed at its target (as the older stuck rule does). The log says "no progress" (F-B55). `test_stuck.js`.
+  Behind it (B117, 4.0.58): in an Event, one walking to its spot that has not moved half a metre in 8 s is moved on
+  with a sparkle; in the town, one on its way home that has not moved in 15 s is moved to the end of its way; Mushroom
+  gets 4 s on any walk. Only time spent trying to walk counts (not waiting beside the player or talking, B119). The
+  log says "unstuck: ...". `test_unstick.js`.
 - **Ground.** The Garden is flat (0.02 m): its furrow rings, 48 stepping stones and ring of 72 rocks are painted on
   one seeded overlay over the soil (F-B57; the author: "regardless of anything else we will be keeping the flat
   version"); the Event's flowers are planted at 0.015 m. The Cave room is 4.5 cm lower than it was, its floor 5 mm
@@ -202,7 +220,12 @@ Read from the code and checked by the tests named; numbers are game seconds and 
 - **The Event's fade groups (3.15.66, P33; RULES.md 30).** Once the mist is past 15%, each kiosk (every building but the
   church) and the gazebo fade out over 10 s, each on its own and only once its owner has left home (6 m), and every
   tree with the robin as one group; all of a group's parts fade together. Once out, a group stays out until the Event
-  ends, however near the player comes (A26), and all come back after it over 10 s. The church and Cave, the Ancient, Somlet, the pond (F-B64: the
+  ends, however near the player comes (A26), and all come back after it over 10 s. The groups go one after another
+  (4.0.62, P52): each starts 3 s after the one before (the farthest from the player first; back, the nearest first), so
+  at most four fade at a time and the Event's start and end each take about 40 s. A building's load-time merged
+  shapes (its panel sheet and glass panes, PERF.md P48, P49) are in its group and fade with it (B122, 4.0.61: the
+  Library's face-out named books and its sign had stayed solid); the taken shyness book stays hidden when the
+  Library comes back. The church and Cave, the Ancient, Somlet, the pond (F-B64: the
   far-scenery fader no longer touches it) and the Garden never fade. Fading is drawn only: collision stays on, and as a
   group comes back anyone standing in it is pushed out (S3). `test_stands.js`.
 - **The Ancient** (A52, 4.0.33): its body (core, mantle, head and eye stalks) is 15% larger than before about its
@@ -211,7 +234,9 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   bump textures are painted at 1024 x 256 (512 x 128 before), pre-painted into `tex/` like every texture.
 - **The gazebo (3.15.67, F-B65).** Its seven railed sides are solid walls for everyone; its doorway is open to anyone.
   Gemtoe can be talked to from all round it (talk range 4.6 m).
-- **The Event's flowers** are 15% taller (A20) and more colourful (A22); **the pond's water** ripples (A21).
+- **The Event's flowers** are 15% taller (A20) and more colourful (A22). A dancer plants only within 1.5 m of its own
+  spot in the ring (B123, 4.0.61: Mushroom had planted at the foot of his ramp). `test_plant_spot.js`. **The pond's
+  water** is a still painted texture (A33, 4.0.4; its ripples, A21, were removed).
 - **Seeded decoration.** The stars, the clouds, blinks, idle phases, Anomalee's glitch timing and jaw and the Event
   ring's sway are the same on every launch (R5); what stays random is in RULES.md 5 and RANDOMNESS.md.
   `test_seeded.js`.
@@ -219,9 +244,11 @@ Read from the code and checked by the tests named; numbers are game seconds and 
   one beyond 66 m, whichever it had in between. `test_lod.js`.
 - **Sound.** One audio context, made on VR entry; every note is an oscillator and a gain that disconnect
   themselves when the note ends. A suspended context (headset off, app in the background) resumes when the
-  page is shown, visible or focused again, and on pointer or key input. Taking a Blossom or Flint makes no sound
+  page is shown, visible or focused again, and on pointer or key input, but never while the game is paused (B118,
+  4.0.58: the game suspends it itself then; Boot and VR entry, step 3). Taking a Blossom or Flint makes no sound
   (A59, 4.0.37); picking the robin or the cardinal plays a soft two-note tweet tweet as it flies off (A60);
-  taking OVERCOMING SHYNESS plays its own page riffle and rising chime (A61); Sparkakus's romp plays a plucked-guitar
+  taking OVERCOMING SHYNESS plays its own page riffle and rising chime (A61) while the book shrinks away from the
+  shelf over 0.4 s (B120, 4.0.61); Sparkakus's romp plays a plucked-guitar
   riff (a sawtooth and a square through a closing lowpass, a step every 0.15 s, a bass pluck on each beat) for as long
   as the romp lasts, and stops with it (A62, 4.0.38).
   `test_audio.js`, `test_world.js`.
@@ -276,10 +303,10 @@ story, characters and looks are in `LORE.md` (section named); the fixes in `FIXE
 | --- | --- | --- | --- |
 | The park and the town | A cartoon town round Greeblis Park, inside a picket fence; the mist beyond it in the Event | LORE "The world", "Environment design and style" | `test_world.js`, `test_seams.js`, `test_zfight.js`, `test_coincident.js`; `shots.js --preset park` |
 | The Garden and the Summoning Pillar | The park's centre; the Pillar ("Use the Summoning Pillar") starts the Event with the Summoning Stone | LORE "The world", "Events" | `test_content.js` (zones), `test_noseeds.js`, `test_stands.js` |
-| The kiosks | Post Office, Sheriff's kiosk, Garden Supplies, Gooward's Gallery, Juice Bar, First Bank (with Gemtoe's Gazebo); the Phone Booth and the Portal count as kiosks | LORE "The world" | `test_npc_home.js`, `test_owner_exit.js`, `test_gazebo.js`, `test_stands.js` |
+| The kiosks | Post Office, Sheriff's kiosk, Garden Supplies, Gooward's Gallery, Juice Bar, First Bank (with Gemtoe's Gazebo); the Phone Booth and the Portal count as kiosks | LORE "The world" | `test_npc_home.js`, `test_owner_exit.js`, `test_gazebo.js`, `test_stands.js`, `test_mushroom_desk.js` (the Sheriff's desk and ramp), `test_merges.js` (their panel sheets and panes) |
 | The Post Office's mail pile | Behind the kiosk: letters, sacks and five parcels ("To Montreal", "To Cobourg", "To Bangkok", "To Ormstown", one blank) | LORE "The world"; FIXES A43 | `test_mailpile.js`; `shots.js` free views |
 | The church and the Cave | The Ancient's home; the Cave's walkway and visit spot; visitors come to the Ancient | LORE "The Ancient" | `test_cave.js`, `test_visits.js`; `shots.js --preset cave` |
-| The Library | Sparkakus's kiosk, its books (OVERCOMING SHYNESS), the Speech | LORE "The Library's books" | `test_content.js`, `test_progression.js` |
+| The Library | Sparkakus's kiosk, its books (OVERCOMING SHYNESS, which shrinks away when taken), the Speech | LORE "The Library's books" | `test_content.js`, `test_progression.js`, `test_shybook.js` |
 | The pond | A flat water texture, its stones on the ground | LORE "Environment design and style"; FIXES A33 | `shots.js --preset pond` |
 | The Portal and the TELEPHONE | Pizza is ordered by phone through the Portal, once the Sheriff takes a Blossom | LORE "The world" | `test_progression.js`, `test_courier.js` |
 | The park's trees and birds | The robin and the cardinal (facing the robin) on the two big trees; picked, they fly off | LORE "The robin", "The cardinal" | `test_content.js`; `shots.js --preset birds` |
@@ -287,21 +314,21 @@ story, characters and looks are in `LORE.md` (section named); the fixes in `FIXE
 | The townsfolk | Hennrick, Mushroom, Anomalee, King Dino, Gooward, Zollod, Somlet, Fortizmo, Etcher, Gemtoe, Glyph, Montgummery, Mama Gorbo, Sparkakus, the Ancient | LORE "Cast", "Character by character" | `test_roam.js`, `test_stuck.js`, `test_jitter.js`, `test_greet.js`, `test_cap.js` (Mama Gorbo's cap) |
 | Nextessa | The pizza courier from the far future: arrives, waits for the Gem, delivers | LORE "Nextessa" | `test_courier.js`, `test_courier_gem.js` |
 | Backpacka | The flying creature of the Event: drinks from the pond, waters the Garden, flies into the mist | LORE "Backpacka" | `test_backpacka.js`, `test_bp_water.js` |
-| Pickups | 32 Blossoms and 40 flint in the park, regrowing in 12 s; never inside a building, a kiosk or the Gazebo (B95) | LORE "Currency, items and rewards"; GAME "Tuning values" | `test_world.js` |
+| Pickups | 32 Blossoms and 40 flint in the park, regrowing in 12 s; never inside a building, a kiosk or the Gazebo (B95); a pickup the ray passes through wins the pick (B97) | LORE "Currency, items and rewards"; GAME "Tuning values" | `test_world.js`, `test_gazebo_pick.js` |
 | Rewards and items | Artifacts (dance-battle wins), the Gem, the Summoning Stone, Seeds, Snacks, the shyness book, outfits | LORE "Currency, items and rewards", "Quests and their lines" | `test_progression.js`, `test_courier_gem.js` |
 | Talking and gifts | Menus (`Talk to ...`, `Give a blossom`), dialogue pages, greetings | LORE "Quests and their lines", "Gifts and gardening lines" | `test_progression.js`, `test_menu.js`, `test_textfit.js`, `test_greet.js` |
 | Dance battles | Etcher, Glyph and Montgummery; rock, scissors, paper; King Dino on drums | LORE "Events" | `test_content.js`, `test_progression.js` |
 | Text scenes and token scenes | Two townsfolk meet: speech bubbles, or thrown tokens (one choreography ends in a confetti burst) | LORE "Vignettes" | `test_vig_flash.js`, `test_bubble_clear.js`, `test_bubble_eye.js` |
 | Mama Gorbo and Gooward's meeting | Hearts and a goo barrage; Gooward not interactable during it | LORE "Events"; FIXES A39 | `test_meet.js`, `test_meet_walk.js`, `test_goo_eye.js` |
-| King Dino's jazz | The jazz session | LORE "Events" | `test_jazz.js` |
+| King Dino's jazz | His kit's drum song (funk since 4.0.45, A64; jazz before), heard near the dance floor | LORE "Events" | `test_jazz.js`, `test_music_queue.js` |
 | The Speech | Sparkakus assembles the Gem from the three Artifacts | LORE "The Ancient", "Events" | `test_courier_gem.js`, `test_progression.js` |
-| The Event (planting) | Started at the Pillar: the town gathers in a ring, the mist rolls in, kiosks and trees fade, flowers are planted and grow, Backpacka waters them, pizza boxes are out (with Snacks) and fade at the end | LORE "Events"; GAME "Town life" | `test_stands.js`, `test_event_fade.js`, `test_flower_tint.js`, `test_pizza_fade.js`, `test_noseeds.js`, `test_mushroom_event.js`, `test_anomalee.js` |
+| The Event (planting) | Started at the Pillar: the town gathers in a ring, the mist rolls in, kiosks and trees fade, flowers are planted and grow, Backpacka waters them, pizza boxes are out (with Snacks) and fade at the end | LORE "Events"; GAME "Town life" | `test_stands.js`, `test_event_fade.js`, `test_flower_tint.js`, `test_pizza_fade.js`, `test_noseeds.js`, `test_mushroom_event.js`, `test_anomalee.js`, `test_plant_spot.js`, `test_unstick.js`, `test_horn_pause.js` |
 | The player | Walk, snap turn, the pick ray, the menus; the left-hand watch whose HUD opens on its face (Y while looking at it) | GAME "Controls"; FIXES A35, A41 | `test_input.js`, `test_menu.js`, `test_watch.js`, `test_hud.js` |
 | View safeties | The head guard (the view dims at a wall), the head inside a character, held uploads and shader compiles, eye guards (goo, bubbles, confetti) | GAME "Safeties"; FIXES S1-S15, F-B82 | `test_safeties.js`, `test_shaderhold.js`, `test_firstdraw.js`, `test_goo_eye.js`, `test_bubble_eye.js` |
-| The flash record | The B mark logs the last seconds: state changes, GPU work, the drawn picture's brightness, XR frame health | FIXES D2, S15; `HEADSET_DIAG.md` | `test_flashlog.js` |
-| Sound | Every sound synthesised; positional hearing radii | GAME "Content hooks" | `test_audio.js` |
-| Frame rate and quality | The governor (a frame-time average and an over-budget flag that only logs; no quality levels since 4.0.14; the render scale is native and foveation fixed at 0), the Event's far-object safeguard (keyed on the Event alone), multiview, batching | `PERF.md`, `RENDERING.md` | `test_governor.js`, `test_lod.js`; report tools in `README.md` |
-| Stability | Recovery from faults, the stability safeties and 60 s limits, leaving and entering VR, memory after the headset sleeps (the native census, the black box), long play | GAME "Safeties", "Boot and VR entry"; FIXES S3-S5, S13, S31, S38, B96 | `test_recover.js`, `test_s38.js`, `test_reentry.js`, `test_b96.js`, `test_soak.js` |
+| The flash record and the performance log | The B mark logs the last seconds: state changes, GPU work, the drawn picture's brightness, XR frame health; debug builds log each frame's game CPU by part every 10 s (4.0.49) | FIXES D2, S15, 4.0.49; `HEADSET_DIAG.md` | `test_flashlog.js`; `perf_log.js` |
+| Sound | Every sound synthesised; positional hearing radii; held while the game is paused | GAME "Content hooks", "Boot and VR entry" | `test_audio.js`, `test_music_queue.js`, `test_horn_pause.js`, `test_menu_pause.js` |
+| Frame rate and quality | The governor (a frame-time average and an over-budget flag that only logs; no quality levels since 4.0.14; the render scale is native and foveation fixed at 0), the Event's far-object safeguard (keyed on the Event alone), multiview, batching, the load-time merges (panel sheets, glass panes), far characters posed less often | `PERF.md`, `RENDERING.md` | `test_governor.js`, `test_lod.js`, `test_merges.js`, `test_far_pose.js`, `test_offview.js`; report tools in `README.md` |
+| Stability | Recovery from faults, the stability safeties and 60 s limits, leaving and entering VR, memory after the headset sleeps (the native census, the black box), the pause (system menu, headset off), long play | GAME "Safeties", "Boot and VR entry"; FIXES S3-S5, S13, S31, S38, B96, B115, B121 | `test_recover.js`, `test_s38.js`, `test_reentry.js`, `test_b96.js`, `test_menu_pause.js`, `test_soak.js` |
 | The three forms | The APK, `index.html` (archive), `index.compressed.html` (ordinal) | GAME "The three forms it ships in"; NOTES 100 | `test_entry.js`, `test_standalone.js`, `test_compressed.js` |
 
 ## Content hooks seen in the code

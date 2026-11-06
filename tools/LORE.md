@@ -1,7 +1,7 @@
 # Greeblis Town, Lore Bible (third pass)
 
 Compiled strictly from the game's own text, data and pictures in the game file, `tools/uncompressed.html`
-(4.0.34; the root `index.html` is a byte copy of it). Of the fixes in FIXES.md only A2 (Gemtoe's seventh talk
+(4.0.34, with later changes to 4.0.61 noted where they fall; the root `index.html` is a byte copy of it). Of the fixes in FIXES.md only A2 (Gemtoe's seventh talk
 line, 3.15.53) adds story text; the rest change looks and staging, which this Bible follows where they touch the
 lore. Lines are quoted as written. Anything not stated by the game is marked *(inference)*. Gaps are listed at the
 end so the author can fill them. Every inference made up to 2026-11-04 has since been confirmed by the author and is
@@ -255,7 +255,7 @@ cardinal on a branch in the top right corner.
 | Summoning Stone | Gemtoe trades it for the Gem: "That Gem you have… It’s worthless… trust me.\|I’ll trade this rock I found for it. You’re better off!" then "* Summoning Stone obtained! *". Wakes the Summoning Pillar's runes ("The runes stay dark.\|Only the Summoning Stone can wake them and start the gardening event."). Not used up: the Event can be held again. |
 | Seeds | The "bagel seasoning packet", 25 flint at Garden Supplies ("You bought the bagel seasoning packet! SEEDS quest complete!"; again: "You already have the bagel seasoning packet."). With them the town gathers and plants at the Event. |
 | Snacks | "+20 Snacks" per pizza delivery (one is enough). With them the Event has pizza: eight stacks of boxes round the Garden and Anomalee's own open box. |
-| OVERCOMING SHYNESS | A book on the Library's shelves ("Take OVERCOMING SHYNESS"); it frees Zollod from his shyness; it leaves the shelf when taken, with a page riffle and a rising chime of its own (A61, 4.0.37). |
+| OVERCOMING SHYNESS | A book on the Library's shelves ("Take OVERCOMING SHYNESS"); it frees Zollod from his shyness; it leaves the shelf when taken, shrinking away over 0.4 s (since 4.0.61, B120), with a page riffle and a rising chime of its own (A61, 4.0.37). |
 | Outfits | Flower Hat, Sun Dress, Frog Shoes, 3 flint each, worn by the player ("You bought the Flower Hat and put it on. Take a look in the mirror!"; "You put on the …", "You take off the …"; short: "You need 2 more flint for the Sun Dress."). |
 | King Dino's coins | "not legal tender"; "He stamps those coins himself."; "Stamped by the King, baby. Legal enough." |
 | Goo burger coupons | Mama Gorbo hands them out ("Please take a coupon for my famous goo burger."). |
@@ -760,7 +760,7 @@ What the models have in common, as built:
   launch). Every character breathes, sways or bobs with slow sines (mostly 0.7-2.1 rad/s,
   a few centimetres or a few hundredths of a radian), each part at a different rate and phase, so nothing looks
   frozen and no two move alike. Talking adds a nod, a bounce or a moving mouth (`tkS`); walking adds a stride or a
-  hop. Dancers follow the beat (`gcBeatHz`, 98 beats a minute in town since 4.0.45, the drums' tempo; 88 in the Event).
+  hop. Dancers follow the beat (`gcBeatHz` in earlier builds, a name the minifier now shortens; 98 beats a minute in town since 4.0.45, the drums' tempo; 88 in the Event).
 - **Props tell the job.** Mushroom the sheriff: a star badge and a cowboy hat. Somlet the postmaster: a cap with an
   envelope badge, asleep at the post. Zollod the gardener: an apron with seed packets and a garden growing on his
   back. King Dino the drummer: a crown and drumsticks. Nextessa the courier: a pizza box on her head.
@@ -830,8 +830,10 @@ What the models have in common, as built:
 - **Extras**: a six-point sheriff's star; a cowboy hat whose brim and crown are shaped by moving the lathe's vertices
   (sides curled up, a front dent, a centre crease).
 - **Motion**: the stem sways, the cap bobs and nods while he talks. No walk cycle: he glides. He stands on his desk
-  (1.545 m up) and goes up and down by a ramp at its left end (since 3.15.53, the author's design; it was a hop),
-  his height following the ramp (FIXES.md F-B39).
+  (1.545 m up) and goes up and down by a ramp (since 3.15.53, the author's design; it was a hop), his height
+  following the ramp (FIXES.md F-B39). Since 4.0.61 the desk spans the whole kiosk and the ramp runs outward from
+  the desk's front edge at the left, at the same slope, to the ground 2.55 m in front of the kiosk (it rose at the
+  desk's left end, from the kiosk's front to its back wall, before); he crosses the desk to the ramp's top.
 
 #### King Dino
 - **Body**: his own signed-distance blob (torso, a head nearly as wide, a wide snout, two thighs), pear-shaped.
@@ -978,9 +980,10 @@ What the models have in common, as built:
 #### Backpacka
 - **Body**: a horizontal lathe body with seven colour patches, a ten-segment neck, a head with a jaw and tongue, a
   curled tail, four legs ending in open pipe feet, ten leaf-like wing blades; he flies the whole time.
-- **Palette**: tan skin (`#d48e64`) with orange, yellow, ochre and pink patches, green wings, a rainbow.
+- **Palette**: tan skin (`#d48e64`) with orange, yellow, ochre and pink patches, green wings.
 - **Motion**: the planting Event's set piece: he flies in, drinks from the pond and swells, flies to the garden,
-  spins while his four feet spray water on the plants, a rainbow fades in, and he flies away low over the north-west
+  spins while his four feet spray water on the plants (a rainbow faded in over the Garden until 4.0.55, when the author
+  had it removed), and he flies away low over the north-west
   fence into the Event's mist bank, where he is switched off (88 s in all; 84 s until 3.15.54, FIXES A7).
 - **Performance and collision** (3.15.50): batched when built (P25: 94 of 96 parts in 11 batches); while he is down at
   the pond the player cannot walk into him (F-B37: player-only circles round his feet, body, neck and head).
@@ -1096,7 +1099,7 @@ places clears the hat (emotes at 2.4 m, speech bubbles at 3.1 m). No questions a
 
 ## Environment design and style
 
-How the world is built and how it looks, read from the game file (`tools/uncompressed.html`, 3.15.67; later changes to 4.0.34 noted where they fall), as
+How the world is built and how it looks, read from the game file (`tools/uncompressed.html`, 3.15.67; later changes to 4.0.61 noted where they fall), as
 "Creature design and style" above does for the characters. Numbers are the code's own (metres, radians, seconds;
 colours as hex). Most buildings carry no name, so the building names below are the 3.15.44 builders' code names
 (`git show 21596f1:tools/uncompressed.html`: `STORE`, `FRONTIER`, `HOUSE`, `COURTHOUSE` and so on; minified since
@@ -1237,9 +1240,9 @@ Outside the fence:
 | Kiosk | Walls / ink | Tin roof | Dressing |
 | --- | --- | --- | --- |
 | POST OFFICE | blue `#33508f` / navy `#22325a` | pink `#e276a0` | A mound of 2,300 letters behind the counter (seven paper tints, some stamped red or blue) on which Somlet sleeps; a 6 x 4 pigeonhole wall full of letters; parcels in kraft paper. |
-| SHERIFF'S | brown `#8a5a3a` / `#6a3a1a` | red `#b82822` with nine white spots per slope: a mushroom cap | Taller by 1 m; the desk 1.545 m up with Mushroom's wooden ramp at its left end (1.77 m wide, A13; F-B39); a gold six-point star on the back wall; WANTED posters; clusters of toadstools on the corners and the counter, two big red ones in front, a giant one at the side, twelve more on the roof (A14); an orange flag with a red mushroom emblem 10.5 m up. |
+| SHERIFF'S | brown `#8a5a3a` / `#6a3a1a` | red `#b82822` with nine white spots per slope: a mushroom cap | Taller by 1 m; the desk 1.545 m up across the whole kiosk (5.72 m, since 4.0.61) with Mushroom's wooden ramp running outward from its front edge at the left to the ground 2.55 m in front (F-B39, A13; at the desk's left end until 4.0.60); a gold six-point star on the back wall; WANTED posters; clusters of toadstools on the corners and the counter, two big red ones in front, a giant one at the side, small ones in clusters on both roof slopes (12 in A14, 16 more in 4.0.59, 24 more in 4.0.61); an orange flag with a red mushroom emblem 10.5 m up. |
 | GARDEN SUPPLIES | green `#6f8f5a` / `#2f5a2a` | rust `#a85c3a` | Potted plants, seed trays, two glass jars each holding a strange rooted specimen; one hanging basket at the player's left of the front (the right one went in 4.0.22-4.0.23, A46 and A49: Zollod clipped into it leaving). |
-| GOOWARD'S GALLERY | cream `#e8e0cc` / plum `#3a2a5a` | purple `#584284` | Wider (8.4 m) and taller by 1 m, no counter; the painting in its gold frame; paint cans in five colours, some tipped over; 58 paint splats on the floor; brushes; two easels with small landscapes. |
+| GOOWARD'S GALLERY | cream `#e8e0cc` / plum `#3a2a5a` | purple `#584284` | Wider (8.4 m) and taller by 1 m, no counter; the painting in its gold frame; paint cans in five colours, some tipped over; 58 paint splats on the floor; brushes; two easels: a forest (pines in rows from misty hills, a path, light through the trees) and a futuristic city at dusk (a ringed planet, glowing towers, an elevated rail, flying craft, water in front) since 4.0.61 (small landscapes before). |
 
 - **The Library** (`buildLibrary`): open to the sky, no walls or roof: eight bookcases on a large Persian rug
   (11 x 7.8 m; paisleys in red `#8a1822`, navy, gold and teal, with a fringe), and a LIBRARY board on two white posts
@@ -1469,7 +1472,8 @@ it wears (the author's answer 15; the game itself names no owner):
   among them (F-B64).
 - **The fade groups** (P33, RULES.md 26): once the mist is up, each kiosk, the gazebo ("count the Gazebo as a kiosk
   as well. In all regards", the author), the phone booth and the Portal (A27), the park's trees with the robin and the
-  cardinal, and the town's trees fade out over 10 s and stay out until the Event ends, then fade back over 10 s; never
+  cardinal, and the town's trees fade out over 10 s and stay out until the Event ends, then fade back over 10 s (one after
+  another since 4.0.62: each 3 s after the one before, the farthest first out and the nearest first back); never
   the church and Cave, the Ancient, Somlet, the pond or the Garden. In an Event without the Seeds only the town's
   trees fade (F-B72: "If the user starts the Event without having completed 'Seeds', kiosks should NOT fade out").
   The kiosk groups are the buildings of the game's registry other than the church: the Post Office, the Sheriff's,
@@ -1519,10 +1523,9 @@ it wears (the author's answer 15; the game itself names no owner):
   meets the water; flying off, water drips from his mouth. Over the Garden four jets arc from his feet: pale blue
   (`#d8f2ff`), half see-through and glossy, their texture running along them, with drops (up to 420 at once, falling
   under gravity) thrown from the jets and splashing where they land. With the Seeds, a plant within about 1.6 m of a
-  jet's landing is watered and blooms. **The rainbow** (only with the Seeds): a half ring 12.2-14.2 m in radius in
-  seven bands from red (`#e8302a`) to violet (`#a04ad8`), arching east to west across the Garden 7 m south of its
-  centre, its foot 2.5 m below the ground so its top is about 11.7 m up; it fades in to 42% strength 3-7 s after he spreads his wings
-  and out as he leaves. The jets, drops and rainbow are drawn over the mist, so they show against it (F-B74).
+  jet's landing is watered and blooms. The jets and drops are drawn over the mist, so they show against it (F-B74).
+  The rainbow that faded in over the Garden as he sprayed (with the Seeds) was removed in 4.0.55 (the author: "I want
+  to remove the rainbow").
 
 #### The church and the Cave
 
@@ -1560,6 +1563,11 @@ it wears (the author's answer 15; the game itself names no owner):
 - **Gooward's painting** hangs on the Gallery's back wall: 6.9 x 2.6 m, centred 2.55 m up, in a gold frame (`#b8902e`),
   painted at 4096 x 1544 in three strips by a background worker, or loaded pre-painted from `tex/` (F-B34); its canvas
   sits 1 cm behind the frame (F-B47). What it shows: "The gallery painting" above.
+- **The easel paintings** in front of the Gallery (since 4.0.61; the author: "one painting of a forest and another
+  painting of a futuristic city"; small landscapes before): a forest (pines in three rows from misty hills to the
+  front, a path, light through the trees) and a futuristic city at dusk (a ringed planet, glowing towers with spires
+  and lit windows, an elevated rail, flying craft, the water in front). Painted by one painter as two halves of one
+  picture, pre-painted into `tex/` like every texture.
 - **The school mural** (`"mural"` in the sign atlas; 11 x 4.3 m on the school's side in a gold frame): a painterly
   scene of brush strokes and dabs under a soft vignette: a blue sky with the sun and clouds, a rainbow, two ranges of
   hills, a pond with a duck, flowers along the bottom, and Backpacka standing over the meadow, tan and mottled with
@@ -1590,7 +1598,7 @@ of A5.
 | POST OFFICE kiosk | 28.1, -19.8 | the kiosk frame in blue and navy, pink tin roof; 2,300 letters, pigeonholes, parcels | fades in the Event | A43 |
 | SHERIFF'S kiosk | 19.8, -28.1 | brown, a red spotted mushroom-cap roof, the raised desk and ramp, the star, WANTED posters, toadstools, the flag | fades in the Event | A13, A14, F-B39 |
 | GARDEN SUPPLIES kiosk | 27.5, 34.5 | green, rust roof; pots, seed trays, two specimen jars, one hanging basket | fades in the Event; shut while Zollod is shy and during the Event | A46, A49 |
-| GOOWARD'S GALLERY | 31, 14.5 | cream and plum, purple roof; the painting in its gold frame, paint cans, 58 splats, brushes, two easels | fades in the Event | F-B34, F-B47 |
+| GOOWARD'S GALLERY | 31, 14.5 | cream and plum, purple roof; the painting in its gold frame, paint cans, 58 splats, brushes, two easels (a forest and a futuristic city since 4.0.61) | fades in the Event | F-B34, F-B47 |
 | Gemtoe's Gazebo | 5, -31 | a white octagon 7.6 m across, green shingle roof, cupola, gold ball, gold-on-plum board, seven stacks of gold coins | fades in the Event; its seven railed sides are walls; no pickup within 4.1 m of its centre | P33, F-B65, B95 |
 | The TELEPHONE booth | -7.2, 23.9 | aluminium, glass on three sides and a folding door, payphone, yellow phone book, lit TELEPHONE crown, beacon | fades in the Event; the handset lifts when calling; the crown glows at dusk | A27 |
 | The Portal | first clear spot near -9.4, -29.6 | two stone piers and a lintel, cyan tiles; the blue swirl and its light when open | opens in 0.75 s, closes in 0.5 s; fades in the Event with its swirl, not during Nextessa's trip | A27, 4.0.38 |
@@ -1615,7 +1623,6 @@ of A5.
 | The pizza boxes | eight stacks of one to three at 15.95 m round the Garden | flat boxes 0.44 m square | with the Snacks only: fade in at the Event's start and out at its end | A42, A51, F-B49 |
 | Backpacka's ripples | the pond | three pale rings spreading from his mouth | only while he drinks | |
 | Backpacka's jets and drops | his feet, over the Garden | four pale blue glossy arcs and up to 420 falling drops, splashes where they land | only while he sprays; water the plants they land near | F-B74 |
-| The rainbow | across the Garden, 7 m south of its centre | a half ring 12.2-14.2 m in radius, seven bands red to violet | with the Seeds only: fades in to 42% as he sprays, out as he leaves | F-B74 |
 
 **The Library** (-24.75, -24.75; open to the sky; a kiosk like the others: the registry's building `shop`, so it fades out in the Event once Sparkakus has left and back in after it, Sparkakus himself excepted)
 
@@ -1625,7 +1632,7 @@ of A5.
 | The bookcases | on the rug, four in the middle and two crosswise at each end | brown wood, 2.24 x 2.13 m, four shelves, filled on both faces | still | A57 (Sparkakus's romp clears them) |
 | The books | the shelves | seeded rows in ten cloth colours, some leaning, some gilt-banded; eight painted face-out covers | still | |
 | The curios | the shelves | the wish Blossom (a pot with a spinning teal crystal), the electric Blossom (yellow petals on a silver stand), an acorn | the two Blossoms spin and their rings bob | |
-| OVERCOMING SHYNESS | a shelf | a pink book with plum ink | taken by pointing or by walking up to it; plays its own sound | A61 |
+| OVERCOMING SHYNESS | a shelf | a pink book with plum ink | taken by pointing or by walking up to it; plays its own sound and shrinks away over 0.4 s, staying gone after any Event | A61, B120 |
 | The LIBRARY board | the back, on two white posts 4.3 m high | blue serif name on cream | still | |
 | The Speech's bulb | over Sparkakus | a giant glowing bulb, a cone of light, a warm lamp | only in the Speech; the world dims to 70% of night | |
 | The Eye's making | before Sparkakus, in the Speech | a GLUE bottle, three teal gem pieces, glue drips | assembles over about 15 s, spins, flies to the player | |
@@ -1698,8 +1705,9 @@ of A5.
 - **No flicker anywhere**: the gables, the parapets, the church's plinth and arches, the painting's frame, the bar's
   counter and the ramp's landing were overlapped (F-B47: "one more full pass looking for any flickering"; B21).
 - **Mushroom's ramp**: "add a small ramp for him on the side of his desk. Instead of jumping, it'll be funny for him to
-  move up a small ramp to climb it" (F-B39), later as wide as that side of the kiosk (A13); more mushrooms on the
-  Sheriff's roof (A14).
+  move up a small ramp to climb it" (F-B39), later as wide as that side of the kiosk (A13); since 4.0.61 the desk
+  spans the kiosk and the ramp runs outward from its front edge ("connect the ramp and the desk so that they appear
+  as one cohesive shape"); more mushrooms on the Sheriff's roof (A14, 4.0.59, 4.0.61).
 - **The bar's opening** is wider: 2.2 m (A17). **Mama Gorbo's goo** lies on its own layer over the pond's banks
   ("This things should be on different layers", F-B58).
 - **Seeded, not random**: the stars and clouds ("1 to 7: seed", R5) and every painted texture (R1: "we should cut as

@@ -19,10 +19,12 @@ if (!file) { console.error('usage: node tools/perf_log.js <logcat.txt>'); proces
 const buf = fs.readFileSync(file);
 // PowerShell's `>` writes UTF-16 little-endian with a byte-order mark; plain adb output is UTF-8
 const text = (buf[0] === 0xff && buf[1] === 0xfe) || (buf.length > 3 && buf[1] === 0 && buf[3] === 0) ? buf.toString('utf16le').replace(/^\ufeff/, '') : buf.toString('utf8');
-// the perf line: `level=` until 4.0.13 (the governor's quality levels, removed in 4.0.14), `fov=` since 4.0.13 (the layer's fixed foveation read back)
-const re = /(?:m=(\d+)ms )?perf fps=([\d.]+)(?: level=(\d+))?(?: fov=(\S+))? calls=(\d+) tris=(\d+)( event)? at=(-?\d+),(-?\d+)(?: dev=(\S+))?/g;
+// the perf line: `level=` until 4.0.13 (the governor's quality levels, removed in 4.0.14), `fov=` since 4.0.13 (the layer's fixed foveation read back);
+// since 4.0.62 fps= is the frames delivered over the line's 10 s (gaps over 200 ms left out; before, a smoothed snapshot of
+// the last frames) and `low1s=` the slowest whole second in them
+const re = /(?:m=(\d+)ms )?perf fps=([\d.]+)(?: level=(\d+))?(?: fov=(\S+))? calls=(\d+) tris=(\d+)( event)? at=(-?\d+),(-?\d+)(?: dev=(\S+))?(?: low1s=([\d.]+))?/g;
 const rows = []; let m;
-while ((m = re.exec(text))) rows.push({ ms: m[1] ? +m[1] : null, fps: +m[2], level: m[3] !== undefined ? +m[3] : null, fov: m[4] !== undefined ? m[4] : null, calls: +m[5], tris: +m[6], event: !!m[7], x: +m[8], z: +m[9], dev: m[10] || 'unknown' });
+while ((m = re.exec(text))) rows.push({ ms: m[1] ? +m[1] : null, fps: +m[2], level: m[3] !== undefined ? +m[3] : null, fov: m[4] !== undefined ? m[4] : null, calls: +m[5], tris: +m[6], event: !!m[7], x: +m[8], z: +m[9], dev: m[10] || 'unknown', low1s: m[11] !== undefined ? +m[11] : null });
 // the render scale over time, from the layer lines ("projection layer swapped to scale 0.82", "... live, scale 1")
 const swaps = []; const rs = /m=(\d+)ms projection layer (?:swapped to scale|live, scale) ([\d.]+)/g;
 while ((m = rs.exec(text))) swaps.push({ ms: +m[1], scale: +m[2] });
@@ -168,6 +170,8 @@ if (Object.keys(levels).length) console.log(`  governor levels (a log from befor
 const fovs = {}; for (const r of rows) if (r.fov !== null) fovs[r.fov] = (fovs[r.fov] || 0) + 1;
 if (Object.keys(fovs).length) console.log(`  layer foveation read back (fixed at 0 since 4.0.13): ${JSON.stringify(fovs)}${fovs['0'] === rows.length ? '' : '  WARNING: not 0 in every line'}`);
 const low = rows.slice().sort((a, b) => a.fps - b.fps).slice(0, 5);
+{ const ls = rows.filter((r) => r.low1s !== null).sort((a, b) => a.low1s - b.low1s);   // 4.0.62 on: the slowest second of each 10 s
+  if (ls.length) console.log(`  slowest single seconds (low1s, ${ls.length} lines): ` + ls.slice(0, 5).map((r) => `${r.low1s} at (${r.x}, ${r.z})${r.event ? ' Event' : ''}`).join(', ') + (ls[0].low1s < 60 ? ' -- under 60' : ' -- none under 60')); }
 console.log('  lowest readings:');
 for (const r of low) console.log(`    ${r.fps} fps at (${r.x}, ${r.z})${r.event ? ' during the Event' : ''}${r.level !== null ? ', level ' + r.level : ''}${r.scale ? ', scale ' + r.scale : ''}, ${r.calls} calls, ${r.tris} triangles`);
 // which load the frame rate follows: Pearson correlation over the readings (needs a spread of readings)

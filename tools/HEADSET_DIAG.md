@@ -25,7 +25,7 @@ overruns (the author's 3.15.46 log kept only its last 30 seconds, and none of th
 headset runtime's own line, once a second (`FPS=66/72,...,Stale=8`), which `perf_log.js` also reads.
 
 It prints the frame rate by scene (town, the Event), the five lowest readings
-with where the player stood, the governor levels seen, and a verdict against
+with where the player stood, the governor levels seen (logs before 4.0.14), the game's CPU a frame (since 4.0.49), and a verdict against
 the 72 fps target (the author's aim) and the Store's 60 fps floor, with the likely cause for each low reading (triangles or draw calls, whichever the readings follow); from the
 runtime's `VrApi` lines, the seconds under the refresh rate per scene with GPU and CPU use and a verdict: CPU-bound
 when the app's GPU time is under 80% of the frame budget, GPU-bound otherwise; then the flash marks, the long frames
@@ -35,7 +35,8 @@ when the app's GPU time is under 80% of the frame budget, GPU-bound otherwise; t
 
 B96 (found on 4.0.32, the author's logs b42c9cfb and a7fc5e95): after the headset slept 35 s the headset ran out of
 memory within seconds of the return and the game froze head-locked. 4.0.34 has the fix (the loader kept whole, the
-old shim freed at a session's end); this run confirms it on the headset:
+old shim freed at a session's end); this run confirms it on the headset (the author's 4.0.34 run did: two hides, the
+census steady; it stays on the Store checklist for the build to be uploaded, BUILD.md):
 
 1. Start the live capture above (`capture_log.ps1` / `capture_log.sh`, or `adb logcat -c` then
    `adb logcat -v threadtime -s GreeblisServer VrApi > run.txt`), then launch the game.
@@ -52,6 +53,32 @@ What to look for:
 - **`destroyed 0`** in every census line's `xr layers made: ...` part: no layer destroyed during the session.
 - The game drawing and answering after the return (no head-locked picture). If it froze, launch once more and send
   that log too: its first lines, `unsent from the last run: ...`, are the frozen run's last lines.
+
+### Confirming the pause: the system menu and the headset off (B115, B118, B121)
+
+The browser gives no headset-worn signal, so since 4.0.61 the game resumes after input comes back only once the
+headset itself has moved (more than 1.5 mm or 0.25 degrees); a headset lying off the head is still. The thresholds are
+the next run's to confirm. With the live capture running: open and close the system menu a few times (the first time
+too); take the headset off for 30 s or more, pick a controller up and press its trigger while the headset lies still,
+then put the headset back on. The lines to read:
+- `window blur: the game pauses ...` / `window focus: the game resumes`, `xr input sources: +A -R = N`,
+  `all input gone (the system menu or the headset off): the game pauses`, `input while paused by a window blur: the
+  game resumes`.
+- `input back but the headset is still (X mm, Y deg; off the head?): the game stays paused (B121)`: while it lies
+  still; then, worn again, `input back for 0.6 s and the headset moving (X mm, Y deg): the game resumes`. A still
+  reading near the thresholds, or a worn headset that does not resume, is worth sending.
+- `sound paused (the game is paused)` / `sound resumed` (B118): the music must stop with every pause and carry on
+  (not start again) with every resume; the Horn song must not play over itself after one (B124).
+
+### The performance log (debug builds, since 4.0.49)
+
+Every 10 s while presenting: `cpu ms a frame: median M, 90% ..., 99% ..., max ...; over 13.9 ms: n of m [event]; mean
+by part: ...; render by part: ...; frame gap ms: median ..., 90% ..., over 20 ms: n` (the game's own CPU time a frame
+by subsystem; since 4.0.51 the render by stage, the matrix walk, the batcher, culling and sorting, setup, opaque and
+see-through draws in ms and the draws a frame, and the gaps between frames). A frame over 20 ms of game CPU (at most one in 2 s) logs `slow frame: cpu T ms (PART t, ...)`. `perf_log.js`
+prints them by scene and fits the frame rate against the game's CPU (fps a ms, the CPU time at full rate and at 60 fps).
+The final build written by `final_build.js` drops this log with the rest of the debug code (`GT_DEBUG`); the builds the
+author tests keep it.
 
 ## 2. Unfiltered log of one launch (launch problems only)
 
@@ -141,7 +168,7 @@ after the page's last `page:` line, which names the cause.
 ## What to read at boot and handover
 
 Since 3.15.43 (F-B31) the handover line is `projection layer live, scale 1, msaa 4, multiview true` and there are no
-`swapped to scale` lines: the governor changes foveation only.
+`swapped to scale` lines: the governor changed foveation only (since 4.0.13 not even that: foveation is fixed at 0, F-B83).
 
 - `boot slices ms: ...`: the total from `start` to `textures` is the loading time.
   3.15.14 measured 8.2 s; the march change (NOTES 49) and the build-time probe
@@ -158,8 +185,10 @@ page: m=perf fps=71.8 fov=0 calls=118 tris=201240 at=-36,-20
 page: m=perf fps=41.2 fov=0 calls=131 tris=266812 event at=2,-3
 ```
 
-`fps` is 1000 over the governor's frame-time average, `level` the governor's
-quality level (since 3.15.43 every level is at native scale: 0-2 without, 3-4 with fixed foveation; until then 0-1 were supersampled),
+`fps` is the frames delivered over the line's 10 s (since 4.0.62; gaps over 200 ms, a pause, left out; before, 1000
+over the frame-time average at the moment of writing, a snapshot), `low1s=` at the line's end the slowest whole second
+among them (4.0.62), `fov` the layer's fixed foveation read back (0 since 4.0.13;
+`level=`, the governor's quality level, until the levels went in 4.0.14, L1),
 `calls` and `tris` the last frame's draw calls and triangles (both eyes),
 `event` while the planting Event runs, `at` the player's x,z. Read it with
 `adb logcat -s GreeblisServer | grep perf`. A run through the town, a kiosk, a
@@ -257,15 +286,16 @@ dimmed by the head guard (head near a wall), peak P, last -T s`: the head guard 
 the game, so a dark flash with it shown means the head passed near a building part (since 4.0.38 it starts only 3 cm
 from a part and is full 5 cm inside; it was 0.2 m and 0.08 m). A taken Blossom or Flint that was
 still showing logs `recovery: a taken Blossom was still showing: hidden (B97) at X,Z` (B97).
-Since 4.0.38 (B46, the flash during quick pickups) each mark also logs `rec pointing, pickups and sound (3 s): now
-pointing L:blossom R:-, fading N, pickups see-through on|off, audio running, notes started N; ...` (each `sound N note(s)
-PHz` and `audio woken` with its time, too; every audio state change is also logged as `audio STATE (base latency, output)`): per frame, what each hand's ray points at (L/R: `blossom`,
-`flint`, `ui`, a character's or zone's id, `-` for nothing), how many pickups are fading out or in, whether the pickups'
-materials are see-through (they are while any fades), and when a panel (menu, dialogue, shop panel, watch HUD) was
-redrawn, each change with its time before the mark. 1.5 s after the mark comes `rec after the mark (T s): F frames,
-calls MIN-MAX, head guard ...; ...`: the same changes plus slow frames and program, texture or geometry count changes
-in the frames after the press (the author presses up to a second after seeing a flash). `rec near eyes` now looks at
-sprites (the floating marks, the labels) and lines too, not only meshes and points.
+From 4.0.38 to 4.0.48 (B46, the flash during quick pickups) each mark also logged `rec pointing, pickups and sound
+(3 s)` (what each hand's ray pointed at, pickups fading, panel redraws, notes started); 4.0.49 trimmed that per-frame
+record from the flight recorder, and 4.0.53 removed the line (B110). Every audio state change is still logged as
+`audio STATE (base latency, output)`. 1.5 s after the mark comes `rec after the mark (T s): F frames, calls MIN-MAX,
+head guard ...; ...`: slow frames and program, texture or geometry count changes in the frames after the press (the
+author presses up to a second after seeing a flash). `rec near eyes (the head at the mark)` (since 4.0.53; measured
+from the world's origin before) looks at sprites (the floating marks, the labels) and lines too, not only meshes and
+points. Since 4.0.53 every snap turn, pickup or Artifact is followed by `after snap (frames to N): gaps ... ms; calls
+...; cpu ... ms` (`after blossoms`, `after flint`, `after artifacts` likewise): the 14 frames that follow, so an
+unmarked flash can be tied to one.
 `depth range change kept off the session in play (NEAR-FAR; S18)`: the camera's far plane changed after VR entry, and
 the patched three.js kept the new depth range off the session (it sends it once per session). Expected twice per
 Event: at its start (the far-object safeguard's far plane, `finaleFar`, 300 m) and at its end (back to 310 m).
@@ -284,6 +314,11 @@ Since 3.15.59-3.15.63 the log also has:
 - `[draw hook] ...` and other bracketed errors (`[entity:ID]`, `[world]`, `[render]`): an error the frame survived;
   each is a bug to report.
 - `no progress: ID D m from its target for 5 s` (F-B55): a townsfolk the stuck detector moved on.
+- `unstuck: ID had not moved for T s at X,Z, D m from WHERE: moved there` (B117, 4.0.58): the safety behind it moved a
+  townsperson on (with a sparkle): each one is a stuck walk to report, with where it happened.
+- `pick missed a blossom|flint D m off the ray at R m (X,Z): visible ..., shown ..., taken ..., hidden for the Event
+  ..., fading ..., regrowing ...` (4.0.57, B97/B116): the trigger pressed near a pickup that was not taken.
+- At load: `panel sheets: N draws merged` (P48, 4.0.59) and `glass merged: N draws` (P49, 4.0.60).
 - `matrix walk: a still group moved, walked every frame from now (GROUP, NODE at X Y Z)` and `... a child added to a
   still group ...` (P32, 3.15.66): a group marked still at load turned out to move; harmless (it is walked again from
   then on), but the group should be marked to move (`userData.keep`): send the log.

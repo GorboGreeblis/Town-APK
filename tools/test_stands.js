@@ -8,7 +8,10 @@
 //     big ones, the robin's among them, and the town's trees outside the fence; one unit), never the church;
 //   - no stand starts fading while its owner (a townsperson whose home is inside it) is within 6 m of home; once out, it
 //     stays out until the Event ends;
-//   - a fade out takes at least 9 s (not quickly); every stand whose owner left is hidden while the Event dances;
+//   - a fade out takes at least 9 s (not quickly; RULES.md 30), and the stands fade one after another, not all at
+//     once (4.0.62: 10 s each, starting 3 s apart, farthest first; at most 4 fading at a time: the Event's opening dip, the author: "we can
+//     increase the time it takes for the Event to start and end. Have things happen more spaced out"); every stand
+//     whose owner left is hidden while the Event dances;
 //   - after the Event every stand is back in full, and none fades out again on its way back;
 //   - no character is in a faded group (every townsperson, and Sparkakus, built inside his library: "the same as all
 //     other NPCs"), and Sparkakus is shown while the Event dances;
@@ -53,7 +56,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const tr = S.list.find((s) => s.name === 'the park\'s trees and birds'), tt = S.list.find((s) => s.name === 'the town\'s trees'), K = window.__gcCarved || {};
     const robinWithTree = !!(tr && J.robin && tr.gs.includes(J.robin.group) && K.ptree && tr.gs.includes(K.ptree) && tt && K.trees && tt.gs.includes(K.trees));
     const treeN = (window.__gcTreeAt || []).length;
-    const out = { robinWithTree, treeN, names: S.list.map((s) => s.name), owners: Object.fromEntries(S.list.map((s) => [s.name, s.own.map((h) => h.id)])), guardN: guard.length, guardHidden: [], fadedGuard: [], early: [], fadeOut: {}, hiddenWhileDancing: [], lateReturn: [], endF: {}, near: null };
+    const out = { robinWithTree, treeN, names: S.list.map((s) => s.name), owners: Object.fromEntries(S.list.map((s) => [s.name, s.own.map((h) => h.id)])), guardN: guard.length, guardHidden: [], fadedGuard: [], early: [], fadeOut: {}, starts: {}, hiddenWhileDancing: [], lateReturn: [], endF: {}, near: null };
     const mats = new Set(); for (const s of S.list) for (const [m] of s.mats) mats.add(m);
     const faded = new Set(); for (const s of S.list) for (const g0 of s.gs) g0.traverse((x) => faded.add(x));
     // every character is like every other NPC (the author: "Sparkakus really should be the same as all other NPCs"):
@@ -79,10 +82,12 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
         const k = st.get(s);
         if (s.f < 1 && k.start === null) { k.start = t; if (s.own.some((h) => home(h) < 6)) out.early.push(s.name); }
         if (s.f === 0 && k.zero === null && k.start !== null) { k.zero = t; out.fadeOut[s.name] = +(t - k.start).toFixed(1); }
+        if (D.me.active && k.start !== null) out.starts[s.name] = out.starts[s.name] || +(k.start).toFixed(2);
         // after the Event every stand only comes back (never fades out again)
         if (!D.me.active && k.lastF !== undefined && s.f < k.lastF) out.lateReturn.push(s.name);
         k.lastF = D.me.active ? undefined : s.f;
       }
+      out.maxFading = Math.max(out.maxFading || 0, S.list.filter((s) => s.f > 0 && s.f < 1).length);
       for (const o of guard) if (!shown(o)) out.guardHidden.push(`#${C.children.indexOf(top(o))} ${o.type}`);
     };
     while (D.me.active && performance.now() - t0 < 600000) {
@@ -125,6 +130,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('nothing that must stay shares a faded material', r.fadedGuard.length === 0, r.fadedGuard.slice(0, 6).join(', '));
   expect('no stand starts fading while its owner is within 6 m of home', r.early.length === 0, r.early.join(', '));
   expect('a fade out takes at least 9 s', Object.keys(r.fadeOut).length >= 3 && Object.values(r.fadeOut).every((s) => s >= 9), JSON.stringify(r.fadeOut));
+  { const t = Object.values(r.starts).sort((a, b) => a - b), gaps = t.slice(1).map((v, i) => v - t[i]);
+    expect('the stands fade one after another (at most 4 at a time; most starts 2 s or more apart)', r.maxFading <= 4 && gaps.filter((x) => x >= 2).length >= Math.floor(gaps.length / 2), `max fading ${r.maxFading}, start gaps ${gaps.map((x) => x.toFixed(1)).join(' ')}`); }
   expect('every stand whose owner left is hidden while the Event dances', r.hiddenWhileDancing === true);
   expect('the church and Cave, the Ancient, the pond and Somlet are never hidden during the run', r.guardHidden.length === 0, r.guardHidden.slice(0, 6).join(', '));
   expect('walking up to a hidden stand (6 m) leaves it hidden until the Event ends', r.near && r.near.f === 0, JSON.stringify(r.near));
