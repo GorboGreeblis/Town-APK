@@ -299,8 +299,10 @@ public final class GameServer {
                 target = target.substring(0, q);
             }
             OutputStream out = c.getOutputStream();
-            if (target.equals("/log")) {
-                // Diagnostics: the page can report to logcat (the browser does not log console output).
+            if (BuildConfig.PAGE_LOG && target.equals("/log")) {
+                // Diagnostics: the page can report to logcat (the browser does not log console output). Debug builds
+                // only: the final (Store) build compiles this out (build.gradle, -PfinalBuild=true), and its page
+                // never calls it.
                 String msg = query;
                 try {
                     msg = java.net.URLDecoder.decode(query, "UTF-8");

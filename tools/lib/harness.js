@@ -91,9 +91,12 @@ function serve(body, standalone) {
  *   onBeforeGrant(page, ctx): awaited right before the simulated grant (probes).
  *   noVisits: true (default) parks the random visit scheduler; test_visits forces
  *   its own pairs through JGP.visitAt, which still works.
+ *   hook: false serves the file exactly as it is, with no window.__dbg (the final build, test_final.js): the
+ *   boot waits for the loader's booted flag instead, and fastSim, renderEvery and noVisits do nothing (they reach
+ *   the game through __dbg); the game draws every frame.
  */
-async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/index.html'), vr = true, fastSim = true, noVisits = true, renderEvery = 1, timeoutMs = 300000, onBeforeGrant = null, initScripts = [], standalone = false } = {}) {
-  const srv = await serve(hooked(path.resolve(file)), standalone);
+async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/index.html'), vr = true, fastSim = true, noVisits = true, renderEvery = 1, timeoutMs = 300000, onBeforeGrant = null, initScripts = [], standalone = false, hook = true } = {}) {
+  const srv = await serve(hook ? hooked(path.resolve(file)) : fs.readFileSync(path.resolve(file)), standalone);
   const url = `http://127.0.0.1:${srv.address().port}/`;
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--autoplay-policy=no-user-gesture-required', ...(process.env.GT_JSFLAGS ? ['--js-flags=' + process.env.GT_JSFLAGS] : [])] });
   // GT_DEVICE=quest2|quest3s|quest3: that headset's user agent and GPU limits (tools/fakexr.js S.DEVICES).
@@ -178,7 +181,7 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
   for (const sc of initScripts) await page.addInitScript(sc);   // a test's own probes, before the game's first line
   const t0 = Date.now();
   await page.goto(url, { waitUntil: 'load', timeout: timeoutMs });
-  await page.waitForFunction(() => window.__dbgReady === true, null, { timeout: timeoutMs });
+  if (hook) await page.waitForFunction(() => window.__dbgReady === true, null, { timeout: timeoutMs });
   // The boot is sliced (3.15.7+): the world-ready flag comes before the shader
   // slices, warm-up and the game loop start. Wait for the loop (Re.t advances).
   await page.waitForFunction(() => window.__gtXR && window.__gtXR.booted === true, null, { timeout: 180000 }).catch(() => {});
@@ -201,18 +204,18 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
     await page.evaluate(() => window.__fakeXR.fire());
     await page.waitForFunction(() => window.__fakeXR.frames > 5, null, { timeout: 60000 });
     presentS = (Date.now() - t0) / 1000;
-    if (fastSim === 'matrices') await page.evaluate(() => { const O = window.__dbg.O; O.__realRender = O.render; O.render = (sc) => { if (sc && sc.isScene && sc.autoUpdate !== false && sc.matrixWorldAutoUpdate !== false) { const all = window.__dbg.It && window.__dbg.It.all; if (all) for (const t of all) { const gr = t.group; if (gr && (gr.gcOff || gr.gcHalf || gr.gcFar)) { gr.gcOff = gr.gcHalf = gr.gcFar = false; gr.updateMatrixWorld(true); } } sc.updateMatrixWorld(); } }; });   // the game's own render wrapper (skipped here) marks characters off screen or posed at half rate (P45) and clears those marks; without it the marks set before this point stood for the whole run and froze those characters' matrices
+    if (!hook) { /* no __dbg: the game runs as shipped */ } else if (fastSim === 'matrices') await page.evaluate(() => { const O = window.__dbg.O; O.__realRender = O.render; O.render = (sc) => { if (sc && sc.isScene && sc.autoUpdate !== false && sc.matrixWorldAutoUpdate !== false) { const all = window.__dbg.It && window.__dbg.It.all; if (all) for (const t of all) { const gr = t.group; if (gr && (gr.gcOff || gr.gcHalf || gr.gcFar)) { gr.gcOff = gr.gcHalf = gr.gcFar = false; gr.updateMatrixWorld(true); } } sc.updateMatrixWorld(); } }; });   // the game's own render wrapper (skipped here) marks characters off screen or posed at half rate (P45) and clears those marks; without it the marks set before this point stood for the whole run and froze those characters' matrices
     else if (fastSim) await page.evaluate(() => { const O = window.__dbg.O; O.__realRender = O.render; O.render = () => {}; });
     else if (renderEvery > 1) await page.evaluate((N) => { const O = window.__dbg.O, R = O.render; let k = 0; O.__realRender = R; O.render = function () { if (++k % N === 0) return R.apply(this, arguments); }; }, renderEvery);
     // Hold the random visit scheduler so NPCs under test are not whisked away
     // to visit someone (tests that need visits force a pair with JGP.visitAt).
-    if (noVisits) await page.evaluate(() => { const D = window.__dbg; D.JGP.visitAt(D.Re.t + 1e6); });
+    if (noVisits && hook) await page.evaluate(() => { const D = window.__dbg; D.JGP.visitAt(D.Re.t + 1e6); });
   }
   const bootS = (Date.now() - t0) / 1000;
   return {
     presentS,
     page, browser, errors, bootS, url, requests,
-    hooks: await page.evaluate(() => Object.keys(window.__dbg)),
+    hooks: await page.evaluate(() => Object.keys(window.__dbg || {})),
     frameHazards: () => page.evaluate(() => window.__gtFrameHaz || null).catch(() => null),
     close: async () => {
       // report GPU work inside XR frames (flash causes) for every test that booted the game; collected by run_tests.sh

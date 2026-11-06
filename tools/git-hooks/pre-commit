@@ -9,15 +9,24 @@ ROOT="$(git rev-parse --show-toplevel)"
 ASSET="$ROOT/tools/android/app/src/main/assets/index.html"
 if git diff --cached --name-only | grep -qE '^(index\.html|GreeblisTown-release\.apk|tools/android/app/src/main/assets/index\.html|tools/uncompressed\.html|index\.compressed\.html|tools/android/app/build\.gradle)$'; then
   if ! python3 -I "$ROOT/tools/sync_game.py" --check >/dev/null 2>&1; then
-    echo "pre-commit: index.html or the APK's asset differs from the game file tools/uncompressed.html." >&2
-    echo "            Run: python3 tools/sync_game.py && git add index.html tools/android/app/src/main/assets/index.html" >&2
-    exit 1
+    # the final (Store) build ships the game file with the debug code taken out (RULES.md 34, tools/build.sh --final):
+    # the copies must then be exactly what final_build.js makes of the game file now (made again here to compare)
+    FIN=$(mktemp -d)/final.html
+    if ! { node "$ROOT/tools/final_build.js" "$ROOT/tools/uncompressed.html" --out "$FIN" >/dev/null 2>&1 \
+           && python3 -I "$ROOT/tools/sync_game.py" --check --src "$FIN" >/dev/null 2>&1; }; then
+      echo "pre-commit: index.html or the APK's asset differs from the game file tools/uncompressed.html" >&2
+      echo "            (and from its final build, tools/final_build.js)." >&2
+      echo "            Run: python3 tools/sync_game.py && git add index.html tools/android/app/src/main/assets/index.html" >&2
+      echo "            or, for the final build: tools/build.sh --bump --final" >&2
+      rm -rf "$(dirname "$FIN")"; exit 1
+    fi
+    rm -rf "$(dirname "$FIN")"; FINAL=1
   fi
   if ! node "$ROOT/tools/minify_game.js" --check >/dev/null 2>&1; then
     echo "pre-commit: the game file tools/uncompressed.html is not fully minified (RULES.md 19). Run: tools/build.sh --bump" >&2
     exit 1
   fi
-  if ! node "$ROOT/tools/build_compressed.js" --check >/dev/null 2>&1; then
+  if [ -z "$FINAL" ] && ! node "$ROOT/tools/build_compressed.js" --check >/dev/null 2>&1; then
     echo "pre-commit: index.compressed.html does not unpack to the current game file (RULES.md 20). Run: tools/build.sh --bump" >&2
     exit 1
   fi

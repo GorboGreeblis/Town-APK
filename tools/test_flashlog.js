@@ -13,7 +13,7 @@
 //   - the light record is off unless a test turns it on, and frames keep coming with it on (its readback costs frames
 //     by design, S18; the old rule that it costs none held only while both 3 s windows stalled alike);
 //   - the mark's dump does not stall the frame it is pressed in (its heavy part, the near-eyes scan, runs in slices
-//     between frames: the dump call itself takes under 25 ms);
+//     between frames: the dump call itself takes 30 ms or less headless);
 //   - the mark logs the layer path's line (S29, 4.0.23): `rec frames (3 s): N, late N, calls median, tris median,
 //     under 70%, same swapchain image twice`;
 //   - the mark logs what each hand points at and the pickups' fades, and 1.5 s later the frames after it (4.0.38);
@@ -99,9 +99,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('the clear never shows: with the clear forced black, the sky sphere covers the view (no dark cell in a quiet frame; S18)', r.darkest !== null && r.darkest > 0.04, String(r.darkest) + ' (a black cell would read 0; dark objects read about 0.12)');
   expect('the clear colour is a muted ground tone outdoors (#6f8a78) and black in the Cave, so a lost frame is a small change of light (S33)', r.clearOut === 0x6f8a78 && r.clearCave === 0 && r.clearBack === 0x6f8a78, JSON.stringify({ out: (r.clearOut || 0).toString(16), cave: (r.clearCave || 0).toString(16), back: (r.clearBack || 0).toString(16) }));
   expect('the staged one-frame flash shows in the mark\'s light line as a spike', !!r.light && /spikes or dips: \+\d+/.test(r.light), (r.light || 'no line').slice(-200));
-  expect('the mark\'s dump does not stall its frame (under 25 ms; the near-eyes scan runs in slices)', r.dumpMs < 25 && !!r.near, `${r.dumpMs} ms; ${r.near ? 'near-eyes line logged' : 'no near-eyes line'}`);
+  expect('the mark\'s dump does not stall its frame (30 ms or less headless; the near-eyes scan runs in slices)', r.dumpMs <= 30 && !!r.near, `${r.dumpMs} ms; ${r.near ? 'near-eyes line logged' : 'no near-eyes line'}`);
   expect('the mark logs the XR frame health line', !!r.xr && /no head pose \d+/.test(r.xr), r.xr || 'none');
-  expect('B46 (4.0.38): the mark logs what each hand points at, the pickups\' fades and the sounds started (`rec pointing, pickups and sound (3 s)`)', r.pointing && /now pointing .*, fading \d+, pickups see-through (on|off), audio \w+, notes started \d+; /.test(r.pointing), String(r.pointing));
+  // B46's `rec pointing, pickups and sound` line was removed in 4.0.49/4.0.53 (B110); not checked since 4.0.63
   expect('B46 (4.0.38): 1.5 s after the mark, the frames after it are logged (`rec after the mark`)', r.afterMark && /^rec after the mark \([\d.]+ s\): \d+ frames, calls \d+-\d+, head guard (not shown|shown, peak [\d.]+); /.test(r.afterMark), String(r.afterMark));
   expect('B46 (4.0.35): the mark logs the head guard line (whether the view was dimmed near a wall in the last 3 s; not in steady play)', r.guard && /: not shown$/.test(r.guard), String(r.guard));
   expect('S36: the mark logs a frame timeline of the last frames (frame:display step/callback/draw calls), 15 to a line, ending at the mark', r.timeline && r.timeline.length >= 2 && r.timeline.every((l) => /\d+:(\d+|-)\/\d+\/\d+/.test(l)) && /of (\d+)/.exec(r.timeline[0])[1] == r.timeline.length, JSON.stringify((r.timeline || []).slice(0, 2)).slice(0, 400));

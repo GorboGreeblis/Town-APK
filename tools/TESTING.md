@@ -27,7 +27,7 @@ fails when a test the runner runs is missing here). Every tier: the copies are t
 minified, the compressed version unpacks to it, every experiment applies, the server harness, docs consistency,
 spell-check, the bend test (`test_bend_exact.js`), no undeclared names (`test_freevars.js`), the APK check. Every tier but quick: VR entry (`test_entry.js`), runtime play
 (`test_play.js`), multiview (`multiview_check.js`), uniform budget, warm-up coverage, standalone, the compressed
-version as an ordinal (`test_compressed.js`), the Event's first start, the texture census, the frame governor and fixed foveation (`test_governor.js`),
+version as an ordinal (`test_compressed.js`), the final build written without its debug code and played as shipped (`final_build.js`, `test_final.js`), the Event's first start, the texture census, the frame governor and fixed foveation (`test_governor.js`),
 game content (`test_content.js`), greeting, wrist HUD (`test_hud.js`), roaming (`test_roam.js`, `--long` in full), meetings (`test_meet.js`), jazz drums
 (`test_jazz.js`), audio,
 seeded decoration (`test_seeded.js`), the interaction menu (`test_menu.js`), visitors to the Ancient in the Cave

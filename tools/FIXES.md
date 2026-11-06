@@ -1922,6 +1922,50 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.63** (the author: "From the very last build: debug and logging features must be removed"; RULES.md 34). The
+  game plays as in 4.0.62 in the builds the author tests (the debug code is fenced, not changed); the Store build is
+  made without it.
+  - **Fenced by GT_DEBUG in the entry script** (the loader and layer shim): the log function itself (`window.__gtLog`:
+    its report to the APK's `/log` and its localStorage black box `gtBB`, replayed on the next run), the boot-slice
+    times, the projection shim's swapchain and view-matrix statistics (`__gtXR.sub`), its GL error poll every 60th
+    frame, the tracking and eye-buffer log lines, the depth-discard count, the light record (a PBO the drawn frame is
+    blitted into and read back with readPixels, `__gtXR.lum`, `lumProbe`), the native census (wrappers round every
+    GL create and delete, `nat`, `census`), the frame-health counters (`fc`, `frameCheck`), the display timeline
+    (`lastSlack`, `tl`, `recTimeline`, `recDisplay`), the GPU description line, the multiview statistics (`mvStats`),
+    its wrappers round eleven GL calls counting work inside a frame, and the new-program report. Its ~40 direct
+    `__gtLog(...)` calls are dropped by `final_build.js` (terser `pure_funcs`). The layer shim, multiview, the
+    deferred uploads, the fallback draw, the frame holds and the retries are unchanged.
+  - **Fenced in the game's script**: the flight recorder (`window.__gtFR`: built, fed every frame and dumped on the
+    right B mark only in debug builds; `ut.rec`, `ut.ev`, the B mark's log and dump), the audio state listener (it
+    only logged), the census calls, the frame-rate statistics behind the perf line, the head guard's record
+    (`__gtHG`), the snap-turn count (`__gtSnapN`), the long-frame timer and the geometry hold's description of what it
+    uploaded. The right B press is still read.
+  - **`final_build.js` checks** (and fails the build): no GT_DEBUG, `__gtLog`, `/log`, localStorage, sessionStorage
+    or indexedDB, `__gtFR`, `__dbg`, PIXEL_PACK_BUFFER, readPixels outside three.js (its unused
+    readRenderTargetPixels), network request but the textures', undeclared name (`test_freevars.js`). The final build
+    is 1,140,989 bytes against the game file's 1,179,574 (3.3% smaller; 1,165,218 from 4.0.62's game file, which kept
+    the recorder, the light record and the log function).
+  - **`tools/build.sh --final`**: everything that ships (the APK, its `tex/`, root `index.html`,
+    `index.compressed.html`) built from `tools/final.html`; `sync_game.py`, `build_compressed.js` take `--src`,
+    `prerender_textures.js` a file; the APK built with `-PfinalBuild=true`, which compiles out the game server's
+    `/log` endpoint (`BuildConfig.PAGE_LOG`; the page never calls it; `test_server.sh --final` checks it is a 404).
+    `Log.e`/`Log.i` lines for the server itself and `console.error` for the game's real errors stay.
+  - **`test_final.js`**: the final build played as shipped, with no test hook (`boot({hook: false})`, new).
+  - **`check_final.sh`** (new; the author: "All 3 versions of the game in root need to be confirmed to be the latest
+    version of the game (final version with debug removed)"): makes the final build again from the game file and
+    checks the root `index.html`, the APK's asset and the root APK's `assets/index.html` are byte for byte it,
+    `index.compressed.html` unpacks to it, none holds a debug or logging marker, the version shown and the APK's are
+    build.gradle's, and the APK's `/log` page logging is compiled out. `build.sh --final` runs it last. The pre-commit
+    hook accepts copies equal to the final build of the current game file.
+  - **Tools kept up to date** (the author: "Please update tools as you go"): `fps_estimate.js` reads the run's headset
+    from the perf line (a Quest 3 run gives the Quest 3S with the GPU time divided by 1.3) and leaves out the seconds
+    while the game is paused; `test_flashlog.js` no longer checks B46's `rec pointing, pickups and sound` line (removed
+    in 4.0.49/4.0.53, B110: the check failed on 4.0.62 too) and allows the mark's dump 30 ms headless (25 ms measured on
+    4.0.62 and on the fenced file alike).
+  - **Measured**: the fenced game file builds the same world as 4.0.62, object for object (`minify_identity.js`);
+    `test_flashlog`, `test_menu_pause`, `test_end_sound`, `test_play_uploads`, `test_standalone`, `test_world` pass on
+    it. `cpu_bench.js`, the game file against the final build (two rounds, nine views, noisy: single views moved by
+    up to 23% either way): 9.9% less CPU a frame in the town, 3.9% in the Event.
 - **4.0.62** (the author, testing 4.0.61: "The two under 60 fps readings must be fixed for submission"; "If it helps
   with performance, we can increase the time it takes for the Event to start and end. Have things happen more spaced
   out"; "The start and end feel a little fast anyway"; "Horn song and headset off behavior still need more

@@ -4,13 +4,16 @@
 // head script loads them and the painter blits them instead of repainting
 // (FIXES.md, entry edit 9), and Gooward's gallery mural (its worker's three strips, F-B34). Painters that draw text are skipped so fonts stay
 // the headset's own. Re-run whenever a painter in tools/uncompressed.html (the
-// game file) changes:   node tools/prerender_textures.js
+// game file) changes:   node tools/prerender_textures.js [file]
+// (default file: tools/uncompressed.html; tools/build.sh --final paints them from tools/final.html, whose painters'
+// source, and so their keys and seeded grain, may differ from the game file's after its own minification)
 const fs = require('fs'); const path = require('path'); const { execFileSync } = require('child_process');
 const { boot, root } = require('./lib/harness.js');
 const out = path.join(root, 'tools/android/app/src/main/assets/tex');
 (async () => {
   const cap = path.join(root, 'tools/.runs/exp_texcapture.html');
-  execFileSync('python3', [path.join(root, 'tools/experiment.py'), 'texcapture', path.join(root, 'tools/uncompressed.html'), cap], { stdio: 'inherit' });
+  const src = process.argv[2] ? path.resolve(process.argv[2]) : path.join(root, 'tools/uncompressed.html');
+  execFileSync('python3', [path.join(root, 'tools/experiment.py'), 'texcapture', src, cap], { stdio: 'inherit' });
   fs.rmSync(out, { recursive: true, force: true }); fs.mkdirSync(out, { recursive: true });   // capture must not load old files
   const { page, browser, bootS } = await boot({ file: cap, vr: true, standalone: true });   // served alone, as test_standalone.js compares (the mural's semi-transparent edges paint a few values apart otherwise)
   console.log(`booted in ${bootS}s`);

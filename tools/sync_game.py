@@ -11,26 +11,34 @@ before any of this work is not kept in the repository (git history has it). The 
     python3 tools/sync_game.py           copy tools/uncompressed.html to both places and rebuild the compressed version
     python3 tools/sync_game.py --check   exit 1 unless both copies are byte-identical to it and the compressed version
                                          unpacks to it exactly (the quick tier's first stage)
+    --src FILE (with either)             the copies come from FILE instead: `tools/build.sh --final` ships
+                                         tools/final.html, the game without its debug code (final_build.js)
 """
 import sys, pathlib, subprocess
 
 root = pathlib.Path(__file__).resolve().parent.parent
-src = root / "tools" / "uncompressed.html"
+args = sys.argv[1:]
+src = pathlib.Path(args[args.index("--src") + 1]).resolve() if "--src" in args else root / "tools" / "uncompressed.html"
+try:
+    name = str(src.relative_to(root))
+except ValueError:
+    name = str(src)
 copies = [root / "index.html", root / "tools" / "android" / "app" / "src" / "main" / "assets" / "index.html"]
 builder = root / "tools" / "build_compressed.js"
 data = src.read_bytes()
-if "--check" in sys.argv[1:]:
+if "--check" in args:
     bad = [c for c in copies if not c.exists() or c.read_bytes() != data]
     for c in copies:
-        print(("  FAIL  " if c in bad else "  ok    ") + f"{c.relative_to(root)} {'differs from' if c in bad else '=='} tools/uncompressed.html")
-    comp = subprocess.run(["node", str(builder), "--check"], capture_output=True, text=True)
-    print(("  ok    " if comp.returncode == 0 else "  FAIL  ") + "index.compressed.html " + ("unpacks to" if comp.returncode == 0 else "does not unpack to") + " tools/uncompressed.html")
+        print(("  FAIL  " if c in bad else "  ok    ") + f"{c.relative_to(root)} {'differs from' if c in bad else '=='} {name}")
+    comp = subprocess.run(["node", str(builder), "--check", "--src", str(src)], capture_output=True, text=True)
+    print(("  ok    " if comp.returncode == 0 else "  FAIL  ") + "index.compressed.html " + ("unpacks to" if comp.returncode == 0 else "does not unpack to") + " " + name)
     if bad or comp.returncode:
-        sys.exit("SYNC CHECK FAILED: run python3 tools/sync_game.py after editing tools/uncompressed.html (never edit the copies)")
+        sys.exit("SYNC CHECK FAILED: run python3 tools/sync_game.py after editing tools/uncompressed.html (never edit the copies)"
+                 + ("" if "--src" not in args else "; for the final build: tools/build.sh --final"))
     print(f"SYNC CHECK PASSED: every copy is the game file ({len(data)} bytes)")
     sys.exit(0)
 for c in copies:
     c.parent.mkdir(parents=True, exist_ok=True)
     c.write_bytes(data)
     print(f"wrote {c.relative_to(root)} ({len(data)} bytes)")
-subprocess.run(["node", str(builder)], check=True)
+subprocess.run(["node", str(builder), "--src", str(src)], check=True)

@@ -77,8 +77,9 @@ by part: ...; render by part: ...; frame gap ms: median ..., 90% ..., over 20 ms
 by subsystem; since 4.0.51 the render by stage, the matrix walk, the batcher, culling and sorting, setup, opaque and
 see-through draws in ms and the draws a frame, and the gaps between frames). A frame over 20 ms of game CPU (at most one in 2 s) logs `slow frame: cpu T ms (PART t, ...)`. `perf_log.js`
 prints them by scene and fits the frame rate against the game's CPU (fps a ms, the CPU time at full rate and at 60 fps).
-The final build written by `final_build.js` drops this log with the rest of the debug code (`GT_DEBUG`); the builds the
-author tests keep it.
+The final build written by `final_build.js` drops this log with the rest of the debug code (`GT_DEBUG`; RULES.md 34:
+every log line, the flight recorder, the light record and the census; its APK, `tools/build.sh --final`, has no `/log`
+endpoint, so `capture_log` shows only the server's own lines); the builds the author tests keep it.
 
 ## 2. Unfiltered log of one launch (launch problems only)
 

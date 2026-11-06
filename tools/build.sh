@@ -16,13 +16,31 @@
 #      current game), test_standalone.js (the game runs alone; tex/ is what it paints) and test_compressed.js (the
 #      compressed version works as an ordinal). --no-test skips the last two.
 #
-#   tools/build.sh [--bump] [--no-test]
+# --final builds the Store build (the author, 2026-11-06: "From the very last build: debug and logging features must
+# be removed"): after step 0, final_build.js writes tools/final.html (the game file without its debug code, checked;
+# 0b), and everything that ships is built from it instead of the game file: the copies (index.html at the root, the
+# APK's asset, index.compressed.html; sync_game.py --src), the textures in tex/ (painted from it: its own minification
+# may change a painter's source, which keys and seeds the texture), the APK (Gradle with -PfinalBuild=true, which
+# also compiles out the game server's /log endpoint). The version is stamped in the game file first (3b) and the
+# final build written again from it, so the final build shows the right version. The checks compare against
+# tools/final.html, and test_final.js plays it as shipped (no test hook). The final build is what is uploaded
+# (RELEASE.md); the game file keeps its debug code, and a later build without --final ships it again. The usual
+# Store build: tools/build.sh --bump --final
+#
+#   tools/build.sh [--bump] [--final] [--no-test]
 #
 # Signing uses tools/android/keystore.properties when present (BUILD.md); without it the APK is unsigned. Never commit
 # the keystore.
 set -e
-ROOT=$(cd "$(dirname "$0")/.." && pwd); BUMP=""; TEST=1
-for a in "$@"; do case $a in --bump) BUMP=1;; --no-test) TEST="";; *) echo "usage: $0 [--bump] [--no-test]"; exit 2;; esac; done
+ROOT=$(cd "$(dirname "$0")/.." && pwd); BUMP=""; TEST=1; FINAL=""
+for a in "$@"; do case $a in --bump) BUMP=1;; --final) FINAL=1;; --no-test) TEST="";; *) echo "usage: $0 [--bump] [--final] [--no-test]"; exit 2;; esac; done
+# GAME: the game file; SHIP: what the copies, tex/ and the APK are built from (the game file, or the final build)
+GAME="$ROOT/tools/uncompressed.html"; SHIP="$GAME"; [ -z "$FINAL" ] || SHIP="$ROOT/tools/final.html"
+sync() { if [ -n "$FINAL" ]; then python3 -I "$ROOT/tools/sync_game.py" --src "$SHIP" "$@"; else python3 -I "$ROOT/tools/sync_game.py" "$@"; fi; }
+final() {
+  node "$ROOT/tools/final_build.js" "$GAME" --out "$SHIP" > "$ROOT/tools/.runs/final_build.log" 2>&1 || { tail -16 "$ROOT/tools/.runs/final_build.log"; echo "BUILD STOPPED: the final build's checks failed (log: tools/.runs/final_build.log)"; exit 1; }
+  grep '^final_build:' "$ROOT/tools/.runs/final_build.log"; tail -1 "$ROOT/tools/.runs/final_build.log"
+}
 ASSETS="$ROOT/tools/android/app/src/main/assets"; GRADLE="$ROOT/tools/android/app/build.gradle"; APK="$ROOT/GreeblisTown-release.apk"
 [ -n "${ANDROID_HOME:-}${ANDROID_SDK_ROOT:-}" ] || export ANDROID_HOME=$(sed -n "s/^sdk.dir=//p" "$ROOT/tools/android/local.properties" 2>/dev/null | head -1)
 
@@ -41,11 +59,16 @@ else
   fi
 fi
 
-echo "== 1. copies of the game file"
-python3 -I "$ROOT/tools/sync_game.py"
+if [ -n "$FINAL" ]; then
+  echo "== 0b. the final build (the debug code taken out)"
+  final
+fi
+
+echo "== 1. copies of the game file${FINAL:+ (the final build)}"
+sync
 
 echo "== 2. pre-painted textures"
-node "$ROOT/tools/prerender_textures.js" | tail -2
+node "$ROOT/tools/prerender_textures.js" "$SHIP" | tail -2
 
 echo "== 3. version"
 code=$(sed -n 's/^ *versionCode \([0-9]*\).*/\1/p' "$GRADLE"); name=$(sed -n 's/^ *versionName "\([^"]*\)".*/\1/p' "$GRADLE")
@@ -69,6 +92,7 @@ else echo "nothing that ships changed; version $name ($code)"; fi
 echo "== 3b. version shown in the game"
 # The non-Quest landing text, the Quest gate's corner (twice) and the VR loading box show the version: stamped here
 # from versionName, so they always match the build; the copies are synced again when that changed the game file.
+cp "$GAME" "$ROOT/tools/.runs/before_stamp.html"
 python3 -I - "$ROOT/tools/uncompressed.html" "$name" <<'PY' || exit 1
 import re, sys
 p, v = sys.argv[1], sys.argv[2]
@@ -78,23 +102,32 @@ if n != 4: sys.exit('VERSION STAMP FAILED: expected the version in 4 places of t
 if t != s: open(p, 'w', encoding='utf-8').write(t)
 print('the game shows v' + v)
 PY
-cmp -s "$ROOT/tools/uncompressed.html" "$ASSETS/index.html" || python3 -I "$ROOT/tools/sync_game.py"
+# the final build is written again from the stamped game file, so it shows the same version
+[ -z "$FINAL" ] || cmp -s "$GAME" "$ROOT/tools/.runs/before_stamp.html" || final
+cmp -s "$SHIP" "$ASSETS/index.html" || sync
 
 echo "== 4. release APK"
 OUT="$ROOT/tools/android/app/build/outputs/apk/release/app-release.apk"; LOG="$ROOT/tools/.runs/build_gradle.log"
 mkdir -p "$ROOT/tools/.runs"; rm -f "$OUT"
-( cd "$ROOT/tools/android" && ./gradlew -q assembleRelease ) > "$LOG" 2>&1 || { grep -v JAVA_TOOL_OPTIONS "$LOG" | tail -30; echo "BUILD FAILED: Gradle (log: $LOG)"; exit 1; }
+( cd "$ROOT/tools/android" && ./gradlew -q assembleRelease ${FINAL:+-PfinalBuild=true} ) > "$LOG" 2>&1 || { grep -v JAVA_TOOL_OPTIONS "$LOG" | tail -30; echo "BUILD FAILED: Gradle (log: $LOG)"; exit 1; }
 cp "$OUT" "$APK"
-echo "built $APK"
+echo "built $APK${FINAL:+ (the final build: no debug code, no /log endpoint)}"
 
 echo "== 5. compressed version"
-node "$ROOT/tools/build_compressed.js"
+node "$ROOT/tools/build_compressed.js" --src "$SHIP"
 
 echo "== 6. checks"
 check() { log="$ROOT/tools/.runs/build_check.log"; "$@" > "$log" 2>&1 || { tail -30 "$log"; echo "BUILD CHECK FAILED: $*"; exit 1; }; tail -1 "$log"; }
-check python3 -I "$ROOT/tools/sync_game.py" --check
+check sync --check
 check python3 -I "$ROOT/tools/experiment.py" --check
 check "$ROOT/tools/check_apk.sh" "$APK"
-[ -z "$TEST" ] || check node "$ROOT/tools/test_standalone.js"
-[ -z "$TEST" ] || check node "$ROOT/tools/test_compressed.js"
-echo "BUILD DONE: $name ($code)"
+[ -z "$FINAL" ] || check "$ROOT/tools/test_server.sh" --final
+[ -z "$TEST" ] || check node "$ROOT/tools/test_standalone.js" "$SHIP"
+# test_compressed.js given the page checks it as it is (sync_game.py --check above unpacked it against the final build)
+[ -z "$TEST" ] || if [ -n "$FINAL" ]; then check node "$ROOT/tools/test_compressed.js" "$ROOT/index.compressed.html"; else check node "$ROOT/tools/test_compressed.js"; fi
+[ -z "$TEST" ] || [ -z "$FINAL" ] || check node "$ROOT/tools/test_final.js" "$SHIP"
+[ -z "$FINAL" ] || check "$ROOT/tools/check_final.sh"
+if [ -n "$FINAL" ]; then
+  echo "BUILD DONE: $name ($code), the final build (tools/final.html: no debug code) in the root APK, index.html and index.compressed.html"
+  echo "  (the copies are the final build, not the game file: sync_game.py --check fails by design; the pre-commit hook and tools/check_final.sh accept them; tools/build.sh without --final ships the game file again)"
+else echo "BUILD DONE: $name ($code)"; fi
