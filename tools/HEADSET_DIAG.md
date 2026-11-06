@@ -209,7 +209,9 @@ Since 3.15.57 (D3, the author: "let's try to make the logs more verbose"):
   low light makes it likelier: the cameras switch to `lowLightHandsFlood` at the wake).
 - After `MARK flash seen`, the flight recorder's last 10 s: `rec ... slow:` (frames over 20 ms, with their time before
   the mark), `rec changes:` (programs, textures, geometries and draw calls changing, the head inside a character),
-  `rec events:` (focus changes in the last minute).
+  `rec events (newest first, k of n):` (the event trail of the last minute: pickups, snap turns, screens, vignettes,
+  focus changes; since 4.0.55 newest first, 14 a line: logcat cut the single line at about 1,000 characters, so the
+  events just before the mark were the ones lost, as at both marks of the 4.0.54 run 77dec865).
 - Since 4.0.7 (S15): `rec xr frames: no head pose N, undrawn N, drawn twice N, held N, head position tracked|EMULATED`
   (the frames' health; since 4.0.13 also "drawn by the fallback N": frames the game did not draw and the entry script
   drew instead, S18), `rec near eyes (3 s)` (anything within 0.35 m of the eyes), and `rec light` (the drawn picture's
