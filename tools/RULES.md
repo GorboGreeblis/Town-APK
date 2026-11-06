@@ -239,6 +239,14 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 
 ## Decisions that close an option
 
+- Flashes (B46): the author, 2026-11-06, after two clean marks in the 4.0.54 run: "No, let's live with the flash. Maybe we
+  will never fix it. Could just be related to the Browser." The light record stays off (no test build turns it on).
+- Tiny far details (P46) in the town too (2026-11-06, first "No, only the below 60 FPS issues are a problem", then, the
+  4.0.54 run having shown the town under 60 at its busiest views: "Since the FPS drops that low in town too: Let's apply
+  '2' there as well"): from 4.0.55 P46 runs everywhere, its list rebuilt when an Event starts or ends.
+- P47 (near-identical character materials keyed alike) is back on (2026-11-06, after the author's 4.0.53 run with it on:
+  "P47 was acceptable when I tested. Let's bring it back"): its picture change, up to about 40 px a view at the check's size,
+  is accepted.
 - Texture arrays for batching: closed (2026-10-27, PERF.md 10); reopened 2026-11-05 ("Please apply 1 to 8") on rule 31's terms only: each texture keeps its own pixels, mipmaps and filtering, the picture unchanged.
 - The Event's own render scale (P16, P17) and P18: removed (2026-10-28) [83].
 - The experiment-first rule (15): retired (2026-10-28, rule 22).
