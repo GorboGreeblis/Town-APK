@@ -9,6 +9,9 @@
 //     shown to gone), then they are removed and their materials are back to opaque;
 //   - nothing else fades with them (Nextessa's box keeps its own materials: the Event's boxes have their own copies);
 //   - no shader program is compiled for the fade (its see-through form is compiled while loading);
+//   - B69 (4.0.53; the 4.0.52 audit: the fix's own check threw): an Event started while the last one's boxes are still
+//     fading out (inside its 1.6 s): the fade is finished at once, the new Event plants (its slots handed out) and
+//     its boxes are served opaque;
 //   - no page errors.
 //
 //   node tools/test_pizza_fade.js [file]
@@ -46,6 +49,15 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     while (performance.now() - t0 < 4000) { await wait(100); const inScene = meshes.filter((m) => { for (let p = m; p; p = p.parent) if (p === D.C) return true; return false; }).length; const op = Math.min(...[...mats].map((m) => m.opacity)); trail.push([Math.round(performance.now() - t0), inScene, +op.toFixed(2)]); }
     out.ended = !D.me.active; out.trail = trail; out.restored = [...mats].every((m) => m.opacity === 1);
     out.progs = D.O.info.programs.length - progs0;
+    // B69: an Event with the Snacks, ended, and another started while its boxes are still fading out
+    const startEvent = async () => { D.oe.open(); await wait(300); const yy = ((D._t.state && D._t.state.items) || []).find((i) => i.label === 'Yes'); if (yy) yy.onClick(); const s0 = performance.now(); while (!D.me.active && performance.now() - s0 < 30000) await wait(20); };
+    await startEvent(); t0 = performance.now(); while (PZ.count() === 0 && performance.now() - t0 < 120000) await wait(20); await wait(3000);
+    D.me.wrap(); t0 = performance.now(); while (D.me.active && performance.now() - t0 < 60000) await wait(20);
+    const tEnd = performance.now(); await startEvent(); const restartAfter = performance.now() - tEnd;
+    t0 = performance.now(); while (performance.now() - t0 < 8000) await wait(200);
+    const m2 = new Set(); window.__gtPZE.groups().forEach((gr) => gr.traverse((o) => { if (o.isMesh) [].concat(o.material).forEach((x) => m2.add(x)); }));
+    out.quick = { restartAfter: Math.round(restartAfter), active: D.me.active, boxes: PZ.count(), opaque: m2.size > 0 && [...m2].every((m) => m.opacity === 1), slots: D.It.all.filter((e) => e.finaleSlot || e.busy === 'finale').length };
+    D.me.wrap();
     return out;
   });
   note(JSON.stringify(r).slice(0, 1200));
@@ -59,6 +71,8 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('at the end they fade out (opacity stepping down over more than a second), then they are removed', r.ended && fading.length >= 8 && goneAt !== null && goneAt >= 1000, JSON.stringify(r.trail.slice(0, 24)));
   expect('their materials are opaque again afterwards', r.restored, '');
   expect('no shader program compiled for the fade', r.progs === 0, String(r.progs));
+  const qk = r.quick || {};
+  expect('B69: an Event started while the last one\'s boxes fade out plants and serves its boxes opaque', qk.active && qk.restartAfter < 1600 && qk.boxes > 0 && qk.opaque && qk.slots > 0, JSON.stringify(qk));
   expect('no page errors or logged errors', errors.length === 0, errors.slice(0, 3).join(' | '));
   await g.close(); console.log(failures.length ? `PIZZA FADE TEST FAILED (${failures.length})` : 'PIZZA FADE TEST PASSED'); process.exit(failures.length ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });
