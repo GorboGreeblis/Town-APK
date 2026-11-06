@@ -614,6 +614,12 @@ an array slightly differently from a 2D texture (up to 8 levels in 255 on steep 
 the headset's GPU samples both in the same texture hardware. `pixel_ab.js` therefore checks P44 in a session of its own
 with anisotropic filtering off everywhere and the 4-pixel draw-order allowance.
 
+4.0.52 on the headset (b750dba1, a Quest 3): town median 68.5 (66.7 in 4.0.51), the Event 62.3 (61.5), the slowest
+reading 53.6 (54.0). Draws a frame: town 118 (130), Event 145 (173). The game's CPU a frame: town 8.3 ms (8.7), Event
+9.9 (10.2). By stage in the Event: opaque draws 2.84 ms (3.41), the batcher 2.16 (1.95), walk 1.23 (1.15), culling
+1.08 (1.18). The draws saved 0.57 ms as estimated, but the batcher took about 0.2 ms more, so the Event gained 0.3-0.4
+ms rather than 0.55-1.0: about +0.8 fps at the median. The batcher's extra cost is the next thing to look at.
+
 Left, and why: the matrix walk already passes over unchanged parts (P32: about 90% of the 2,200-3,100 local matrices a
 frame are unchanged and not rebuilt); the rest is parts that moved. Posing characters on the GPU: single-precision sums
 move vertices by rounding, so edges change (rule 31). Memory: about 147 KB a frame in the Event (WebGL call arguments,

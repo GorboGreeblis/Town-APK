@@ -108,9 +108,9 @@ and 3.15.41 matched within noise, which is what showed the old baseline, not the
 
 A performance switch is timed with `render_ab.js` (the same frozen frame, the switch flipped every block) and its
 picture checked with `pixel_ab.js`. A switch that rebuilds what it draws (P44's `__gcArrSet`, the characters' texture
-arrays) needs `render_ab.js --settle`, so the upload of the rebuilt shapes is not timed. The headless renderer
-(SwiftShader) filters a texture array anisotropically a little differently from a 2D texture, so `pixel_ab.js` checks
-P44 in a session of its own with anisotropic filtering off on both sides.
+arrays) needs `render_ab.js --settle`, so the upload of the rebuilt shapes is not timed. (4.0.52 checked P44 with
+anisotropic filtering off, taking a difference for the headless renderer's; it was the arrays' own 8x against the
+textures' 4x, fixed in 4.0.53.)
 
 ## 4. Writing a test
 

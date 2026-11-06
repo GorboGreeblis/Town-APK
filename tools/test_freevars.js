@@ -44,7 +44,8 @@ function collect(code, blk) {
   function walkPatDefaults(p) { if (!p) return; if (p.type === 'AssignmentPattern') { walk(p.right, p); walkPatDefaults(p.left); } else if (p.type === 'ObjectPattern') p.properties.forEach((q) => { if (q.computed) walk(q.key, q); walkPatDefaults(q.type === 'RestElement' ? q.argument : q.value); }); else if (p.type === 'ArrayPattern') p.elements.forEach(walkPatDefaults); }
   walk(ast); refsAll.push([blk, free, code]);
 }
-while ((m = re.exec(html))) { idx++; if (m[1].length > 50) collect(m[1], idx); }
+// every script block, short ones too (the debug fence's `var GT_DEBUG=!0;` is 16 characters, 4.0.49)
+while ((m = re.exec(html))) { idx++; if (m[1].trim()) collect(m[1], idx); }
 let bad = 0;
 for (const [blk, free, code] of refsAll) { const left = free.filter(([n]) => !known.has(n) && !globalsDeclared.has(n)); const by = {}; left.forEach(([n, at]) => (by[n] = by[n] || []).push(at)); for (const n in by) bad++, console.log(`  FAIL  script ${blk}: ${n} used ${by[n].length} time(s) but never declared  e.g. ...${code.slice(Math.max(0, by[n][0] - 80), by[n][0] + 40).replace(/\s+/g, ' ')}...`); }
 console.log(bad ? `FREE VARIABLES TEST FAILED (${bad})` : 'FREE VARIABLES TEST PASSED'); process.exit(bad ? 1 : 0);
