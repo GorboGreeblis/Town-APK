@@ -201,7 +201,7 @@ async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/
     await page.evaluate(() => window.__fakeXR.fire());
     await page.waitForFunction(() => window.__fakeXR.frames > 5, null, { timeout: 60000 });
     presentS = (Date.now() - t0) / 1000;
-    if (fastSim === 'matrices') await page.evaluate(() => { const O = window.__dbg.O; O.__realRender = O.render; O.render = (sc) => { if (sc && sc.isScene && sc.autoUpdate !== false && sc.matrixWorldAutoUpdate !== false) sc.updateMatrixWorld(); }; });
+    if (fastSim === 'matrices') await page.evaluate(() => { const O = window.__dbg.O; O.__realRender = O.render; O.render = (sc) => { if (sc && sc.isScene && sc.autoUpdate !== false && sc.matrixWorldAutoUpdate !== false) { const all = window.__dbg.It && window.__dbg.It.all; if (all) for (const t of all) { const gr = t.group; if (gr && (gr.gcOff || gr.gcHalf || gr.gcFar)) { gr.gcOff = gr.gcHalf = gr.gcFar = false; gr.updateMatrixWorld(true); } } sc.updateMatrixWorld(); } }; });   // the game's own render wrapper (skipped here) marks characters off screen or posed at half rate (P45) and clears those marks; without it the marks set before this point stood for the whole run and froze those characters' matrices
     else if (fastSim) await page.evaluate(() => { const O = window.__dbg.O; O.__realRender = O.render; O.render = () => {}; });
     else if (renderEvery > 1) await page.evaluate((N) => { const O = window.__dbg.O, R = O.render; let k = 0; O.__realRender = R; O.render = function () { if (++k % N === 0) return R.apply(this, arguments); }; }, renderEvery);
     // Hold the random visit scheduler so NPCs under test are not whisked away
