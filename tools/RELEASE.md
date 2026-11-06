@@ -161,10 +161,15 @@ does not come back cleanly in `tools/BUGS.md`.
 5. `tools/run_tests.sh --full --resume` after every build (RULES.md 23; Node and Playwright needed; "`--full`
    before an upload" is superseded); the result is recorded in `tools/TEST_PLAN.md` before the work moves on. For the
    final build candidate the final pass waits for your headset test of it (RULES.md 32).
-6. The Store upload is the final build without the debug code: `node tools/final_build.js` writes `tools/final.html`
-   (the performance log, the flight recorder's records and every log call taken out; the builds you test keep
-   them). `build.sh` packs the game file itself; putting `final.html` into the Store APK in its place is a step of its
-   own, not yet scripted.
+6. The Store upload is the final build without the debug code (RULES.md 34): build it with
+   ```sh
+   tools/build.sh --bump --final             # as step 4, but everything that ships is tools/final.html: no debug code
+   ```
+   `final_build.js` writes `tools/final.html` (the log function and its `/log` report, the localStorage black box,
+   the flight recorder, the light record, the census and frame-health counters, the performance log and every log
+   call taken out; it fails unless none is left) and the APK, `tex/` and the root copies are built from it (the
+   APK's `/log` endpoint compiled out too); `test_final.js` plays it as shipped. The builds you test keep the debug
+   code; after the upload, `tools/build.sh` puts the game file back in the copies (the pre-commit hook expects it).
 
 ## 5. Upload to the Meta Quest Store
 

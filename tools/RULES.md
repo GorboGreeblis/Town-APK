@@ -157,7 +157,8 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     v4.0.0"; "Once this work is done: please treat this as if it were the final build" (4.0.0, versionCode 69;
     `build.sh --bump` continues from it). Restated 2026-11-03 for 4.0.25: "Until I say otherwise: treat this as if it were the
     final build" (the final-build process: the clean full tier with coverage, no build during it, then the dead-code
-    census, the play census and the report tools, results recorded before the work moves on).
+    census, the play census and the report tools, results recorded before the work moves on). The builds tested keep
+    their debug code; the upload is the same build without it (rule 34, `tools/build.sh --bump --final`).
 
 24. **Every copy of the game file is kept updated at all times** (2026-10-29: "keep all copies of the game file
     updated at all times"): `index.html` and the APK's asset (byte copies), `index.compressed.html` (the compressed
@@ -226,6 +227,19 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     the headset picks its clock levels from the CPU's utilization, and the game's work is on one thread, so it mostly
     runs at the lowest level, 1382 MHz), nothing that wastes battery or heat on purpose, nothing against the VRC
     requirements. When in doubt, it is put to the author first.
+34. **The Store build carries no debug or logging code** (2026-11-05: "Please fence off logging / debug tools so that
+    they can be removed from the final build"; 2026-11-06: "From the very last build: debug and logging features must
+    be removed"). Every debug or logging feature in the game file is fenced by the debug switch
+    (`<script>var GT_DEBUG=!0;</script>`, the page's first script: `GT_DEBUG&&...`, `if(GT_DEBUG)...`, or a guarded
+    log call `window.__gtLog&&window.__gtLog(...)`), so the builds the author tests keep all of it, unchanged, and
+    `tools/final_build.js` drops it: the log function and its report to the APK's `/log`, its localStorage black box,
+    the flight recorder, the light record, the native census, the frame-health counters, the display timeline, the
+    multiview statistics and the performance log. `final_build.js` fails unless none is left, and the upload is built
+    with `tools/build.sh --bump --final` (the APK's `/log` endpoint compiled out too; `test_final.js` plays it as
+    shipped). Code that only feeds a log or a record (a counter, a timer, a description) is fenced with it; the
+    functional code around it (the layer shim, multiview, the holds, the pauses, the sound hold) stays as it is.
+    `console.error` for a real error (the error reporter's first five of a kind) and three.js's own warnings stay, as
+    `Log.e` does on the Android side.
 
 ## Priorities
 

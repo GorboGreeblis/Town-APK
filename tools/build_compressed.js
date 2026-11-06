@@ -18,10 +18,13 @@
 //
 //   node tools/build_compressed.js            write index.compressed.html (root) from tools/uncompressed.html
 //   node tools/build_compressed.js --check    exit 1 unless the compressed version unpacks to the game file exactly
+//   --src FILE (with either)                  from (or against) FILE instead: tools/final.html for the final build
+//                                             (tools/build.sh --final; sync_game.py --src passes it on)
 const fs = require('fs');
 const path = require('path');
 const root = path.resolve(__dirname, '..');
-const gameFile = path.join(root, 'tools/uncompressed.html');
+const srcAt = process.argv.indexOf('--src');
+const gameFile = srcAt > 0 ? path.resolve(process.argv[srcAt + 1]) : path.join(root, 'tools/uncompressed.html');
 const outFile = path.join(root, 'index.compressed.html');
 const template = fs.readFileSync(path.join(__dirname, 'lib/compressed_loader.html'), 'utf8');
 const ESC = [0, 13, 60];

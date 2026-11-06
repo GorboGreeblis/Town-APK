@@ -133,6 +133,7 @@ if [ "$TIER" != quick ]; then
   run "OVERCOMING SHYNESS leaves the shelf when taken and stays gone after an Event (B120)" node "$ROOT/tools/test_shybook.js" "$ASSET"
   run "the Horn song carries on after a pause without playing over itself (B124)" node "$ROOT/tools/test_horn_pause.js" "$ASSET"
   run "no sound after the VR session ends: held until a new session presents (B125)" node "$ROOT/tools/test_end_sound.js" "$ASSET"
+  run "the final build: written without the debug code and checked (final_build.js), then played as shipped with no test hook: frames, sound and its hold, no /log, no storage, the version (test_final.js)" sh -c "node '$ROOT/tools/final_build.js' '$ROOT/tools/uncompressed.html' --out '$ROOT/tools/.runs/final_test.html' | tail -3 && node '$ROOT/tools/test_final.js' '$ROOT/tools/.runs/final_test.html'"
   run "Event flowers only at the planter's spot in the ring (B123)" node "$ROOT/tools/test_plant_spot.js" "$ASSET"
   run "the load-time draw merges hold: panel sheets, glass panes, Mama Gorbo's tubes still reshaped, every character part in its batch, every merged shape fades with its building (P48-P51, B122)" node "$ROOT/tools/test_merges.js" "$ASSET"
   run "no townsperson stays stuck: one walking to its Event spot or (Mushroom anywhere, the others on their way home) in the town and not moving is moved on (B117)" node "$ROOT/tools/test_unstick.js" "$ASSET"

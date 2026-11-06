@@ -17,12 +17,14 @@ tools/
     app/src/main/java/.../GameServer.java      loopback HTTP server for the game
     app/src/main/java/.../LauncherActivity.java launches the Quest Browser immersive
   uncompressed.html        THE GAME FILE: the whole game, minified, every change made in it directly
-  build.sh                 rebuilds everything from the game file (minify, copies, tex/, version, version stamp, APK, compressed)
+  build.sh                 rebuilds everything from the game file (minify, copies, tex/, version, version stamp, APK, compressed);
+                           --final: the same from the final build (no debug code), for the Store upload
   minify_game.js           minifies the game file in place (RULES.md 19); --check
   build_compressed.js      builds index.compressed.html from the game file; --check
   sync_game.py             updates every copy: index.html (root), the APK's asset, index.compressed.html; --check
   experiment.py            diagnostic variants of a copy (measurement only, RULES.md 22)
-  final_build.js           writes tools/final.html: the game without its debug code (GT_DEBUG), for the Store upload
+  final_build.js           writes tools/final.html: the game without its debug code (GT_DEBUG), for the Store upload;
+                           tools/build.sh --final packs it (the APK, the root copies, tex/)
   test_*.js, *.sh          test suite (see tools/README.md)
   RULES.md                 the author's rules: read before any change
   BUILD.md                 this file: how the APK works, building, signing, testing
@@ -109,6 +111,7 @@ Requirements: JDK 17+, Android SDK with `platforms;android-34` and
 ```sh
 git config core.hooksPath tools/git-hooks   # once per clone: refuses a commit whose copies or root APK are stale
 tools/build.sh --bump                   # after editing tools/uncompressed.html: everything, from the game file alone
+tools/build.sh --bump --final           # the Store upload: the same, but what ships is tools/final.html (no debug code)
 ```
 
 `tools/build.sh` minifies the game file (a no-op when it already is; when minifying changes it, `minify_identity.js`
@@ -185,10 +188,17 @@ Windows); see `tools/HEADSET_DIAG.md`.
 - The final build has a full tier pass recorded in `tools/TEST_PLAN.md` ("Latest results"; RULES.md 23), after the
   dead-code census and its removals (RULES.md 25), and only after the author's headset test of that candidate
   (RULES.md 32).
-- The uploaded game is the final build without the debug code (the performance log, the flight recorder's records,
-  every log call): `node tools/final_build.js` writes `tools/final.html` from the game file (since 4.0.49; the builds
-  the author tests keep everything). `build.sh` packs the game file itself; putting `final.html` into the APK in its
-  place is not yet scripted.
+- The uploaded game is the final build without the debug code (RULES.md 34: the log function and its `/log` report,
+  its localStorage black box, the flight recorder, the light record, the native census, the frame-health counters,
+  the performance log, every log call): **`tools/build.sh --bump --final`** builds it. After step 0,
+  `final_build.js` writes `tools/final.html` from the game file and fails the build unless no debug code is left
+  (0b); the copies (root `index.html`, the APK's asset, `index.compressed.html`), `tex/` (painted from the final
+  build), the APK (`-PfinalBuild=true`, which also compiles out the game server's `/log` endpoint:
+  `BuildConfig.PAGE_LOG`) and the compressed version are built from `final.html`; the version is stamped in the game
+  file before the final build is written again (it shows the right version); the checks compare against `final.html`
+  and add `test_final.js` (the final build played as shipped, no test hook). The game file keeps its debug code
+  (the builds the author tests keep everything), so after the upload `tools/build.sh` (without `--final`) puts the
+  game file back in the copies; the pre-commit hook and `sync_game.py --check` expect it there.
 - **Headset off and on (sleep) check** on the APK to be uploaded: play 1 minute, take the headset off for 35 s or more,
   put it back on and play 2 minutes, with the log captured live. The game must come back drawing and answering, the
   runtime's `Free=` must hold, the `native census` lines must stay steady with no `(GROWTH)`, and every census must
