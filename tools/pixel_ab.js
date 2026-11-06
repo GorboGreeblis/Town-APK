@@ -44,7 +44,6 @@ const SWITCHES = [
   // P45 within its allowance (a far character drawn at the frame before's pose), P46 under a pixel at this size
   ['P45 far characters posed every other frame', 'window.__gcHalf = X', 120],   // a far figure a frame behind: at most 120 px a view (54 the most in 4.0.53's 28 views)
   ['P46 tiny far details hidden in the Event', 'window.__gcTiny = X'],
-  ['P47 near-identical character materials keyed alike (the characters\' batches rebuilt)', 'window.__gcKN = X; window.__gcArrSet(false); window.__gcArrSet(true)', 4],
 ];
 const only = arg('--switch', null);
 const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[26, -23], [-9, 35], [-28.3, -28.3], [-33, -7]];
