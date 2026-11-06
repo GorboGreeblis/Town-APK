@@ -145,7 +145,7 @@ the checks, and an entry in FIXES.md records the change, its ID (B, P, L, D, R, 
 ## 6. Reading a headset run
 
 Capture live: `tools/capture_log.ps1` / `.sh`, or `adb logcat -c` then `adb logcat -v threadtime -s GreeblisServer
-VrApi > run.txt` while playing; then `node tools/perf_log.js run.txt` (HEADSET_DIAG.md section 1; `adb logcat -d`
+VrApi > run.txt` while playing; then `node tools/perf_log.js run.txt` (HEADSET_DIAG.md section 1; a debug build: the final build writes only the runtime's VrApi lines; `adb logcat -d`
 afterwards keeps only the last minutes of a long session). The lines that describe the render path:
 
 - `multiview planned (...)` or `multiview not used (...)`, then `gpu: ...`: the decision, the GPU's real

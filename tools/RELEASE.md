@@ -197,7 +197,7 @@ together, P25 Backpacka); the B flash mark and long-frame logging (D2); the auth
 is recorded in `tools/TEST_PLAN.md` (Latest results). Its headset pass, logged live (`tools/capture_log.ps1` /
 `.sh`, HEADSET_DIAG.md section 1): the Event's frame rate, with Backpacka in view and from the ring back to the
 dance floor; B pressed right after any flash; the first seconds after entering VR and the Event's first start;
-walking into Backpacka at the pond; the emote colours and Gooward look right; then `node tools/perf_log.js run.txt`. The Alpha
+walking into Backpacka at the pond; the emote colours and Gooward look right; then `node tools/perf_log.js run.txt` (on the final build only the VrApi frame rate: it writes no game lines, RULES.md 34). The Alpha
 channel is only you and invited testers, so uploading there first and running that same build
 from the store is a fair way to do that pass.
 

@@ -91,7 +91,7 @@ if [ "$TIER" != quick ]; then
   run "uniform budget: every shader fits a Quest 3S's GPU limits (multiview and classic)" node "$ROOT/tools/uniform_budget.js" "$ASSET"
   run "warm-up coverage: every lit material has its shaders for the game's one light state (S25); both point lights visible every frame, P19 as intensity" node "$ROOT/tools/warm_coverage.js" "$ASSET"
   run "standalone: the game runs on its own (nothing from the web, no extras); every pre-painted texture in tex/ is what the game paints (RULES.md 2)" node "$ROOT/tools/test_standalone.js" "$ASSET"
-  run "compressed version: works as a Bitcoin ordinal (alone, under the ordinal content policy; unpacks, boots, enters VR) (RULES.md 20)" node "$ROOT/tools/test_compressed.js"
+  run "compressed version: works as a Bitcoin ordinal (alone, under the ordinal content policy; unpacks, boots, enters VR) (RULES.md 20)" node "$ROOT/tools/test_compressed.js"${FINALCOPIES:+ "$ROOT/index.compressed.html"}
   run "the Event's first start: no texture, framebuffer or pixel work or shader compile inside a frame, no layer swap (F-B33)" node "$ROOT/tools/event_start_check.js" "$ASSET"
   run "texture census: no texture is made during play (emotes, faces, bubbles, pizza: the flash causes, F-B29/F-B30)" node "$ROOT/tools/texture_census.js" "$ASSET"
   run "the frame governor and the fixed foveation: the layer's foveation fixed at 0 from VR entry, the quality levels gone, slow frames swap and change nothing, the over-budget flag logs once, the Event's far-object safeguard on and off (F-B31, F-B83, L1)" node "$ROOT/tools/test_governor.js" "$ASSET"

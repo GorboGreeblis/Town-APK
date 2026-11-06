@@ -107,7 +107,7 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 13. **Never commit the signing keystore.**
 14. **Commit often**; living documentation lives in `tools/`.
 15. **(Superseded by rule 22, 2026-10-28.) Changes to the entry script, the layers shim or the multiview path shipped first as an experiment APK**
-    (`tools/build_experiment.sh NAME`) for a headset test, then into the main build (RELEASE.md 6; 3.15.11 skipped
+    (build_experiment.sh (retired in 4.0.63)) for a headset test, then into the main build (RELEASE.md 6; 3.15.11 skipped
     this and crashed at launch, F-B15).
 16. **Note all rules in the documentation** (2026-10-28: "Please be sure to always note all rules in the
     documentation, for further work"): this file.

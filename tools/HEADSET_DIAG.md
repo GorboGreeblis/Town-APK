@@ -6,6 +6,12 @@ and the launch investigation of B9 (sections 2-4, kept for the record; B9 was fi
 
 ## 1. A live log of one session (start here)
 
+**The shipped final build (4.0.63 on) writes none of the game's lines below** (RULES.md 34: its debug and logging code
+is taken out, and its APK has no `/log` endpoint): a log of it holds the headset runtime's `VrApi` lines only, the frame
+rate every second, which `perf_log.js` still reads, and B does nothing. The game's lines (perf, marks, pauses, the flight
+recorder) come from a debug build (`tools/build.sh --bump` without `--final`, which ships the game file with its debug
+code). The rest of this file describes the debug build's log.
+
 Capture the log live, from before the launch to the end of the run (`tools\capture_log.ps1` on Windows,
 `tools/capture_log.sh` elsewhere, do exactly what the commands below do and save UTF-8), and let the reader summarise it. **When you see a
 flash, press B on the right controller** (no buzz: the game never vibrates a controller since 4.0.23, A50, RULES.md
@@ -79,7 +85,8 @@ see-through draws in ms and the draws a frame, and the gaps between frames). A f
 prints them by scene and fits the frame rate against the game's CPU (fps a ms, the CPU time at full rate and at 60 fps).
 The final build written by `final_build.js` drops this log with the rest of the debug code (`GT_DEBUG`; RULES.md 34:
 every log line, the flight recorder, the light record and the census; its APK, `tools/build.sh --final`, has no `/log`
-endpoint, so `capture_log` shows only the server's own lines); the builds the author tests keep it.
+endpoint, so `capture_log` shows only the server's own lines and the runtime's VrApi lines); debug builds keep it. The
+author tested the final APK from 4.0.63 on.
 
 ## 2. Unfiltered log of one launch (launch problems only)
 

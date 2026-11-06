@@ -3,6 +3,9 @@
 // by scene (town, the planting Event), the lowest readings and where the player stood, the governor
 // levels, and verdicts against the target (72 fps, the headset's refresh rate: the author's aim) and the
 // Store's floor (60 fps, VRC.Quest.Performance.1).
+// The final (Store) build (4.0.63 on, RULES.md 34) writes no game lines: from its log only the headset runtime's
+// VrApi lines are read (the frame rate every second, by process); the game's perf, scene and mark lines come only from
+// a debug build (tools/build.sh without --final).
 //
 //   adb logcat -c; adb logcat -v threadtime -s GreeblisServer VrApi > run.txt   (live, while playing; Ctrl+C after)
 //   (`adb logcat -d` dumps a ring buffer that a long session overruns: only its last minutes survive)
@@ -147,7 +150,7 @@ for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w
   }
 }
 if (!rows.length) {
-  console.log('no perf lines found (needs a 3.15.27 or later build; the line reads "page: m=perf fps=...").');
+  console.log('no game perf lines found: the final (Store) build writes none (the debug code is taken out, RULES.md 34; the VrApi lines above are the frame rate); a debug build writes "page: m=... perf fps=..." every 10 s.');
   console.log('If the game ran, the log lost them: `adb logcat -d` dumps a ring buffer that a long session overruns. Capture live instead');
   console.log('(HEADSET_DIAG.md): adb logcat -c, then adb logcat -v threadtime -s GreeblisServer VrApi > run.txt while playing.');
   process.exit(1);

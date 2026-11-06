@@ -156,7 +156,7 @@ Read from the code and checked by the tests named; numbers are game seconds and 
 - **The church is a secret room** (the author): the player walks into it through its wall, where the wall is marked with Xs; there is no door. The
   game's collision tests the player against each building's wall parts (where the church lets the player through)
   while everyone else meets the whole outline. Inside, only the Ancient's vignettes play. Tools that need the
-  player's reachable area must test with the player's own position object (`occlusion_census.js` does).
+  player's reachable area must test with the player's own position object (the occlusion census did; its tool, occlusion_census.js, was retired in 4.0.63).
 - **Visits and vignettes.** Townsfolk visit each other (`JGP.visits`); pairs standing near each other play one of
   90 two-line vignettes (speech bubbles, or Gree-mail tokens flying between them), the Ancient's 12 only inside
   the church. A new visit is tried every 4 s once due (22-32 s after the last); the pick favours the pairs that have
