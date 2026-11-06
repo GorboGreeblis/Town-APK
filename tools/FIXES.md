@@ -1922,7 +1922,23 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
-- **4.0.56** (the author, on 4.0.55: "The first time that the Universal Menu is opened, the game does not pause ... It
+- **4.0.57** (the author, on 4.0.56: "The Pause still does not work the first time the Universal Menu is opened" —
+  "after having the headset off for a bit and then remounting it"; "A Flint in the back left of the Gazebo still cannot
+  be picked up"; "Walking over it also does not pick it up"; "It appeared before the Event"; "Please ensure that the
+  handtracking mode also counts as controller input").
+  - **B115, the pause on the first system-menu opening.** The 4.0.56 log: no window focus change ever arrived, and the
+    first opening (at 111 s) changed no session visibility; but every opening, that one too, took all the session's
+    input sources away (controllers or tracked hands) until it closed. The game now pauses while no input source is
+    left (after it had some) and resumes when one comes back; hand tracking counts as input, so putting the
+    controllers down for the hands does not pause. `test_menu_pause.js` checks it.
+  - **B97, the pickups by the Gazebo, found**: at load the Gazebo's surroundings within 5 m are cut out of every scene
+    mesh into a group of their own (so they can fade in the Event). A Blossom or Flint lying there at load was cut too:
+    a still copy stayed at that spot, never picked by pointing or walking, while the real pickup was hidden or moved
+    on. Pickups are no longer cut. `test_gazebo_pick.js` checks the carve holds no pickup copy. A missed pick (the
+    trigger near a pickup that is not taken) is logged with the pickup's state.
+  - **P46 at 5 px** (4 px in 4.0.55-4.0.56; shown again above 5.5 px): the 4.0.56 run's 4 Event readings under 60
+    (57.9-58.7) all came from the park's north-west.
+ "The first time that the Universal Menu is opened, the game does not pause ... It
   needs to pause every time"; "For the Gazebo: A Flint in the front left and a Blossom in the back left were
   uninteractable").
   - **B115, the game pauses every time the system menu opens.** The 4.0.55 log: the menu opened twice (00:14:47.9 and

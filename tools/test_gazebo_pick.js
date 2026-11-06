@@ -22,6 +22,11 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const D = window.__dbg, At = D.At, O = D.O, T = window.THREE, wait = (ms) => new Promise((res) => setTimeout(res, ms));
     const ctl = (hand) => ({ handedness: hand, axes: [0, 0, 0, 0], buttons: [{}, {}, {}, {}, {}, {}, {}] });
     window.__fakeXR.setInputs([ctl('left'), ctl('right')]); window.__fakeXR.poses = true; await wait(800);
+    // B97's cause: the Gazebo's carve (its surroundings cut out at load to fade in the Event) took any pickup lying within
+    // 5 m into a still copy; the copy could not be picked, by pointing or walking. No carved piece uses a pickup's material.
+    const pm = new Set(); for (const L of [D.le.list, D.ce.list]) for (const g of L) g.traverse((o) => { if (o.material) pm.add(o.material); });
+    const cg = window.__gcCarved && window.__gcCarved.gazebo; let carvedPickup = 0, carved = 0;
+    if (cg) cg.traverse((o) => { if (o.isMesh) { carved++; if (pm.has(o.material)) carvedPickup++; } });
     const gem = D.It.all.find((e) => e.id === 'p_gemtoe'); if (!gem || !gem.home) return { error: 'no Gemtoe home' };
     const cx = gem.home.x, cz = gem.home.z, out = { blossom: [], flint: [] };
     // the left hand points 35 degrees down; its ray turns with the rig (the controller's parent, which snap turns turn)
@@ -59,11 +64,13 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     At.position.set(gp.x, At.position.y, gp.z + 2.5); At.rotation.set(0, 0, 0); await wait(400);
     window.__fakeXR.sessions.at(-1).pressSelect(1); await wait(900);
     out.gemMenu = !!(M && M.open && M.open());
+    out.carved = carved; out.carvedPickup = carvedPickup;
     return out;
   });
   note(JSON.stringify(r));
   expect('B97: a Blossom with the Gazebo behind it is taken by pointing at it, on at least six of eight sides (the others: the ray could not be set through it)', !r.error && r.blossom.filter((v) => v !== null).length >= 6 && r.blossom.every((v) => v === null || v === 1), JSON.stringify(r.blossom));
   expect('B97: a Flint with the Gazebo behind it is taken by pointing at it, on at least six of eight sides', !r.error && r.flint.filter((v) => v !== null).length >= 6 && r.flint.every((v) => v === null || v === 1), JSON.stringify(r.flint));
+  expect('B97: the Gazebo\'s carve holds no copy of a Blossom or Flint (those copies could not be picked)', !r.error && r.carvedPickup === 0, `${r.carvedPickup} of ${r.carved} carved pieces`);
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   await g.close();
   console.log(failures.length ? `GAZEBO PICK TEST FAILED (${failures.length})` : 'GAZEBO PICK TEST PASSED'); process.exit(failures.length ? 1 : 0);
