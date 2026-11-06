@@ -10,8 +10,9 @@
 //     sound with it (B118);
 //   - a window blur stops the game's clock (no update while it lasts);
 //   - the focus coming back starts it again, without a jump;
-//   - a trigger press while paused also resumes (the app has input focus, so no menu is open);
-//   - the session's own visibility change still pauses (as before);
+//   - a trigger press while paused by a window blur resumes it (the app has input focus, so no menu is open); it never
+//     resumes the all-input-gone pause (B121, above);
+//   - (the session's own visibility change still pauses, as before; not checked here);
 //   - no page errors.
 //
 //   node tools/test_menu_pause.js [file]

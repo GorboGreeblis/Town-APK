@@ -2,7 +2,9 @@
 /**
  * Reproduction harness for NPC "return home" behaviour, built for the Mushroom
  * (entity id "drifter"): the only character whose home is raised (a kiosk desk,
- * standY 1.545); since F-B39 he walks up a ramp on the desk's left (no hop).
+ * standY 1.545); since F-B39 he walks a ramp (no hop); since 4.0.61 the desk spans
+ * the kiosk (wall to wall) and the ramp runs outward from the desk's front edge on
+ * its left, to the ground 2.55 m in front of the kiosk (a building of its own).
  *
  * It runs the real game in headless Chromium inside a fake WebXR session (NPCs
  * only move while the game presents), with a
@@ -70,19 +72,20 @@ const observe = ({ id, maxS, standY }) => new Promise((resolve) => {
   if (info.error) { console.log(info.error); process.exit(2); }
   console.log(`${info.name} (${NPC}): home=${JSON.stringify(info.at)} via=${JSON.stringify(info.via)} standY=${info.standY} start=${JSON.stringify(info.pos.map((v) => +v.toFixed(2)))} hooks=${info.hooks.join(',')}`);
 
-  // The kiosk's own frame, from his home on the desk: f forward (out of the kiosk's front), r right (the desk's long side;
-  // since F-B39 the desk is against the right wall and his ramp on its left).
+  // The kiosk's own frame, from his home on the desk (kiosk-local 0.885, 0.72): f forward (out of the kiosk's front), r right
+  // (along the desk). Since 4.0.61 the desk covers kiosk-local x -2.86..2.86, z .05..2.3 and the ramp x -2.86..-1.04 from
+  // z 2.3 out to 4.85; placements on the desk are put down at ground level and lifted to it by the game.
   const K = info.kiosk; if (!K) { console.log('his home is in no building'); process.exit(2); }
   const local = (f, r) => { const x = K.home[0] + r, z = K.home[1] + f; return [K.x + x * K.c + z * K.s, K.z - x * K.s + z * K.c]; };
 
   const scenarios = [
-    { name: 'in front of the desk, on the ground (1.0 m out)', npc: local(1.0, 0), player: local(7, 0) },
-    { name: 'in front of the desk where the hop used to start (kiosk 0,2)', npc: local(1.28, -0.88), player: local(7, 0) },
+    { name: 'on the desk 1.0 m in front of home, placed at ground level (in front of the desk before 4.0.58)', npc: local(1.0, 0), player: local(7, 0) },
+    { name: 'on the desk at kiosk-local 0,2 (where the hop started before F-B39), placed at ground level', npc: local(1.28, -0.88), player: local(7, 0) },
     { name: 'just outside the front (2.6 m)', npc: local(2.6, 0), player: local(7, 0) },
     { name: 'front 5 m', npc: local(5, 0), player: local(8, 3) },
     { name: 'front 8 m', npc: local(8, 0), player: local(9, 4) },
     { name: 'right side 3 m (through the wall line)', npc: local(0, 3.6), player: local(6, 4) },
-    { name: 'left side 3 m', npc: local(0, -3.6), player: local(6, -4) },
+    { name: 'the desk\'s left end (3.6 m left of home, inside the kiosk), placed at ground level', npc: local(0, -3.6), player: local(6, -4) },
     { name: 'behind the kiosk 3 m', npc: local(-3.2, 0), player: local(-7, 2) },
     { name: 'behind the kiosk 6 m', npc: local(-6, 0), player: local(-9, 3) },
     { name: 'diagonal 5 m', npc: local(3.5, 3.5), player: local(7, 5) },
@@ -93,6 +96,9 @@ const observe = ({ id, maxS, standY }) => new Promise((resolve) => {
     { name: 'at home but at ground level (y=0): back up on the desk', npc: local(0, 0), player: local(7, 0) },
     { name: 'interrupted visit: straight nav to home from behind 6 m (drop path)', npc: local(-6, 0), player: local(-9, 3), navHome: true },
     { name: 'interrupted visit: straight nav to home from right side 3 m (drop path)', npc: local(0, 3.6), player: local(6, 4), navHome: true },
+    // 4.0.61's layout (full tier only: after the first 17): the ramp outward from the desk's front edge
+    { name: 'at the ramp\'s foot, on the ground (kiosk-local -1.975, 5.2)', npc: local(4.48, -2.86), player: local(8, 3) },
+    { name: 'beside the ramp outside the kiosk, on the ground (kiosk-local -3.9, 3.6)', npc: local(2.88, -4.785), player: local(8, 3) },
   ];
 
   const results = [];

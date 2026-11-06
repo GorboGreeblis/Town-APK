@@ -28,7 +28,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const lines = []; const L0 = window.__gtLog; window.__gtLog = function (s) { if (/unstuck:/.test(s)) lines.push(s); return L0 && L0.apply(this, arguments); };
     const m = D.It.all.find((e) => e.id === 'drifter');
     // the town first (B119, 4.0.60): a stale stop or the player's hold is not being stuck; a real one is moved on once
-    const town = {}; { const p = m.group.position, T3 = window.THREE, foot = [15.69, -25.74];
+    const town = {}; { const p = m.group.position, T3 = window.THREE, foot = m.def.via[m.def.via.length - 2];   // the ramp's foot (his way's last point but one; 4.0.61 moved it 2.55 m out from the kiosk)
       const nOf = () => lines.length;
       // A: idle on his desk with the ramp's foot left as his stop (4.0.58-4.0.59 moved him there every 8.5 s)
       m.dest = new T3.Vector3(foot[0], 0, foot[1]); m.gcNav = null; let n0 = nOf(), minY = p.y;

@@ -1,8 +1,9 @@
 // Mushroom in the planting Event (standard tier; the author: "Mushroom was observed being stuck on his desk during the
 // Event. He was jittering and above the ramp part of his desk"; FIXES F-B52). When the Event starts he leaves his desk
-// by his ramp (desk top, landing, down its middle) and walks to his spot; when it ends he goes home by the ramp.
+// by his ramp (since 4.0.61 across the desk, which spans the kiosk, to the ramp's top at the desk's front edge, then
+// down the ramp outward, 2.55 m beyond the kiosk's front) and walks to his spot; when it ends he goes home by the ramp.
 // One Event (fast simulation), every 100 ms:
-//   - wherever he is over his kiosk, his height is the kiosk's surface there within 8 cm once settled (never left
+//   - wherever he is over his kiosk or its ramp, his height is the surface there within 8 cm once settled (never left
 //     standing in the air over the ramp, never dropped off its side);
 //   - he is never still on the kiosk for 3 s or more while he still has somewhere to go;
 //   - he gets within 2 m of his Event spot;
@@ -22,7 +23,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const adv = setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250);
     await wait(1000);
     const m = D.It.byId.drifter, ry = m.def.rampY, [kx, kz, c, s] = ry.k, p = m.group.position;
-    const onKiosk = () => { const dx = p.x - kx, dz = p.z - kz, j = dx * c - dz * s, k = dx * s + dz * c; return j > -3.2 && j < 3.2 && k > -2.7 && k < 3.2; };
+    const onKiosk = () => { const dx = p.x - kx, dz = p.z - kz, j = dx * c - dz * s, k = dx * s + dz * c; return j > -3.2 && j < 3.2 && k > -2.7 && (k < 3.2 || (j < -0.7 && k < 5.1)); };   // the kiosk, and its ramp outward (kiosk-local x -2.86..-1.04 to z 4.85, 4.0.61)
     Kt.rewards.stone = Kt.rewards.seeds = Kt.rewards.snacks = true; D.oe.open(); await wait(400);
     const yes = ((D._t.state && D._t.state.items) || []).find((i) => i.label === 'Yes'); if (yes) yes.onClick();
     let t0 = performance.now(); while (!D.me.active && performance.now() - t0 < 20000) await wait(30);

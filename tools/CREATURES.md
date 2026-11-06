@@ -9,9 +9,11 @@ a sine of 2.1 radians per second). Anything the code does not state is marked *(
 the models (RELEASE.md 6, RULES.md 7): the designs are final; fixes must not change how anyone looks.
 
 **Code names.** The identifiers below are from the unminified game file, 3.15.44 (`git show 21596f1:tools/uncompressed.html`).
-Since 3.15.45 the game file is minified (FIXES R2): names at the top level of the game's script survive (`x`, `T`, `R`,
-`so`, `io`, `tkS`, `W`, `At`, `PK_MODELS`, `PK_MONT`, `anomaleePeg`, `fortizmoPick`, `gcBeatHz`) as do property names
-(`JGP.slug`, `JGP.robin`, `userData.keep`, `.surf`), but names local to a function were renamed (`KIT`, `BORN`, `ROWS`,
+Since 3.15.45 the game file is minified (FIXES R2): names at the top level of the game's script survived (`x`, `T`, `R`,
+`so`, `io`, `tkS`, `W`, `At` still read so in 4.0.61) as do property names (`JGP.slug`, `JGP.robin`, `userData.keep`,
+`.surf`, `so.anomaleePeg`, `so.fortizmoPick`); since 4.0.39 the long top-level names are shortened too (FIXES 4.0.39:
+`PK_MODELS`, `PK_MONT` and `gcBeatHz` are gone; the packaged models are still registered as `so["pk_<name>"]`), and
+names local to a function were renamed (`KIT`, `BORN`, `ROWS`,
 `born`, `blobBody`, `latheGeo`, `smoothProfile`, `profileR`, `ridgedTube`, `cardGeo`, `onEllipsoid`, `faceTo`, `gradMat`,
 `texturize`, `robin`, `buildModel`, `DRUMS`, `$R`/`$x`/`$T`, Gemtoe's `teal`). Look those up in 3.15.44; the models are
 the same object for object (`minify_identity.js`).
@@ -41,7 +43,7 @@ random colors"): heart pink, note lime, flower, `!`, star and sparkle yellow, `?
 | Fortizmo | `frog` | `pk_fortizmo` + `fortizmoPick` | packaged | 3.75 | .78 | .95 | `#e8742a` | displaced spheres, lathes, wheels |
 | Hennrick | `gratelet` | `pk_hennrick` | packaged | 3.4 | .88 | 1.25 | `#c85ac8` | displaced ellipsoids, conformed patches |
 | Nextessa | courier | `pk_nextessa` | packaged | 3.5 | 1 | .92 | `#ef7536` | spheres only |
-| Montgummery | `w_mont` | `PK_MONT.mont` | packaged (own module) | 3.3 | .9 | .86 | `#55b8c6` | superellipsoid body, CRT head |
+| Montgummery | `w_mont` | `pk_mont` (`PK_MONT.mont` in 3.15.44) | packaged (own module) | 3.3 | .9 | .86 | `#55b8c6` | superellipsoid body, CRT head |
 | The Ancient | `slug` | `JGP.slug` | world prop | .9 | 1.75 (spine) | 1.4 | `#9a7a5a` (label) | one tube along a spine |
 | The robin | n/a | `robin()` | world prop | about .45 | 1.15 | n/a | rusty breast `#c05a20` | small primitives on a branch |
 | Backpacka | n/a | `BP.buildModel` | Event actor | n/a | n/a | n/a | skin `#d48e64` | horizontal lathe, neck segments, wings |
@@ -51,7 +53,7 @@ random colors"): heart pink, note lime, flower, `!`, star and sparkle yellow, `?
 
 The town's characters come from three kinds of builder, registered in one table, `so`, by model name.
 
-- **Packaged models** (`PK_MODELS`: Anomalee, Fortizmo, Hennrick, Nextessa; `PK_MONT`: Montgummery). The older
+- **Packaged models** (`PK_MODELS` in 3.15.44: Anomalee, Fortizmo, Hennrick, Nextessa; `PK_MONT`: Montgummery). The older
   generation, each a self-contained function with its own little helpers (Montgummery's module even reuses the
   names `R`, `x`, `T` locally and keeps the real helpers as `$R`, `$x`, `$T`). Surfaces are painted canvases made
   for the one character: brush-stroke fur (Fortizmo 2,800 strokes, Hennrick 2,600), scrolling code text
@@ -126,7 +128,8 @@ for a surface kind afterwards (Anomalee's plastic).
 - **Superellipsoids**: a sphere pushed toward a rounded cube (Somlet's cushion, exponent 3.2; Montgummery's body, 6
   above and 2.4 below).
 - **Tubes**: `ridgedTube(points, r0, r1, n, ridges, depth)` (a tapering tube with ring ridges: Etcher's tentacles,
-  Glyph's horns, Mama Gorbo's lime goo tube) and plain tapered tubes (tails, trunks, cables, mouth lines).
+  Glyph's horns, Mama Gorbo's lime goo tube; her three goo tubes, reshaped on the CPU every frame, are one shape since
+  4.0.60, P50) and plain tapered tubes (tails, trunks, cables, mouth lines).
 - **Cards** (`cardGeo(cards, "vane" | "fur")`): thin curved strips laid on the surface along its normal, with
   shading baked into their vertex colours: Sparkakus's bib and back vanes, Gemtoe's 660 body feathers, 132 wing
   vanes, cheek tufts and crest, King Dino's plume.
@@ -177,7 +180,9 @@ together in one pass.
 - **Mark moving parts `userData.keep`** (or let `born` find them): otherwise the merge (`io`) bakes them into a
   static mesh and they stop moving.
 - **Use the shared kit**: `x.*` and `KIT.surf` cache materials, so a new part in an existing look adds no material
-  and batches with the rest. A new material created after loading must be warmed (`warm_coverage.js` fails on a lit
+  and batches with the rest. Since P44 (4.0.52) the characters' painted textures are layers of two texture arrays, so
+  parts that differ only in their texture share a batch; a texture must use the arrays' settings (anisotropy 4: Gemtoe's
+  cape drew on its own from 4.0.53 to 4.0.59 for an 8, P51). A new material created after loading must be warmed (`warm_coverage.js` fails on a lit
   material without its shaders; B27 was the Gem's).
 - **A model built after loading** (as Backpacka is, by his module's pre-warm, after the step that batches the
   scene) must be handed to the batcher when it is built, or every part draws on its own (P25: 96 parts, about 83
@@ -190,8 +195,14 @@ together in one pass.
   load since F-B30): no texture may be made during play (RULES.md 9; `texture_census.js` fails on one). A canvas
   repainted during play goes through `needsUpdate`; since F-B31 the upload happens in a task after the frame, never
   inside it.
-- **Every pose, every frame**: each character is posed on every frame it is drawn. P28 (far characters posed every
-  other frame) was removed in 3.15.62 (F-B56): the half-rate pose put the Mushroom's model above his desk.
+- **Far characters are posed less often** (P45, since 4.0.53; RULES.md 31): a character in view is posed (its matrix
+  walk and ground fit) every other frame from 10 m and every third frame from 20 m (since 4.0.59; from 20 m in 4.0.53, every third frame
+  from 35 m in 4.0.55),
+  drawn at the pose of its last posed frame; its animation still runs every frame. Fortizmo is posed every frame while
+  her horn is up (B114: her arms are aimed after the pose). A character wholly out of both eyes' views skips its
+  matrix walk and batch work (P34), and far characters' small unbatched parts are hidden from 18 m (4.0.55, A).
+  A new pose that sets matrices after the walk must be posed every frame as Fortizmo's is (`test_far_pose.js`). P28
+  (the first half-rate pose) was removed in 3.15.62 (F-B56): it put the Mushroom's model above his desk.
 - **Parts that sit on the ground** follow the ground under them: Mama Gorbo's goo samples the topmost flat surface
   (the scene's flat meshes and her own) at five points every 0.2 s and sits 1.5 cm above it (F-B58). A new flat part
   on the ground does the same or sits at a height no ground surface shares (`test_zfight.js`).
