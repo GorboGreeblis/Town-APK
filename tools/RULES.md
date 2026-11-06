@@ -206,6 +206,13 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     same fixed views put side by side for the author, and the speed of both builds measured. What a change does to
     the picture is stated with it. The closed options (Decisions below: more draws merged into the batch path, the
     Event's headroom by fading scenery, posing less often) stay closed.
+    **Relaxed for the Event's frame rate** (2026-11-06: "Please fully investigate ways to improve the FPS during the
+    Event. I'm open to minor losses in visual quality"; then, of the options put to the author, "1: far characters
+    every 2nd frame, 4: hide tiny far details, 5: merge more character parts"): three options reopened, each built to
+    change as little as it can and tested against the build before (the pixel count, pictures of both builds, the
+    speed): characters beyond 20 m posed and fitted every other frame (their motion at 36 Hz); during the Event,
+    unbatched details under 2-3 pixels hidden, with a margin against flicker; near-identical character materials
+    keyed alike so more character parts share batches. The rest of the closed options stay closed.
 32. **The final pass waits for the author's headset test of the final build candidate** (2026-11-05: "Do not continue
     the final pass after that until I've tested the final build candidate in headset. This is a rule going
     forward"). When a build is put forward as the final build candidate, the work stops there: the final pass (the
@@ -262,7 +269,10 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
   batches, is allowed: it does join draws in the batch path, as option 4 would, but only those the atlas makes
   possible, built to change the picture as little as it can (padding against bleeding at the atlas's edges, the
   same texels, the same filtering) and tested against the build before (rule 31: the pixel count, pictures of both
-  builds, the speed). Merging other draws into the batch path stays closed.
+  builds, the speed). Merging other draws into the batch path stays closed. **Amended again** (2026-11-06, rule 31's
+  Event relaxation): near-identical character materials may be keyed alike so more character parts share batches.
 - The Event's headroom by fading more scenery: closed (2026-11-03, "let's close out this option altogether. I don't
   want anything that will effect user experience negatively"); the measurement (FIXES S30) showed nothing to take
   without hiding what the player sees, and nothing that costs the player's view is taken for performance from here on.
+  **Amended** (2026-11-06, rule 31's Event relaxation): during the Event, unbatched details under 2-3 pixels may be
+  hidden, with a margin against flicker. Fading more scenery stays closed.
