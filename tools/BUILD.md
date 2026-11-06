@@ -198,7 +198,8 @@ Windows); see `tools/HEADSET_DIAG.md`.
   file before the final build is written again (it shows the right version); the checks compare against `final.html`
   and add `test_final.js` (the final build played as shipped, no test hook). The game file keeps its debug code
   (the builds the author tests keep everything), so after the upload `tools/build.sh` (without `--final`) puts the
-  game file back in the copies; the pre-commit hook and `sync_game.py --check` expect it there.
+  game file back in the copies; until then the quick tier and the pre-commit hook check the copies as the game
+  file's final build (`check_final.sh`), since `sync_game.py --check` fails on them by design.
 - **Headset off and on (sleep) check** on the APK to be uploaded: play 1 minute, take the headset off for 35 s or more,
   put it back on and play 2 minutes, with the log captured live. The game must come back drawing and answering, the
   runtime's `Free=` must hold, the `native census` lines must stay steady with no `(GROWTH)`, and every census must

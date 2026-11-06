@@ -221,9 +221,9 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 
 | Item | How | Coverage |
 | --- | --- | --- |
-| `index.html` at the root and the APK's asset are byte-identical to the game file `uncompressed.html` | `sync_game.py --check` (quick tier, pre-commit hook, `build.sh`); `check_apk.sh` for the APK | done |
+| `index.html` at the root and the APK's asset are byte-identical to the game file `uncompressed.html` | `sync_game.py --check` (quick tier, pre-commit hook, `build.sh`); `check_apk.sh` for the APK; for the final (Store) build, whose copies are the game file's final build by design, `check_final.sh` instead (quick tier, pre-commit hook, `build.sh --final`; 4.0.63) | done |
 | The game runs on its own (nothing from another host, nothing from its own server but the optional extras): boots, enters VR, walks, talks, starts the Event, paints every texture; every pre-painted texture in the APK's `tex/` is what it paints, pixel for pixel (RULES.md 2, R1) | `test_standalone.js` (every tier but quick, `build.sh`) | done (3.15.44) |
-| The compressed version unpacks to the game file exactly | `build_compressed.js --check` (quick tier, pre-commit hook; every build unpacks again too) | done (3.15.45, NOTES 89) |
+| The compressed version unpacks to the game file exactly | `build_compressed.js --check` (quick tier, pre-commit hook; every build unpacks again too); the final build's against its final file (`check_final.sh`, 4.0.63) | done (3.15.45, NOTES 89) |
 | The compressed version works as a Bitcoin ordinal: alone, under the ordinal content policy; LOADING, unpacks, boots, enters VR, no outside requests, no errors, under 390,000 bytes; desktop note | `test_compressed.js` (every tier but quick) | done (3.15.45) |
 | The game file is fully minified; the minified game builds the same world as before | `minify_game.js --check` (quick tier, pre-commit hook); `minify_identity.js` (report, after a minification) | done (3.15.45, NOTES 89) |
 | Every experiment variant still applies to the game file | `experiment.py --check` (quick tier) | done |
