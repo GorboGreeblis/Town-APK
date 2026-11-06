@@ -1922,6 +1922,71 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.53** (the author, 2026-11-06: "Let's run through all passes and checks, as if this were the final build, fix
+  any bugs as you go. This pass includes the code audit"; "Fix all findings, even the low risk ones"; "Please fully
+  investigate ways to improve the FPS during the Event. I'm open to minor losses in visual quality"; "We want to be
+  sure that we fully meet the 60 FPS bar ... on both Quest 3 and Quest 3S"; "Let's put all changes in one new build").
+  - **The code audit** (five read-only reviews of the whole game file in parallel: the entry scripts and the
+    three.js patches, then the game in four slices). None found a way for the game to draw a bright white frame
+    (B46): every missing-texture path samples black, and the only full-view object, the head guard, is black. Every
+    finding is fixed here except two the author closed (B105, B106).
+    - **P44, the texture arrays, read canvases back inside the frame.** A character canvas repainted (the canvas
+      check after the headset sleeps, a context restore) changed its texture's version; the next headset frame read
+      up to 41 canvases back (`getImageData`, a GPU readback on the Quest browser's canvases), and if a repaint was
+      not byte-identical the read repeated every frame (about 18 MB a second of garbage a texture). Now a changed
+      version is checked once, between frames (`setTimeout`); a canvas that differs updates its layer, uploaded
+      between frames like every texture in multiview play. The parts never leave their batch for it.
+    - **P44's arrays filtered at 8x anisotropy, every other texture at 4x**: the arrays were built from the textures
+      before the loading pass that lowers them to 4x, and were not on its list. The pass now lowers an array with
+      its textures. This, not the headless renderer, was the small difference FIXES 4.0.52 put down to SwiftShader.
+    - **B69's fix threw** (a regression, found by the audit; `test_pizza_fade.js` now covers it): the pizza boxes'
+      show checked the fade state through a name its own seeded stream shadowed further down, so an Event with the
+      Snacks started within 1.6 s of the last one's end threw before planting began: no planting slots, no fresh
+      boxes, the old ones frozen half-faded. The stream is renamed.
+    - **The flash recorder (the B mark's dump)** reported, since 4.0.49's trim, lines from data no longer recorded:
+      "near eyes" measured from the world's origin, "pointing, pickups and sound" always "none". Near eyes now uses
+      the head at the mark (one position, not 216 copies of it: the dump's own stall gone); the stale line is
+      removed. After every snap turn, pickup or artifact the log now gives the next 14 frames' gaps, draw calls and
+      CPU (`after snap (frames to N): gaps ...`), so an unmarked flash can be tied to one. The world hooks (the
+      dancers' ground fit, the clouds, the mist, the birds: 39 a frame) are timed as their own part, "world".
+    - **The shader hold's re-check after a light change** (P40) reused a stamp built before the lights were set up,
+      so it held nothing; it now rebuilds the stamp (latent: no light is switched during play).
+    - **"Press A to Continue." before the boot ended**: the gate took a press once the world was built, seconds
+      before the warm-ups and the frame loop; VR could start with no frames until the boot ended, and the VR-entry
+      warm-up was skipped. The gate now waits for the boot (the APK's granted session already did).
+    - Backpacka's water jets and drops are not drawn within 0.6 m and 0.35 m of the eyes (a pale layer over the
+      whole view otherwise; the author: not where the flashes were).
+    - Near-eye hiding now also clears a hidden pickup's instanced copy (only its halo was hidden).
+    - King Dino's drum hits whose time passed while the game was paused are dropped, not built all in one frame;
+      the Horn song stopped while the audio runs builds its queued notes a share a frame, and a new start drops
+      what is left.
+    - Low: the head guard recovers from a non-finite head position (it stayed off for the session); the head-inside
+      check has its own guard; the 1 s audit guards each townsperson (one with no home stopped the rest and the
+      scene-hold clear); the log's line caps are 3,000 (300 for the page's life before); a cold batch wakes the frame
+      its characters are shown, hidden, attached or detached or a part's colour or visibility changes (up to 3
+      frames late before); a batch dropped as its parts left the scene clears their marks and its root's; one batch
+      never mixes two texture arrays; the shader warm-up's eight slices are real (`compile` can skip hidden objects;
+      the full compile after them still compiles everything); the pizza warm-up cleans up even if a step before it
+      throws; merged see-through parts are sorted once a render, not once an eye; the ground lists' cache keys on a
+      version; the plant warm-up's groups leave the LOD list; a shape uploaded between frames is updated again by
+      the next render; the multiview shim restores the array texture it unbinds and the light record the read
+      framebuffer; an incomplete multiview frame is cleared, not shown undrawn; at most 512 textures wait for the
+      headset's next frame.
+    - Closed by the author (BUGS B105, B106): a replaced projection layer is not destroyed (destroying layers in a
+      session caused B96); plants pause their regrowth in an Event without the Seeds (intended: "no flowers grow").
+  - **The Event's frame rate** (60 fps everywhere in the Event on both headsets; the 4.0.52 runs: 13 and 9 readings
+    under 60, the slowest 53.6 and 55.5):
+    - **P45, far characters posed every other frame** (the author approved; RULES 31): characters in view more than
+      20 m from the player skip the matrix walk and their ground fit on alternate frames, half of them each frame,
+      and are drawn at the pose of the frame before; their animation runs every frame. `window.__gcHalf`.
+    - **P46, tiny far details hidden during the Event** (approved): unbatched static meshes under 2.5 px across at
+      the headset's resolution are not drawn until they pass 3 px; characters, the UI and the finale's own are left
+      alone; marks cleared when the Event ends. `window.__gcTiny`.
+    - **P47, near-identical character materials keyed alike** (approved): one-sided and double-sided, and bump
+      strength to 0.05, so 36 character batches become 28 (the arrays' batches 16 to 8); a mixed batch draws
+      double-sided. `window.__gcKN`.
+    - Exact: the hidden clouds are not moved while hidden; the periodic whole-scene passes no longer land on one
+      frame, and the see-through list uses a set; Etcher's tentacles are not bent while he is out of view.
 - **4.0.52** (the author's 4.0.51 run 457e96dd on a Quest 3: town median 67 fps, the Event 61.5, the slowest 10 s
   54; the song spikes gone, 8 slow frames where there had been 31; "We want to improve FPS as much as possible"; "Let's
   try atlasing. But follow the rule that it should impact visuals as little as possible"; editing the bundled three.js

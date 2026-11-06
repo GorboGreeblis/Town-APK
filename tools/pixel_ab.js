@@ -39,11 +39,12 @@ const SWITCHES = [
   // texture (up to 8 levels in 255 on steep character surfaces; the headset's GPU samples both in the same texture
   // hardware), so P44 runs in a session of its own with anisotropic filtering off everywhere, on and off alike, and
   // the draw-order allowance (its batches group the parts differently: a tie at one depth can change hands)
-  ['P44 character textures in arrays (the batches rebuilt per texture when off)', 'window.__gcArrSet(X)', 4, ANISO1],
+  ['P44 character textures in arrays (the batches rebuilt per texture when off)', 'window.__gcArrSet(X)', 4],
   // P45 and P46 change the picture by design (the author, 2026-11-06: the Event's frame rate, minor losses allowed):
-  // their counts and saved pairs are for the author, not a pass/fail on identity
-  ['P45 far characters posed every other frame', 'window.__gcHalf = X'],
+  // P45 within its allowance (a far character drawn at the frame before's pose), P46 under a pixel at this size
+  ['P45 far characters posed every other frame', 'window.__gcHalf = X', 120],   // a far figure a frame behind: at most 120 px a view (54 the most in 4.0.53's 28 views)
   ['P46 tiny far details hidden in the Event', 'window.__gcTiny = X'],
+  ['P47 near-identical character materials keyed alike (the characters\' batches rebuilt)', 'window.__gcKN = X; window.__gcArrSet(false); window.__gcArrSet(true)', 4],
 ];
 const only = arg('--switch', null);
 const TOWN = [[21, 25], [-22, -23], [-15, 23], [-36, -20], [5, -12]], EVENT = [[26, -23], [-9, 35], [-28.3, -28.3], [-33, -7]];
