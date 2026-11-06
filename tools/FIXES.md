@@ -1922,6 +1922,30 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.55** (the author's 4.0.54 run 77dec865: the town and the Event under 60 fps at the busiest views, the CPU at its
+  lowest clock; "I'm open to more minor visual differences to get the FPS up"; "Let's apply all options"; "FPS is the
+  biggest blocker we have").
+  - **A, far characters' small parts**: a character's unbatched parts more than 25 m away and under 5 px across are not
+    drawn until they pass 6 px or come within 24 m (P46's pass; `window.__gcFarCh = false` turns it off).
+  - **B, P45 from 15 m** (20 m before): characters in view more than 15 m away are posed every other frame
+    (`window.__gcNear = false`: 20 m).
+  - **C, every third frame past 35 m**: far characters beyond 35 m are posed one frame in three; their ground fit
+    follows the same frames (`window.__gcThird = false`: every other frame).
+  - **D, P46 at 4 px** (2.5 px before; shown again above 4.5 px; `window.__gcTiny4 = false`: 2.5 and 3 px).
+  - **P46 in the town too** (the author: "Since the FPS drops that low in town too: Let's apply '2' there as well"): it
+    runs everywhere; its list is rebuilt and its marks cleared when an Event starts or ends.
+  - **E, near-identical scenery keyed alike**: the static scenery merge and the scenery batches round bump strength to
+    0.05 and key a closed one-sided part with the double-sided ones (a merge with both draws double-sided; a closed
+    shape's back faces fail the depth test). Open one-sided parts keep their own key. `window.__gcSN = false` before
+    load keys as before.
+  - **F, cold batches checked every 8th frame** (every 4th before): a still batch's colour or visibility change can
+    show up to 7 frames late (`window.__gcCold8 = false`: every 4th).
+  - **P47 back on** (the author: "P47 was acceptable when I tested. Let's bring it back"); `pixel_ab.js` allows it 40 px
+    a view.
+  - **The rainbow is removed** (the author: "I want to remove the rainbow. Please remove it for the next build. Change
+    nothing else related to the Event"): its mesh, material, fade and hide. `test_bp_water.js` checks none is left.
+  - **The B mark's event trail** prints newest first, 14 events a line: logcat cut the one line at about 1,000
+    characters, so at both of the 4.0.54 run's marks the events just before the mark were lost.
 - **4.0.54** (the author's 4.0.53 run 92180e1c on a Quest 3: "From a distance: Fortizmo's arms now glitch out as she
   plays the horn during the Event"; "The Fortizmo issue gets worse the further you are"; "Keep working until the 60 FPS
   bar is met"; the Event median 63.5 fps, the slowest reading 58.8, 3 readings under 60).

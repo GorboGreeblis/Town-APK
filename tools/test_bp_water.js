@@ -1,18 +1,18 @@
 // Backpacka's water shows against the mist (standard tier; F-B74; the author: "When viewed against the fog / mist: The
 // user cannot see Backpacka's water jets. This is a serious issue and must be fixed. Please also check the water dripping
 // from his mouth"; "Have the water effects of Backpacka been fully tested against the fog / mist?"). The Event is started
-// (with Seeds, so the rainbow shows) and its mist let rise to full; his show is then set to moments where water is out:
+// (with Seeds) and its mist let rise to full; his show is then set to moments where water is out:
 // drinking at the pond (his ripples round his mouth; the author: "Drinking should still work but needs to be retested
 // as well"), lifting off it and flying to the Garden (the drip from his mouth: "he also has water drip out of his
-// mouth"), and spraying the Garden (the four jets, the drops, and the rainbow: "The Rainbow may be hidden by the same
-// issue?"). At each moment, from three eye-height viewpoints set so that a mist wall stands straight behind the water
-// (the water between the eye and the mist wall nearest it; for the rainbow, three points along its arc), the view is
+// mouth"), and spraying the Garden (the four jets and the drops; the rainbow was removed in 4.0.55, the author: "I want
+// to remove the rainbow"). At each moment, from three eye-height viewpoints set so that a mist wall stands straight behind the water
+// (the water between the eye and the mist wall nearest it), the view is
 // drawn four ways: with and without the water, each with and without the mist walls (the mist module's own walls). The
 // water's pixels are those it changes. Checked:
 //   - drinking: his mouth comes down to the water (within 12 cm of its surface), his body swells as he drinks, and his
 //     ripples show;
-//   - water is out and seen at every moment (its parts found and showing), the rainbow while he sprays;
-//   - against the mist the water (and the rainbow) changes at least 85% of the pixels it changes with the mist walls
+//   - water is out and seen at every moment (its parts found and showing); no rainbow (4.0.55);
+//   - against the mist the water changes at least 85% of the pixels it changes with the mist walls
 //     gone (the mist hides none of it), in every view with a mist wall behind;
 //   - where it shows, it stands out from the mist behind it (on average at least 6% brighter or darker per channel);
 //   - no page errors or logged errors.
@@ -97,6 +97,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       }
       out.moments.push(m);
     }
+    out.rainbow = []; C.traverse((o) => { const pr = o.geometry && o.geometry.parameters; if (o.isMesh && pr && pr.innerRadius === 12.2 && pr.outerRadius === 14.2) out.rainbow.push(o.visible); });
     out.pics = pics; return out;
   });
   if (r.noEvent) { expect('the Event started', false); process.exit(1); }
@@ -110,9 +111,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('the mist walls are up', r.mistWalls >= 4, String(r.mistWalls));
   expect('drinking: his mouth comes down to the water (within 12 cm) and his body swells as he drinks', dr && dr.water !== null && Math.abs(dr.mouth - dr.water) <= 0.12 && dr.swell[1] > dr.swell[0], JSON.stringify(dr));
   expect('water is out and seen at every moment (ripples while drinking, the drip in flight, jets and drops while spraying)', r.moments.every((m) => m.views.some((v) => v.what === 'water' && v.noMist >= 40)), JSON.stringify(r.moments.map((m) => [m.name, m.shown, m.views.map((v) => v.noMist)])));
-  expect('the rainbow shows while he sprays and is seen', r.moments.filter((m) => /spraying/.test(m.name)).every((m) => m.shown.rainbow && m.views.some((v) => v.what === ' (rainbow)' && v.noMist >= 40)), JSON.stringify(r.moments.filter((m) => /spraying/.test(m.name)).map((m) => [m.shown.rainbow, m.views.filter((v) => v.what === ' (rainbow)').map((v) => v.noMist)])));
+  expect('no rainbow (removed in 4.0.55, the author): his module has none and no mesh of its shape is in the scene', r.moments.every((m) => !m.shown.rainbow) && r.rainbow.length === 0, JSON.stringify(r.rainbow))
   expect('views with a mist wall behind the water: at least 12', counted.length >= 12, String(counted.length));
-  expect('against the mist the water (and the rainbow) shows at least 85% of what it shows without it, in every view', counted.every((v) => v.ratio >= 0.85), JSON.stringify(counted.filter((v) => v.ratio < 0.85).slice(0, 4)));
+  expect('against the mist the water shows at least 85% of what it shows without it, in every view', counted.every((v) => v.ratio >= 0.85), JSON.stringify(counted.filter((v) => v.ratio < 0.85).slice(0, 4)));
   expect('it stands out from the mist (6% or more per channel on average)', counted.every((v) => v.contrast >= 15), JSON.stringify(counted.filter((v) => v.contrast < 15).slice(0, 4)));
   expect('no page errors or logged errors', errors.length === 0, errors.slice(0, 3).join(' | '));
   await g.close(); console.log(failures.length ? `BACKPACKA WATER TEST FAILED (${failures.length})` : 'BACKPACKA WATER TEST PASSED'); process.exit(failures.length ? 1 : 0);
