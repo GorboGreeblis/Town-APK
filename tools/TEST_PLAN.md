@@ -288,7 +288,7 @@ blocker (the author) and the game file is unchanged (RULES.md 35):
 - **Logged in BUGS.md, not blockers**: B135, a 0.1 m seam at (16, -28) since 4.0.61 (closed: the author saw no flicker there in the headset; accepted in `seams_baseline.json`);
   B136 and B137, `test_offview.js` and `opt_identity.js`, failing since at least 4.0.57 and matching the author's approved
   options of 4.0.55 (alternate-frame posing, near-identical materials batched together); B138, `test_play_uploads.js` on
-  the final build only, with nothing reaching the GPU in play either way.
+  the final build only (closed: not a bug, the test's waits were too short; widened).
 - The curved z-fighting check failed once in the pass and passed alone on both builds.
 
 **4.0.25 final pass** (`tools/.runs/full_4.0.25.log`, full tier with coverage, multiview): stopped at its 16000 s limit in the text-scene test (stage 46 of 52; about 66 minutes under coverage and load). 45 stages passed; three failed: `test_greet.js` (B92, fixed in 4.0.26), `test_owner_exit.js` (the machine starved the game clock: 4.9 game seconds in 273 wall seconds; passes alone on 4.0.24 and 4.0.25; the test now counts game seconds and reports a starved run), `test_flashlog.js` (the mark's dump 29 ms against 25 ms with the machine loaded by reruns). The dead-code census ran on that partial coverage. The final pass moves to 4.0.26 (S32) with a longer limit.
