@@ -21,8 +21,9 @@ marked *(confirmed)* instead (the author's answers below); a new guess is marked
 > (`git show 21596f1:tools/uncompressed.html`); since 3.15.45 (FIXES R2) the minifier renamed them.
 
 **Fourth pass** (2026-11-07, checked against the final game, 4.0.65; the author: "Analyze the Lore Bible and update it
-to breakdown every element of the game. Be exhaustive."): three new sections cover what had no place here: "Sound and
-music" (every sound the town makes, what makes it and how it is made, the drums and the Horn song), "The player's side"
+to breakdown every element of the game. Be exhaustive."): four new sections cover what had no place here: "Town life: what happens on its own" (posts, homes, wanderers,
+greetings, meetings, visits, the Ancient's visitors, the rescue of the stuck, the ground, what is the same every visit),
+"Sound and music" (every sound the town makes, what makes it and how it is made, the drums and the Horn song), "The player's side"
 (the page before the town, the gate and the VR loading box, walking, turning, pointing, menus, the watch, pausing, no
 saving) and "Every element, A to Z" (an index of every character, place, item, activity, sound and system, each with
 where it is described). The game's text is unchanged since 4.0.61 apart from its version.
@@ -1736,6 +1737,56 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 | The town builder | "jgp-world" (`swapWorld`), seed `20250101`, "sign atlas overflow", `"prismgable"`, `"ringwalk"`, `GB_FENCE_FAR` (`fenceMaterial`), `"Mistergummery's"`, `"FIRST BANK OF GREEBLIS"` |
 | The church, its glass, the Cave | `"church"` (`CHURCH`, `lancet`, `paintTravelerWindow`, `paintGardenWindow`, `stainedKit`), `id:"slug"` |
 | Night glow, the UFO, the Speech's bulb | `.emissive.setRGB(.95*` (the lit windows; `BIN.lit` in 3.15.44), `JGP.ufoNow`, `Bulb.start` |
+
+## Town life: what happens on its own
+
+The town does not wait for the visitor. This is everything that goes on in it without being asked, as the game runs
+it (the code's account is in GAME.md, "Town life").
+
+- **Posts and homes.** Every townsperson has a post (where they stand, "The cast at a glance") and an idle way of
+  standing there. Four have a home inside a building, reached by a doorway route only when they go home: Fortizmo
+  behind her bar, Mushroom up his ramp onto his desk, Gemtoe in the gazebo and Zollod in her kiosk.
+- **Wanderers.** Gooward wanders round the Gallery, Hennrick round the Portal, Mama Gorbo about the park, and the three
+  dancers, Etcher, Glyph and Montgummery, about the dance floor; each picks a new spot every few seconds, outside every
+  building, the Garden and anything solid, and apart from the others. Everyone else keeps to their post.
+- **Greetings.** A walking townsperson the visitor comes within 3.2 m of stops and turns to face them; after 12 s they
+  go on even if the visitor stays, and stop again only once the visitor has been more than 6 m away. Sparkakus greets
+  with a "!" from 6 m.
+- **Mama Gorbo and Gooward's meetings.** 20 to 40 s into a visit, and 20 to 40 s after each meeting, the two walk to two
+  spots 2.8 m apart, face each other and take turns: a goo arc with a "blorp" and a pink heart, eight beats in all; then
+  they wander again. A meeting waits if either is busy, visiting, in an exchange, or the Event is on.
+- **Visits and the two-line exchanges.** Townsfolk visit each other: once a visit is due (22 to 32 s after the last) a
+  new one is tried every 4 s, favouring the pairs that have visited least. Two townsfolk standing near each other play
+  one of the 90 exchanges ("Vignettes"), in speech bubbles or Gree-mail tokens flying between them; it stops at once if
+  either is needed or the visitor talks to one of them. Sparkakus visits only once the visitor has the Gem or the
+  Stone. Mushroom always reaches his desk by its ramp and leaves the same way: since 4.0.61 the desk runs the kiosk's
+  whole width (5.72 m) and the ramp runs from its front edge, at desk height, down to the ground 2.55 m in front of the
+  kiosk; the others walk round the ramp.
+- **The Ancient's visitors.** Visits to the Ancient happen on one try in eight, and on about one in three while the
+  visitor is in the Cave (A3); its 12 exchanges play only inside the church.
+- **King Dino.** He drums at his kit, heard within 45 m, and plays every hit he sounds ("Sound and music").
+- **Backpacka.** At the pond he drinks (his show's 16 to 40 s; the visitor cannot walk into him then) and, in the Event,
+  flies to the Garden, waters it and flies off into the mist ("#### Backpacka", "Events").
+- **The birds.** The robin and the cardinal sit on their trees; picked, they fly off with a tweet tweet and come back.
+- **The UFO.** Ollaag's saucer crosses the sky on the same path every visit (seeded; the author: "fine the way it is").
+- **The courier.** Nextessa comes through the Portal with parcels and, during the Speech, the pizza ("#### Nextessa").
+- **Nobody stays stuck.** A townsperson that wants to move and gets nowhere is re-planned, then placed where it was
+  going; in the Event one held still 8 s on the way to its spot is moved on with a sparkle; in the town one held 15 s
+  on its way home is moved to its door; Mushroom gets 4 s on any walk. Only time spent trying to walk counts, never
+  time spent waiting beside the visitor or talking (B117, B119).
+- **The ground.** The Garden is flat: its furrow rings, 48 stepping stones and ring of 72 rocks are painted on the soil
+  (F-B57; the author: "regardless of anything else we will be keeping the flat version"); its flowers are planted just
+  above it. The Cave's floor is level with the town's, and nothing raised lies within 1.45 m of the walkway in. Mama
+  Gorbo's goo follows the ground under her; characters step up onto a kiosk's floor or the pond's edge. Gemtoe floats
+  a little on purpose (the author).
+- **The same town every visit.** The stars, the clouds, when the townsfolk blink, the sway of their idling, Anomalee's
+  glitches and jaw, and the Event ring's sway are the same every visit (seeded at the author's word, RULES.md 5). What
+  stays random is only cosmetic: which way each flint lies, Sparkakus's tail mist, Mama Gorbo's drops, goo blobs and
+  splats, the pickups' bob and glint, the speech tick's pitch; and in play, the dancers' moves in a battle and BOW OUT
+  working four times in five (RANDOMNESS.md).
+- **Far away, simpler.** A kiosk with fine parts swaps to a coarser model beyond about 64 m, and far characters are
+  posed less often and lose their smallest parts (approved by the author for the frame rate): nothing a visitor can
+  pick out at that distance.
 
 ## Sound and music
 
