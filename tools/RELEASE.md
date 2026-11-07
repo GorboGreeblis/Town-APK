@@ -182,6 +182,9 @@ bar). What is in the game, build by build: `tools/VERSIONS.md`; its full pass (R
 `tools/TEST_PLAN.md` (Latest results). The Alpha channel is only you and invited testers, so uploading there first
 and running that same build from the store is a fair way to do the headset pass.
 
+**The Store page, once the app is published:** https://www.meta.com/experiences/greeblis-town/1441937125658740/ (the
+author, 2026-11-07; app ID 1441937125658740).
+
 The app label inside the APK is "GREEBLIS TOWN" (headset library and menus); type the
 same spelling as the listing name in the developer dashboard.
 
