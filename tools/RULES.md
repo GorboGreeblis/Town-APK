@@ -249,6 +249,9 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     and its shipped copies (`index.html`, `index.compressed.html`, `tools/site/`) are not changed. Tests, tools and
     documentation may still be updated (2026-11-07: "Please update documentation, test cases, and tools as you go"),
     as long as nothing in the game changes.
+    **The game file is frozen** (2026-11-07: "We won't be editing the game file further. Unless it fails submission. Or
+    a blocker is found"; "None of the issues above are blockers, in my opinion"). The game is edited again only if the
+    Store review fails it or a blocker is found; what passes find otherwise is logged in BUGS.md as not a blocker.
 
 ## Priorities
 
