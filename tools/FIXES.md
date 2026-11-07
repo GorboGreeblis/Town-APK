@@ -1951,6 +1951,7 @@ frame already hands the game (no GL call added, RULES.md 28):
   - The privacy policy (`tools/store/privacy.html`, Last Updated November 7, 2026) no longer describes the old local
     server: the game's files load from its site on the Arweave network, the game sends nothing back, and the serving
     gateway may see the usual request data (IP address, browser), which the game never receives.
+    Published by the author at https://privacypolicy_greeblistown.ar.io/ (checked: byte for byte this file).
 - **4.0.63** (the author: "From the very last build: debug and logging features must be removed"; RULES.md 34). The
   game plays as in 4.0.62 in the builds the author tests (the debug code is fenced, not changed); the Store build is
   made without it.

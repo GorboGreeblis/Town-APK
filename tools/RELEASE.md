@@ -131,10 +131,10 @@ does not come back cleanly in `tools/BUGS.md`.
      (This item asked for two OVR Metrics readings after the author's 38 fps in the
      Event, before multiview; superseded.)
    The updated privacy page (`tools/store/privacy.html`, section 8 on deletion
-   requests) is live at https://greeblistown.neocities.org/ since 2026-10-27
-   (VRC.Quest.Privacy.4: done). **Updated 2026-11-07 for the hosted game** (section 3: the files load from
-   the site on Arweave; section 4: the gateway): publish the new version (the author: on ArDrive) and put its URL
-   in the Developer Dashboard's privacy policy field if it changes.
+   requests), updated 2026-11-07 for the hosted game (section 3: the files load from the site on Arweave;
+   section 4: the gateway), is live at **https://privacypolicy_greeblistown.ar.io/** (the author's ArDrive upload,
+   an ArNS undername; checked 2026-11-07: byte for byte `tools/store/privacy.html`). Put that URL in the Developer
+   Dashboard's privacy policy field (it was https://greeblistown.neocities.org/). VRC.Quest.Privacy.4: done.
 
 ## 4. Rebuilding yourself (only if something changes)
 

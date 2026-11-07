@@ -118,17 +118,17 @@ start (the page loads from the site); once loaded it makes no requests.
 
 | Check | Status | Verdict | Evidence |
 | --- | --- | --- | --- |
-| Privacy.1 policy URL managed by the team | R | PASS | https://greeblistown.neocities.org/ (the author's page; source `tools/store/privacy.html`): public, HTTPS with a trusted certificate (checked 2026-10-27), not on another VR distribution platform |
+| Privacy.1 policy URL managed by the team | R | PASS | https://privacypolicy_greeblistown.ar.io/ (the author's page on ArDrive, an ArNS undername of `greeblistown`, since 2026-11-07; source `tools/store/privacy.html`): public, HTTPS with a trusted certificate, status 200 with no redirect, byte for byte the repository's copy (checked 2026-11-07), not on another VR distribution platform. Before: https://greeblistown.neocities.org/ (2026-10-27) |
 | Privacy.2 what data is collected | R | PASS | "does not collect, request, store, share, or transmit any personal information or user data"; nothing saved on the headset either |
 | Privacy.3 how data is used | R | PASS | none collected, stated |
-| Privacy.4 how to request deletion | R | PASS | live since 2026-10-27 (checked: https://greeblistown.neocities.org/ shows section 8 "Data deletion requests" and "Last Updated: October 27, 2026"): nothing to delete, email with the subject "Data deletion request", a reply within 30 days, uninstalling removes everything; source `tools/store/privacy.html` |
+| Privacy.4 how to request deletion | R | PASS | live since 2026-11-07 (checked: https://privacypolicy_greeblistown.ar.io/ shows section 8 "Data deletion requests" and "Last Updated: November 7, 2026"): nothing to delete, email with the subject "Data deletion request", a reply within 30 days, uninstalling removes everything; source `tools/store/privacy.html` |
 | Privacy.5 data protection checks | R | PASS | the dashboard's Data Use questionnaire: no data collected, no third-party SDKs Meta's test (the criterion page, read 2026-11-07): a web search of the app's and the developer's name for a known security incident or breach; none known, and the privacy policy states the game collects and stores nothing (the page's fallback). No Data Use Checkup: the game uses no Platform SDK feature ("Apps that don't use these Platform SDK features do not need a DUC"). A Data Protection Assessment applies to apps handling user data; if the dashboard ever lists one under Requirements > Tasks, the team admin answers it. |
 
 ## Publishing
 
 | Check | Status | Verdict | What to check |
 | --- | --- | --- | --- |
-| Publishing.1 website URL valid | R | PASS | the neocities page resolves |
+| Publishing.1 website URL valid | R | PASS | https://privacypolicy_greeblistown.ar.io/ resolves (200, HTTPS; 2026-11-07) |
 | Publishing.2-3 support and ToS links, if present | R | N/A | leave empty or point at a valid page the author, 2026-11-07: no support or ToS link added. |
 | Publishing.4-7 name, descriptions, keywords meet the guidelines | R | PASS | "GREEBLIS TOWN" everywhere; the copy reviewed on 2026-10-26 the author, 2026-11-07: "Everything should meet their guidelines". |
 | Publishing.8 Meta brand use | R | PASS | no Meta or Quest branding in the copy beyond the platform name the author, 2026-11-07: "Everything should meet their guidelines". |
