@@ -50,6 +50,40 @@ small or unpolished; the effect of the 2024 opening shows in the store itself (b
 | 2026-08-19 | The VRC list page last updated; no VRC added or retired since 2024 | Meta (VRC guidelines) |
 | 2026-09-24 | Developer Dashboard release: developer ID verification through a third party | Meta (dashboard release notes) |
 
+## The 60 fps bar (Performance.1), exactly
+
+Researched 2026-11-07 (the author: "how strict is the current 60 fps bar? Would we possibly fail it, in reality. Or
+just technically?"). From Meta's VRC.Quest.Performance.1 page (updated 2025-10-22):
+
+- **Criterion:** "Apps must maintain a rendering rate of at least 60 fps"; interactive apps run at 72, 80, 90, 96, 100
+  or 120 Hz. Required for immersive apps.
+- **The reviewer's test:** "Use the app for the length of the content or 45 minutes, whichever is shorter"; open the
+  OVR Metrics Tool's log; "Observe the FPS graph to determine if extended periods of rendering rate below 60 fps are
+  present."
+- **The pass:** "The application should not experience extended periods of rendering rate below 60 fps." Loading
+  screens, full-screen fades and system menu overlays are excluded. "Extended" is not defined: no number of seconds,
+  no average, no tolerance figure.
+- **It was lowered in 2024:** the revision of 2024-08-07, "Lowered rendering rate requirements. Minimum 60 fps"
+  (before, the rendering rate had to meet the refresh rate, 72 fps); 2024-03-11 allowed half rate with Application
+  SpaceWarp (not available to a WebXR game); 2025-09-02 excluded loading screens and fades.
+- Meta's "Common VRC failures" page (2026-05-01) still lists Performance.1 among the most failed, describing it as
+  "display at 72 fps": older wording than the VRC page, which governs.
+
+**What it means for this game.** The test is a person watching a graph for stretches below 60, not a count of single
+seconds. In the author's 4.0.62 run (Quest 3S) the headset's per-second count was under 60 in about 15 single seconds
+of play (56-59; the longest run three seconds at 58), and every 10-second reading was 61.2 or more; the author's OVR Metrics
+check of the final build: no extended drop. The longest weak stretch was about 15 seconds at the heaviest Event view
+(17:28:10-25: 59, 60, 65, 58, 58, 58, 66, 59, 62 ... 56): the graph there dips to the high 50s and back, a jagged
+line around 60, not a stretch below it. The final build is a few percent lighter in the Event.
+
+- **Quest 3S:** a fail would need a reviewer to read a few seconds at 56-59 as an "extended period". Possible in
+  principle, unlikely in practice: the page's own wording and the graph-reading test are aimed at sustained drops.
+  This is the "technically" case, not the "in reality" one.
+- **Quest 3 (not tried):** the same CPU and about 30% more pixels; estimated a few more single seconds under 60 in the
+  heaviest Event views (VRC.md), the same kind of dips, not a sustained drop. The fallback is in VRC.md.
+- No public data was found on how reviewers judge "extended" in practice (no Meta figure, no developer reports with
+  numbers).
+
 ## How a submission goes now
 
 - Review checks the build against the VRCs, and the store listing (assets, copy) against the design guidelines
