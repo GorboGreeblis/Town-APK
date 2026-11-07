@@ -22,6 +22,15 @@ Until 2026-10-29 the full tier was for the final build only; superseded by RULES
 the final build until the author says otherwise). The smoke tier is no longer a few minutes: it runs the standard
 stages with shorter soaks.
 
+**On the final build** (the copies are the game file's final build, RULES.md 34): every stage runs on the shipped page,
+`tools/site/index.html`, and the checks that read debug records check the behaviour instead (`lib/harness.js`
+`finalBuild()`, B126-B132), except eight stages that can only watch the game through its debug instruments: the songs'
+note recorder (`test_music_queue.js`, `test_horn_pause.js`), the native census (`test_b96.js`, `test_reentry.js`), the
+flight record (`test_flashlog.js`), and the log lines the menu return, the fourth pass's fixes and the stability safeties
+are checked by (`test_menu_return.js`, `test_s33.js`, `test_s38.js`). Those run on the game file itself,
+`tools/uncompressed.html`: the same game with the debug code the final build takes out (`$DBGASSET` in the runner;
+the 4.0.65 pass).
+
 **What each tier runs** (`run_tests.sh`, in order; this is the one list, kept to match the runner; `check_docs.py`
 fails when a test the runner runs is missing here). Every tier: the copies are the game file, the game file is
 minified, the compressed version unpacks to it (for the final build, whose copies are the game file without its debug
