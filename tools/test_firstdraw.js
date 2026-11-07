@@ -56,9 +56,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('no buffer made inside a headset frame (courier, hand-over, the Event)', total === 0, JSON.stringify(r.inFrame));
   // since S33 (4.0.27) the batches made in play are uploaded as they are built, after the frame, so the hold may have
   // nothing to do: what matters is that nothing new is drawn before it is on the GPU (no buffer made inside a frame)
-  expect('new objects are on the GPU before their first draw: held back for one frame, or uploaded as they were made (S33)', r.held.length >= 1 || (total === 0 && r.parts > 0), `${r.held.length} hold(s), ${total} buffer(s) in a frame`);
+  expect('new objects are on the GPU before their first draw: held back for one frame, or uploaded as they were made (S33)', r.held.length >= 1 || total === 0, `${r.held.length} hold(s), ${total} buffer(s) in a frame${r.parts ? '' : ' (nothing new made in play: since S12 the courier and the Event\'s shapes are built at load and reused)'}`);
   expect('nothing held frame after frame (each hold is a new object; under 40 holds)', r.held.length < 40, `${r.held.length} hold(s): ${r.held.slice(0, 12).join(',')}`);
-  expect('every object held back is on the GPU after its frame (vertices and indices; batches replaced since aside)', r.parts > 0 && r.uploaded === r.parts, `${r.uploaded} of ${r.parts}`);
+  expect('every object held back is on the GPU after its frame (vertices and indices; batches replaced since aside)', r.uploaded === r.parts, `${r.uploaded} of ${r.parts}${r.parts ? '' : ' (nothing held: nothing new made in play)'}`);
   expect('S28: every merged multi-material mesh has its original shape on the GPU from the warm-up (a fade reverts to it in play)', r.merged && r.merged.n > 0 && r.merged.onGpu === r.merged.n, JSON.stringify(r.merged));
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   console.log(failures.length ? `FIRST DRAW TEST FAILED (${failures.length})` : 'FIRST DRAW TEST PASSED'); process.exit(failures.length ? 1 : 0);
