@@ -34,7 +34,9 @@ const run = async (through) => {
     t0 = performance.now(); while (D.me.active && J.mist.p() < 0.2 && performance.now() - t0 < 240000) await wait(200);
     const out = { started: D.me.active, trail: [], over: 0 };
     const sample = () => { const op = fx[0].material.opacity, vis = fx.every((o) => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; }); out.trail.push([+P.f.toFixed(2), +op.toFixed(2), vis]); if (op > 0.93 * P.f + 0.02) out.over++; };
-    t0 = performance.now(); while (D.me.active && performance.now() - t0 < 20000) { await wait(200); sample(); }
+    // since 4.0.62 the Event's fade groups go one after another (P52), so the Portal's turn can come past 20 s: run 1 watches
+    // up to 60 s, until it is out and hidden; run 2 (Nextessa through it) watches 20 s, as before
+    t0 = performance.now(); while (D.me.active && performance.now() - t0 < (through ? 20000 : 60000)) { await wait(200); sample(); if (!through && P.f === 0 && !out.trail[out.trail.length - 1][2]) break; }
     if (through) {
       out.heldMin = Math.min(...out.trail.map((x) => x[0])); out.heldOp = Math.min(...out.trail.map((x) => x[1]));
       ot.trip = null; ot.close(); out.trail = []; out.over = 0;   // she is back out: the Portal closes and may now fade
