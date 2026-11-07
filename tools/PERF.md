@@ -27,16 +27,11 @@ survive, but three.js's internals were renamed (its projectObject, `Ae` below, i
 
 ## 1. What the APK adds on top of the game
 
-The APK is a launcher: an Android activity starts a loopback HTTP server, hands
-`http://localhost:17777/` to the Quest Browser's immersive activity, and gets
-out of the way. Cost on the game: none at runtime (the server idles on a daemon
-thread after the one 1 MB transfer), a few hundred milliseconds at launch for
-the activity hand-off. Two wrapper-side items are worth doing:
-
-| Item | Effect | Risk |
-| --- | --- | --- |
-| Serve the page cacheable (`ETag` + `Cache-Control: no-cache`, answer `304`) instead of `no-store` | Chromium keeps its compiled-code cache for the inline scripts between launches, so the second launch onward skips most of the parse/compile of ~1 MB of JS | none to gameplay; the ETag changes with every build so a new APK is never served stale |
-| Keep the splash image until the first XR frame (already the case through the TWA splash) | hides the synchronous world build | none |
+Since 4.0.64 (B133) the Store APK is Meta's Bubblewrap web app: it opens the game hosted at
+https://greeblistown.ar.io/ in the Quest Browser's immersive activity and gets out of the way. Cost on the game: none
+at runtime; at launch, the transfer of the page (about 1.1 MB, cached by the browser after the first launch) and the
+pre-painted textures instead of reading them from the APK. (Until 4.0.63 the APK carried the game and served it from
+a small server on the headset; that APK is gone.)
 
 ## 2. The game as bundled (3.15.6), static read
 

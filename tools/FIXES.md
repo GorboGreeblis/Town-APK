@@ -1922,6 +1922,35 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.64, the Store APK** (B133; the author: "MAJOR BLOCKING ISSUE" from the Store upload: the start URL "does not
+  use https scheme" and the manifest is "missing the `twa_generator` tag. Please use the Meta provided Bubblewrap CLI to
+  regenerate your PWA"; then "let's replace the current .apk in the repo. this will be the only version we use"). The
+  game is 4.0.63's final build, unchanged. Meta's web-app path now requires the game hosted at a public HTTPS origin,
+  verified by Digital Asset Links, and the APK made by its Bubblewrap CLI (Meta's PWA packaging guide, 2026-10-22):
+  - **The site**: `build_site.py` writes the folder (the final `index.html`, `tex/`, `manifest.webmanifest`, icons,
+    `.well-known/assetlinks.json` with the package and the release certificate's SHA-256); the author deployed it with
+    ArDrive and pointed the ArNS name `greeblistown` at it: https://greeblistown.ar.io/. Checked live: all 144 files
+    byte for byte, `assetlinks.json` 200, JSON, no redirect; played from it headless (boots, VR, frames, 139 textures
+    from the site, no errors, nothing from another host).
+  - **The APK**: `@meta-quest/bubblewrap-cli` 1.24.1 from `tools/twa/twa-manifest.json` (package
+    `com.montgummery.greeblis`, host `greeblistown.ar.io`, immersive, 4.0.64 / 133, the release key); Meta's guide's
+    edit (`jcenter()` to `mavenCentral()`); min SDK 23, target 32. DEFAULT_URL https://greeblistown.ar.io/,
+    `twa_generator` bubblewrap-cli, the VR launcher, v2 signature, 7.6 MB. Meta's template adds the hand-tracking
+    permission and a platform library with 64-bit and 32-bit native code. `build_twa.sh` rebuilds it; `check_apk.sh`
+    (rewritten for it, `--online` fetches the live `assetlinks.json`), `check_final.sh` (the hosted game is the final
+    build), the pre-commit hook and `build.sh` (writes the site, builds no APK) follow; the loopback server's test
+    (`test_server.sh`, `server_harness/`) retired with it.
+  - The game now needs the internet to start (it loads from the site); the APK no longer carries it.
+  - The old self-contained APK is gone from `tools/` (the author: "we're never doing the old self-contained thing
+    again"): its Android project (`tools/android/`: the loopback server, launcher and Gradle build) deleted; the site
+    folder `tools/site/` holds what it held for the game (the game's copy, `tex/`) plus the site's own files; the
+    game's version moved from its `build.gradle` to `tools/game_version.txt`; the signing key to `tools/twa/keystore/`
+    (never committed); BUILD.md, RELEASE.md, HEADSET_DIAG.md (the debug build's server lines are gone with the server:
+    the live log is the runtime's `VrApi` lines) and the other docs describe the new app only. The Store APK's
+    launcher label set to "GREEBLIS TOWN" (Bubblewrap had "Greeblis"), as the old APK's.
+  - The privacy policy (`tools/store/privacy.html`, Last Updated November 7, 2026) no longer describes the old local
+    server: the game's files load from its site on the Arweave network, the game sends nothing back, and the serving
+    gateway may see the usual request data (IP address, browser), which the game never receives.
 - **4.0.63** (the author: "From the very last build: debug and logging features must be removed"; RULES.md 34). The
   game plays as in 4.0.62 in the builds the author tests (the debug code is fenced, not changed); the Store build is
   made without it.

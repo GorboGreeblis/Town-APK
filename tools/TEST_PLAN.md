@@ -20,10 +20,8 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 | Item | How | Coverage |
 | --- | --- | --- |
 | APK manifest, SDK levels, signature, size, features (VRC.Quest.Packaging.1-6) | `check_apk.sh` | done |
-| Bundled game byte-identical to the game file; `index.html` at the root the same file | `check_apk.sh`, `sync_game.py --check` | done |
-| Loopback server: serves the document, HEAD/404/405, query ignored, concurrency, malformed input, slow client, traversal | `test_server.sh` | done |
-| Launcher starts the server and opens the Quest Browser immersive activity; browser fires `sessiongranted`; app closes on `finishAndRemoveTask` | sideload | headset |
-| Android lint | `gradle lintRelease` | done (warnings recorded) |
+| The site's game (`site/index.html`) and `index.html` at the root byte-identical to the game file (or its final build); the hosted game the same | `sync_game.py --check`, `check_final.sh` | done |
+| The Store APK opens https://greeblistown.ar.io/ in the Quest Browser's immersive activity with no browser bar (Digital Asset Links verified); browser fires `sessiongranted` | sideload (`check_apk.sh --online` checks the site's `assetlinks.json` against the APK) | headset |
 
 ## 2. Boot and VR entry
 
@@ -221,7 +219,7 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 
 | Item | How | Coverage |
 | --- | --- | --- |
-| `index.html` at the root and the APK's asset are byte-identical to the game file `uncompressed.html` | `sync_game.py --check` (quick tier, pre-commit hook, `build.sh`); `check_apk.sh` for the APK; for the final (Store) build, whose copies are the game file's final build by design, `check_final.sh` instead (quick tier, pre-commit hook, `build.sh --final`; 4.0.63) | done |
+| `index.html` at the root and `site/index.html` are byte-identical to the game file `uncompressed.html` | `sync_game.py --check` (quick tier, pre-commit hook, `build.sh`); for the final (Store) build, whose copies are the game file's final build by design, `check_final.sh` instead (quick tier, pre-commit hook, `build.sh --final`; 4.0.63) | done |
 | The game runs on its own (nothing from another host, nothing from its own server but the optional extras): boots, enters VR, walks, talks, starts the Event, paints every texture; every pre-painted texture in the APK's `tex/` is what it paints, pixel for pixel (RULES.md 2, R1) | `test_standalone.js` (every tier but quick, `build.sh`) | done (3.15.44) |
 | The compressed version unpacks to the game file exactly | `build_compressed.js --check` (quick tier, pre-commit hook; every build unpacks again too); the final build's against its final file (`check_final.sh`, 4.0.63) | done (3.15.45, NOTES 89) |
 | The compressed version works as a Bitcoin ordinal: alone, under the ordinal content policy; LOADING, unpacks, boots, enters VR, no outside requests, no errors, under 390,000 bytes; desktop note | `test_compressed.js` (every tier but quick) | done (3.15.45) |

@@ -113,7 +113,7 @@ The HTML is 8 lines since the minification (3.15.45; it was 93 before); most of 
    file in the Quest Browser on your Meta Quest headset." with the version below it, and nothing else runs (A15,
    A18).
 5. The version is shown in three places: under the landing text, in the gate's corner (`#gateVer`) and in the VR
-   loading box's bottom right corner. `build.sh` stamps it from `versionName` on every build (step 3b, A18).
+   loading box's bottom right corner. `build.sh` stamps it from `tools/game_version.txt` on every build (step 3b, A18).
 
 The head script and the boot changes that launch straight into VR are part of
 the game file itself since 3.15.43 (FIXES.md, entry edits: 9 blocks).

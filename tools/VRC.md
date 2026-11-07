@@ -1,6 +1,6 @@
-# VRC check: GREEBLIS TOWN against the Meta Horizon Store requirements (first written for 3.15.25; kept current, 4.0.63, the final build)
+# VRC check: GREEBLIS TOWN against the Meta Horizon Store requirements (first written for 3.15.25; kept current: the game 4.0.63, the final build; the Store APK 4.0.64)
 
-Cross-checked on 2026-10-27 against an independent, CC0 test guide the author supplied ("Meta Quest Virtual Reality Checks (VRCs)", v1.0, 2026-10-27, 80 test cases; not affiliated with Meta). It lists the same 80 checks as this file; the rows below follow its wording where it is more specific (Packaging.4: a declared network security configuration, asserted by `check_apk.sh`; Performance.4: the boss-battle exception).
+Cross-checked on 2026-10-27 against an independent, CC0 test guide the author supplied ("Meta Quest Virtual Reality Checks (VRCs)", v1.0, 2026-10-27, 80 test cases; not affiliated with Meta). It lists the same 80 checks as this file; the rows below follow its wording where it is more specific (Performance.4: the boss-battle exception).
 
 The final part of the test pass (the author, 2026-10-27: "check the build against all
 relevant VRCs to ensure that it will pass submission"; the goal is a first-try pass).
@@ -16,24 +16,26 @@ author fills in; what to check is given), **N/A** (does not apply).
 
 ## What the build is
 
-An immersive PWA packaged with Meta's `androidbrowserhelper` (the same packaging
-Meta's own PWA tooling produces): a launcher activity starts the Quest Browser's
-immersive activity on `http://localhost:17777/`, served by a loopback server inside
-the app. Pure Java plus the bundled game; no native code, no network use, no user data
-stored on the headset (the game has no save: no IndexedDB, cookies or `localStorage`; the debug builds' log black box,
-4.0.34-4.0.62, is taken out of the final build with the rest of the debug code, 4.0.63, RULES.md 34, `check_final.sh`;
-`tools/store/privacy.html` says the game stores nothing about the user, which the final build now holds to the letter).
+**Since 4.0.64 (B133)** the Store APK is a Trusted Web Activity made by Meta's Bubblewrap CLI (`tools/twa`,
+`tools/build_twa.sh`; the Store's upload refused 4.0.63's self-contained APK): its launcher opens the game hosted at
+https://greeblistown.ar.io/ in the Quest Browser's immersive activity, and the browser verifies the site against the
+APK through Digital Asset Links. The game is the final build 4.0.63, unchanged. Java from Meta's template plus Meta's
+platform library (native code for arm64-v8a, armeabi-v7a, x86, x86_64); no user data stored on the headset (the game
+has no save: no IndexedDB, cookies or `localStorage`; the debug builds' log black box, 4.0.34-4.0.62, is taken out of
+the final build with the rest of the debug code, 4.0.63, RULES.md 34, `check_final.sh`; `tools/store/privacy.html` says
+the game stores nothing about the user, which the final build holds to the letter). The game needs the internet to
+start (the page loads from the site); once loaded it makes no requests.
 
 ## Packaging
 
 | Check | Status | Verdict | Evidence |
 | --- | --- | --- | --- |
-| Packaging.1 manifest meets release requirements | R | PASS | `tools/check_apk.sh`: MAIN intent with `com.oculus.intent.category.VR`, `com.oculus.supportedDevices` = quest3, quest3s (Quest 2 dropped in 3.15.34, Quest Pro in 3.15.35, the author's decisions), `android.hardware.vr.headtracking` required, touchscreen not required, `debuggable` false, `allowBackup` false, landscape; Meta's upload check runs the same test on upload |
-| Packaging.2 signed with APK Signature Scheme v2 | R | PASS | `check_apk.sh` verifies v2 with apksigner; the certificate is the one every upload must keep (RELEASE.md section 1) |
-| Packaging.3 no unsupported Android features | R | PASS | only `android.hardware.vr.headtracking` (required) and `android.hardware.screen.landscape` (implied); no camera, telephony, location, Bluetooth |
-| Packaging.4 supported SDK versions | R | PASS | minSdk 29, targetSdk 32, compileSdk 34 (`tools/android/app/build.gradle`), inside Meta's 29-34 / 32-34 ranges |
-| Packaging.5 APK under 1 GB | R | PASS | 26.6 MB (26,643,122 bytes, 4.0.61; 26,580,500 in 4.0.34, 26.1 MB in 4.0.1, 15.3 MB in 3.15.45, before the pre-painted gallery mural of 3.15.48), no OBB |
-| Packaging.6 64-bit binaries | R | PASS | no native libraries at all (pure Java plus HTML); nothing 32-bit to reject |
+| Packaging.1 manifest meets release requirements | R | PASS | Meta's Bubblewrap template (the packaging the Store requires for a web app, B133): MAIN intent with `com.oculus.intent.category.VR`, `horizonos.pwa.APP_MODE` immersive, the https start URL and Bubblewrap's `twa_generator` tag the upload checks, touchscreen not required (`tools/check_apk.sh`). Supported devices (Quest 3, Quest 3S) are set in the Developer Dashboard: the template carries no device list. Meta's upload check runs on upload |
+| Packaging.2 signed with APK Signature Scheme v2 | R | PASS | `check_apk.sh` verifies v2 with apksigner; the certificate is the one every upload must keep (RELEASE.md section 1), and the site's `assetlinks.json` names it |
+| Packaging.3 no unsupported Android features | R | PASS | `android.hardware.vr.headtracking` and hand tracking, both not required (the template's), and the implied `faketouch`; no camera, telephony, location, Bluetooth (`check_apk.sh`) |
+| Packaging.4 supported SDK versions | R | PASS | minSdk 23, targetSdk 32, compileSdk 32: Bubblewrap's Quest settings (Meta's PWA packaging guide; the Quest runs apps targeting 32 or lower); `check_apk.sh` |
+| Packaging.5 APK under 1 GB | R | PASS | 7.8 MB (7,787,803 bytes, 4.0.64: the game is on the site, not in the APK), no OBB |
+| Packaging.6 64-bit binaries | R | PASS | Meta's platform library ships arm64-v8a beside its 32-bit and x86 builds; `check_apk.sh` requires arm64-v8a wherever there is native code |
 
 ## Performance
 
@@ -47,13 +49,13 @@ stored on the headset (the game has no save: no IndexedDB, cookies or `localStor
 
 | Check | Status | Verdict | Evidence |
 | --- | --- | --- | --- |
-| Functional.1 no crashes, freezes or long unresponsive states | R | PASS | author's full headset run on 3.15.19 (no new issues); 10-minute soak headless with bounded heap and object counts (TEST_PLAN); launch stable since 3.15.12; every page error is posted to logcat (`page: ...`) and the standard tier fails on any. **Open: B96**, a freeze after the headset sleeps, found on 4.0.32 (the author's logs b42c9cfb, a7fc5e95: after 35 s with the headset off the headset ran out of memory within seconds of the return and the game froze head-locked); fixed in 4.0.34 (the loader kept whole, the old shim freed at a session's end, the native census and the log's black box; `test_b96.js`, `test_reentry.js`) and confirmed by the author's 4.0.34 headset-off run (two hides, the census steady; `HEADSET_DIAG.md`, "Confirming B96"). Stuck townsfolk are moved on (B117, 4.0.58; `test_unstick.js`) |
+| Functional.1 no crashes, freezes or long unresponsive states | R | PASS | author's full headset run on 3.15.19 (no new issues); 10-minute soak headless with bounded heap and object counts (TEST_PLAN); launch stable since 3.15.12; the standard tier fails on any page error. **Open: B96**, a freeze after the headset sleeps, found on 4.0.32 (the author's logs b42c9cfb, a7fc5e95: after 35 s with the headset off the headset ran out of memory within seconds of the return and the game froze head-locked); fixed in 4.0.34 (the loader kept whole, the old shim freed at a session's end, the native census and the log's black box; `test_b96.js`, `test_reentry.js`) and confirmed by the author's 4.0.34 headset-off run (two hides, the census steady; `HEADSET_DIAG.md`, "Confirming B96"). Stuck townsfolk are moved on (B117, 4.0.58; `test_unstick.js`) |
 | Functional.2 single-player app pauses when Horizon OS asks | R | PASS | the session's `visibilitychange` sets `blurred`: the game loop skips its update (no movement, no NPC time, no input) and only renders. The author's runs on 4.0.54-4.0.60 found gaps, all fixed: the first system-menu opening changes no session visibility, so the game also pauses while the window has lost focus (B115, 4.0.56) and while no input source is left (every menu opening takes them all; 4.0.57; tracked hands count as input); the sound is suspended with every pause and whenever frames stop, a song carrying on where it was (B118, 4.0.58; B124, 4.0.61); with the headset off, input coming back resumes the game only once the headset itself moves (B121, 4.0.61: the browser gives no headset-worn signal). `test_menu_pause.js`, `test_horn_pause.js`, `test_play.js`. **Confirm on 4.0.61**: the system menu, the first time too, pauses the game and its music; the headset off, a controller picked up and its trigger pressed, the game stays paused until the headset is worn (RELEASE.md section 3, the paragraph after step 6; `HEADSET_DIAG.md`, "Confirming the pause"). The VRC's own test (Quick Settings, Enter Passthrough) is the same path. the author, 2026-11-07, on the final build 4.0.63: the game and its music pause with the Universal Menu ("this is the issue we spent time fixing already": B115, B118, B121, B124, B125, confirmed on 4.0.61-4.0.62). |
 | Functional.3 never leaves the user stuck | R | PASS | world routes 20/20 with the sealed corner behind the Shop opened (B14); NPC stuck rescue (B2); the player cannot be enclosed (hull tests in the standard tier); the system menu always exits |
 | Functional.4 does not lose user data | R | N/A | the game stores nothing (no save, by design; the privacy policy states it), so there is nothing to lose. Say so in the submission notes |
 | Functional.5 responds to positional and orientation tracking | R | PASS | `local-floor` reference space (fallback `local` with a floor offset, tested in the `vr-nofloor` scenario); 6DoF head tracking through the projection layer; the author's runs |
 | Functional.6 only Meta Quest headsets and controllers shown | R | PASS | the game draws its own stylised hands/rays, no headset imagery; check the Store screenshots and trailer show no other platform's hardware The author on 2026-11-03: "My Store assets look good to me". |
-| Functional.7 tells the user when required connectivity is missing | + | N/A | no connectivity used; the loopback server is on the headset |
+| Functional.7 tells the user when required connectivity is missing | + | HEADSET | since 4.0.64 the game loads from https://greeblistown.ar.io/: without the internet the Quest Browser shows its own offline page. Recommended only. **Confirm**: Wi-Fi off, launch: a message, not an endless black or loading screen |
 | Functional.9 Local tracking space lets the user reset forward orientation | R | PASS | the session uses `local-floor` / `local`, for which the browser applies the system recentre (long-press the Meta button). **Confirm**: turn 180 degrees, long-press the Meta button, the town faces you again (RELEASE.md step 7) the author, 2026-11-07, on the final build 4.0.63: "Recenter works". |
 | Functional.10 no head-locked menus | + | PASS | the in-VR UI is world-placed (kiosks, panels in front of the player at a distance); the only head-locked element is the loading panel, allowed as a loading indicator |
 | Functional.12 fully functional for multiple entitled users on one headset | R | PASS | no per-user state at all; the browser keeps a profile per headset user anyway |
@@ -65,7 +67,7 @@ stored on the headset (the game has no save: no IndexedDB, cookies or `localStor
 | Check | Status | Verdict | Evidence |
 | --- | --- | --- | --- |
 | Security.1 entitlement check within 10 s | + | N/A | recommended only; a browser-packaged app has no Platform SDK. Meta's own PWA packaging ships without it |
-| Security.2 minimum permissions, none unsupported | R | PASS | `android.permission.INTERNET` only (needed for the loopback server); `check_apk.sh` fails on any other |
+| Security.2 minimum permissions, none unsupported | R | PASS | `com.oculus.permission.HAND_TRACKING` only (Meta's Bubblewrap template; the game uses controllers); `check_apk.sh` fails on any other |
 
 ## Tracking
 
@@ -107,7 +109,7 @@ stored on the headset (the game has no save: no IndexedDB, cookies or `localStor
 | --- | --- | --- | --- |
 | Audio.1 3D audio spatialisation | + | NOT MET | sounds fall off with distance from the head but are not panned between the ears; recommended only, not a failure on its own (the VRC guide v1.2) |
 | Ads.1-7 | R | N/A | no ads |
-| Streaming.1-4 | R/+ | N/A | nothing streamed; the loopback server is on the headset and serves the app's own files only |
+| Streaming.1-4 | R/+ | N/A | nothing streamed: the page and its textures load once from the game's own site |
 | Content.1 content guidelines | R | PASS | a family-friendly town game, IARC rating completed by the author |
 | Content.2 metadata matches in-app content | R | PASS | the Store copy describes the town, the townsfolk, flint and the Event as they are in the game (the copy review of 2026-10-26); names in the listing are the in-game names the author, 2026-11-07: "All images are screenshots from the actual game". |
 | Content.3-4 user-generated content | R/+ | N/A | none |

@@ -21,16 +21,16 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 mkdir -p "$ROOT/tools/.runs"   # tools write their outputs here, whichever folder the pass is started from
 # GT_ASSET overrides the asset the browser tests load (e.g. an experiment build; with GT_MULTIVIEW=1 the
 # fake headset runs the multiview experiment without MSAA). The verify and APK stages always check the release.
-ASSET="${GT_ASSET:-$ROOT/tools/android/app/src/main/assets/index.html}"
+ASSET="${GT_ASSET:-$ROOT/tools/site/index.html}"
 # Multiview is the headset's path since 3.15.34: the fake headset runs it (without MSAA) unless GT_MULTIVIEW=0.
 GT_MULTIVIEW=${GT_MULTIVIEW-1}; [ "$GT_MULTIVIEW" = 0 ] && GT_MULTIVIEW=""; export GT_MULTIVIEW
-APK="$ROOT/GreeblisTown-release.apk"; [ -f "$APK" ] || APK="$ROOT/tools/android/app/build/outputs/apk/release/app-release.apk"
+APK="$ROOT/GreeblisTown-release.apk"
 TIER=standard; RESUME=""
 ONLY=""
 for a in "$@"; do case "$a" in --smoke) TIER=smoke;; --full) TIER=full;; --quick) TIER=quick;; --resume) RESUME=1;; --only=*) ONLY=${a#--only=};; esac; done
 # The SDK for the server harness and the APK checker: ANDROID_HOME, else the one the Gradle build uses.
-if [ -z "${ANDROID_HOME:-}${ANDROID_SDK_ROOT:-}" ] && [ -f "$ROOT/tools/android/local.properties" ]; then
-  ANDROID_HOME=$(sed -n 's/^sdk\.dir=//p' "$ROOT/tools/android/local.properties"); export ANDROID_HOME; fi
+if [ -z "${ANDROID_HOME:-}${ANDROID_SDK_ROOT:-}" ] && [ -f "$ROOT/tools/twa/local.properties" ]; then
+  ANDROID_HOME=$(sed -n 's/^sdk\.dir=//p' "$ROOT/tools/twa/local.properties"); export ANDROID_HOME; fi
 # --resume: a stage counts as passed earlier only for the same files: the asset, the APK, the shared harness and fake
 # headset, and every file its own command names (its test script); editing one test re-runs only that stage
 STATE="$ROOT/tools/.runs/resume_$TIER.txt"
@@ -62,7 +62,7 @@ report() { name=$1; shift; wanted "report: $name" || return 0; KEY=$(key "$@")
   echo; echo "=== report: $name ==="; "$@"; rc=$?
   if [ $rc -eq 0 ]; then SUMMARY="$SUMMARY\n  INFO  $name (see log)"; printf '%s\t%s\n' "$KEY" "report: $name" >> "$STATE"; else SUMMARY="$SUMMARY\n  INFO  $name (probe exit $rc)"; fi; }
 
-VER=$(sed -n 's/^ *versionName "\([^"]*\)".*/\1/p' "$ROOT/tools/android/app/build.gradle" 2>/dev/null | head -1)
+VER=$(head -1 "$ROOT/tools/game_version.txt" 2>/dev/null)
 echo "Greeblis Town test pass: $TIER${ONLY:+ (only stages matching /$ONLY/)}; build ${VER:-unknown}; $(date -u +%Y-%m-%dT%H:%MZ)"; T_ALL=$(date +%s)
 HAZ="$ROOT/tools/.runs/frame_hazards.log"; mkdir -p "$ROOT/tools/.runs"; [ -n "$RESUME" ] || : > "$HAZ"   # every test's frame-hazard watch (lib/harness.js) appends here
 GLE="$ROOT/tools/.runs/gl_errors.log"; [ -n "$RESUME" ] || : > "$GLE"   # and every test's closing WebGL error check (F-B61)
@@ -72,12 +72,11 @@ FINALCOPIES=""; python3 -I "$ROOT/tools/sync_game.py" --check >/dev/null 2>&1 ||
 if [ -z "$FINALCOPIES" ]; then
 run "the shipped copies (index.html, the APK asset) are the game file tools/uncompressed.html (sync_game.py --check)" python3 -I "$ROOT/tools/sync_game.py" --check
 else
-run "the shipped copies (index.html, the APK asset, the root APK, index.compressed.html) are the final build of the game file, debug and logging removed, the version build.gradle's (check_final.sh)" sh "$ROOT/tools/check_final.sh"
+run "the shipped copies (index.html, the site's copy, index.compressed.html, the hosted game the root APK opens) are the final build of the game file, debug and logging removed, the version tools/game_version.txt's (check_final.sh)" sh "$ROOT/tools/check_final.sh"
 fi
 run "the game file is minified, not compressed (minify_game.js --check, RULES.md 19)" node "$ROOT/tools/minify_game.js" --check
 [ -n "$FINALCOPIES" ] || run "the compressed version unpacks to the game file exactly (build_compressed.js --check, RULES.md 20)" node "$ROOT/tools/build_compressed.js" --check
 run "every experiment applies to the game file (experiment.py --check)" python3 -I "$ROOT/tools/experiment.py" --check
-run "loopback server harness" "$ROOT/tools/test_server.sh"
 run "docs consistency (check_docs.py)" python3 -I "$ROOT/tools/check_docs.py"
 run "dialogue spell-check" sh -c "python3 '$ROOT/tools/spellcheck_dialogue.py' '$ROOT/tools/uncompressed.html' >/dev/null"
 run "tentacle bend is bit-identical to the original (P13)" node "$ROOT/tools/test_bend_exact.js" "$ASSET"

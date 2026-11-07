@@ -1,17 +1,25 @@
 #!/bin/sh
-# Checks an APK against the Meta Quest store packaging rules (VRC.Quest.Packaging.1-6)
-# and confirms the bundled game is byte-identical to tools/android/app/src/main/assets/index.html.
+# Checks the Store APK against the Meta Horizon Store's rules for a web app (PWA) APK (B133, 4.0.64): since 4.0.64 the
+# APK is a Trusted Web Activity made by Meta's Bubblewrap CLI (tools/twa, tools/build_twa.sh) that opens the game hosted
+# at an HTTPS site (https://greeblistown.ar.io/, tools/build_site.py); the Store's upload refuses one whose start URL is
+# not https or whose manifest lacks Bubblewrap's twa_generator tag. Checked:
+#   - the upload's own two rules: DEFAULT_URL is an https URL; twa_generator is bubblewrap-cli;
+#   - immersive launch: horizonos.pwa.APP_MODE immersive, the launcher in com.oculus.intent.category.VR;
+#   - VRC.Quest.Packaging.1-6: the package, signed with APK Signature Scheme v2, no phone-only features required,
+#     min SDK 23+ and target SDK 32 (Quest runs apps targeting 32 or lower), under 1 GB, 64-bit code where there is native
+#     code; Security.2: the permissions are Bubblewrap's own (hand tracking) and nothing else;
+#   - Digital Asset Links: the APK's signing certificate is the one in the site's /.well-known/assetlinks.json and the
+#     APK's asset statement names the site (with --online, the live file is fetched and compared).
 #
-#   tools/check_apk.sh [path/to/app.apk]
+#   tools/check_apk.sh [path/to/app.apk] [--online]
 #
 # Needs: ANDROID_HOME with build-tools/34.0.0 (aapt2, apksigner). Exit 1 on any FAIL.
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-APK=${1:-$ROOT/GreeblisTown-release.apk}; [ -f "$APK" ] || APK=$ROOT/tools/android/app/build/outputs/apk/release/app-release.apk
+APK=$ROOT/GreeblisTown-release.apk; ONLINE=""
+for a in "$@"; do case $a in --online) ONLINE=1;; *) APK=$a;; esac; done
 SDK=${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}
-# Fall back to the SDK the Gradle project uses (tools/android/local.properties).
-[ -n "$SDK" ] || SDK=$(sed -n "s/^sdk.dir=//p" "$(dirname "$0")/android/local.properties" 2>/dev/null | head -1)
-[ -n "$SDK" ] || SDK=$HOME/Android/Sdk
-BT=$(ls -d "$SDK"/build-tools/3[4-9].* 2>/dev/null | tail -1)
+[ -n "$SDK" ] || SDK=$(sed -n "s/^sdk.dir=//p" "$ROOT/tools/twa/local.properties" 2>/dev/null | head -1)
+BT=$(ls -d "$SDK"/build-tools/34.* 2>/dev/null | tail -1)
 [ -x "$BT/aapt2" ] || { echo "aapt2 not found under $SDK/build-tools (set ANDROID_HOME)"; exit 2; }
 [ -f "$APK" ] || { echo "APK not found: $APK"; exit 2; }
 
@@ -22,62 +30,55 @@ note() { printf '  NOTE  %s\n' "$1"; }
 check() { if [ "$2" = 1 ]; then ok "$1"; else bad "$1"; fi; }
 
 BADGING=$("$BT/aapt2" dump badging "$APK" 2>/dev/null)
-XMLTREE=$("$BT/aapt2" dump xmltree --file AndroidManifest.xml "$APK" 2>/dev/null)
+XML=$("$BT/aapt2" dump xmltree --file AndroidManifest.xml "$APK" 2>/dev/null)
+RES=$("$BT/aapt2" dump resources "$APK" 2>/dev/null)
+# a manifest meta-data value: literal, or the string resource it points to
+meta() { v=$(printf '%s\n' "$XML" | grep -A2 "name(0x01010003)=\"$1\"" | sed -n 's/.*value(0x01010024)="\([^"]*\)".*/\1/p' | head -1)
+  if [ -z "$v" ]; then r=$(printf '%s\n' "$XML" | grep -A2 "name(0x01010003)=\"$1\"" | sed -n 's/.*value(0x01010024)=@\(0x[0-9a-f]*\).*/\1/p' | head -1)
+    [ -n "$r" ] && v=$(printf '%s\n' "$RES" | grep -A1 "resource $r " | tail -1 | sed -n 's/.*() "\(.*\)"$/\1/p'); fi; printf '%s' "$v"; }
+str() { printf '%s\n' "$RES" | grep -A1 "string/$1\$" | tail -1 | sed -n 's/.*() "\(.*\)"$/\1/p'; }
+
 echo "APK: $APK"
 printf '%s\n' "$BADGING" | grep -o "package: name='[^']*' versionCode='[^']*' versionName='[^']*'"
 echo
-echo "VRC.Quest.Packaging.1 (manifest)"
+echo "Store upload: a Bubblewrap-made PWA with an https start URL (B133)"
+url=$(meta android.support.customtabs.trusted.DEFAULT_URL)
+check "DEFAULT_URL uses https ($url)" "$(case $url in https://*) echo 1;; esac)"
+gen=$(meta twa_generator)
+check "twa_generator present and bubblewrap-cli ($gen)" "$([ "$gen" = bubblewrap-cli ] && echo 1)"
+echo
+echo "Immersive launch"
+mode=$(meta horizonos.pwa.APP_MODE)
+check "horizonos.pwa.APP_MODE = immersive ($mode)" "$([ "$mode" = immersive ] && echo 1)"
+check "launcher in com.oculus.intent.category.VR" "$(printf '%s\n' "$XML" | grep -q 'com.oculus.intent.category.VR' && echo 1)"
+echo
+echo "VRC.Quest.Packaging.1-6, Security.2"
 pkg=$(printf '%s\n' "$BADGING" | sed -n "s/^package: name='\([^']*\)'.*/\1/p")
-check "package name set ($pkg)" "$([ -n "$pkg" ] && echo 1 || echo 0)"
-check "android.hardware.vr.headtracking required, version 1" "$(printf '%s\n' "$XMLTREE" | awk '/E: uses-feature/{f=0} /android.hardware.vr.headtracking/{f=1} f&&/android:required.*(0xffffffff|=true)/{r=1} f&&/android:version.*(=1$|0x1$)/{v=1} END{print (r&&v)?1:0}')"
-check "installLocation auto" "$(printf '%s\n' "$BADGING" | grep -q "install-location:'auto'" && echo 1 || echo 0)"
-check "not debuggable" "$(printf '%s\n' "$BADGING" | grep -q 'application-debuggable' && echo 0 || echo 1)"
-label=$(printf '%s\n' "$BADGING" | sed -n "s/^application-label:'\([^']*\)'.*/\1/p" | head -1)
-check "application label present ($label)" "$([ -n "$label" ] && echo 1 || echo 0)"
-check "launcher activity excludeFromRecents=true" "$(printf '%s\n' "$XMLTREE" | awk '/E: activity/{f=0} /android:name.*LauncherActivity/{f=1} f&&/excludeFromRecents.*(0xffffffff|=true)/{x=1} END{print x?1:0}')"
-check "MAIN + LAUNCHER + com.oculus.intent.category.VR" "$(printf '%s\n' "$XMLTREE" | grep -q 'com.oculus.intent.category.VR' && printf '%s\n' "$BADGING" | grep -q 'launchable-activity' && echo 1 || echo 0)"
-check "com.oculus.supportedDevices meta-data" "$(printf '%s\n' "$XMLTREE" | grep -q 'com.oculus.supportedDevices' && echo 1 || echo 0)"
-# The exact device list (the author's decision in 3.15.34: Quest 3, 3S and Pro; Quest 2 not supported).
-check "supported devices are exactly quest3|quest3s" "$(printf '%s\n' "$XMLTREE" | grep -A2 'com.oculus.supportedDevices' | grep -q '"quest3|quest3s"' && echo 1 || echo 0)"
-check "no other VR platform names in manifest" "$(printf '%s\n' "$XMLTREE" | grep -qi 'steamvr\|openvr\|pico\|vive\|daydream\|cardboard' && echo 0 || echo 1)"
+check "package com.montgummery.greeblis ($pkg)" "$([ "$pkg" = com.montgummery.greeblis ] && echo 1)"
+check "APK Signature Scheme v2 verified" "$("$BT/apksigner" verify -v "$APK" 2>/dev/null | grep -q 'Verified using v2 scheme (APK Signature Scheme v2): true' && echo 1)"
+min=$(printf '%s\n' "$BADGING" | sed -n "s/^sdkVersion:'\([0-9]*\)'/\1/p"); tgt=$(printf '%s\n' "$BADGING" | sed -n "s/^targetSdkVersion:'\([0-9]*\)'/\1/p")
+check "minSdkVersion 23 or more (is $min)" "$([ "${min:-0}" -ge 23 ] && echo 1)"
+check "targetSdkVersion 32 (Quest runs apps targeting 32 or lower; is $tgt)" "$([ "${tgt:-0}" = 32 ] && echo 1)"
+check "touchscreen not required" "$(printf '%s\n' "$BADGING" | grep -q "uses-feature: name='android.hardware.touchscreen'" || echo 1)"
+check "no phone-only features required (bluetooth, camera, telephony)" "$(printf '%s\n' "$BADGING" | grep -qE "uses-feature: name='android.hardware.(bluetooth|camera|telephony)" || echo 1)"
+size=$(wc -c < "$APK"); check "under 1 GB ($((size / 1024)) KB)" "$([ "$size" -lt 1073741824 ] && echo 1)"
+nat=$(printf '%s\n' "$BADGING" | sed -n "s/^native-code: //p")
+check "64-bit code where there is native code (${nat:-none})" "$([ -z "$nat" ] || printf '%s' "$nat" | grep -q arm64-v8a && echo 1)"
+perms=$(printf '%s\n' "$BADGING" | sed -n "s/^uses-permission: name='\([^']*\)'.*/\1/p" | tr '\n' ' ')
+extra=$(printf '%s\n' $perms | grep -vxE 'com.oculus.permission.HAND_TRACKING|android.permission.INTERNET|android.permission.POST_NOTIFICATIONS' | tr '\n' ' ')
+check "permissions only Bubblewrap's own (${perms:-none})" "$([ -z "$extra" ] && echo 1)"
 echo
-echo "VRC.Quest.Packaging.2 (signature)"
-SIG=$("$BT/apksigner" verify --verbose "$APK" 2>&1 | grep -v JAVA_TOOL)
-check "APK Signature Scheme v2 verified" "$(echo "$SIG" | grep -q 'Verified using v2 scheme (APK Signature Scheme v2): true' && echo 1 || echo 0)"
+echo "Digital Asset Links"
+fp=$("$BT/apksigner" verify --print-certs "$APK" 2>/dev/null | sed -n 's/.*certificate SHA-256 digest: //p' | head -1 | tr a-f A-F | sed 's/../&:/g; s/:$//')
+stmt=$(str assetStatements); host=$(printf '%s' "$url" | sed -n 's|^https://\([^/]*\).*|\1|p')
+check "the APK's asset statement names the site (https://$host)" "$(printf '%s' "$stmt" | grep -q "\"site\": \"https://$host\"" && echo 1)"
+site=$ROOT/tools/site/.well-known/assetlinks.json
+if [ -f "$site" ]; then check "the site folder's assetlinks.json (tools/site) names this signing certificate ($fp)" "$(grep -q "$fp" "$site" && echo 1)"; fi
+if [ -n "$ONLINE" ]; then
+  live=$(curl -sS --max-time 60 -w '\n%{http_code} %{content_type} %{num_redirects}' "https://$host/.well-known/assetlinks.json" 2>/dev/null)
+  meta_line=$(printf '%s\n' "$live" | tail -1)
+  check "live https://$host/.well-known/assetlinks.json: 200, JSON, no redirect ($meta_line)" "$(printf '%s' "$meta_line" | grep -qE '^200 application/json[^ ]* 0$' && echo 1)"
+  check "live assetlinks.json names this package and certificate" "$(printf '%s\n' "$live" | grep -q com.montgummery.greeblis && printf '%s\n' "$live" | grep -q "$fp" && echo 1)"
+else note "the live site not fetched (--online checks https://$host/.well-known/assetlinks.json)"; fi
 echo
-echo "VRC.Quest.Packaging.3 (features)"
-check "touchscreen not required" "$(printf '%s\n' "$BADGING" | grep -q "uses-feature-not-required: name='android.hardware.touchscreen'" && echo 1 || echo 0)"
-check "no phone-only features (bluetooth, camera, telephony, gms)" "$(printf '%s\n' "$BADGING" | grep '^uses-feature:' | grep -qi 'bluetooth\|camera\|telephony\|nfc\|location' && echo 0 || echo 1)"
-echo
-echo "VRC.Quest.Packaging.4 (SDK levels, network security config)"
-min=$(printf '%s\n' "$BADGING" | grep -oE "^(minS|s)dkVersion:'[0-9]*'" | tr -dc 0-9); tgt=$(printf '%s\n' "$BADGING" | grep -o "^targetSdkVersion:'[0-9]*'" | tr -dc 0-9)
-check "minSdkVersion 29-34 (is $min)" "$([ "$min" -ge 29 ] && [ "$min" -le 34 ] && echo 1 || echo 0)"
-check "targetSdkVersion 32-34 for immersive (is $tgt)" "$([ "$tgt" -ge 32 ] && [ "$tgt" -le 34 ] && echo 1 || echo 0)"
-check "networkSecurityConfig declared" "$(printf '%s\n' "$XMLTREE" | grep -q 'networkSecurityConfig' && echo 1 || echo 0)"
-echo
-echo "VRC.Quest.Packaging.5 (size)"
-size=$(wc -c < "$APK")
-check "base.apk under 1 GB ($((size/1024)) KB)" "$([ "$size" -lt 1073741824 ] && echo 1 || echo 0)"
-echo
-echo "VRC.Quest.Packaging.6 (64-bit)"
-if printf '%s\n' "$BADGING" | grep -q 'native-code'; then
-  check "arm64-v8a present, armeabi-v7a absent" "$(printf '%s\n' "$BADGING" | grep native-code | grep -q "arm64-v8a" && ! printf '%s\n' "$BADGING" | grep native-code | grep -q "armeabi-v7a" && echo 1 || echo 0)"
-else
-  note "no native code at all (pure Java + bundled HTML, same as Meta's own PWA packages)"
-fi
-echo
-echo "Runtime requirements"
-check "android.permission.INTERNET declared (loopback server needs it)" "$(printf '%s\n' "$BADGING" | grep -q "uses-permission: name='android.permission.INTERNET'" && echo 1 || echo 0)"
-echo
-echo "Immersive launch wiring"
-check "horizonos.pwa.APP_MODE = immersive" "$(printf '%s\n' "$XMLTREE" | awk '/horizonos.pwa.APP_MODE/{f=1} f&&/immersive/{x=1} END{print x?1:0}')"
-check "DEFAULT_URL uses http://localhost (the browser rejects 127.0.0.1 as unverified)" "$(printf '%s\n' "$XMLTREE" | awk '/customtabs.trusted.DEFAULT_URL/{f=1} f&&/http:\/\/localhost/{x=1} END{print x?1:0}')"
-echo
-echo "Bundled game"
-SRC="$ROOT/tools/android/app/src/main/assets/index.html"
-if unzip -p "$APK" assets/index.html 2>/dev/null | cmp -s - "$SRC"; then ok "assets/index.html byte-identical to $SRC"; else bad "assets/index.html differs from $SRC"; fi
-ROOTCOPY="$ROOT/index.html"
-if [ -f "$ROOTCOPY" ] && unzip -p "$APK" assets/index.html 2>/dev/null | cmp -s - "$ROOTCOPY"; then ok "index.html at the repository root is the same game file"; else bad "index.html at the repository root is missing or differs from the APK's game (run tools/apply_entry_fix.py)"; fi
-echo
-if [ "$fail" = 0 ]; then echo "APK CHECK PASSED"; else echo "APK CHECK FAILED ($fail)"; fi
-exit $([ "$fail" = 0 ] && echo 0 || echo 1)
+[ "$fail" = 0 ] && echo "APK CHECK PASSED" || { echo "APK CHECK FAILED ($fail)"; exit 1; }

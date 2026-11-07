@@ -22,7 +22,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const file = path.resolve(process.argv[2] || path.join(root, 'tools/android/app/src/main/assets/index.html'));
+const file = path.resolve(process.argv[2] || path.join(root, 'tools/site/index.html'));
 const which = process.argv[3] || 'all';
 const RUN_S = Number(process.argv[4] || 20);
 // The page is served with the harness's debug hook (window.__dbg: F, we, ...) so the checks can look at the
@@ -43,7 +43,7 @@ function serve() {
       }
       if (req.url.startsWith('/tex/')) {   // pre-rendered textures, as the APK serves them
         const name = path.basename(req.url.split('?')[0]);
-        const f = path.join(root, 'tools/android/app/src/main/assets/tex', name);
+        const f = path.join(root, 'tools/site/tex', name);
         if (!/^[\w.-]+$/.test(name) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); }
         const data = fs.readFileSync(f);
         res.writeHead(200, { 'Content-Type': name.endsWith('.json') ? 'application/json' : 'image/png', 'Content-Length': data.length });

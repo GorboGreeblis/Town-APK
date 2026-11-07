@@ -16,7 +16,7 @@ process.env.GT_MULTIVIEW = '1';
 process.env.GT_HEADSET_FOV = process.env.GT_HEADSET_FOV || '1';
 const { boot, reporter, root } = require('./lib/harness');
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
-let file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : path.join(root, 'tools/android/app/src/main/assets/index.html');
+let file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : path.join(root, 'tools/site/index.html');
 const save = process.argv.includes('--save'), outDir = path.join(root, 'tools/.runs/pixel_ab');
 // each switch: [name, the expression that sets it (X = true for on), the pixels a view it may change: 0, or for a
 // draw-order change at most 4 (RULES.md 31's allowance: which of two surfaces at exactly one depth wins a pixel)]

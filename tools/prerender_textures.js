@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Pre-renders the game's procedural canvas textures once, at build time, into
-// tools/android/app/src/main/assets/tex/ (PNG + manifest.json). At runtime the
+// tools/site/tex/ (PNG + manifest.json). At runtime the
 // head script loads them and the painter blits them instead of repainting
 // (FIXES.md, entry edit 9), and Gooward's gallery mural (its worker's three strips, F-B34). Painters that draw text are skipped so fonts stay
 // the headset's own. Re-run whenever a painter in tools/uncompressed.html (the
@@ -9,7 +9,7 @@
 // source, and so their keys and seeded grain, may differ from the game file's after its own minification)
 const fs = require('fs'); const path = require('path'); const { execFileSync } = require('child_process');
 const { boot, root } = require('./lib/harness.js');
-const out = path.join(root, 'tools/android/app/src/main/assets/tex');
+const out = path.join(root, 'tools/site/tex');
 (async () => {
   const cap = path.join(root, 'tools/.runs/exp_texcapture.html');
   const src = process.argv[2] ? path.resolve(process.argv[2]) : path.join(root, 'tools/uncompressed.html');

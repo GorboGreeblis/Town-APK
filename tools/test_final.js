@@ -3,7 +3,7 @@
 // served exactly as it is, with no test hook (no window.__dbg: the harness's `hook: false`), and played in VR:
 //   - none of the debug code is there at run time: no GT_DEBUG, no __gtLog, no flight recorder (__gtFR), no light
 //     record, census or frame-health counters on the loader (__gtXR), no __dbg;
-//   - the version shown (the gate's corner) is build.gradle's versionName, and every version the file carries is it;
+//   - the version shown (the gate's corner) is tools/game_version.txt, and every version the file carries is it;
 //   - it boots, the VR session presents and frames keep coming for about 20 s with both controllers in (the
 //     sticks moved, the right B pressed, the debug build's flight-recorder mark), with no page error;
 //   - the sound plays while the session presents with input in (its context running, read through an AudioContext
@@ -34,8 +34,8 @@ const probe = () => {
 (async () => {
   const { expect, note, failures } = reporter();
   const html = fs.readFileSync(file, 'utf8');
-  const version = (fs.readFileSync(path.join(root, 'tools/android/app/build.gradle'), 'utf8').match(/versionName "([^"]+)"/) || [])[1];
-  note(`${path.relative(root, file)}: ${Buffer.byteLength(html)} bytes; build.gradle's version ${version}`);
+  const version = fs.readFileSync(path.join(root, 'tools/game_version.txt'), 'utf8').trim();
+  note(`${path.relative(root, file)}: ${Buffer.byteLength(html)} bytes; the game's version ${version} (tools/game_version.txt)`);
   // the four places build.sh stamps in the game file (the final build's minification may join the gate's two into one)
   const shown = html.match(/v\d+\.\d+(?:\.\d+)?(?=")/g) || [];
   expect(`every version the file shows is v${version} (landing text, gate corner, VR loading box)`, shown.length >= 3 && shown.every((v) => v === 'v' + version), shown.join(' '));

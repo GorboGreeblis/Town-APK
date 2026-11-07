@@ -58,7 +58,7 @@ function serve(body, standalone) {
       }
       if (req.url.startsWith('/tex/')) {   // pre-rendered textures, as the APK serves them
         const name = path.basename(req.url.split('?')[0]);
-        const f = path.join(root, 'tools/android/app/src/main/assets/tex', name);
+        const f = path.join(root, 'tools/site/tex', name);
         if (!/^[\w.-]+$/.test(name) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); }
         const data = fs.readFileSync(f);
         res.writeHead(200, { 'Content-Type': name.endsWith('.json') ? 'application/json' : 'image/png', 'Content-Length': data.length });
@@ -95,7 +95,7 @@ function serve(body, standalone) {
  *   boot waits for the loader's booted flag instead, and fastSim, renderEvery and noVisits do nothing (they reach
  *   the game through __dbg); the game draws every frame.
  */
-async function boot({ file = path.join(root, 'tools/android/app/src/main/assets/index.html'), vr = true, fastSim = true, noVisits = true, renderEvery = 1, timeoutMs = 300000, onBeforeGrant = null, initScripts = [], standalone = false, hook = true } = {}) {
+async function boot({ file = path.join(root, 'tools/site/index.html'), vr = true, fastSim = true, noVisits = true, renderEvery = 1, timeoutMs = 300000, onBeforeGrant = null, initScripts = [], standalone = false, hook = true } = {}) {
   const srv = await serve(hook ? hooked(path.resolve(file)) : fs.readFileSync(path.resolve(file)), standalone);
   const url = `http://127.0.0.1:${srv.address().port}/`;
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--autoplay-policy=no-user-gesture-required', ...(process.env.GT_JSFLAGS ? ['--js-flags=' + process.env.GT_JSFLAGS] : [])] });

@@ -1,7 +1,8 @@
 # Release guide: what you need to do
 
-Everything in this file is on your side: keys, headset testing, and the Meta
-Quest Store upload. The build and test automation is already in the repo
+Everything in this file is on your side: keys, the site, headset testing, and the Meta
+Quest Store upload. Since 4.0.64 (B133) the game is hosted at https://greeblistown.ar.io/ (your ArDrive deployment and
+ArNS name) and the Store APK is Meta's Bubblewrap web app that opens it (`tools/BUILD.md`, "How the app works"). The build and test automation is already in the repo
 (`tools/BUILD.md`, `tools/README.md`).
 
 ## 1. Signing key (do this first, keep it forever)
@@ -26,11 +27,10 @@ keytool -list -v -keystore greeblis-town-release.jks | grep -A1 "Owner"
 1. Store both files somewhere safe and private (password manager, encrypted
    drive). They are deliberately not in git.
 2. For rebuilding, place them in the project:
-   - `tools/android/keystore/greeblis-town-release.jks`
-   - `tools/android/keystore.properties`
-   Both paths are git-ignored. With them present, `assembleRelease` produces a
-   signed APK; without them it produces an unsigned one that the store will
-   not accept.
+   - `tools/twa/keystore/greeblis-town-release.jks`
+   - `tools/twa/keystore.properties` (`storePassword=...` and `keyPassword=...`)
+   Both paths are git-ignored. `tools/build_twa.sh` refuses to build without them. The site's
+   `/.well-known/assetlinks.json` names this key's certificate: a different key would also need a new site file.
 3. Not needed now that the key is decided, kept for reference: to create a
    different key you would have to do it **before** the first store upload:
    ```sh
@@ -38,13 +38,7 @@ keytool -list -v -keystore greeblis-town-release.jks | grep -A1 "Owner"
      -keyalg RSA -keysize 2048 -validity 10000 \
      -dname "CN=Greeblis Town, O=Montgummery Games"
    ```
-   then put the passwords in `tools/android/keystore.properties`:
-   ```
-   storeFile=keystore/greeblis-town-release.jks
-   storePassword=YOUR_PASSWORD
-   keyAlias=greeblistown
-   keyPassword=YOUR_PASSWORD
-   ```
+   then put the passwords in `tools/twa/keystore.properties` (`storePassword=...`, `keyPassword=...`).
 
 ## 2. Package name check (before the first upload)
 
@@ -54,8 +48,8 @@ and look at **Distribution → Builds**:
 
 - No builds listed: nothing to do.
 - A build is listed: its package name and signing key are locked in. Use the
-  same package name (edit `applicationId` in `tools/android/app/build.gradle`,
-  rebuild) and the same key. If that key is lost, the only way forward is a
+  same package name (`packageId` in `tools/twa/twa-manifest.json`, then
+  `tools/build_twa.sh`) and the same key. If that key is lost, the only way forward is a
   new store app.
 
 ## 3. Test on the headset
@@ -75,31 +69,27 @@ and look at **Distribution → Builds**:
 4. Launch it: in the headset Library choose the **Unknown Sources** filter (or
    the Apps list) and open **Greeblis Town**.
 5. What to check, in this order:
-   - It goes straight into VR with no 2D browser panel and no stuck loading
-     screen. (This is the one thing that could not be verified without a
-     headset; see `tools/NOTES.md` item 1.)
+   - It goes straight into VR with no 2D browser panel, **no browser address bar**, and no stuck loading
+     screen. A browser bar means the site's Digital Asset Links check failed (the site's
+     `/.well-known/assetlinks.json` and the APK's key must match: `tools/check_apk.sh --online`). This is the
+     one thing that cannot be verified without a headset.
+   - The headset needs the internet to start the game (it loads from the site).
    - The town looks and sounds exactly as in the HTML version.
    - Pressing the Meta button and choosing Quit returns to the home
      environment with no leftover browser window.
    - Relaunching works.
 6. Useful log while it starts:
    ```sh
-   adb logcat -s GreeblisServer GreeblisLauncher TwaLauncher TWALauncherActivity
+   adb logcat -s TwaLauncher TWALauncherActivity cr_OriginVerifier
    ```
-   You should see `Serving <n> bytes on http://127.0.0.1:17777/` (n is the size of
-   `tools/android/app/src/main/assets/index.html`) and
-   `Setting Oculus Browser launch mode to immersive`.
-   Multiview (the release path since 3.15.34), with `adb logcat -s GreeblisServer` open: at boot the log says
-   `multiview planned (... OCULUS_multiview true ...)`, and at entry `projection layer live, ..., multiview true`
-   and `multiview live: WxH per eye, msaa 4`. `multiview not used` or `framebuffer incomplete` means the headset
-   fell back to the classic path; send the log. Both eyes must look right: depth, lighting and the 3D effect (look
-   at a lamp, a creature close up, the garden), no flicker in one eye, smooth edges (MSAA).
-   For a play session, capture live with `tools/capture_log.ps1` (Windows) or `tools/capture_log.sh` (macOS,
-   Linux) from before the launch to the end; `adb logcat -d` afterwards keeps only the last minutes
+   You should see the launch open https://greeblistown.ar.io/ in immersive mode, and no
+   `Verification failed` line. The shipped final build writes no game lines (RULES.md 34). For a play session's
+   frame rate, capture live with `tools/capture_log.ps1` (Windows) or `tools/capture_log.sh` (macOS, Linux) from
+   before the launch to the end; `adb logcat -d` afterwards keeps only the last minutes
    (`tools/HEADSET_DIAG.md` section 1).
 
 If it opens a flat browser panel instead of VR, tell me: the fallback is
-Meta's 2D app mode (one manifest change), where the player clicks the panel
+Meta's 2D app mode (`horizonOSAppMode` in `tools/twa/twa-manifest.json`), where the player clicks the panel
 once to enter VR.
 
 Before the upload, one more headset pass against what the Store's reviewers do:
@@ -142,64 +132,54 @@ does not come back cleanly in `tools/BUGS.md`.
      Event, before multiview; superseded.)
    The updated privacy page (`tools/store/privacy.html`, section 8 on deletion
    requests) is live at https://greeblistown.neocities.org/ since 2026-10-27
-   (VRC.Quest.Privacy.4: done).
+   (VRC.Quest.Privacy.4: done). **Updated 2026-11-07 for the hosted game** (section 3: the files load from
+   the site on Arweave; section 4: the gateway): publish the new version (the author: on ArDrive) and put its URL
+   in the Developer Dashboard's privacy policy field if it changes.
 
 ## 4. Rebuilding yourself (only if something changes)
 
-1. Install a JDK 17 or newer, and the Android SDK command-line tools (or
-   Android Studio). Install `platforms;android-34`, `build-tools;34.0.0` and
-   `platform-tools`.
-2. Point the build at the SDK: `export ANDROID_HOME=/path/to/sdk` or create
-   `tools/android/local.properties` with `sdk.dir=/path/to/sdk`.
+1. Install Node 18+ and Python 3 (the game's build), and for a new Store APK a JDK 17 or newer and the Android SDK
+   command-line tools with `build-tools;34.0.0`.
+2. Point the APK build at the SDK: `export ANDROID_HOME=/path/to/sdk` or create `tools/twa/local.properties` with
+   `sdk.dir=/path/to/sdk`.
 3. Put the signing files in place (section 1).
 4. Build and check, from the game file alone:
    ```sh
-   tools/build.sh --bump                     # minify, copies, tex/, version +1 if what ships changed, APK at the root, compressed version, checks
+   tools/build.sh --bump                     # minify, copies, tex/, version +1 if what ships changed, the site, compressed version, checks
    ```
-   (`tools/BUILD.md` lists the steps it runs.) Every store upload needs a higher `versionCode`; `--bump` raises it
-   and `versionName` together. Add the version's row to `tools/VERSIONS.md`.
+   (`tools/BUILD.md` lists the steps it runs.) The game's version is `tools/game_version.txt`; add the version's row
+   to `tools/VERSIONS.md`.
 5. `tools/run_tests.sh --full --resume` after every build (RULES.md 23; Node and Playwright needed; "`--full`
    before an upload" is superseded); the result is recorded in `tools/TEST_PLAN.md` before the work moves on. For the
    final build candidate the final pass waits for your headset test of it (RULES.md 32).
-6. The Store upload is the final build without the debug code (RULES.md 34): build it with
+6. The shipped game is the final build without the debug code (RULES.md 34): build it with
    ```sh
    tools/build.sh --bump --final             # as step 4, but everything that ships is tools/final.html: no debug code
    ```
    `final_build.js` writes `tools/final.html` (the log function and its `/log` report, the localStorage black box,
    the flight recorder, the light record, the census and frame-health counters, the performance log and every log
-   call taken out; it fails unless none is left) and the APK, `tex/` and the root copies are built from it (the
-   APK's `/log` endpoint compiled out too); `test_final.js` plays it as shipped. The builds you test keep the debug
-   code; after the upload, `tools/build.sh` puts the game file back in the copies (the pre-commit hook expects it).
+   call taken out; it fails unless none is left) and `tex/`, the site's copy and the root copies are built from it;
+   `test_final.js` plays it as shipped. The builds you test keep the debug code; after the upload, `tools/build.sh`
+   puts the game file back in the copies (the pre-commit hook expects it).
+7. **Upload the site**: `tools/site` is the whole folder (`tools/.runs/site.zip` the same, zipped). In ArDrive, upload
+   it to the site's drive folder (replacing the files), create the folder's manifest again, and point the ArNS name
+   `greeblistown` at the new manifest. Then `tools/check_final.sh` fetches https://greeblistown.ar.io/ and confirms the
+   hosted game is the final build, and `tools/check_apk.sh --online` that `assetlinks.json` is still served. A change to
+   the game needs only this: the APK does not change.
+8. **A new Store APK** (a higher version for the Store, or a changed host or launch setting):
+   ```sh
+   tools/build_twa.sh --version-name 4.0.65 --version-code 134 --online
+   ```
+   Meta's Bubblewrap builds and signs it, copies it to the root as `GreeblisTown-release.apk` and checks it.
 
 ## 5. Upload to the Meta Quest Store
 
-**Upload candidate: the latest build, 4.0.61 (versionCode 130) on 2026-11-06**, the root `GreeblisTown-release.apk`
-(always the latest build; the author: "treat this as the final build until I say otherwise", 2026-10-30). Its headset
-test comes first, then the final pass (RULES.md 32); the upload is its build without the debug code (section 4, step 6).
-New since 4.0.1, build by build: `tools/VERSIONS.md` (the flash safeties and records, the code audits, the frame-rate
-work for the battery clocks P34-P51, the pause and sound with the system menu and the headset off B115-B121, the
-content the author asked for, A27-A65 and 4.0.61's). The text below is the 4.0.1 candidate's. New in 4.0.1 since
-3.15.52 (VERSIONS.md has each build): the Event's mist bank beyond the fence, rolling in and out over 30 s (A4, A16),
-with the clouds, Blossoms, Flint and the UFO fading out and back (A5-A8) and Backpacka flying into it; the mist no
-longer thins at the fence top as the player comes close (A19); the flash fixes for anything new on screen (F-B48,
-F-B51, F-B54) and the safeties behind them (S1 head-inside guard and draw-hook guard, S2 shader-compile hold); the
-Mushroom's ramp and desk (F-B39, F-B52, F-B56: P28 removed); Fortizmo and every doorway home never stuck (F-B55);
-the flat Garden (F-B57), the Cave floor level with the town (F-B60), Mama Gorbo's goo (F-B58), Gemtoe's tie (A10,
-F-B59); a wider bar opening (A17); the batcher's quiet-batch skip (P27, P29); the version on the landing page and
-the VR loading box (A18); the dead code removed (R8); the full pass's two fixes, F-B61 and F-B62 (3.15.64); F-B63 and P31 (3.15.65); the Event's fade groups (P33: each kiosk and the gazebo, and every tree with the robin, fade out and back; RULES.md 26), the still-group matrix walk (P32), the pond never faded (F-B64), taller Event flowers and the pond's ripples (A20, A21; 3.15.66; the ripples went in 4.0.4, A33); the gazebo's walls solid with its doorway open (F-B65), the fade-in safety (S3) and more colourful Event flowers (A22; 3.15.67); the pond's stones painted flat (A23), fourteen clouds (A24), and the recovery safeties (S4, S5; 3.15.68); white clouds (A25, 4.0.0); the fade groups stay out until the Event ends (A26, 4.0.1). Before that, new since 3.15.41 (VERSIONS.md has each build): no texture is made during play (F-B29,
-F-B30, 3.15.42), the Event's pizza batched (P20); native render scale and no layer swaps (F-B31), the Event scale
-removed, the Ancient left out from outside the church (P21), Gooward's translucent parts merged (P22, 3.15.43);
-painted textures seeded so the build is rebuildable from the game file (R1, 3.15.44); the game file minified, the same world bit for bit (R2, 3.15.45). Since then: no texture made
-or first uploaded during play (F-B32, F-B34, F-B35), the Event's start without its hitch (F-B33), the mipmap switch
-in slices (F-B36), Backpacka solid at the pond (F-B37); batching (P23 scenery cap 60,000 vertices, P24 creatures
-together, P25 Backpacka); the B flash mark and long-frame logging (D2); the author's randomness decisions (R4-R6).
-`build.sh`'s checks (`test_standalone.js`, `test_compressed.js` among them) pass on it; its full pass (RULES.md 23)
-is recorded in `tools/TEST_PLAN.md` (Latest results). Its headset pass, logged live (`tools/capture_log.ps1` /
-`.sh`, HEADSET_DIAG.md section 1): the Event's frame rate, with Backpacka in view and from the ring back to the
-dance floor; B pressed right after any flash; the first seconds after entering VR and the Event's first start;
-walking into Backpacka at the pond; the emote colours and Gooward look right; then `node tools/perf_log.js run.txt` (on the final build only the VrApi frame rate: it writes no game lines, RULES.md 34). The Alpha
-channel is only you and invited testers, so uploading there first and running that same build
-from the store is a fair way to do that pass.
+**Upload candidate: the Store APK 4.0.64 (versionCode 133), 2026-11-07**, the root `GreeblisTown-release.apk`,
+opening the final build of the game, 4.0.63, at https://greeblistown.ar.io/ (B133: the Store refused 4.0.63's
+self-contained APK; the game is unchanged). Its headset check comes first (section 3: straight into VR, no browser
+bar). What is in the game, build by build: `tools/VERSIONS.md`; its full pass (RULES.md 23) is recorded in
+`tools/TEST_PLAN.md` (Latest results). The Alpha channel is only you and invited testers, so uploading there first
+and running that same build from the store is a fair way to do the headset pass.
 
 The app label inside the APK is "GREEBLIS TOWN" (headset library and menus); type the
 same spelling as the listing name in the developer dashboard.
@@ -262,8 +242,8 @@ in either.
 
 ## 5c. Supported devices
 
-Quest 3 and Quest 3S (manifest `com.oculus.supportedDevices` =
-`quest3|quest3s`; `tools/check_apk.sh` asserts it). The original Quest and
+Quest 3 and Quest 3S, selected in the Developer Dashboard (Meta's Bubblewrap APK
+carries no device list of its own; 4.0.63's self-contained APK had `quest3|quest3s`). The original Quest and
 the Quest 2 are not supported (the author, 3.15.34), nor the Quest Pro (the
 author, 3.15.35: its XR2+ GPU is close to a Quest 2's, under half a 3S's,
 and the Event already runs 58-65 fps on a 3S). The same two headsets are
@@ -273,19 +253,19 @@ selected in the Developer Dashboard (done by the author, 2026-10-27).
 
 The rules for every update are in `tools/RULES.md`: changes go straight into the main build and the author tests
 after the merge (22; the experiment-first rule 15 is retired); every change is made in the game file and followed by
-a rebuild and a version bump before it is committed, so the root `index.html` and APK are always the latest build
-(1, 11, 12; `tools/build.sh --bump`); creature models are fixed with care and without changing their look (7); each
+a rebuild and a version bump before it is committed, so the root `index.html`, the site folder and the compressed
+version are always the latest build (1, 11, 12; `tools/build.sh --bump`); creature models are fixed with care and without changing their look (7); each
 build gets the full test pass (23). The build stamps the version into the landing page, the gate and the VR loading box
 (`build.sh` step 3b), so nothing else needs updating by hand.
 
 The VR-entry script (the head script at the top of the game file; FIXES.md, entry edits) is the one path proven on
 the headset: test entry changes headless first (`test_entry.js`; 3.15.11 crashed at launch, `tools/BUGS.md`
-F-B15). Capture a headset test live (`tools/capture_log.ps1` / `.sh`); `adb logcat -s GreeblisServer
-GreeblisLauncher cr_VrShellDelegate` shows the page's own events and errors (`page: ...`). A creature fix touches
+F-B15). Capture a headset test live (`tools/capture_log.ps1` / `.sh`); to see the page's own errors, open the
+hosted page in the Quest Browser with the headset on USB and use Chrome's remote debugging (`chrome://inspect`). A creature fix touches
 only the offending surfaces (B20 sank the cuff lights by millimetres); anything the author would notice is put to
 them first, with the candidate list from `tools/test_coincident.js`. The pre-commit hook in `tools/git-hooks/`
 (`git config core.hooksPath tools/git-hooks`, once per clone) refuses a commit whose copies, root APK or compressed
 version are stale, or whose game file is not fully minified.
 
-Same key, same package name, higher `versionCode`, rebuild, run
-`tools/check_apk.sh`, upload to Alpha, test, promote.
+A game change: rebuild, upload the site, `tools/check_final.sh`. A new APK: same key, same package name, higher
+version code (`tools/build_twa.sh`), `tools/check_apk.sh --online`, upload to Alpha, test, promote.

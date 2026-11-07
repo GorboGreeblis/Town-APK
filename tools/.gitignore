@@ -1,10 +1,4 @@
 .runs/
-android/local.properties
-android/build/
-android/app/build/
-android/.gradle/
-android/keystore/
-android/keystore.properties
 *.jks
 node_modules/
 final.html

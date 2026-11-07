@@ -3,11 +3,11 @@
 // by scene (town, the planting Event), the lowest readings and where the player stood, the governor
 // levels, and verdicts against the target (72 fps, the headset's refresh rate: the author's aim) and the
 // Store's floor (60 fps, VRC.Quest.Performance.1).
-// The final (Store) build (4.0.63 on, RULES.md 34) writes no game lines: from its log only the headset runtime's
-// VrApi lines are read (the frame rate every second, by process); the game's perf, scene and mark lines come only from
-// a debug build (tools/build.sh without --final).
+// The shipped final build (4.0.63 on, RULES.md 34) writes no game lines: from its log only the headset runtime's
+// VrApi lines are read (the frame rate every second, by process). The game's perf, scene and mark lines (GreeblisServer)
+// are in the logs of debug builds up to 4.0.63, passed on by the old self-contained APK; they are still read.
 //
-//   adb logcat -c; adb logcat -v threadtime -s GreeblisServer VrApi > run.txt   (live, while playing; Ctrl+C after)
+//   adb logcat -c; adb logcat -v threadtime -s VrApi > run.txt   (live, while playing; Ctrl+C after)
 //   (`adb logcat -d` dumps a ring buffer that a long session overruns: only its last minutes survive)
 //   node tools/perf_log.js run.txt
 // A log saved by Windows PowerShell (UTF-16) is read as well. Each reading carries the render scale in force at the
@@ -152,7 +152,7 @@ for (const r of rows) { if (r.ms === null) continue; let sc = null; for (const w
 if (!rows.length) {
   console.log('no game perf lines found: the final (Store) build writes none (the debug code is taken out, RULES.md 34; the VrApi lines above are the frame rate); a debug build writes "page: m=... perf fps=..." every 10 s.');
   console.log('If the game ran, the log lost them: `adb logcat -d` dumps a ring buffer that a long session overruns. Capture live instead');
-  console.log('(HEADSET_DIAG.md): adb logcat -c, then adb logcat -v threadtime -s GreeblisServer VrApi > run.txt while playing.');
+  console.log('(HEADSET_DIAG.md): adb logcat -c, then adb logcat -v threadtime -s VrApi > run.txt while playing.');
   process.exit(1);
 }
 const stats = (list) => { const f = list.map((r) => r.fps).sort((a, b) => a - b); return { n: f.length, min: f[0], p10: f[Math.floor(f.length * 0.1)], median: f[Math.floor(f.length / 2)], max: f[f.length - 1] }; };
@@ -188,7 +188,7 @@ if (swaps.length) {
   const byScale = {}; for (const r of rows) if (r.scale !== null && r.scale !== undefined) (byScale[r.scale] = byScale[r.scale] || []).push(r);
   for (const [sc, list] of Object.entries(byScale)) { const st = stats(list); console.log(`    at scale ${sc}: ${st.n} readings, ${st.min}-${st.max} fps (median ${st.median}), ${Math.round(list.reduce((a, r) => a + r.calls, 0) / list.length)} calls on average`); }
 }
-if (text.length && rows[0].ms !== null && rows[0].ms > 60000) console.log(`  NOTE: the first reading is ${(rows[0].ms / 1000).toFixed(0)} s into the session: the log lost the start (capture it live with adb logcat -s GreeblisServer > run.txt)`);
+if (text.length && rows[0].ms !== null && rows[0].ms > 60000) console.log(`  NOTE: the first reading is ${(rows[0].ms / 1000).toFixed(0)} s into the session: the log lost the start (capture it live with adb logcat -s VrApi > run.txt)`);
 // The governor's average reads a frame or two under the refresh rate when it is met (71.x at 72 Hz).
 const TARGET = 70.5, FLOOR = 60;
 const under = (lim) => rows.filter((r) => r.fps < lim);

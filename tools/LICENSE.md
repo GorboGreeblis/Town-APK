@@ -3,8 +3,8 @@
 ## The game file
 
 The game file (`tools/uncompressed.html`, with its byte copies `index.html` at
-the repository root and `tools/android/app/src/main/assets/index.html` inside
-the APK, written by `sync_game.py`) is dedicated to the public domain under
+the repository root and `tools/site/index.html`, the copy hosted at
+https://greeblistown.ar.io/, written by `sync_game.py`) is dedicated to the public domain under
 **CC0 1.0 Universal**, to the extent possible under law: its game code, art,
 text and sound. The full legal code is below.
 
@@ -14,7 +14,7 @@ License, reproduced below. Its notice must stay with every copy of the file; a
 comment at the top of the game file carries it (kept by the minification, FIXES R2).
 
 **The compressed version** (`index.compressed.html` at the repository root, the Bitcoin ordinal
-built by `build_compressed.js`, RULES.md 20; never in the APK) also contains the
+built by `build_compressed.js`, RULES.md 20) also contains the
 whole game file, three.js included. Both notices are inside its compressed
 payload and appear once it unpacks to the game file; the readable loader page
 around the payload carries none, and needs none (the author, 2026-10-28: "The License notice is not
@@ -22,11 +22,12 @@ needed in the compressed ordinal version"; RULES.md 20).
 
 ## The Android wrapper
 
-The APK also contains Meta's `com.meta.androidbrowserhelper:androidbrowserhelper`
-(see `tools/android/app/build.gradle`), which is distributed under its own
-license. The upstream project it derives from, Google's android-browser-helper,
-is Apache License 2.0. Check the library's own license before redistributing the
-APK outside the Meta Horizon Store.
+The Store APK (made by Meta's Bubblewrap CLI from `tools/twa`) holds no game: it
+opens the hosted site. It contains Meta's `com.meta.androidbrowserhelper:androidbrowserhelper`
+and Meta's Horizon platform library (see `tools/twa/app/build.gradle`), each
+distributed under its own license. The upstream project of the first, Google's
+android-browser-helper, is Apache License 2.0. Check the libraries' own licenses
+before redistributing the APK outside the Meta Horizon Store.
 
 ## three.js: MIT License
 
