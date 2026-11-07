@@ -1485,7 +1485,7 @@ it wears (the author's answer 15; the game itself names no owner):
   the church and Cave, the Ancient, Somlet, the pond or the Garden. In an Event without the Seeds only the town's
   trees fade (F-B72: "If the user starts the Event without having completed 'Seeds', kiosks should NOT fade out").
   The kiosk groups are the buildings of the game's registry other than the church: the Post Office, the Sheriff's,
-  Garden Supplies, the Gallery, the Library (the registry's `shop`) and the juice bar (the drum kit and the dance
+  Garden Supplies, the Gallery, the Library (the registry's `shop`; its named books and its sign fade with it since 4.0.61, B122) and the juice bar (the drum kit and the dance
   floor stay). A kiosk waits
   for its keeper to leave home before it fades; once out it stays out until the Event ends, even if
   the player walks up to it (A26: "Just keep everything faded out until things fade back in. I don't care if there is
