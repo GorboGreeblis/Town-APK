@@ -14,6 +14,9 @@
 //   - the planting Event (P35): a dancer out of view skips its ground fit and is fitted as it comes back into view,
 //     before it is drawn (no dancer in view is left unfitted); a fit that lifts a dancer moves the matrices already
 //     worked out instead of walking the whole body again, and they equal a fresh walk;
+//   - P45 (4.0.53): a far dancer's frames skipped by design (posed every other frame, every third past 20 m: its fit
+//     and matrices wait) are counted apart, not as unfitted (B136, closed: the check predated P45), and must all be
+//     far from the player (the game skips only past 10 m);
 //   - turned off (`__gcOff.st.on = false`), no character stays skipped;
 //   - no page errors.
 //
@@ -35,7 +38,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     if (!window.__gcOff) return { error: 'no __gcOff' };
     let cam = null; const G = O.xr.getCamera; O.xr.getCamera = function () { return (cam = G.apply(this, arguments)); };
     const Fr = new T.Frustum(), M = new T.Matrix4(), V = new T.Vector3(), Bx = new T.Box3();
-    const out = { frames: 0, offFrames: 0, offTotal: 0, badBox: [], boxChecks: 0, dance: 0, unfit: [], danceExact: 0, danceDiff: 0 };
+    const out = { frames: 0, offFrames: 0, offTotal: 0, badBox: [], boxChecks: 0, dance: 0, unfit: [], danceExact: 0, danceDiff: 0, half: 0, halfNear: 1e9 };
     const R = O.render;
     O.render = function (q) {
       try { return R.apply(this, arguments); } finally {
@@ -53,6 +56,10 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
           // in the Event: every dancer in view was fitted (no fit left waiting) and its matrices equal a fresh walk
           if (D.me.active) for (const t of D.It.all) {
             const g = t.group; if (!g || g.gcOff === true || !(t.concertDance || t.planting)) continue;
+            // P45 (4.0.53, the author's approved option): a far character is posed every other frame (every third
+            // past 20 m); on its skipped frames its fit and matrices wait by design (B136). Such a frame is counted
+            // apart and must be far (the game skips only past 10 m from the eye, to the body's centre)
+            if (g.gcHalf === true) { out.half++; g.getWorldPosition(V); const dd = V.distanceTo(new T.Vector3().setFromMatrixPosition(cam.matrixWorld)); out.halfNear = Math.min(out.halfNear, dd); continue; }
             out.dance++; if (g.userData.gcFit) out.unfit.length < 6 && out.unfit.push([out.frames, t.id || t.kind]);
             if (out.dance % 7) continue;
             const a = []; g.traverse((o) => a.push(o.matrixWorld.elements.slice())); g.updateMatrixWorld(true);
@@ -108,6 +115,7 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   expect('characters are skipped (the saving is real)', !r.error && r.offFrames > r.frames * 0.5, JSON.stringify({ offFrames: r.offFrames, frames: r.frames, perFrame: r.offFrames ? +(r.offTotal / r.offFrames).toFixed(1) : 0 }));
   expect('picking: a skipped character the ray reaches has its matrices brought up to date', !r.error && r.pick && r.pick.same, JSON.stringify(r.pick));
   expect('the Event: every dancer in view has been fitted to the ground (none left waiting) and its matrices equal a fresh walk', !r.error && r.event && r.dance > 200 && r.unfit.length === 0 && r.danceExact > 20 && r.danceDiff < 1e-4, JSON.stringify({ event: r.event, dance: r.dance, unfit: r.unfit, exact: r.danceExact, diff: r.danceDiff }));
+  expect('the Event: P45\'s planned skips (a far dancer posed every other frame) are all far from the player (B136)', !r.error && (r.half === 0 || r.halfNear >= 8.5), JSON.stringify({ half: r.half, nearest: +(+r.halfNear).toFixed(1) }));
   expect('turned off, no character stays skipped', !r.error && r.afterOff === 0, String(r.afterOff));
   expect('no page errors', errors.length === 0, errors.slice(0, 3).join(' | '));
   await g.close();
