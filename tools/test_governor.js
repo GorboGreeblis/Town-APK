@@ -45,7 +45,11 @@ const FINAL = finalBuild(file || path.join(root, 'tools/site/index.html'));
 
   // the frames-over-budget flag: frames far over a tiny budget fire it once; it logs and changes nothing
   const n1 = log().length;
+  // the frames made slow, as in the town part: the final build without its debug code draws fast enough headless that
+  // a 4 ms budget is not passed by 1.6 times on its own (B129)
+  await slow(true);
   const sos = await page.evaluate(async () => { const Ge = window.__dbg.Ge, wait = (ms) => new Promise((r) => setTimeout(r, ms)); Ge.sos = 0; Ge.hard = 0; Ge.budget = 4; const t0 = performance.now(); while (!Ge.sos && performance.now() - t0 < 90000) await wait(100); await wait(1500); Ge.budget = 1000 / 72; return { sos: Ge.sos, waited: Math.round(performance.now() - t0) }; });
+  await slow(false);
   const sosLines = log().slice(n1).filter((m) => /frames over budget for \d+ frames/.test(m));
   expect('the frames-over-budget flag fires, logs once, swaps no layer and changes no foveation', sos.sos === 1 && (FINAL || sosLines.length === 1) && swaps(n1).length === 0 && (await fov()) === 0, JSON.stringify(sos) + ' lines ' + sosLines.length + ' ' + swaps(n1).join(' | ') + ' fov ' + (await fov()));
 
