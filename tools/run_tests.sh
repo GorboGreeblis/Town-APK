@@ -70,7 +70,7 @@ GLE="$ROOT/tools/.runs/gl_errors.log"; [ -n "$RESUME" ] || : > "$GLE"   # and ev
 # are not the game file by design, and check_final.sh proves they are its final build instead (4.0.63)
 FINALCOPIES=""; python3 -I "$ROOT/tools/sync_game.py" --check >/dev/null 2>&1 || FINALCOPIES=1
 if [ -z "$FINALCOPIES" ]; then
-run "the shipped copies (index.html, the APK asset) are the game file tools/uncompressed.html (sync_game.py --check)" python3 -I "$ROOT/tools/sync_game.py" --check
+run "the shipped copies (index.html, tools/site/index.html) are the game file tools/uncompressed.html (sync_game.py --check)" python3 -I "$ROOT/tools/sync_game.py" --check
 else
 run "the shipped copies (index.html, the site's copy, index.compressed.html, the hosted game the root APK opens) are the final build of the game file, debug and logging removed, the version tools/game_version.txt's (check_final.sh)" sh "$ROOT/tools/check_final.sh"
 fi
