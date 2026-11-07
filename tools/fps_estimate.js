@@ -17,7 +17,7 @@
 //
 // Estimates, not measurements: the headset run after a change is the check (TASKS T3).
 //
-//   node tools/fps_estimate.js <headset log> [--town 12] [--event 10] [--sigma 0.49] [--q3gpu 1.3]
+//   node tools/fps_estimate.js <headset log> [--town 12] [--event 10] [--sigma 0.49] [--q3gpu 1.3] [--device q3s|q3]
 //     --town / --event: the CPU saving in percent (cpu_bench.js's "saving" for the town and the Event views)
 const fs = require('fs');
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
@@ -54,7 +54,10 @@ if (pOpen !== null) pauses.push([pOpen - 1, t1 + 1]);
 const paused = (t) => pauses.some(([a, b]) => t >= a && t <= b);
 // the headset the run was on (the perf line's dev=): the estimate is made for the other one too
 const devM = lines.map((l) => (l.match(/ perf fps=.* dev=(\S+)/) || [])[1]).find(Boolean) || 'Quest_3S';
-const BASE_Q3 = /^Quest_3$/.test(devM);
+// --device q3s|q3 says which headset the run was on: the browser's user agent (the perf line's dev=) reads "Quest 3" on
+// a Quest 3S too (the author's 4.0.62 run on a Quest 3S logged dev=Quest_3), so dev= cannot tell them apart
+const DEV = arg('--device', null);
+const BASE_Q3 = DEV ? /^q3$/i.test(DEV) : /^Quest_3$/.test(devM);
 const secs = [];
 for (const l of lines) {
   const m = l.match(/VrApi\s*: FPS=(\d+)\/(\d+).*?App=([\d.]+)ms/); if (!m) continue;
@@ -82,20 +85,22 @@ const est = (s, saving, gpuScale) => {
   return Math.min(s.hz, f2);
 };
 const stats = (a) => { const s = a.slice().sort((x, y) => x - y), q = (k) => s[Math.min(s.length - 1, Math.max(0, Math.round(k * (s.length - 1))))]; return { n: s.length, min: s[0], p10: q(0.1), median: q(0.5), under60: s.filter((x) => x < 59.5).length }; };
-const fmt = (x) => `median ${x.median.toFixed(1)}, lowest 10% ${x.p10.toFixed(1)}, lowest ${x.min.toFixed(1)}, ${x.under60} of ${x.n} s under 60 (${(100 * x.under60 / x.n).toFixed(0)}%)`;
+// the longest stretch under 60 (seconds in a row, in the order played; Performance.1's reviewer looks for "extended
+// periods of rendering rate below 60 fps" on a graph, not for single seconds), and the stretches of 3 s or more
+const runs = (a) => { let cur = 0, best = 0, n3 = 0; for (const f of a) { if (f < 59.5) { cur++; if (cur > best) best = cur; if (cur === 3) n3++; } else cur = 0; } return { best, n3 }; };
+const fmt = (x, r) => `median ${x.median.toFixed(1)}, lowest 10% ${x.p10.toFixed(1)}, lowest ${x.min.toFixed(1)}, ${x.under60} of ${x.n} s under 60 (${(100 * x.under60 / x.n).toFixed(0)}%)` + (r ? `; longest run under 60: ${r.best} s, runs of 3 s or more: ${r.n3}` : '');
 
-console.log(`fps_estimate: ${file.split('/').pop()} (run on ${devM.replace('_', ' ')}; ${pauses.length} pauses left out): ${secs.length} s of play (${secs.filter((s) => s.ev).length} in the Event); saving town ${(100 * S_TOWN).toFixed(1)}%, Event ${(100 * S_EV).toFixed(1)}%; spread ${SIGMA}`);
+console.log(`fps_estimate: ${file.split('/').pop()} (run on ${DEV ? (BASE_Q3 ? 'Quest 3' : 'Quest 3S') + ', as given' : devM.replace('_', ' ') + ' (the user agent; a Quest 3S reads Quest 3 too: pass --device)'}; ${pauses.length} pauses left out): ${secs.length} s of play (${secs.filter((s) => s.ev).length} in the Event); saving town ${(100 * S_TOWN).toFixed(1)}%, Event ${(100 * S_EV).toFixed(1)}%; spread ${SIGMA}`);
 for (const [label, pick, sv] of [['town', (s) => !s.ev, S_TOWN], ['the Event', (s) => s.ev, S_EV]]) {
   const sel = secs.filter(pick); if (!sel.length) continue;
   const now = stats(sel.map((s) => s.f));
   // the run's own headset as run; the other with its GPU time scaled (the Quest 3 1.3 times the 3S's), the same CPU
   const other = BASE_Q3 ? 1 / Q3GPU : Q3GPU, [mine, theirs] = BASE_Q3 ? ['Quest 3', 'Quest 3S'] : ['Quest 3S', 'Quest 3'];
-  const mineEst = stats(sel.map((s) => est(s, sv, 1)));
-  const theirsNow = stats(sel.map((s) => est(s, 0, other)));
-  const theirsEst = stats(sel.map((s) => est(s, sv, other)));
+  const aNow = sel.map((s) => s.f), aMine = sel.map((s) => est(s, sv, 1)), aTheirsNow = sel.map((s) => est(s, 0, other)), aTheirs = sel.map((s) => est(s, sv, other));
+  const mineEst = stats(aMine), theirsNow = stats(aTheirsNow), theirsEst = stats(aTheirs);
   console.log(`  ${label}:`);
-  console.log(`    ${(mine + ', as run:').padEnd(22)} ${fmt(now)}`);
-  console.log(`    ${(mine + ', estimated:').padEnd(22)} ${fmt(mineEst)}`);
-  console.log(`    ${(theirs + ', as run (est):').padEnd(22)} ${fmt(theirsNow)}`);
-  console.log(`    ${(theirs + ', estimated:').padEnd(22)} ${fmt(theirsEst)}`);
+  console.log(`    ${(mine + ', as run:').padEnd(22)} ${fmt(now, runs(aNow))}`);
+  console.log(`    ${(mine + ', estimated:').padEnd(22)} ${fmt(mineEst, runs(aMine))}`);
+  console.log(`    ${(theirs + ', as run (est):').padEnd(22)} ${fmt(theirsNow, runs(aTheirsNow))}`);
+  console.log(`    ${(theirs + ', estimated:').padEnd(22)} ${fmt(theirsEst, runs(aTheirs))}`);
 }

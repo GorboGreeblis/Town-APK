@@ -2,6 +2,8 @@
 # Live headset log for one play session (macOS/Linux), for tools/perf_log.js (HEADSET_DIAG.md): the game's lines
 # (GreeblisServer) and the headset runtime's (VrApi), from before the launch to the end. Press B on the right
 # controller whenever you see a flash.   tools/capture_log.sh [out.txt]   (Ctrl+C when done)
+# The final (Store) build (4.0.63 on) writes no game lines and does nothing on B: its log holds the VrApi lines only
+# (the frame rate every second), which perf_log.js still reads. The game's lines come from a debug build.
 OUT=${1:-greeblis-run-$(date +%Y%m%d-%H%M%S).txt}
 adb logcat -c
 echo "Capturing to $OUT. Launch the game and play; press B on the right controller when you see a flash. Ctrl+C to stop."

@@ -1,4 +1,4 @@
-# VRC check: GREEBLIS TOWN against the Meta Horizon Store requirements (first written for 3.15.25; kept current, 4.0.61)
+# VRC check: GREEBLIS TOWN against the Meta Horizon Store requirements (first written for 3.15.25; kept current, 4.0.63, the final build)
 
 Cross-checked on 2026-10-27 against an independent, CC0 test guide the author supplied ("Meta Quest Virtual Reality Checks (VRCs)", v1.0, 2026-10-27, 80 test cases; not affiliated with Meta). It lists the same 80 checks as this file; the rows below follow its wording where it is more specific (Packaging.4: a declared network security configuration, asserted by `check_apk.sh`; Performance.4: the boss-battle exception).
 
@@ -20,9 +20,9 @@ An immersive PWA packaged with Meta's `androidbrowserhelper` (the same packaging
 Meta's own PWA tooling produces): a launcher activity starts the Quest Browser's
 immersive activity on `http://localhost:17777/`, served by a loopback server inside
 the app. Pure Java plus the bundled game; no native code, no network use, no user data
-stored on the headset (the game has no save: no IndexedDB or cookies, and `localStorage` holds only the log's black box,
-up to 150 unsent diagnostic log lines kept for the next launch, since 4.0.34, B96; `tools/store/privacy.html` says the
-game stores nothing about the user).
+stored on the headset (the game has no save: no IndexedDB, cookies or `localStorage`; the debug builds' log black box,
+4.0.34-4.0.62, is taken out of the final build with the rest of the debug code, 4.0.63, RULES.md 34, `check_final.sh`;
+`tools/store/privacy.html` says the game stores nothing about the user, which the final build now holds to the letter).
 
 ## Packaging
 
@@ -39,7 +39,7 @@ game stores nothing about the user).
 
 | Check | Status | Verdict | Evidence and what to confirm |
 | --- | --- | --- | --- |
-| Performance.1 runs at the supported refresh rate, at least 60 fps outside loading | R | PASS | The browser runs the session at the headset's rate (the game asks for 72 Hz and takes what the browser gives). Multiview draws both eyes in one pass (3.15.34); the render scale is always native (since 3.15.43, F-B31), the foveation one fixed value (0) set at VR entry (since 4.0.13, F-B83), and the governor's quality levels are gone (since 4.0.14, L1: the governor keeps a frame-time average and an over-budget flag that only logs; the Event's own scale steps, P16-P17, were removed in 3.15.43). No shader compiles during play (`warm_coverage.js`, `multiview_check.js`, `test_content.js`; P19 removed the last light state that would; headless. The author's 3.15.47 log showed two, one at the Event's start: BUGS.md B39, fixed and confirmed by a later headset log; since 3.15.63 a program that would still be compiled inside a headset frame is held back for that frame and compiled after it, S2, `test_shaderhold.js`). Measured on a Quest 3S with 3.15.47: town median 71.8 fps, the Event median 63.3 and 56.4 at worst, CPU-bound (NOTES 91); P24 and P25 since. The author's 3.15.60 run: 54 fps at the lowest, watching the Event from afar (TASKS T16; P29 and the removal of P28 since; PERF.md 14 has the estimate for 3.15.63). Earlier, 3.15.33-3.15.34: town 72 fps, the Event 58-65. Headless numbers do not transfer. **Confirm with the OVR Metrics Tool** (RELEASE.md section 3, step 7): a 10-minute play session with the overlay on, FPS at or above 60 outside the loading screen, the Event included. If it dips in a place, say where The author on 2026-11-03 (4.0.26/4.0.27, Quest 3S): the OVR Metrics Tool overlay over 10 minutes of play passes; the 1b7d04a9 log: never under 60, town median 71.75, Event median 70.55. **Reopened** by the wireless run on battery (14b455ce, 4.0.46: the CPU at its lower clocks, town median 65, 16 of 117 readings under 60; PERF.md 16): P34-P51 since; the 4.0.57 run (ae0f9a23, the CPU at 1382 MHz almost all run): the Event at 60 or above in play, the town 4 readings at 57.5-59.8 at its slowest views, for which 4.0.59-4.0.60 removed 30 draws and pose characters less often nearer. 4.0.58-4.0.61 await the author's headset run. |
+| Performance.1 runs at the supported refresh rate, at least 60 fps outside loading | R | PASS | The browser runs the session at the headset's rate (the game asks for 72 Hz and takes what the browser gives). Multiview draws both eyes in one pass (3.15.34); the render scale is always native (since 3.15.43, F-B31), the foveation one fixed value (0) set at VR entry (since 4.0.13, F-B83), and the governor's quality levels are gone (since 4.0.14, L1: the governor keeps a frame-time average and an over-budget flag that only logs; the Event's own scale steps, P16-P17, were removed in 3.15.43). No shader compiles during play (`warm_coverage.js`, `multiview_check.js`, `test_content.js`; P19 removed the last light state that would; headless. The author's 3.15.47 log showed two, one at the Event's start: BUGS.md B39, fixed and confirmed by a later headset log; since 3.15.63 a program that would still be compiled inside a headset frame is held back for that frame and compiled after it, S2, `test_shaderhold.js`). Measured on a Quest 3S with 3.15.47: town median 71.8 fps, the Event median 63.3 and 56.4 at worst, CPU-bound (NOTES 91); P24 and P25 since. The author's 3.15.60 run: 54 fps at the lowest, watching the Event from afar (TASKS T16; P29 and the removal of P28 since; PERF.md 14 has the estimate for 3.15.63). Earlier, 3.15.33-3.15.34: town 72 fps, the Event 58-65. Headless numbers do not transfer. **Confirm with the OVR Metrics Tool** (RELEASE.md section 3, step 7): a 10-minute play session with the overlay on, FPS at or above 60 outside the loading screen, the Event included. If it dips in a place, say where The author on 2026-11-03 (4.0.26/4.0.27, Quest 3S): the OVR Metrics Tool overlay over 10 minutes of play passes; the 1b7d04a9 log: never under 60, town median 71.75, Event median 70.55. **Reopened** by the wireless run on battery (14b455ce, 4.0.46: the CPU at its lower clocks, town median 65, 16 of 117 readings under 60; PERF.md 16): P34-P51 since; the 4.0.57 run (ae0f9a23, the CPU at 1382 MHz almost all run): the Event at 60 or above in play, the town 4 readings at 57.5-59.8 at its slowest views, for which 4.0.59-4.0.60 removed 30 draws and pose characters less often nearer. 4.0.58-4.0.61 await the author's headset run. 4.0.63 (the final build): the author's OVR Metrics Tool check (2026-11-07): the FPS "does not fall below 60 fps for any extended period of time". On the Quest 3S (the author tests on a Quest 3S only; the browser's user agent, and so the game's perf line, reads "Quest 3" on it). The Quest 3 (supported too, never tried): the same CPU and about 30% more pixels; estimated from the author's 4.0.62 run with the final build's saving (`fps_estimate.js --device q3s`): the town as on the 3S (median 70.8, 1 of 384 s under 60), the Event median 67.3, lowest 10% 62.1, 5 of 295 s under 60 (the 3S 1 of 295): single seconds, the GPU at about 12 ms of a 13.9 ms frame in the heaviest view. The author's decision (2026-11-07; no Quest 3 to test on): submit 4.0.63 with both headsets supported as it is; if review flags the Quest 3's frame rate, either cap the eye buffer at the Quest 3S's size (1680x1760; about 88% of the Quest 3's default resolution, above Performance.4's 85%) as 4.0.64, or list the Quest 3S only. |
 | Performance.3 head-tracked graphics or a VR loading indicator within 4 s of launch | R | PASS | The VR session is requested at page start and the loading screen is drawn by the compositor (a cube layer sky with a horizon and a head-locked quad with the title, the progress bar and, since 3.15.63, the version in its bottom right) about a second after the page starts; the author saw the title and bar "well under 10 s" with no black bars. Between the icon press and the page start the OS shows its own loading screen. **Confirm the count**: from pressing the icon to seeing the title panel, under 4 s (RELEASE.md step 7). If it is over, the OS splash still counts as a VR loading indicator in Meta's PWA packaging, but write the measured number in the submission notes The author on 2026-11-03: icon to title panel under 4 s. |
 | Performance.4 render scale at least 85% | + | PASS | native scale (100%) at all times since 3.15.43 (F-B31); the foveation is one fixed value (0) since 4.0.13 (F-B83) and the quality levels are gone since 4.0.14 (L1); the projection layer is never swapped (`tools/test_governor.js`, `tools/sharpness_probe.js`). Until 3.15.42 the Event's own steps (0.9, 0.82: P16-P18) relied on the check's boss-battle exception |
 
@@ -48,13 +48,13 @@ game stores nothing about the user).
 | Check | Status | Verdict | Evidence |
 | --- | --- | --- | --- |
 | Functional.1 no crashes, freezes or long unresponsive states | R | PASS | author's full headset run on 3.15.19 (no new issues); 10-minute soak headless with bounded heap and object counts (TEST_PLAN); launch stable since 3.15.12; every page error is posted to logcat (`page: ...`) and the standard tier fails on any. **Open: B96**, a freeze after the headset sleeps, found on 4.0.32 (the author's logs b42c9cfb, a7fc5e95: after 35 s with the headset off the headset ran out of memory within seconds of the return and the game froze head-locked); fixed in 4.0.34 (the loader kept whole, the old shim freed at a session's end, the native census and the log's black box; `test_b96.js`, `test_reentry.js`) and confirmed by the author's 4.0.34 headset-off run (two hides, the census steady; `HEADSET_DIAG.md`, "Confirming B96"). Stuck townsfolk are moved on (B117, 4.0.58; `test_unstick.js`) |
-| Functional.2 single-player app pauses when Horizon OS asks | R | HEADSET | the session's `visibilitychange` sets `blurred`: the game loop skips its update (no movement, no NPC time, no input) and only renders. The author's runs on 4.0.54-4.0.60 found gaps, all fixed: the first system-menu opening changes no session visibility, so the game also pauses while the window has lost focus (B115, 4.0.56) and while no input source is left (every menu opening takes them all; 4.0.57; tracked hands count as input); the sound is suspended with every pause and whenever frames stop, a song carrying on where it was (B118, 4.0.58; B124, 4.0.61); with the headset off, input coming back resumes the game only once the headset itself moves (B121, 4.0.61: the browser gives no headset-worn signal). `test_menu_pause.js`, `test_horn_pause.js`, `test_play.js`. **Confirm on 4.0.61**: the system menu, the first time too, pauses the game and its music; the headset off, a controller picked up and its trigger pressed, the game stays paused until the headset is worn (RELEASE.md section 3, the paragraph after step 6; `HEADSET_DIAG.md`, "Confirming the pause"). The VRC's own test (Quick Settings, Enter Passthrough) is the same path. |
+| Functional.2 single-player app pauses when Horizon OS asks | R | PASS | the session's `visibilitychange` sets `blurred`: the game loop skips its update (no movement, no NPC time, no input) and only renders. The author's runs on 4.0.54-4.0.60 found gaps, all fixed: the first system-menu opening changes no session visibility, so the game also pauses while the window has lost focus (B115, 4.0.56) and while no input source is left (every menu opening takes them all; 4.0.57; tracked hands count as input); the sound is suspended with every pause and whenever frames stop, a song carrying on where it was (B118, 4.0.58; B124, 4.0.61); with the headset off, input coming back resumes the game only once the headset itself moves (B121, 4.0.61: the browser gives no headset-worn signal). `test_menu_pause.js`, `test_horn_pause.js`, `test_play.js`. **Confirm on 4.0.61**: the system menu, the first time too, pauses the game and its music; the headset off, a controller picked up and its trigger pressed, the game stays paused until the headset is worn (RELEASE.md section 3, the paragraph after step 6; `HEADSET_DIAG.md`, "Confirming the pause"). The VRC's own test (Quick Settings, Enter Passthrough) is the same path. the author, 2026-11-07, on the final build 4.0.63: the game and its music pause with the Universal Menu ("this is the issue we spent time fixing already": B115, B118, B121, B124, B125, confirmed on 4.0.61-4.0.62). |
 | Functional.3 never leaves the user stuck | R | PASS | world routes 20/20 with the sealed corner behind the Shop opened (B14); NPC stuck rescue (B2); the player cannot be enclosed (hull tests in the standard tier); the system menu always exits |
 | Functional.4 does not lose user data | R | N/A | the game stores nothing (no save, by design; the privacy policy states it), so there is nothing to lose. Say so in the submission notes |
 | Functional.5 responds to positional and orientation tracking | R | PASS | `local-floor` reference space (fallback `local` with a floor offset, tested in the `vr-nofloor` scenario); 6DoF head tracking through the projection layer; the author's runs |
 | Functional.6 only Meta Quest headsets and controllers shown | R | PASS | the game draws its own stylised hands/rays, no headset imagery; check the Store screenshots and trailer show no other platform's hardware The author on 2026-11-03: "My Store assets look good to me". |
 | Functional.7 tells the user when required connectivity is missing | + | N/A | no connectivity used; the loopback server is on the headset |
-| Functional.9 Local tracking space lets the user reset forward orientation | R | HEADSET | the session uses `local-floor` / `local`, for which the browser applies the system recentre (long-press the Meta button). **Confirm**: turn 180 degrees, long-press the Meta button, the town faces you again (RELEASE.md step 7) |
+| Functional.9 Local tracking space lets the user reset forward orientation | R | PASS | the session uses `local-floor` / `local`, for which the browser applies the system recentre (long-press the Meta button). **Confirm**: turn 180 degrees, long-press the Meta button, the town faces you again (RELEASE.md step 7) the author, 2026-11-07, on the final build 4.0.63: "Recenter works". |
 | Functional.10 no head-locked menus | + | PASS | the in-VR UI is world-placed (kiosks, panels in front of the player at a distance); the only head-locked element is the loading panel, allowed as a loading indicator |
 | Functional.12 fully functional for multiple entitled users on one headset | R | PASS | no per-user state at all; the browser keeps a profile per headset user anyway |
 | Functional.13 defaults to the user's language | + | N/A | English only (allowed; the Store listing says so) |
@@ -71,8 +71,8 @@ game stores nothing about the user).
 
 | Check | Status | Verdict | Evidence |
 | --- | --- | --- | --- |
-| Tracking.1 play-mode metadata (the author chose Sitting and Standing) | R | HEADSET | everything is reached by pointing and the trigger (pickups, kiosks, dialogue choices) and by stick locomotion with snap turn: nothing needs reaching to the ground, standing up or turning beyond 90 degrees while seated, and nothing needs more than a 2 m square while standing. **Confirm** one pass of each (RELEASE.md step 7): seated on a chair, then standing in place |
-| Tracking.2 input-mode metadata | R | AUTHOR | select **Controllers** only in the dashboard (the game does not support hand tracking; see Input.7) |
+| Tracking.1 play-mode metadata (the author chose Sitting and Standing) | R | PASS | everything is reached by pointing and the trigger (pickups, kiosks, dialogue choices) and by stick locomotion with snap turn: nothing needs reaching to the ground, standing up or turning beyond 90 degrees while seated, and nothing needs more than a 2 m square while standing. **Confirm** one pass of each (RELEASE.md step 7): seated on a chair, then standing in place the author, 2026-11-07, on the final build 4.0.63: "Sitting and Standing both work fine". |
+| Tracking.2 input-mode metadata | R | PASS | select **Controllers** only in the dashboard (the game does not support hand tracking; see Input.7) the author, 2026-11-07: Touch controllers selected (the game's only input; no hand tracking). |
 
 ## Input
 
@@ -109,7 +109,7 @@ game stores nothing about the user).
 | Ads.1-7 | R | N/A | no ads |
 | Streaming.1-4 | R/+ | N/A | nothing streamed; the loopback server is on the headset and serves the app's own files only |
 | Content.1 content guidelines | R | PASS | a family-friendly town game, IARC rating completed by the author |
-| Content.2 metadata matches in-app content | R | AUTHOR | the Store copy describes the town, the townsfolk, flint and the Event as they are in the game (the copy review of 2026-10-26); names in the listing are the in-game names |
+| Content.2 metadata matches in-app content | R | PASS | the Store copy describes the town, the townsfolk, flint and the Event as they are in the game (the copy review of 2026-10-26); names in the listing are the in-game names the author, 2026-11-07: "All images are screenshots from the actual game". |
 | Content.3-4 user-generated content | R/+ | N/A | none |
 
 ## Privacy
@@ -120,25 +120,42 @@ game stores nothing about the user).
 | Privacy.2 what data is collected | R | PASS | "does not collect, request, store, share, or transmit any personal information or user data"; nothing saved on the headset either |
 | Privacy.3 how data is used | R | PASS | none collected, stated |
 | Privacy.4 how to request deletion | R | PASS | live since 2026-10-27 (checked: https://greeblistown.neocities.org/ shows section 8 "Data deletion requests" and "Last Updated: October 27, 2026"): nothing to delete, email with the subject "Data deletion request", a reply within 30 days, uninstalling removes everything; source `tools/store/privacy.html` |
-| Privacy.5 data protection checks | R | AUTHOR | the dashboard's Data Use questionnaire: no data collected, no third-party SDKs |
+| Privacy.5 data protection checks | R | PASS | the dashboard's Data Use questionnaire: no data collected, no third-party SDKs Meta's test (the criterion page, read 2026-11-07): a web search of the app's and the developer's name for a known security incident or breach; none known, and the privacy policy states the game collects and stores nothing (the page's fallback). No Data Use Checkup: the game uses no Platform SDK feature ("Apps that don't use these Platform SDK features do not need a DUC"). A Data Protection Assessment applies to apps handling user data; if the dashboard ever lists one under Requirements > Tasks, the team admin answers it. |
 
 ## Publishing
 
 | Check | Status | Verdict | What to check |
 | --- | --- | --- | --- |
 | Publishing.1 website URL valid | R | PASS | the neocities page resolves |
-| Publishing.2-3 support and ToS links, if present | R | AUTHOR | leave empty or point at a valid page |
-| Publishing.4-7 name, descriptions, keywords meet the guidelines | R | AUTHOR | "GREEBLIS TOWN" everywhere; the copy reviewed on 2026-10-26 |
-| Publishing.8 Meta brand use | R | AUTHOR | no Meta or Quest branding in the copy beyond the platform name |
+| Publishing.2-3 support and ToS links, if present | R | N/A | leave empty or point at a valid page the author, 2026-11-07: no support or ToS link added. |
+| Publishing.4-7 name, descriptions, keywords meet the guidelines | R | PASS | "GREEBLIS TOWN" everywhere; the copy reviewed on 2026-10-26 the author, 2026-11-07: "Everything should meet their guidelines". |
+| Publishing.8 Meta brand use | R | PASS | no Meta or Quest branding in the copy beyond the platform name the author, 2026-11-07: "Everything should meet their guidelines". |
 
 ## Accessibility (all recommended)
 
-Playable without audio (dialogue is text), text is large and world-placed, feedback is
-visual and audible, snap turn allows looking around without turning the body
-(Accessibility.7), stick locomotion plus snap turn. No brightness or colour-blind
-options and no one-handed mode: recommendations, not required.
+Meta's list (read again 2026-11-07; the page last updated 2026-08-19, no other change since 2026-10-27) has nine
+Accessibility checks, all recommended (+):
+
+| Check | Status | Verdict | Evidence |
+| --- | --- | --- | --- |
+| Accessibility.1 playable without audio | + | PASS | Dialogue is text on panels; no cue is sound-only. |
+| Accessibility.2 legible text and necessary controls | + | PASS | Text is large and world-placed (panels, the watch HUD); the controls are few (move, snap turn, point and trigger, A, Y on the watch). |
+| Accessibility.3 direction through visual, audio and/or haptic feedback | + | PASS | Visual (panels, pickups' glow, the HUD) and audio; no haptics (the game never vibrates a controller, A50, RULES.md 26). |
+| Accessibility.4 play with one hand or controller | + | NOT MET | Moving takes the left stick and turning the right; one-handed play is not offered. |
+| Accessibility.5 adjustable brightness and contrast | + | NOT MET | No setting. |
+| Accessibility.6 colour-blindness options or non-colour distinction | + | PASS | Nothing in play is told apart by colour alone (pickups by shape, characters by look and name). |
+| Accessibility.7 rotate the view without moving head or neck | + | PASS | Snap turn on the right stick. |
+| Accessibility.8 multiple locomotion styles | + | NOT MET | Smooth stick locomotion with snap turn only (no teleport). |
+| Accessibility.9 fixed-position setting for sitting or standing apps | + | NOT MET | No fixed-position mode; seated and standing play both work (Tracking.1, the author 2026-11-07). |
+
+All recommended, none required: the not-met ones do not block submission. The author, 2026-11-07, on the recommended checks not met (Audio.1, Accessibility.4, 5, 8, 9): "I wouldn't worry about recommended checks like Audio.1": left as they are. And: "We will not be supporting any of the recommended Accessibility VRCs" (2026-11-07): no work is planned on any of
+Accessibility.1-9; the PASS verdicts above only record what the game already does.
 
 ## The four headset confirmations that decide a first-try pass
+
+**Status on 2026-11-07, the final build 4.0.63: all four pass** (the author: OVR Metrics, the FPS "does not fall below 60
+fps for any extended period of time"; the Universal Menu pause; "Recenter works"; "Sitting and Standing both work
+fine"). The Store dashboard items marked AUTHOR remain the author's.
 
 Status on 2026-11-03: 1, 2 and 3 pass (the author, Quest 3S); 4, Recentre, and the seated and standing passes
 (Tracking.1) are still to do. Since then 1 was reopened by the battery run on 4.0.46 and 3 by the first menu opening

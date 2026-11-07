@@ -24,7 +24,8 @@ stages with shorter soaks.
 
 **What each tier runs** (`run_tests.sh`, in order; this is the one list, kept to match the runner; `check_docs.py`
 fails when a test the runner runs is missing here). Every tier: the copies are the game file, the game file is
-minified, the compressed version unpacks to it, every experiment applies, the server harness, docs consistency,
+minified, the compressed version unpacks to it (for the final build, whose copies are the game file without its debug
+code: all three versions at the root are its final build, `check_final.sh`), every experiment applies, the server harness, docs consistency,
 spell-check, the bend test (`test_bend_exact.js`), no undeclared names (`test_freevars.js`), the APK check. Every tier but quick: VR entry (`test_entry.js`), runtime play
 (`test_play.js`), multiview (`multiview_check.js`), uniform budget, warm-up coverage, standalone, the compressed
 version as an ordinal (`test_compressed.js`), the final build written without its debug code and played as shipped (`final_build.js`, `test_final.js`), the Event's first start, the texture census, the frame governor and fixed foveation (`test_governor.js`),

@@ -1962,6 +1962,18 @@ frame already hands the game (no GL call added, RULES.md 28):
     while the game is paused; `test_flashlog.js` no longer checks B46's `rec pointing, pickups and sound` line (removed
     in 4.0.49/4.0.53, B110: the check failed on 4.0.62 too) and allows the mark's dump 30 ms headless (25 ms measured on
     4.0.62 and on the fenced file alike).
+  - **Tools folder cleaned for the finished game** (the author: "fully analyze the contents of the tools folder for
+    anything obsolete or redundant ... update anything still relevant for the current final post-debug builds"):
+    retired 14 tools whose work is done or superseded: `slice_profile.js` (superseded by `boot_profile.js`),
+    `build_experiment.sh` (headset diagnosis APKs; no more headset diagnosis), the one-off probes `fill_probe.js`,
+    `overdraw_probe.js`, `vertex_census.js`, `matrix_trace.js`, `alloc_probe.js`, `occlusion_census.js`, `event_cpu.js`,
+    `event_sweep.js`, `draw_calls.js`, and `dead_code.js`, `play_census.js`, `random_census.js` (their censuses closed;
+    the tier's tests keep what they found); and the stale untracked `final.html`. Kept: every test in a tier, the build
+    and check tools, and the performance kit (`cpu_bench.js`, `fps_estimate.js`, `frame_parts.js`, `render_ab.js`,
+    `pixel_ab.js`) for any Store performance question. Updated for the final build: `perf_log.js`, `capture_log.*`
+    and HEADSET_DIAG.md (its log holds the runtime's VrApi lines only), `run_tests.sh` (the copies checked as the final
+    build; the compressed version's test given the shipped page), `check_docs.py` (VERSIONS.md and PERF.md are history
+    logs too), TASKS.md's resume point.
   - **Measured**: the fenced game file builds the same world as 4.0.62, object for object (`minify_identity.js`);
     `test_flashlog`, `test_menu_pause`, `test_end_sound`, `test_play_uploads`, `test_standalone`, `test_world` pass on
     it. `cpu_bench.js`, the game file against the final build (two rounds, nine views, noisy: single views moved by

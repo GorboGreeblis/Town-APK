@@ -11,7 +11,7 @@ once.
     python3 tools/experiment.py --list
     python3 tools/experiment.py --check [src]   every experiment's anchors match the game file once (quick tier)
 
-`tools/build_experiment.sh NAME` builds an APK from one.
+(build_experiment.sh, which built an APK from one, was retired in 4.0.63; texcapture is the one still used.)
 """
 import sys, pathlib
 

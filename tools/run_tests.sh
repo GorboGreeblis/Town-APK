@@ -66,9 +66,16 @@ VER=$(sed -n 's/^ *versionName "\([^"]*\)".*/\1/p' "$ROOT/tools/android/app/buil
 echo "Greeblis Town test pass: $TIER${ONLY:+ (only stages matching /$ONLY/)}; build ${VER:-unknown}; $(date -u +%Y-%m-%dT%H:%MZ)"; T_ALL=$(date +%s)
 HAZ="$ROOT/tools/.runs/frame_hazards.log"; mkdir -p "$ROOT/tools/.runs"; [ -n "$RESUME" ] || : > "$HAZ"   # every test's frame-hazard watch (lib/harness.js) appends here
 GLE="$ROOT/tools/.runs/gl_errors.log"; [ -n "$RESUME" ] || : > "$GLE"   # and every test's closing WebGL error check (F-B61)
+# the final (Store) build ships tools/final.html, the game file without its debug code (RULES.md 34): then the copies
+# are not the game file by design, and check_final.sh proves they are its final build instead (4.0.63)
+FINALCOPIES=""; python3 -I "$ROOT/tools/sync_game.py" --check >/dev/null 2>&1 || FINALCOPIES=1
+if [ -z "$FINALCOPIES" ]; then
 run "the shipped copies (index.html, the APK asset) are the game file tools/uncompressed.html (sync_game.py --check)" python3 -I "$ROOT/tools/sync_game.py" --check
+else
+run "the shipped copies (index.html, the APK asset, the root APK, index.compressed.html) are the final build of the game file, debug and logging removed, the version build.gradle's (check_final.sh)" sh "$ROOT/tools/check_final.sh"
+fi
 run "the game file is minified, not compressed (minify_game.js --check, RULES.md 19)" node "$ROOT/tools/minify_game.js" --check
-run "the compressed version unpacks to the game file exactly (build_compressed.js --check, RULES.md 20)" node "$ROOT/tools/build_compressed.js" --check
+[ -n "$FINALCOPIES" ] || run "the compressed version unpacks to the game file exactly (build_compressed.js --check, RULES.md 20)" node "$ROOT/tools/build_compressed.js" --check
 run "every experiment applies to the game file (experiment.py --check)" python3 -I "$ROOT/tools/experiment.py" --check
 run "loopback server harness" "$ROOT/tools/test_server.sh"
 run "docs consistency (check_docs.py)" python3 -I "$ROOT/tools/check_docs.py"
@@ -84,7 +91,7 @@ if [ "$TIER" != quick ]; then
   run "uniform budget: every shader fits a Quest 3S's GPU limits (multiview and classic)" node "$ROOT/tools/uniform_budget.js" "$ASSET"
   run "warm-up coverage: every lit material has its shaders for the game's one light state (S25); both point lights visible every frame, P19 as intensity" node "$ROOT/tools/warm_coverage.js" "$ASSET"
   run "standalone: the game runs on its own (nothing from the web, no extras); every pre-painted texture in tex/ is what the game paints (RULES.md 2)" node "$ROOT/tools/test_standalone.js" "$ASSET"
-  run "compressed version: works as a Bitcoin ordinal (alone, under the ordinal content policy; unpacks, boots, enters VR) (RULES.md 20)" node "$ROOT/tools/test_compressed.js"
+  run "compressed version: works as a Bitcoin ordinal (alone, under the ordinal content policy; unpacks, boots, enters VR) (RULES.md 20)" node "$ROOT/tools/test_compressed.js"${FINALCOPIES:+ "$ROOT/index.compressed.html"}
   run "the Event's first start: no texture, framebuffer or pixel work or shader compile inside a frame, no layer swap (F-B33)" node "$ROOT/tools/event_start_check.js" "$ASSET"
   run "texture census: no texture is made during play (emotes, faces, bubbles, pizza: the flash causes, F-B29/F-B30)" node "$ROOT/tools/texture_census.js" "$ASSET"
   run "the frame governor and the fixed foveation: the layer's foveation fixed at 0 from VR entry, the quality levels gone, slow frames swap and change nothing, the over-budget flag logs once, the Event's far-object safeguard on and off (F-B31, F-B83, L1)" node "$ROOT/tools/test_governor.js" "$ASSET"
