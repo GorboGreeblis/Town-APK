@@ -176,7 +176,7 @@ does not come back cleanly in `tools/BUGS.md`.
 
 **Upload candidate: the Store APK 4.0.64 (versionCode 133), 2026-11-07**, the root `GreeblisTown-release.apk`,
 opening the final build of the game, 4.0.63, at https://greeblistown.ar.io/ (B133: the Store refused 4.0.63's
-self-contained APK; the game is unchanged). Its headset check comes first (section 3: straight into VR, no browser
+self-contained APK; the game is unchanged). Its headset check is done (the author, 2026-11-07: "works in headset"; section 3: straight into VR, no browser
 bar). What is in the game, build by build: `tools/VERSIONS.md`; its full pass (RULES.md 23) is recorded in
 `tools/TEST_PLAN.md` (Latest results). The Alpha channel is only you and invited testers, so uploading there first
 and running that same build from the store is a fair way to do the headset pass.
