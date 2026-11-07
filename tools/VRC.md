@@ -72,7 +72,7 @@ stored on the headset (the game has no save: no IndexedDB, cookies or `localStor
 | Check | Status | Verdict | Evidence |
 | --- | --- | --- | --- |
 | Tracking.1 play-mode metadata (the author chose Sitting and Standing) | R | PASS | everything is reached by pointing and the trigger (pickups, kiosks, dialogue choices) and by stick locomotion with snap turn: nothing needs reaching to the ground, standing up or turning beyond 90 degrees while seated, and nothing needs more than a 2 m square while standing. **Confirm** one pass of each (RELEASE.md step 7): seated on a chair, then standing in place the author, 2026-11-07, on the final build 4.0.63: "Sitting and Standing both work fine". |
-| Tracking.2 input-mode metadata | R | AUTHOR | select **Controllers** only in the dashboard (the game does not support hand tracking; see Input.7) |
+| Tracking.2 input-mode metadata | R | PASS | select **Controllers** only in the dashboard (the game does not support hand tracking; see Input.7) the author, 2026-11-07: Touch controllers selected (the game's only input; no hand tracking). |
 
 ## Input
 
@@ -109,7 +109,7 @@ stored on the headset (the game has no save: no IndexedDB, cookies or `localStor
 | Ads.1-7 | R | N/A | no ads |
 | Streaming.1-4 | R/+ | N/A | nothing streamed; the loopback server is on the headset and serves the app's own files only |
 | Content.1 content guidelines | R | PASS | a family-friendly town game, IARC rating completed by the author |
-| Content.2 metadata matches in-app content | R | AUTHOR | the Store copy describes the town, the townsfolk, flint and the Event as they are in the game (the copy review of 2026-10-26); names in the listing are the in-game names |
+| Content.2 metadata matches in-app content | R | PASS | the Store copy describes the town, the townsfolk, flint and the Event as they are in the game (the copy review of 2026-10-26); names in the listing are the in-game names the author, 2026-11-07: "All images are screenshots from the actual game". |
 | Content.3-4 user-generated content | R/+ | N/A | none |
 
 ## Privacy
@@ -120,16 +120,16 @@ stored on the headset (the game has no save: no IndexedDB, cookies or `localStor
 | Privacy.2 what data is collected | R | PASS | "does not collect, request, store, share, or transmit any personal information or user data"; nothing saved on the headset either |
 | Privacy.3 how data is used | R | PASS | none collected, stated |
 | Privacy.4 how to request deletion | R | PASS | live since 2026-10-27 (checked: https://greeblistown.neocities.org/ shows section 8 "Data deletion requests" and "Last Updated: October 27, 2026"): nothing to delete, email with the subject "Data deletion request", a reply within 30 days, uninstalling removes everything; source `tools/store/privacy.html` |
-| Privacy.5 data protection checks | R | AUTHOR | the dashboard's Data Use questionnaire: no data collected, no third-party SDKs |
+| Privacy.5 data protection checks | R | PASS | the dashboard's Data Use questionnaire: no data collected, no third-party SDKs Meta's test (the criterion page, read 2026-11-07): a web search of the app's and the developer's name for a known security incident or breach; none known, and the privacy policy states the game collects and stores nothing (the page's fallback). No Data Use Checkup: the game uses no Platform SDK feature ("Apps that don't use these Platform SDK features do not need a DUC"). A Data Protection Assessment applies to apps handling user data; if the dashboard ever lists one under Requirements > Tasks, the team admin answers it. |
 
 ## Publishing
 
 | Check | Status | Verdict | What to check |
 | --- | --- | --- | --- |
 | Publishing.1 website URL valid | R | PASS | the neocities page resolves |
-| Publishing.2-3 support and ToS links, if present | R | AUTHOR | leave empty or point at a valid page |
-| Publishing.4-7 name, descriptions, keywords meet the guidelines | R | AUTHOR | "GREEBLIS TOWN" everywhere; the copy reviewed on 2026-10-26 |
-| Publishing.8 Meta brand use | R | AUTHOR | no Meta or Quest branding in the copy beyond the platform name |
+| Publishing.2-3 support and ToS links, if present | R | N/A | leave empty or point at a valid page the author, 2026-11-07: no support or ToS link added. |
+| Publishing.4-7 name, descriptions, keywords meet the guidelines | R | PASS | "GREEBLIS TOWN" everywhere; the copy reviewed on 2026-10-26 the author, 2026-11-07: "Everything should meet their guidelines". |
+| Publishing.8 Meta brand use | R | PASS | no Meta or Quest branding in the copy beyond the platform name the author, 2026-11-07: "Everything should meet their guidelines". |
 
 ## Accessibility (all recommended)
 
