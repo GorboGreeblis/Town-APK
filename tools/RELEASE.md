@@ -134,7 +134,8 @@ does not come back cleanly in `tools/BUGS.md`.
    requests), updated 2026-11-07 for the hosted game (section 3: the files load from the site on Arweave;
    section 4: the gateway), is live at **https://privacypolicy_greeblistown.ar.io/** (the author's ArDrive upload,
    an ArNS undername; checked 2026-11-07: byte for byte `tools/store/privacy.html`). Put that URL in the Developer
-   Dashboard's privacy policy field (it was https://greeblistown.neocities.org/). VRC.Quest.Privacy.4: done.
+   Dashboard's privacy policy field (it was https://greeblistown.neocities.org/; done by the author, 2026-11-07).
+   VRC.Quest.Privacy.4: done.
 
 ## 4. Rebuilding yourself (only if something changes)
 
@@ -176,7 +177,7 @@ does not come back cleanly in `tools/BUGS.md`.
 
 **Upload candidate: the Store APK 4.0.64 (versionCode 133), 2026-11-07**, the root `GreeblisTown-release.apk`,
 opening the final build of the game, 4.0.63, at https://greeblistown.ar.io/ (B133: the Store refused 4.0.63's
-self-contained APK; the game is unchanged). Its headset check is done (the author, 2026-11-07: "works in headset"; section 3: straight into VR, no browser
+self-contained APK; the game is unchanged). **Uploaded by the author on 2026-11-07** after its headset check ("works in headset"; section 3: straight into VR, no browser
 bar). What is in the game, build by build: `tools/VERSIONS.md`; its full pass (RULES.md 23) is recorded in
 `tools/TEST_PLAN.md` (Latest results). The Alpha channel is only you and invited testers, so uploading there first
 and running that same build from the store is a fair way to do the headset pass.
