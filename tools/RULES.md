@@ -242,6 +242,13 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     functional code around it (the layer shim, multiview, the holds, the pauses, the sound hold) stays as it is.
     `console.error` for a real error (the error reporter's first five of a kind) and three.js's own warnings stay, as
     `Log.e` does on the Android side.
+35. **Issues are logged, not fixed in the game, until the author says otherwise** (2026-11-06: "For now: Only log all
+    issues in the BUGS sheet. Do not make any game changes until told to"; restated 2026-11-07: "Please remember the
+    rule of only logging the issues and not making any game changes (unless I say otherwise)"). Whatever a pass or a
+    check finds in the game goes into BUGS.md, with what was seen and how; the game file (`tools/uncompressed.html`)
+    and its shipped copies (`index.html`, `index.compressed.html`, `tools/site/`) are not changed. Tests, tools and
+    documentation may still be updated (2026-11-07: "Please update documentation, test cases, and tools as you go"),
+    as long as nothing in the game changes.
 
 ## Priorities
 
