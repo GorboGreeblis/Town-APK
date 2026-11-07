@@ -17,7 +17,7 @@
 //
 // Estimates, not measurements: the headset run after a change is the check (TASKS T3).
 //
-//   node tools/fps_estimate.js <headset log> [--town 12] [--event 10] [--sigma 0.49] [--q3gpu 1.3]
+//   node tools/fps_estimate.js <headset log> [--town 12] [--event 10] [--sigma 0.49] [--q3gpu 1.3] [--device q3s|q3]
 //     --town / --event: the CPU saving in percent (cpu_bench.js's "saving" for the town and the Event views)
 const fs = require('fs');
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
@@ -54,7 +54,10 @@ if (pOpen !== null) pauses.push([pOpen - 1, t1 + 1]);
 const paused = (t) => pauses.some(([a, b]) => t >= a && t <= b);
 // the headset the run was on (the perf line's dev=): the estimate is made for the other one too
 const devM = lines.map((l) => (l.match(/ perf fps=.* dev=(\S+)/) || [])[1]).find(Boolean) || 'Quest_3S';
-const BASE_Q3 = /^Quest_3$/.test(devM);
+// --device q3s|q3 says which headset the run was on: the browser's user agent (the perf line's dev=) reads "Quest 3" on
+// a Quest 3S too (the author's 4.0.62 run on a Quest 3S logged dev=Quest_3), so dev= cannot tell them apart
+const DEV = arg('--device', null);
+const BASE_Q3 = DEV ? /^q3$/i.test(DEV) : /^Quest_3$/.test(devM);
 const secs = [];
 for (const l of lines) {
   const m = l.match(/VrApi\s*: FPS=(\d+)\/(\d+).*?App=([\d.]+)ms/); if (!m) continue;
@@ -84,7 +87,7 @@ const est = (s, saving, gpuScale) => {
 const stats = (a) => { const s = a.slice().sort((x, y) => x - y), q = (k) => s[Math.min(s.length - 1, Math.max(0, Math.round(k * (s.length - 1))))]; return { n: s.length, min: s[0], p10: q(0.1), median: q(0.5), under60: s.filter((x) => x < 59.5).length }; };
 const fmt = (x) => `median ${x.median.toFixed(1)}, lowest 10% ${x.p10.toFixed(1)}, lowest ${x.min.toFixed(1)}, ${x.under60} of ${x.n} s under 60 (${(100 * x.under60 / x.n).toFixed(0)}%)`;
 
-console.log(`fps_estimate: ${file.split('/').pop()} (run on ${devM.replace('_', ' ')}; ${pauses.length} pauses left out): ${secs.length} s of play (${secs.filter((s) => s.ev).length} in the Event); saving town ${(100 * S_TOWN).toFixed(1)}%, Event ${(100 * S_EV).toFixed(1)}%; spread ${SIGMA}`);
+console.log(`fps_estimate: ${file.split('/').pop()} (run on ${DEV ? (BASE_Q3 ? 'Quest 3' : 'Quest 3S') + ', as given' : devM.replace('_', ' ') + ' (the user agent; a Quest 3S reads Quest 3 too: pass --device)'}; ${pauses.length} pauses left out): ${secs.length} s of play (${secs.filter((s) => s.ev).length} in the Event); saving town ${(100 * S_TOWN).toFixed(1)}%, Event ${(100 * S_EV).toFixed(1)}%; spread ${SIGMA}`);
 for (const [label, pick, sv] of [['town', (s) => !s.ev, S_TOWN], ['the Event', (s) => s.ev, S_EV]]) {
   const sel = secs.filter(pick); if (!sel.length) continue;
   const now = stats(sel.map((s) => s.f));
