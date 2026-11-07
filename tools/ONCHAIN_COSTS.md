@@ -10,6 +10,17 @@ half hour 4, hour 3, economy 2, minimum 1 sat/vB (mempool.space); ETH US$2,239.7
 (etherscan.io gas tracker). CAD at the same moment's rate, 1 USD = 1.413 CAD. Both chains' fees move by the hour and
 were unusually low at this reading: the tables give a range.
 
+## Where the game is on chain (2026-11-07)
+
+- **Bitcoin ordinal**: inscription `f18b311f5d30db4b35b7bcc2f9b9fdf4fb60e04f48d40c1182d2fab7001b3039i0`
+  (https://ordinals.com/content/f18b311f5d30db4b35b7bcc2f9b9fdf4fb60e04f48d40c1182d2fab7001b3039i0), the author's. Its
+  content is byte for byte `index.compressed.html` of **4.0.65** (291,674 bytes, `text/html;charset=utf-8`; read from an
+  indexer that serves the raw content, ordinals.com refusing automated reads). `test_compressed.js` on that copy: it
+  unpacks, boots and enters VR, asks for nothing from another host, and works in the explorers' sandboxed preview.
+- **Ethereum (EthFS)**: the file `index.compressed.html` in EthFS's FileStore (`0xFe1411d6864592549AdE050215482e4385dFa0FB`),
+  the author's upload, stored base64-encoded (388,900 bytes); decoded, it is byte for byte `index.compressed.html` of
+  **4.0.63** (read with `readFile` from the chain). 4.0.63 and 4.0.65 are the same game; only the version shown differs.
+
 ## Bitcoin ordinal (ordiscan.com/inscribe)
 
 One inscription, `text/html;charset=utf-8`: the file goes in the reveal transaction's witness (a quarter of the
