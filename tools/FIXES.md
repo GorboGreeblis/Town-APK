@@ -1922,6 +1922,12 @@ frame already hands the game (no GL call added, RULES.md 28):
     one deliberate dark frame. The `snapspread` and `snapspread2` experiments are removed (superseded; they ghosted).
   - `test_input.js` checks one turn on a fully dark frame after a half-dark one, the whole sequence and its end, the
     sphere at full dark and hidden after, and nothing compiled.
+- **4.0.65** (the author, 2026-11-07: "AndroidManifest.xml::<application android:allowBackup="true"> needs to be changed
+  to allowBackup="False" in the Android Manifest"; "can you update the version number in game too when doing this?").
+  The Store APK's manifest says `android:allowBackup="false"` (Bubblewrap's template writes "true" on every generate:
+  `build_twa.sh` sets it after `bubblewrap update` and stops if it is not; `check_apk.sh` fails on anything else); the
+  APK is 4.0.65 (versionCode 134, above the uploaded 133). The game shows v4.0.65 (`tools/game_version.txt`, stamped by
+  `build.sh --final` in its four places); nothing else in the game changed. The site folder is uploaded again.
 - **4.0.64, the Store APK** (B133; the author: "MAJOR BLOCKING ISSUE" from the Store upload: the start URL "does not
   use https scheme" and the manifest is "missing the `twa_generator` tag. Please use the Meta provided Bubblewrap CLI to
   regenerate your PWA"; then "let's replace the current .apk in the repo. this will be the only version we use"). The

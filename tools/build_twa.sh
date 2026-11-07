@@ -34,6 +34,10 @@ echo "== Bubblewrap: generate the project from twa-manifest.json"
 $BW update --skipVersionUpgrade | tail -2
 # Meta's packaging guide: replace jcenter() (gone) with mavenCentral(); the target SDK stays 32 (Bubblewrap's Quest default)
 sed -i 's/jcenter()/mavenCentral()/' build.gradle
+# the author (2026-11-07): the app allows no backup, android:allowBackup="false" (Bubblewrap's template has "true"; the
+# game saves nothing, so there is nothing to back up). Set again after every `bubblewrap update`, which rewrites it
+sed -i 's/android:allowBackup="true"/android:allowBackup="false"/' app/src/main/AndroidManifest.xml
+grep -q 'android:allowBackup="false"' app/src/main/AndroidManifest.xml || { echo "BUILD STOPPED: allowBackup not set to false in the manifest"; exit 1; }
 echo "== Bubblewrap: build and sign"
 P=$ROOT/tools/twa/keystore.properties
 [ -f "$P" ] || { echo "the release keystore's properties are missing ($P): the APK must be signed with the release key"; exit 1; }

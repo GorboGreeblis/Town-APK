@@ -175,8 +175,10 @@ does not come back cleanly in `tools/BUGS.md`.
 
 ## 5. Upload to the Meta Quest Store
 
-**Upload candidate: the Store APK 4.0.64 (versionCode 133), 2026-11-07**, the root `GreeblisTown-release.apk`,
-opening the final build of the game, 4.0.63, at https://greeblistown.ar.io/ (B133: the Store refused 4.0.63's
+**Upload candidate: the Store APK 4.0.65 (versionCode 134), 2026-11-07**, the root `GreeblisTown-release.apk`:
+4.0.64 with `android:allowBackup="false"` (the author's request), the game showing v4.0.65 to match. Upload the site
+folder `tools/site` first (the game's version stamp changed), then `tools/check_final.sh` confirms the hosted game.
+Before it, 4.0.64 (versionCode 133), opening the final build of the game, 4.0.63, at https://greeblistown.ar.io/ (B133: the Store refused 4.0.63's
 self-contained APK; the game is unchanged). **Uploaded by the author on 2026-11-07** after its headset check ("works in headset"; section 3: straight into VR, no browser
 bar). What is in the game, build by build: `tools/VERSIONS.md`; its full pass (RULES.md 23) is recorded in
 `tools/TEST_PLAN.md` (Latest results). The Alpha channel is only you and invited testers, so uploading there first

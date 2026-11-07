@@ -50,6 +50,8 @@ echo
 echo "Immersive launch"
 mode=$(meta horizonos.pwa.APP_MODE)
 check "horizonos.pwa.APP_MODE = immersive ($mode)" "$([ "$mode" = immersive ] && echo 1)"
+ab=$(printf '%s\n' "$XML" | grep -o 'allowBackup(0x01010280)=[a-z]*' | head -1 | sed 's/.*=//')
+check "android:allowBackup false (the author, 2026-11-07; is $ab)" "$([ "$ab" = false ] && echo 1)"
 check "launcher in com.oculus.intent.category.VR" "$(printf '%s\n' "$XML" | grep -q 'com.oculus.intent.category.VR' && echo 1)"
 echo
 echo "VRC.Quest.Packaging.1-6, Security.2"
