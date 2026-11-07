@@ -60,6 +60,9 @@ FileStore (`0xFe1411d6864592549AdE050215482e4385dFa0FB`, the same address on mai
 | 5 gwei | 0.321 | 718 | 1,015 | |
 | 10 gwei | 0.641 | 1,436 | 2,029 | busy (2024 levels) |
 
+- **The author always uses MetaMask's Low option** (2026-11-07): Low pays the base fee plus a small tip, which today
+  is about the 0.045-0.05 gwei above: **about C$9-10 (US$6.50-7)** for the whole upload, 13 transactions to approve
+  in MetaMask (12 pieces and the registration). Low may wait a little longer for each to confirm.
 - **At today's gas: about C$9 (US$6.50)**; EthFS charges no fee of its own that its page or README shows. The full,
   uncompressed `index.html` (1,140,989 bytes) would cost about four times as much (about C$35 now).
 - Playing it from Ethereum needs a page that serves the stored file as a web page (EthFS stores bytes; ethfs.xyz lists
