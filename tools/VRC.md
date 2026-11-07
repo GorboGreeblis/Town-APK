@@ -148,7 +148,7 @@ Accessibility checks, all recommended (+):
 | Accessibility.8 multiple locomotion styles | + | NOT MET | Smooth stick locomotion with snap turn only (no teleport). |
 | Accessibility.9 fixed-position setting for sitting or standing apps | + | NOT MET | No fixed-position mode; seated and standing play both work (Tracking.1, the author 2026-11-07). |
 
-All recommended, none required: the not-met ones do not block submission.
+All recommended, none required: the not-met ones do not block submission. The author, 2026-11-07, on the recommended checks not met (Audio.1, Accessibility.4, 5, 8, 9): "I wouldn't worry about recommended checks like Audio.1": left as they are.
 
 ## The four headset confirmations that decide a first-try pass
 
