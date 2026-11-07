@@ -21,8 +21,11 @@
 //
 //   node tools/test_safeties.js [file]
 const path = require('path');
-const { boot, reporter } = require('./lib/harness');
+const { boot, reporter, root, finalBuild } = require('./lib/harness');
 const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
+// the final build has no log lines and no frame-health counters (RULES.md 34, B132): there each safety is checked by
+// its effect (the character hidden while drawn, frames coming, the frame not left open) and the records are not read
+const FINAL = finalBuild(file || path.join(root, 'tools/site/index.html'));
 
 (async () => {
   const { expect, note, failures } = reporter();
@@ -38,15 +41,15 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     const eye = D.we.headPos ? D.we.headPos.y : 1.6;
     const cand = D.It.all.filter((x) => x.home && x.group && x.group.visible && (x.height || 2) > eye - x.group.position.y + 0.2);
     const h = (cand.filter((x) => !x.busy).length ? cand.filter((x) => !x.busy) : cand).sort((a, b) => (b.bodyR || 0.8) - (a.bodyR || 0.8))[0] || D.It.all.filter((x) => x.group && x.group.visible).sort((a, b) => (b.height || 2) - (a.height || 2))[0];
-    let holding = true, betweenHidden = 0, frames = 0;
+    let holding = true, betweenHidden = 0, frames = 0, hiddenDrawn = 0; const RH = D.O.render; D.O.render = function () { if (holding && !h.group.visible) hiddenDrawn++; return RH.apply(this, arguments); };
     // move the player so the head itself (the headset's position, a little off the player's) is at the character
     const hold = () => { if (!holding) return; const hp = D.we.headPos; if (hp) { D.At.position.x += h.group.position.x - hp.x; D.At.position.z += h.group.position.z - hp.z; } frames++; if (!h.group.visible) betweenHidden++; requestAnimationFrame(hold); };
     // body collision would push the player out before each frame (the guard is the backstop for when it does not):
     // switched off for the second
     const res0 = D.uo.resolve; D.uo.resolve = () => false;
-    requestAnimationFrame(hold); await wait(1200); holding = false; D.uo.resolve = res0; await wait(100);
+    requestAnimationFrame(hold); await wait(1200); holding = false; D.O.render = RH; D.uo.resolve = res0; await wait(100);
     D.At.position.set(h.group.position.x + 8, D.At.position.y, h.group.position.z);
-    out.head = { id: h.id, logged: logs.filter((s) => /^head inside \d+ character\(s\): hidden for the frame/.test(s)).length, frames, betweenHidden, visibleAfter: h.group.visible };
+    out.head = { id: h.id, logged: logs.filter((s) => /^head inside \d+ character\(s\): hidden for the frame/.test(s)).length, frames, betweenHidden, hiddenDrawn, visibleAfter: h.group.visible };
     // 1b. the head inside a Garden flower leaves it drawn (S6 revised): a plant-sized object put in the Garden's list of
     // flowers at the head
     await wait(400);   // the head position follows the player's move on the next frames
@@ -89,14 +92,14 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       out.s19 = {};
       if (X.shim && X.shim.begin) { const B0 = X.shim.begin; let thrown = 0; X.shim.begin = function () { if (!thrown) { thrown = 1; throw new Error('injected begin fault'); } return B0.apply(this, arguments); };
         const after = await framesN(6, 4000); X.shim.begin = B0;
-        out.s19.begin = { beginFail: X.fc.beginFail || 0, logged: logs5.filter((l) => /^layer begin failed \(S19\)/.test(l)).length, after, open: !!X.xrFrameOpen }; }
+        out.s19.begin = { beginFail: (X.fc && X.fc.beginFail) || 0, logged: logs5.filter((l) => /^layer begin failed \(S19\)/.test(l)).length, after, open: !!X.xrFrameOpen }; }
       else out.s19.begin = null;
       { // the throw happens inside the renderer's draw (the first draw after the mesh joins the scene), not in the game's update
-        const f0 = X.fc.fallback || 0, bad = new T.Mesh(new T.BoxGeometry(0.1, 0.1, 0.1), new T.MeshBasicMaterial()); bad.frustumCulled = false; let armed = 1, inR = false;
+        const f0 = (X.fc && X.fc.fallback) || 0, bad = new T.Mesh(new T.BoxGeometry(0.1, 0.1, 0.1), new T.MeshBasicMaterial()); bad.frustumCulled = false; let armed = 1, inR = false;
         const R2 = O.render; O.render = function () { inR = true; try { return R2.apply(this, arguments); } finally { inR = false; } };
         const mw = bad.matrixWorld; Object.defineProperty(bad, 'matrixWorld', { get() { if (inR && armed > 0) { armed--; throw new Error('injected matrix fault'); } return mw; }, configurable: true });
         D.C.add(bad); const after = await framesN(6, 4000); D.C.remove(bad); O.render = R2;
-        out.s19.draw = { fallback: (X.fc.fallback || 0) - f0, after, armed }; }
+        out.s19.draw = { fallback: ((X.fc && X.fc.fallback) || 0) - f0, after, armed }; }
       { const n0 = logs5.length, p0 = X.mvStats ? X.mvStats.programsDuringPlay : 0; const Lp = new T.DirectionalLight(0xffffff, 0); Lp.position.set(0, 3, 0); D.C.add(Lp); await framesN(6, 4000); D.C.remove(Lp); await framesN(4, 3000);
         out.s19.lights = { held: logs5.slice(n0).filter((l) => /^shader held for one frame/.test(l)).length, inPlay: (X.mvStats ? X.mvStats.programsDuringPlay : 0) - p0, mv: !!X.mvActive }; }
       { // both controllers connected (the fake headset's inputs), their hand meshes built from the cache and reused on a reconnect
@@ -117,15 +120,16 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   note(JSON.stringify(r));
   expect('the head guard shows as the head goes into a wall, and compiles no shader then (its shader is compiled at VR entry; B47)', r.guard && r.guard.mesh && r.guard.shown > 0 && r.guard.newPrograms === 0, JSON.stringify(r.guard));
   expect('4.0.38: the head guard does not show 10 cm from a wall (it starts 3 cm out, full dark 5 cm in)', r.guard && r.guard.near && r.guard.nearShown === 0, JSON.stringify({ near: r.guard && r.guard.near, nearShown: r.guard && r.guard.nearShown }));
-  expect('the head inside a character hides it for the frame (logged)', r.head.logged >= 1, JSON.stringify(r.head));
+  if (FINAL) note('the final build: no log lines or frame-health counters, so the safeties are checked by their effect; the records are not read (B132)');
+  expect(FINAL ? 'the head inside a character hides it while the frame is drawn' : 'the head inside a character hides it for the frame (logged)', FINAL ? r.head.hiddenDrawn >= 1 : r.head.logged >= 1, JSON.stringify(r.head));
   expect('the character is visible between frames and after', r.head.betweenHidden === 0 && r.head.visibleAfter, JSON.stringify(r.head));
   expect('the head inside a Garden flower leaves it drawn (S6 revised: flowers never vanish when walked into)', r.flower && r.flower.drawn > 10 && r.flower.hiddenDrawn === 0 && r.flower.between === 0 && r.flower.visibleAfter, JSON.stringify(r.flower));
   expect('a throwing draw hook does not stop the frame: the draws stay as without it (within 10%: townsfolk move; a frame stopped short loses most) and frames keep coming', r.hook.bad.frames > 20 && r.hook.bad.draws >= 0.9 * r.hook.base.draws, JSON.stringify(r.hook));
-  expect('the draw hook error is logged once for the object, not every frame', r.hook.loggedOnce, String(r.hook.logged));
+  if (!FINAL) expect('the draw hook error is logged once for the object, not every frame', r.hook.loggedOnce, String(r.hook.logged));
   const other = g.errors.filter((e) => !/injected draw hook fault|injected begin fault|injected matrix fault/.test(e));
-  expect('S19: the layer\'s begin() throwing once is logged, frames keep coming and the frame is not left open', r.s19.begin === null || (r.s19.begin.beginFail >= 1 && r.s19.begin.logged >= 1 && r.s19.begin.after >= 5 && !r.s19.begin.open), JSON.stringify(r.s19.begin));
-  expect('S19: a draw that throws inside three.js runs the fallback draw (the frame is counted only once drawn) and frames keep coming', r.s19.draw.fallback >= 1 && r.s19.draw.after >= 5, JSON.stringify(r.s19.draw));
-  expect('S19: a lights change is seen by the shader hold: compiled between frames, none during play', r.s19.lights.held >= 1 && r.s19.lights.inPlay === 0, JSON.stringify(r.s19.lights));
+  expect('S19: the layer\'s begin() throwing once is logged, frames keep coming and the frame is not left open', r.s19.begin === null || ((FINAL || (r.s19.begin.beginFail >= 1 && r.s19.begin.logged >= 1)) && r.s19.begin.after >= 5 && !r.s19.begin.open), JSON.stringify(r.s19.begin));
+  expect('S19: a draw that throws inside three.js runs the fallback draw (the frame is counted only once drawn) and frames keep coming', (FINAL || r.s19.draw.fallback >= 1) && r.s19.draw.after >= 5, JSON.stringify(r.s19.draw));
+  expect('S19: a lights change is seen by the shader hold: compiled between frames, none during play', (FINAL || r.s19.lights.held >= 1) && r.s19.lights.inPlay === 0, JSON.stringify(r.s19.lights));
   expect('S20: the hand meshes are built once per controller and hand and reused; the watch face shares one geometry and material', r.s19.hands.every((h) => h.cached && h.same) && r.s19.watchShared, JSON.stringify({ hands: r.s19.hands, watchShared: r.s19.watchShared }));
   expect('the colour, depth and stencil buffers are cleared each frame (S30\'s no-clear was taken out in 4.0.25 at the author\'s word; the clear colour is black, S18)', r.s30 && r.s30.autoClearColor === true && r.s30.autoClearDepth === true && r.s30.autoClearStencil === true, JSON.stringify(r.s30));
   expect('each headset frame flushes the context after the game\'s draw, before the layer\'s frame ends (the flush in the layer\'s end, S18)', r.s30 && r.s30.frames >= 5 && r.s30.inFrame >= r.s30.frames && r.s30.drawsBefore >= r.s30.frames, JSON.stringify(r.s30));

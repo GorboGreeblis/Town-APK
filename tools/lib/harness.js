@@ -265,4 +265,9 @@ function reporter() {
   return { failures, expect, note };
 }
 
-module.exports = { boot, reporter, root, HOOK_NAMES, hooked };
+// The final (Store) build (final_build.js, RULES.md 34) has no debug code: no log function, no flight recorder, no
+// census or frame-health counters, no multiview statistics. A check that reads those is skipped on it (only the
+// behaviour is checked); the game file and debug builds keep them (B126-B132).
+const finalBuild = (file) => { try { return !/GT_DEBUG|__gtLog/.test(require('fs').readFileSync(file, 'utf8')); } catch (e) { return false; } };
+
+module.exports = { boot, reporter, root, HOOK_NAMES, hooked, finalBuild };

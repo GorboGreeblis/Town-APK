@@ -23,7 +23,9 @@ Do not rely on `adb logcat -d` after a long session: it dumps the headset's ring
 overruns (the author's 3.15.46 log kept only its last 30 seconds). The runtime's `VrApi` line comes once a second
 (`FPS=66/72,...,Stale=8`, with CPU and GPU use and free memory, `Free=`): `perf_log.js` prints the seconds under the
 refresh rate, with GPU and CPU use and a verdict (CPU-bound when the app's GPU time is under 80% of the frame budget,
-GPU-bound otherwise), and `fps_estimate.js` turns such a log into a frame-rate estimate for Quest 3 and Quest 3S.
+GPU-bound otherwise), and `fps_estimate.js` turns such a log into a frame-rate estimate for Quest 3 and Quest 3S (pass
+`--device q3s` or `q3`: the log cannot tell the headsets apart; with no game lines it reads the game's process from its
+first line to its last, leaves out the seconds the system menu drew, and cannot tell the Event from the town).
 For the Store's frame-rate check (VRC.Quest.Performance.1), Meta's OVR Metrics Tool overlay shows the same frame rate
 in the headset (RELEASE.md section 3).
 
