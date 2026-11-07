@@ -79,8 +79,10 @@ line around 60, not a stretch below it. The final build is a few percent lighter
 - **Quest 3S:** a fail would need a reviewer to read a few seconds at 56-59 as an "extended period". Possible in
   principle, unlikely in practice: the page's own wording and the graph-reading test are aimed at sustained drops.
   This is the "technically" case, not the "in reality" one.
-- **Quest 3 (not tried):** the same CPU and about 30% more pixels; estimated a few more single seconds under 60 in the
-  heaviest Event views (VRC.md), the same kind of dips, not a sustained drop. The fallback is in VRC.md.
+- **Quest 3 (not tried):** the same CPU and about 30% more pixels; estimated from the author's run with the final build's
+  saving (`fps_estimate.js --device q3s`): 5 of 295 Event seconds under 60, the longest run under 60 one second, no run
+  of 3 s or more (the 4.0.62 run itself on the 3S: 10 seconds, the longest run 3 s, the 58-58-58 at the heaviest view).
+  Isolated dips, not a sustained drop; one session's path, and the headset's clock on the day, bound how sure this is. The fallback is in VRC.md.
 - No public data was found on how reviewers judge "extended" in practice (no Meta figure, no developer reports with
   numbers).
 
