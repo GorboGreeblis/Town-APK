@@ -1,4 +1,4 @@
-# Greeblis Town, Lore Bible (third pass)
+# Greeblis Town, Lore Bible (fourth pass)
 
 Compiled strictly from the game's own text, data and pictures in the game file, `tools/uncompressed.html`
 (4.0.34, with later changes to 4.0.61 noted where they fall; the root `index.html` is a byte copy of it). Of the fixes in FIXES.md only A2 (Gemtoe's seventh talk
@@ -19,6 +19,14 @@ marked *(confirmed)* instead (the author's answers below); a new guess is marked
 > **Code names and the minified file:** string names (ids such as `drifter`, the painting's motif names, `MAMA_W`)
 > are in the game file as quoted. The table names `TIES`, `SIG` and `PAIRS` are from the unminified 3.15.44 file
 > (`git show 21596f1:tools/uncompressed.html`); since 3.15.45 (FIXES R2) the minifier renamed them.
+
+**Fourth pass** (2026-11-07, checked against the final game, 4.0.65; the author: "Analyze the Lore Bible and update it
+to breakdown every element of the game. Be exhaustive."): four new sections cover what had no place here: "Town life: what happens on its own" (posts, homes, wanderers,
+greetings, meetings, visits, the Ancient's visitors, the rescue of the stuck, the ground, what is the same every visit),
+"Sound and music" (every sound the town makes, what makes it and how it is made, the drums and the Horn song), "The player's side"
+(the page before the town, the gate and the VR loading box, walking, turning, pointing, menus, the watch, pausing, no
+saving) and "Every element, A to Z" (an index of every character, place, item, activity, sound and system, each with
+where it is described). The game's text is unchanged since 4.0.61 apart from its version.
 
 **Changes in this pass** (third pass, 2026-11-04, checked against the 4.0.34 game file): every line the game can
 show is now here with its trigger: every talk line in its order ("Every talk line"), all 90 two-line exchanges
@@ -1477,7 +1485,7 @@ it wears (the author's answer 15; the game itself names no owner):
   the church and Cave, the Ancient, Somlet, the pond or the Garden. In an Event without the Seeds only the town's
   trees fade (F-B72: "If the user starts the Event without having completed 'Seeds', kiosks should NOT fade out").
   The kiosk groups are the buildings of the game's registry other than the church: the Post Office, the Sheriff's,
-  Garden Supplies, the Gallery, the Library (the registry's `shop`) and the juice bar (the drum kit and the dance
+  Garden Supplies, the Gallery, the Library (the registry's `shop`; its named books and its sign fade with it since 4.0.61, B122) and the juice bar (the drum kit and the dance
   floor stay). A kiosk waits
   for its keeper to leave home before it fades; once out it stays out until the Event ends, even if
   the player walks up to it (A26: "Just keep everything faded out until things fade back in. I don't care if there is
@@ -1729,6 +1737,241 @@ Landmarks to search for in the game script (line 7 of the game file), with the 3
 | The town builder | "jgp-world" (`swapWorld`), seed `20250101`, "sign atlas overflow", `"prismgable"`, `"ringwalk"`, `GB_FENCE_FAR` (`fenceMaterial`), `"Mistergummery's"`, `"FIRST BANK OF GREEBLIS"` |
 | The church, its glass, the Cave | `"church"` (`CHURCH`, `lancet`, `paintTravelerWindow`, `paintGardenWindow`, `stainedKit`), `id:"slug"` |
 | Night glow, the UFO, the Speech's bulb | `.emissive.setRGB(.95*` (the lit windows; `BIN.lit` in 3.15.44), `JGP.ufoNow`, `Bulb.start` |
+
+## Town life: what happens on its own
+
+The town does not wait for the visitor. This is everything that goes on in it without being asked, as the game runs
+it (the code's account is in GAME.md, "Town life").
+
+- **Posts and homes.** Every townsperson has a post (where they stand, "The cast at a glance") and an idle way of
+  standing there. Four have a home inside a building, reached by a doorway route only when they go home: Fortizmo
+  behind her bar, Mushroom up his ramp onto his desk, Gemtoe in the gazebo and Zollod in her kiosk.
+- **Wanderers.** Gooward wanders round the Gallery, Hennrick round the Portal, Mama Gorbo about the park, and the three
+  dancers, Etcher, Glyph and Montgummery, about the dance floor; each picks a new spot every few seconds, outside every
+  building, the Garden and anything solid, and apart from the others. Everyone else keeps to their post.
+- **Greetings.** A walking townsperson the visitor comes within 3.2 m of stops and turns to face them; after 12 s they
+  go on even if the visitor stays, and stop again only once the visitor has been more than 6 m away. Sparkakus greets
+  with a "!" from 6 m.
+- **Mama Gorbo and Gooward's meetings.** 20 to 40 s into a visit, and 20 to 40 s after each meeting, the two walk to two
+  spots 2.8 m apart, face each other and take turns: a goo arc with a "blorp" and a pink heart, eight beats in all; then
+  they wander again. A meeting waits if either is busy, visiting, in an exchange, or the Event is on.
+- **Visits and the two-line exchanges.** Townsfolk visit each other: once a visit is due (22 to 32 s after the last) a
+  new one is tried every 4 s, favouring the pairs that have visited least. Two townsfolk standing near each other play
+  one of the 90 exchanges ("Vignettes"), in speech bubbles or Gree-mail tokens flying between them; it stops at once if
+  either is needed or the visitor talks to one of them. Sparkakus visits only once the visitor has the Gem or the
+  Stone. Mushroom always reaches his desk by its ramp and leaves the same way: since 4.0.61 the desk runs the kiosk's
+  whole width (5.72 m) and the ramp runs from its front edge, at desk height, down to the ground 2.55 m in front of the
+  kiosk; the others walk round the ramp.
+- **The Ancient's visitors.** Visits to the Ancient happen on one try in eight, and on about one in three while the
+  visitor is in the Cave (A3); its 12 exchanges play only inside the church.
+- **King Dino.** He drums at his kit, heard within 45 m, and plays every hit he sounds ("Sound and music").
+- **Backpacka.** At the pond he drinks (his show's 16 to 40 s; the visitor cannot walk into him then) and, in the Event,
+  flies to the Garden, waters it and flies off into the mist ("#### Backpacka", "Events").
+- **The birds.** The robin and the cardinal sit on their trees; picked, they fly off with a tweet tweet and come back.
+- **The UFO.** Ollaag's saucer crosses the sky on the same path every visit (seeded; the author: "fine the way it is").
+- **The courier.** Nextessa comes through the Portal with parcels and, during the Speech, the pizza ("#### Nextessa").
+- **Nobody stays stuck.** A townsperson that wants to move and gets nowhere is re-planned, then placed where it was
+  going; in the Event one held still 8 s on the way to its spot is moved on with a sparkle; in the town one held 15 s
+  on its way home is moved to its door; Mushroom gets 4 s on any walk. Only time spent trying to walk counts, never
+  time spent waiting beside the visitor or talking (B117, B119).
+- **The ground.** The Garden is flat: its furrow rings, 48 stepping stones and ring of 72 rocks are painted on the soil
+  (F-B57; the author: "regardless of anything else we will be keeping the flat version"); its flowers are planted just
+  above it. The Cave's floor is level with the town's, and nothing raised lies within 1.45 m of the walkway in. Mama
+  Gorbo's goo follows the ground under her; characters step up onto a kiosk's floor or the pond's edge. Gemtoe floats
+  a little on purpose (the author).
+- **The same town every visit.** The stars, the clouds, when the townsfolk blink, the sway of their idling, Anomalee's
+  glitches and jaw, and the Event ring's sway are the same every visit (seeded at the author's word, RULES.md 5). What
+  stays random is only cosmetic: which way each flint lies, Sparkakus's tail mist, Mama Gorbo's drops, goo blobs and
+  splats, the pickups' bob and glint, the speech tick's pitch; and in play, the dancers' moves in a battle and BOW OUT
+  working four times in five (RANDOMNESS.md).
+- **Far away, simpler.** A kiosk with fine parts swaps to a coarser model beyond about 64 m, and far characters are
+  posed less often and lose their smallest parts (approved by the author for the frame rate): nothing a visitor can
+  pick out at that distance.
+
+## Sound and music
+
+Every sound in the town is made by the game as it plays: there are no recordings. One audio context starts when the
+player enters VR; every note is a small oscillator with its own volume envelope, built just before it sounds and freed
+when it ends, and everything passes through one gentle compressor, so nothing is ever loud. The town is quiet by
+design: no ambient bed, no footsteps, no pickup sounds; what is heard is speech, a few small cues, and music.
+
+**Heard where you stand.** Some sounds belong to a place and fade with distance from the player's head: the goo
+"blorp" of a goo arc carries 14 m (a gift's goo between two townsfolk) or the goo's own hearing radius, a two-line
+exchange's speech ticks 26 m, and King Dino's drums play only while the player is within 45 m of his stand (or in a
+dance battle). Closer is louder: at the edge of the radius a sound is a quarter of its full strength.
+
+**Silent while paused.** When the game pauses (the system menu, the headset off, the window losing focus) every sound
+is held, not stopped; when play resumes, a song carries on from where it was rather than starting again (B118, B124),
+and after the VR session ends the sound stays held until a new one begins (B125).
+
+### Every sound, by what makes it
+
+| Sound | When it plays | What it is |
+| --- | --- | --- |
+| **The speech tick** | Each pair of letters as a dialogue line types out; tapping a panel button; ringing for pizza on the phone; each new speech bubble in a two-line exchange (heard within 26 m) | A short square-wave tick at a slightly random pitch (720-980 Hz), very soft |
+| **The pickup** | Buying from the shop; collecting the Gem (the Eye) at the end of the Speech; a held item collected with a sparkle and a yellow star | Three quick rising triangle notes (660, 880, 1320 Hz) |
+| **The jingle** | A reward: buying the Seeds (just after the pickup), Gemtoe's Gem trade, winning a dance battle, the Event beginning | Eight rising triangle notes, C major from C5 to G6, quick and bright |
+| **The heart** | Giving a Blossom: to any townsperson, to the Ancient, to Sparkakus (before his romp) | Four rising triangle notes, a C major arpeggio (C, E, G, C) |
+| **The bump** | Trying to buy what the player cannot afford (not enough Flint) | One low, short buzz (160 Hz sawtooth) |
+| **The blorp** | Goo arcing between townsfolk (Mama Gorbo's and Gooward's goo, a goo gift in an exchange) and a goo drop landing | Two soft falling sine notes, slightly random: a wet "blorp" |
+| **The tweet tweet** (A60) | Picking the robin or the cardinal as it flies off (nothing if it is already away) | Two quick chirps, each three rising sine notes (2.6, 3.15, 3.75 kHz), soft |
+| **The book** (A61) | Taking OVERCOMING SHYNESS from the Library's shelf, as it shrinks away | A riffle of five soft page ticks, a rising sine chime (G major seventh, five notes) and a soft held bell on top, about 1.4 s |
+| **Sparkakus's romp jingle** (A62) | His romp after he is given a Blossom, only while the romp lasts | A plucked-guitar voice (a sawtooth and a slightly detuned square through a closing filter) playing a 16-step riff in E, a step every 0.15 s, a bass pluck on each beat and an octave sparkle every half bar; it stops the moment the romp ends |
+| **King Dino's drums** (A64, A65) | Whenever the player is within 45 m of his stand, and in the dance battles; silent while the horn plays | A funk song at 98 beats a minute (a bar of 2.45 s): a 4-bar intro (hats and kick, the backbeat from the third bar, a snare roll into the groove), then a 48-bar round of about two minutes in six parts (groove, ghost notes, a break, a drum solo in the middle, drive, pocket): straight sixteenths on the hi-hat with an open hat on the off-beats, a syncopated kick, the snare on 2 and 4 with ghost notes, tom pickups. The voices: a kick (two low sine thumps), a snare (a triangle body and two bright square crackles) and a tom (two falling sines). King Dino plays exactly what is heard: each hit swings an arm and swells its drum as hard as the hit, the hi-hats move his right hand, the kick nods his body. Until 4.0.45 it was a swung jazz pattern at 104 |
+| **The Horn song** | The Event, while the town dances round the Garden, when the Seeds were brought: Fortizmo plays her horn | The Event's song, a bar of 2.7 s, King Dino drumming its drum part along with it (its hi-hat and ride, snare, kick, crash and the intro's brushes); built a share of each bar every frame so it never stutters (B103) |
+| *(no sound)* | Taking a Blossom or a Flint | Silent since 4.0.37 at the author's word (A59): the count, the fade and the watch's HUD change, nothing is heard |
+
+### Music in the story
+
+King Dino is the town's drummer: his kit stands by the dance floor, his billboard advertises his jazz, his lines are
+full of beats and backbeats, and he is the drummer in every dance battle. Fortizmo, the juice bar's owner, is the horn
+player; her horn is the Event's music, and while it plays she cannot be spoken to. Sparkakus's guitar is heard only in
+his romp. Nobody else in the town makes music, though many of the two-line exchanges are about it ("Gimme a goo-bop on
+the backbeat!" "Gomp! Gomp-gomp! GOMP!").
+
+## The player's side: start-up, controls, the watch and pausing
+
+The player is a visitor with no name, no lines and no body but two hands: the game never shows them otherwise
+("The player" under "Character by character"). This is what the visitor sees and does around the town itself.
+
+### Before the town
+
+- **In a browser that is not the Quest's** the page shows a dark panel: "GREEBLIS TOWN", then "This game is designed for
+  the Meta Quest Browser. Please open this file in the Quest Browser on your Meta Quest headset.", and the version in
+  the bottom corner (v4.0.65). The game does not start there.
+- **In the Quest Browser, outside VR**, the same panel (the gate) shows "GREEBLIS TOWN" and "Loading..." while the town
+  is built, then "Press A to Continue."; pressing A (or any controller button, or tapping the panel) enters VR. The
+  version is in the corner here too.
+- **The VR loading box**: entering VR, the visitor stands in the town's sky with a floating panel about 5 m ahead: a
+  translucent navy box with rounded corners, "GREEBLIS TOWN" in large white letters, "Loading…" under it, a yellow
+  progress bar filling across a faint track, and the version at its bottom right. The sky behind it is the town's own sky. The box keeps up with the head
+  whatever the game is doing, and when the town is ready it hands over and the visitor is standing in the park. If
+  entering fails it says so on the box ("Problem: ..." or a retry message) instead of leaving the visitor in the dark.
+- **From the Store app** the same game opens straight into VR from the headset's library (the app opens the game's
+  site, https://greeblistown.ar.io/), and needs the internet to start.
+
+### Moving and looking
+
+- **Walking**: the left stick walks the visitor where the stick points, relative to where they look; a tiny push does
+  nothing (a dead-zone). Nothing needs standing up, crouching or reaching to the floor: it plays seated or standing.
+- **Turning**: the right stick flicked left or right turns the view 30 degrees at once, instantly and without dimming;
+  it must come back to the centre before the next turn, and a turn within 0.4 s of the last is ignored (A1, A11).
+  Turning the body works too.
+- **Recentring**: the headset's own recentre (holding the Meta button) turns the town to face the visitor again.
+- **Walls and bodies**: the visitor cannot walk through buildings or into townsfolk (or into Backpacka at the pond); if
+  the head goes into a wall the view darkens smoothly from a few centimetres out and is black inside it (the head
+  guard), so nothing is ever seen from inside a model.
+
+### Pointing, choosing and talking
+
+- **The ray**: each controller casts a ray; pointing at a townsperson, a creature, a pickup or a place lights it, and
+  the trigger chooses it. A Blossom or a Flint pointed at is taken; a townsperson or a place opens its menu ("Talk to
+  ...", "Give a blossom", "CLOSE", and the place's own choices: the shop, the phone, the Pillar, the shelf); the grip is
+  a second action.
+- **Menus and dialogue**: menus appear just above the one chosen; a dialogue panel types its lines out with the speech
+  tick and advances on the trigger. If a panel is left behind, the Y button brings it back in front of the visitor.
+- **What is said where** is in "Every talk line", "Gifts and gardening lines", "Vignettes" and "Menus, panels and boxes".
+
+### The watch
+
+The visitor wears a watch on the left wrist (A35, A41): its face reads "PRESS Y TO OPEN". Looking at it (within about
+35 degrees of the view's centre and 0.8 m) and pressing Y opens the inventory on its face, on a solid background:
+"SEEDS", "SUMMONING STONE" and "SNACKS" each with a tick box, then a tile for each thing held with its count (Blossoms,
+flint, Artifacts until the Speech, the Gem, the Stone, the book until Zollod reads it, the Seeds and the pizza; "Currency,
+items and rewards"). Y again, or looking away for a third of a second, closes it. Nothing else ever covers the view.
+
+### Pausing and coming back
+
+- **The system menu** (the Meta button): the town keeps showing behind it but stops: no one moves, no time passes, the
+  music holds, and the hands and rays disappear; closing the menu brings everything back where it was, the first time
+  too (B115).
+- **The headset off**: the town pauses and its sound holds; picking a controller up does not wake it while the headset
+  lies still, only putting it back on (B121). The town is waiting exactly as it was.
+- **No saving**: the town keeps nothing between visits. Each visit starts fresh, with the same town and the same
+  townsfolk; nothing about the visitor is stored (the privacy policy says the same).
+
+## Every element, A to Z
+
+An index of everything in the game, each with where this Bible describes it. Names are the game's own.
+
+| Element | What it is | Where |
+| --- | --- | --- |
+| Ancient, the | The one reborn, in the church's Cave; visited by townsfolk while the visitor is inside | "The Ancient"; "#### The Ancient" |
+| Anomalee (`blinker`) | Townsperson; eats pizza in the Event when the Snacks were brought, plants otherwise | "Cast"; "#### Anomalee" |
+| Backpacka | The creature at the pond who waters the Garden in the Event and flies into the mist | "#### Backpacka"; "Events" |
+| Bar, the juice | Fortizmo's JUICE BAR along the west fence | "Architecture"; "Places: a gazetteer" |
+| Billboard | King Dino's jazz billboard | "The world"; "Pictures in the town" |
+| Birds | The robin and the cardinal on the two big trees; they fly off when picked, with a tweet tweet | "#### The robin"; "#### The cardinal"; "Sound and music" |
+| Blossoms | Pickups; given as gifts, paid at the bar | "Currency, items and rewards" |
+| Books | The Library's books and covers; OVERCOMING SHYNESS | "The Library's books"; "#### The park's kiosks and stands" |
+| Cardinal | The red bird facing the robin | "#### The cardinal" |
+| Cave, the | Under the church, the Ancient's place | "#### The church and the Cave" |
+| Church | The building over the Cave | "#### The church and the Cave" |
+| Clouds and sky | Fourteen white clouds, the sky's colours, the light | "Light, time of day and atmosphere" |
+| Controls | Walking, turning, the ray, the trigger, the grip, Y | "The player's side" |
+| Courier, the | Nextessa's visits through the Portal with parcels | "#### Nextessa"; "Quests and their lines" |
+| Dance battles | Etcher, Glyph and Montgummery; rock, scissors, paper; King Dino drumming | "Events" |
+| Dance floor | Beside King Dino's stand | "Places: a gazetteer" |
+| Drums | King Dino's kit and his funk song | "Sound and music" |
+| Etcher (`p_etcher`) | Townsperson; dance battles; his tokens | "Cast"; "#### Etcher" |
+| Event, the | The planting at the Garden: the ring, the mist, the horn, the flowers, Backpacka, the pizza | "Events"; "#### The Event's staging" |
+| Eye, the (the Gem) | Assembled in the Speech and traded to Gemtoe | "Currency, items and rewards"; "Quests and their lines" |
+| Fence | The park's edge; the mist rolls in beyond it | "The layout"; "#### The Event's staging" |
+| Flint (`acorns`) | Pickups; the shop's money | "Currency, items and rewards" |
+| Flowers | The Garden's plants, a new colour each Event | "#### The Garden and the Summoning Pillar" |
+| Fortizmo (`frog`) | The juice bar's owner and the horn player | "Cast"; "#### Fortizmo" |
+| Gallery painting | The large painting and its motifs; the two easels (a forest, a futuristic city) | "The gallery painting"; "Pictures in the town" |
+| Garden, the | Where the Event is held, with the Summoning Pillar | "#### The Garden and the Summoning Pillar" |
+| Gate, the | The panel before VR: "Loading..." then "Press A to Continue." | "The player's side" |
+| Gazebo | In the park; no pickups inside | "#### The park's kiosks and stands" |
+| Gemtoe | Townsperson with the tie; the Gem trade | "Cast"; "#### Gemtoe" |
+| Glyph | Townsperson; dance battles | "Cast"; "#### Glyph" |
+| Gooward (`gorbo`) | Townsperson; goo barrage | "Cast"; "#### Gooward" |
+| Gree-mail | The townsfolk's mail addresses | "### The cast at a glance" |
+| Head guard | The view darkening inside a wall | "The player's side" |
+| Hennrick (`gratelet`) | Townsperson | "Cast"; "#### Hennrick" |
+| Horn, the | Fortizmo's horn and the Event's Horn song | "Sound and music"; "Events" |
+| Houses | The outer ring's houses and the outer town | "#### The outer-ring houses"; "#### The outer town's kit" |
+| Items | Blossoms, Flint, Seeds, Snacks, the Stone, the Gem, artifacts, shop wear | "Currency, items and rewards" |
+| King Dino | The drummer at his stand by the dance floor | "Cast"; "#### King Dino"; "Sound and music" |
+| Kiosks | The park's kiosks and stands, which fade during the Event | "#### The park's kiosks and stands" |
+| Library | Sparkakus's place; the shelves, books, the Speech | "#### The park's kiosks and stands"; "The Library's books" |
+| Loading box | The panel in VR while the town is built | "The player's side" |
+| Mama Gorbo | Townsperson; her goo tubes | "Cast"; "#### Mama Gorbo" |
+| Menus and panels | Every menu, panel and box and its text | "Menus, panels and boxes" |
+| Mist, the | Rolls in beyond the fence during the Event | "#### The Event's staging" |
+| Montgummery (`w_mont`) | Townsperson; dance battles | "Cast"; "#### Montgummery" |
+| Mushroom (`drifter`) | Townsperson at his kiosk, with his desk and ramp; the phone's unlock | "Cast"; "#### Mushroom" |
+| Mushrooms (small) | On the roofs of his and the Sheriff's kiosks | "#### The park's kiosks and stands" |
+| Music | The drums, the horn, the romp jingle | "Sound and music" |
+| Nextessa | The courier who comes through the Portal | "#### Nextessa" |
+| Ollaag | Leader of the Alien Alliance; flies the UFO; on a WANTED poster | "#### The UFO's pilot"; "Pictures in the town" |
+| Parcels | What the courier brings | "Quests and their lines" |
+| Pausing | The system menu, the headset off | "The player's side" |
+| Phone booth | Calls for pizza (Mushroom unlocks it) | "#### The park's kiosks and stands"; "Menus, panels and boxes" |
+| Pillar, the Summoning | Starts the Event | "#### The Garden and the Summoning Pillar" |
+| Pizza | Brought in the Event with the Snacks; its boxes fade in and out | "Events" |
+| Pond | Backpacka's pond, a water texture | "Nature and set dressing" |
+| Portal | Nextessa's way in; it fades with the kiosks | "#### The park's kiosks and stands" |
+| Posters (WANTED) | Eight posters of seven designs | "Pictures in the town" |
+| Quests | Every quest and its lines | "Quests and their lines" |
+| Robin | The bird on the tree by the Church | "#### The robin" |
+| Romp, the | Sparkakus's romp after a Blossom, with its jingle | "#### Sparkakus"; "Sound and music" |
+| Seeds | Bought at the shop; bring the town to plant in the Event | "Currency, items and rewards" |
+| Shop | Its wares and texts | "Menus, panels and boxes" |
+| Snacks | Bring the pizza to the Event | "Currency, items and rewards" |
+| Somlet (`m_somlet`) | Townsperson | "Cast"; "#### Somlet" |
+| Sounds | Every sound and when it plays | "Sound and music" |
+| Sparkakus | The Library's keeper; the Speech; the romp | "Cast"; "#### Sparkakus" |
+| Speech, the | Sparkakus's speech where the Eye is made | "Quests and their lines"; "#### The park's kiosks and stands" |
+| Stone, the | A reward | "Currency, items and rewards" |
+| Townsfolk | The whole cast at a glance | "### The cast at a glance" |
+| Trees | The park's trees and the birds' trees | "Nature and set dressing" |
+| UFO | The saucer crossing the sky, Ollaag at its helm | "#### The UFO's pilot" |
+| Vignettes | The 90 two-line exchanges | "### Vignettes" |
+| Visitor, the | The player | "#### The player"; "The player's side" |
+| Watch, the | On the left wrist; the inventory on its face | "The player's side" |
+| Zollod (`cutebex`) | Townsperson, the shy one | "Cast"; "#### Zollod" |
 
 ## The author's answers (2026-10-28; 9 to 17 added 2026-11-04)
 

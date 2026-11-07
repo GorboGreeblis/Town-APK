@@ -28,6 +28,7 @@ const { boot, reporter } = require('./lib/harness');
 const path = require('path');
 
 const file = process.argv[2];
+const FINAL = require('./lib/harness').finalBuild(file ? path.resolve(file) : path.join(require('./lib/harness').root, 'tools/site/index.html'));   // the final build logs nothing (RULES.md 34)
 const SAMPLE_S = Number(process.argv[3] || 40);
 
 (async () => {
@@ -192,7 +193,7 @@ const SAMPLE_S = Number(process.argv[3] || 40);
     }
     return out;
   });
-  expect('B97: a taken Blossom or Flint still showing (no fade, no regrow) is hidden and logged', heal.blossom && heal.blossom.hidden && heal.blossom.logged && heal.flint && heal.flint.hidden && heal.flint.logged, JSON.stringify(heal));
+  expect(FINAL ? 'B97: a taken Blossom or Flint still showing (no fade, no regrow) is hidden (the final build logs nothing)' : 'B97: a taken Blossom or Flint still showing (no fade, no regrow) is hidden and logged', heal.blossom && heal.blossom.hidden && (FINAL || heal.blossom.logged) && heal.flint && heal.flint.hidden && (FINAL || heal.flint.logged), JSON.stringify(heal));
 
   // ---- pickup spots never inside a kiosk (B95, 4.0.33; the author: "Flint and Blossoms should never spawn within any
   //      kiosk"; a Blossom was seen on the Gazebo's inner edge): 4000 spots from the spawn picker, none inside a building

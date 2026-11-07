@@ -27,6 +27,10 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250);
     const lines = []; const L0 = window.__gtLog; window.__gtLog = function (s) { if (/unstuck:/.test(s)) lines.push(s); return L0 && L0.apply(this, arguments); };
     const m = D.It.all.find((e) => e.id === 'drifter');
+    // the final build writes no log line (RULES.md 34): there a move is seen by what it does, Mushroom jumping more than
+    // a metre between two looks 5 ms apart (he walks millimetres in that time); the test's own moves set the mark first
+    const FIN = !L0; let lastP = null; const mark = () => { const q = m.group.position; lastP = { x: q.x, z: q.z }; };
+    if (FIN) setInterval(() => { const q = m.group.position; if (lastP && Math.hypot(q.x - lastP.x, q.z - lastP.z) > 1) lines.push('unstuck: drifter (seen by its jump: the final build logs nothing)'); lastP = { x: q.x, z: q.z }; }, 2);
     // the town first (B119, 4.0.60): a stale stop or the player's hold is not being stuck; a real one is moved on once
     const town = {}; { const p = m.group.position, T3 = window.THREE, foot = m.def.via[m.def.via.length - 2];   // the ramp's foot (his way's last point but one; 4.0.61 moved it 2.55 m out from the kiosk)
       const nOf = () => lines.length;
@@ -35,13 +39,13 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       for (let k = 0; k < 28; k++) { await wait(250); minY = Math.min(minY, p.y); }
       town.idleMoves = nOf() - n0; town.idleMinY = +minY.toFixed(2); m.dest = null;
       // B: walking on the ground with a stop, the player beside him (he waits for the player up to 12 s)
-      p.set(12, 0, -20); m.ry0 = null; await wait(600); m.dest = new T3.Vector3(foot[0], 0, foot[1]);
+      p.set(12, 0, -20); mark(); m.ry0 = null; await wait(600); m.dest = new T3.Vector3(foot[0], 0, foot[1]);
       D.At.position.x = p.x + 1.2; D.At.position.z = p.z; n0 = nOf(); let held = 0;
       for (let k = 0; k < 28; k++) { await wait(250); if (m.held) held++; }
       town.heldMoves = nOf() - n0; town.heldFrames = held; D.At.position.set(0, D.At.position.y, 0); await wait(600);
       // C: walking with a stop and held in place by a wall (here: the test): moved on once, then not again
-      p.set(12, 0, -20); m.dest = new T3.Vector3(foot[0], 0, foot[1]); n0 = nOf(); const hold = { x: p.x, z: p.z }, t1 = performance.now();
-      const hh = setInterval(() => { if (nOf() === n0) { p.x = hold.x; p.z = hold.z; } }, 5);
+      p.set(12, 0, -20); mark(); m.dest = new T3.Vector3(foot[0], 0, foot[1]); n0 = nOf(); const hold = { x: p.x, z: p.z }, t1 = performance.now();
+      const hh = setInterval(() => { if (nOf() === n0) { if (FIN && Math.hypot(p.x - hold.x, p.z - hold.z) > 1) { lines.push('unstuck: drifter (seen by its jump: the final build logs nothing)'); return; } p.x = hold.x; p.z = hold.z; mark(); } }, 5);
       while (nOf() === n0 && performance.now() - t1 < 12000) await wait(100);
       clearInterval(hh); town.stuckAfter = +((performance.now() - t1) / 1000).toFixed(1); town.stuckMoves = nOf() - n0;
       n0 = nOf(); await wait(9000); town.repeats = nOf() - n0; town.destAfter = !!m.dest; }
@@ -51,18 +55,19 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     let t0 = performance.now(); while (!D.me.active && performance.now() - t0 < 30000) await wait(100);
     t0 = performance.now(); while (!(m.busy === 'finale' && m.finaleSlot && m.moving) && performance.now() - t0 < 30000) await wait(100);
     if (!m.finaleSlot) return { error: 'no Event spot', busy: m.busy };
+    lines.length = 0; mark();   // whatever the Event's start did is not the safety's move
     const p = m.group.position, hold = { x: p.x, z: p.z }, s = m.finaleSlot;
     const far = Math.hypot(hold.x - s.x, hold.z - s.z);
-    const h = setInterval(() => { if (!lines.length && Math.hypot(p.x - hold.x, p.z - hold.z) < 3) { p.x = hold.x; p.z = hold.z; } }, 5);   // held until the safety moves him
+    const h = setInterval(() => { if (!lines.length && Math.hypot(p.x - hold.x, p.z - hold.z) < 3) { p.x = hold.x; p.z = hold.z; mark(); } else if (FIN && !lines.length) lines.push('unstuck: drifter (seen by its jump: the final build logs nothing)'); }, 5);   // held until the safety moves him
     const st = []; t0 = performance.now(); while (!lines.length && performance.now() - t0 < 20000) { await wait(1000); st.push([+p.x.toFixed(1), +p.z.toFixed(1), +s.x.toFixed(1), +s.z.toFixed(1), m.moving, m.busy, !!m.dest, m.gcNav ? m.gcNav.length : 0, m.goHome, m.finaleSlot ? 1 : 0, m.gcUs ? +(D.Re.t - m.gcUs.t).toFixed(1) : null]); }
     clearInterval(h);
     const after = +((performance.now() - t0) / 1000).toFixed(1); await wait(2000); const moved = +Math.hypot(p.x - hold.x, p.z - hold.z).toFixed(1);
-    return { far: +far.toFixed(1), after, moved, dist: +Math.hypot(p.x - s.x, p.z - s.z).toFixed(2), lines, st, id: m.id, town };
+    return { fin: FIN, far: +far.toFixed(1), after, moved, dist: +Math.hypot(p.x - s.x, p.z - s.z).toFixed(2), lines, st, id: m.id, town };
   });
   note(JSON.stringify(r));
   expect('Mushroom was held at least 3 m from his Event spot', !r.error && r.far > 3, r.error || String(r.far));
   expect('B117: held still while walking to his Event spot, Mushroom is moved on within 3-8 s and walks on (more than 3 m from where he was held 2 s later)', !r.error && r.after > 3 && r.after < 8 && r.moved > 3, JSON.stringify({ after: r.after, moved: r.moved }));
-  expect('B117: the move is logged, and only his', !r.error && r.lines.length >= 1 && r.lines.every((l) => /unstuck: /.test(l)) && r.lines.filter((l) => !/drifter/.test(l)).length === 0, JSON.stringify(r.lines));
+  expect(r.fin ? 'B117: the move is seen (his jump; the final build logs nothing), and only his' : 'B117: the move is logged, and only his', !r.error && r.lines.length >= 1 && r.lines.every((l) => /unstuck: /.test(l)) && r.lines.filter((l) => !/drifter/.test(l)).length === 0, JSON.stringify(r.lines));
   const tw = r.town || {};
   expect('B119: idle on his desk with a stale stop left, Mushroom is not moved (and never drops off the desk)', tw.idleMoves === 0 && tw.idleMinY > 1.4, JSON.stringify(tw));
   expect('B119: waiting for the player beside him, Mushroom is not moved', tw.heldFrames > 10 && tw.heldMoves === 0, JSON.stringify(tw));

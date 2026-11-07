@@ -51,8 +51,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
       await wait(300);
       D.C.traverse((o) => { if (!band && o.isMesh && Array.isArray(o.material) && o.material.length === 3 && o.geometry.attributes.position && o.geometry.attributes.position.count === 148) band = o; });
       if (band && !out.bandAt) { out.bandAt = performance.now(); out.bandF = window.__fakeXR.frames; }
-      // the band drawn for 6 s and 150 frames (the merger looks every 120 frames; a slow machine draws fewer in 6 s)
-      if (out.bandAt && performance.now() - out.bandAt > 6000 && window.__fakeXR.frames - out.bandF > 150) break;
+      // the band drawn until its merged copy is in (the merger looks every 120 drawn frames, and this test draws one frame
+      // in three: B138, the 4.0.65 pass, gave up at 150 frames before the merge on the final build), at most 60 s
+      if (out.bandAt && ((band && band.geometry.__mmOf && performance.now() - out.bandAt > 6000) || performance.now() - out.bandAt > 60000)) break;
     }
     out.speech = { bandSeen: !!band, geos: O.info.memory.geometries - m0, bufs: bufs - b0, uploads: ups - p0, held: logs.slice(l0).filter((l) => /held for one frame/.test(l)), bandMerged: !!(band && band.geometry.__mmOf) };
     // an Event with the Snacks: the pizza boxes fade in and are batched
@@ -66,7 +67,9 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
     // B101 (the author's 4.0.47 run 764bd9d7: a second Event 3 s after the first built 4 geometries, 21 buffers): the
     // Event ends (its length cut short) and a second one starts at once, the first's pizza boxes still on the ground
     const F = D.t.finale, dur = F.durationS; F.durationS = 1;
-    t0 = performance.now(); while (D.me.active && performance.now() - t0 < 60000) await wait(100);
+    // up to 120 s: an Event's end waits up to 60 s past its time for a busy townsperson (S38), and the Speech above can
+    // still be running (B138: 60 s here was right at that limit)
+    t0 = performance.now(); while (D.me.active && performance.now() - t0 < 120000) await wait(100);
     F.durationS = dur; const ended = !D.me.active;
     // the first Event's boxes still out (as in the author's run, 3 s apart): the first copy of every kept shape no
     // batch uses is marked taken, so the second Event must use the spares (without them it builds in play)

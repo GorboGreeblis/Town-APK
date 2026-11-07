@@ -273,6 +273,25 @@ Four tiers (`--quick`, `--smoke`, the standard pass and `--full`) run the same s
 
 ## Latest results (newest first, headless harness)
 
+**4.0.65 full pass** (2026-11-07, the final build on the hosted site's copy, `tools/site/index.html`; `tools/.runs/full_4.0.65_pass.log`):
+101 stages, 75 passed and 20 failed. Each failure was rerun on its own with the tier's settings
+(`full_4.0.65_rerun.log`), then on the game file and on older game files from git to see when it began. None is a
+blocker (the author) and the game file is unchanged (RULES.md 35):
+- **11 test faults on the final build**: checks that read debug records the final build takes out. Eight stages that can
+  only watch the game through its debug instruments now run on the game file in final mode (`$DBGASSET`: the songs'
+  recorder, the census, the flight record, some log lines; TESTING.md); `test_unstick.js` sees the rescue by Mushroom's
+  jump; `test_world.js` checks the healed Blossom is hidden. All pass in the rerun.
+- **6 stale tests, fixed** (the game unchanged): `test_b96.js` took the debug switch for the entry script (since 4.0.63);
+  `test_input.js` never moved the fake headset, so the game stayed paused after its focus check (B121; bisected: 4.0.60
+  passes, 4.0.61 fails); `test_portal_fade.js` stopped watching before the Portal's turn in the staggered fades (P52,
+  4.0.62); `test_firstdraw.js` needed something new made in play, and since S12 nothing is. Each passes on both builds.
+- **Logged in BUGS.md, not blockers**: B135, a 0.1 m seam at (16, -28) since 4.0.61 (closed: the author saw no flicker there in the headset; accepted in `seams_baseline.json`);
+  B136, `test_offview.js`, failing from 4.0.53 (closed: P45's alternate-frame posing, the author's approved option; the
+  check now counts those planned skips apart and passes); B137, `opt_identity.js`, failing since at least 4.0.57 and
+  matching the author's approved options of 4.0.55 (near-identical materials batched together); B138, `test_play_uploads.js` on
+  the final build only (closed: not a bug, the test's waits were too short; widened).
+- The curved z-fighting check failed once in the pass and passed alone on both builds.
+
 **4.0.25 final pass** (`tools/.runs/full_4.0.25.log`, full tier with coverage, multiview): stopped at its 16000 s limit in the text-scene test (stage 46 of 52; about 66 minutes under coverage and load). 45 stages passed; three failed: `test_greet.js` (B92, fixed in 4.0.26), `test_owner_exit.js` (the machine starved the game clock: 4.9 game seconds in 273 wall seconds; passes alone on 4.0.24 and 4.0.25; the test now counts game seconds and reports a starved run), `test_flashlog.js` (the mark's dump 29 ms against 25 ms with the machine loaded by reruns). The dead-code census ran on that partial coverage. The final pass moves to 4.0.26 (S32) with a longer limit.
 
 **3.15.68** (targeted, not a tier pass): `build.sh`'s checks pass (SYNC, EXPERIMENT, APK, STANDALONE, COMPRESSED); `test_recover.js`, `test_safeties.js`, `test_gazebo.js` (new), `warm_coverage.js`, `test_shaderhold.js`, `test_event_fade.js` (every one of the 14 clouds), `test_seeded.js`, `test_lod.js` and `test_stands.js` pass. `test_stands.js` failed once run beside another Event test (the machine below a frame a second: the fader's capped step made the 10 s fade-in take minutes); it passes alone, and now allows 3 minutes. `texture_census.js`: no texture or program made during play; its "the Event to its end" check missed under load (re-run alone).

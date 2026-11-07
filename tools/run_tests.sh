@@ -69,6 +69,11 @@ GLE="$ROOT/tools/.runs/gl_errors.log"; [ -n "$RESUME" ] || : > "$GLE"   # and ev
 # the final (Store) build ships tools/final.html, the game file without its debug code (RULES.md 34): then the copies
 # are not the game file by design, and check_final.sh proves they are its final build instead (4.0.63)
 FINALCOPIES=""; python3 -I "$ROOT/tools/sync_game.py" --check >/dev/null 2>&1 || FINALCOPIES=1
+# DBGASSET: the stages that can only watch the game through its debug instruments (the song recorder, the native census,
+# the flight record, the log lines a check counts) run on the game file itself when the copies are its final build: the
+# same game, with the debug code the final build takes out (RULES.md 34; the 4.0.65 pass). Every other stage runs on
+# the shipped final build.
+if [ -n "$FINALCOPIES" ] && [ -z "${GT_ASSET:-}" ]; then DBGASSET="$ROOT/tools/uncompressed.html"; else DBGASSET="$ASSET"; fi
 if [ -z "$FINALCOPIES" ]; then
 run "the shipped copies (index.html, tools/site/index.html) are the game file tools/uncompressed.html (sync_game.py --check)" python3 -I "$ROOT/tools/sync_game.py" --check
 else
@@ -120,9 +125,9 @@ if [ "$TIER" != quick ]; then
   run "an Event without Seeds fades no kiosk and not the park's tree; only the town's trees (F-B72)" node "$ROOT/tools/test_noseeds.js" "$ASSET"
   run "the Portal's swirl fades with the Portal, and the Portal waits while Nextessa is through it" node "$ROOT/tools/test_portal_fade.js" "$ASSET"
   run "nothing reaches the GPU for the first time in the Speech or an Event with the Snacks: the glue band's merged copy built at load, the pizza batches' shapes kept and reused (S42)" node "$ROOT/tools/test_play_uploads.js" "$ASSET"
-  run "the songs build their notes a share each frame and sound the same (B103, B104, P42)" node "$ROOT/tools/test_music_queue.js" "$ASSET"
+  run "the songs build their notes a share each frame and sound the same (B103, B104, P42)" node "$ROOT/tools/test_music_queue.js" "$DBGASSET"
   run "the townsfolk out of view skip their matrix walk and culling, and nothing visible changes; the dancers out of view are fitted as they come back (P34, P35)" node "$ROOT/tools/test_offview.js" "$ASSET"
-  run "coming back from the system menu never stalls: no texture check on the menu's return, still one from hidden (B99, S41)" node "$ROOT/tools/test_menu_return.js" "$ASSET"
+  run "coming back from the system menu never stalls: no texture check on the menu's return, still one from hidden (B99, S41)" node "$ROOT/tools/test_menu_return.js" "$DBGASSET"
   run "every option of every character and place, empty-handed, stocked, with the quests done and in an Event: no error, no soft-lock, no counter below zero; the menus' height; the courier under a dialogue" node "$ROOT/tools/test_interactions.js" "$ASSET"
   run "goo never fills the view: Mama Gorbo and Gooward meet with the player among them; no goo blob drawn within 0.7 m of the eyes, no GPU work in a frame (S8)" node "$ROOT/tools/test_goo_eye.js" "$ASSET"
   run "speech bubbles never fill the view: a text scene with the player walking up to the speaker; no bubble over 55 degrees or within 1.2 m (S9)" node "$ROOT/tools/test_bubble_eye.js" "$ASSET"
@@ -130,15 +135,15 @@ if [ "$TIER" != quick ]; then
   run "Mama Gorbo's cap: her head never through the crown or brim, both eye disks 3 cm clear, its rim on her head (A36, F-B80)" node "$ROOT/tools/test_cap.js" "$ASSET"
   run "the Post Office's mail pile: five parcels, four labelled with painted textures, none floating or buried, every label facing out, the Ormstown parcel clear of the others and the stacks (A43, B55)" node "$ROOT/tools/test_mailpile.js" "$ASSET"
   run "scenery asks of 2026-11-03: the cap closed underneath with a full-disc brim, one hanging basket at Garden Supplies, the church doorway backed, no cross (A45-A48)" node "$ROOT/tools/test_scenery.js" "$ASSET"
-  run "leaving VR and entering again: the second session on the projection layer, through the frame wrapper, with multiview and the holds (S31)" node "$ROOT/tools/test_reentry.js" "$ASSET"
-  run "the fourth pass's fixes: sprites and four more conditions in the shader hold, a failing hold lets its object through, no multiview decision from the loader's context, batches made in play built after the frame, the eye hide's cold batches, the warm-ups; the loader never released since 4.0.34 (S33, B96)" node "$ROOT/tools/test_s33.js" "$ASSET"
-  run "the stability safeties: the stick cleared when the update fails early, the eye hide caught before the draw, the scene hold cleared after 60 s, a non-number step skipped, the Event's end not held by its show, VR exit always ends presenting (S38)" node "$ROOT/tools/test_s38.js" "$ASSET"
-  run "memory after the headset sleeps: the loader never released, the native census on each visibility change with no growth, the log's black box (B96)" node "$ROOT/tools/test_b96.js" "$ASSET"
-  run "the flash record: no drawing without a head pose, tracking logged, the light record catches a staged one-frame flash at no frame cost, the mark never stalls, held geometry named (S15)" node "$ROOT/tools/test_flashlog.js" "$ASSET"
+  run "leaving VR and entering again: the second session on the projection layer, through the frame wrapper, with multiview and the holds (S31)" node "$ROOT/tools/test_reentry.js" "$DBGASSET"
+  run "the fourth pass's fixes: sprites and four more conditions in the shader hold, a failing hold lets its object through, no multiview decision from the loader's context, batches made in play built after the frame, the eye hide's cold batches, the warm-ups; the loader never released since 4.0.34 (S33, B96)" node "$ROOT/tools/test_s33.js" "$DBGASSET"
+  run "the stability safeties: the stick cleared when the update fails early, the eye hide caught before the draw, the scene hold cleared after 60 s, a non-number step skipped, the Event's end not held by its show, VR exit always ends presenting (S38)" node "$ROOT/tools/test_s38.js" "$DBGASSET"
+  run "memory after the headset sleeps: the loader never released, the native census on each visibility change with no growth, the log's black box (B96)" node "$ROOT/tools/test_b96.js" "$DBGASSET"
+  run "the flash record: no drawing without a head pose, tracking logged, the light record catches a staged one-frame flash at no frame cost, the mark never stalls, held geometry named (S15)" node "$ROOT/tools/test_flashlog.js" "$DBGASSET"
   run "the Event's pizza boxes fade out at its end with their own materials, no shader compiled (A42)" node "$ROOT/tools/test_pizza_fade.js" "$ASSET"
   run "a Blossom or Flint with the Gazebo behind it is taken by pointing at it (B97)" node "$ROOT/tools/test_gazebo_pick.js" "$ASSET"
   run "OVERCOMING SHYNESS leaves the shelf when taken and stays gone after an Event (B120)" node "$ROOT/tools/test_shybook.js" "$ASSET"
-  run "the Horn song carries on after a pause without playing over itself (B124)" node "$ROOT/tools/test_horn_pause.js" "$ASSET"
+  run "the Horn song carries on after a pause without playing over itself (B124)" node "$ROOT/tools/test_horn_pause.js" "$DBGASSET"
   run "no sound after the VR session ends: held until a new session presents (B125)" node "$ROOT/tools/test_end_sound.js" "$ASSET"
   run "the final build: written without the debug code and checked (final_build.js), then played as shipped with no test hook: frames, sound and its hold, no /log, no storage, the version (test_final.js)" sh -c "node '$ROOT/tools/final_build.js' '$ROOT/tools/uncompressed.html' --out '$ROOT/tools/.runs/final_test.html' | tail -3 && node '$ROOT/tools/test_final.js' '$ROOT/tools/.runs/final_test.html'"
   run "Event flowers only at the planter's spot in the ring (B123)" node "$ROOT/tools/test_plant_spot.js" "$ASSET"
