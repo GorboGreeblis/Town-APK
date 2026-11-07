@@ -28,7 +28,7 @@ case $url in https://*) ok "$APK opens $url";; *) fail "$APK does not open an ht
 if [ -z "$OFFLINE" ]; then
   curl -sS --max-time 120 -o "$TMP/site.html" "${url}index.html" 2>/dev/null || curl -sS --max-time 120 -o "$TMP/site.html" "$url" || fail "could not fetch $url"
 fi
-for f in index.html "$ASSET" ${OFFLINE:-"$TMP/site.html"}; do
+for f in index.html "$ASSET" $([ -n "$OFFLINE" ] || echo "$TMP/site.html"); do
   n=$f; [ "$f" = "$TMP/site.html" ] && n="the hosted game ($url)"
   cmp -s "$f" "$TMP/final.html" && ok "$n is the final build" || fail "$n is not the final build of the current game file"
 done

@@ -14,15 +14,24 @@
   "startUrl": "/",
   "iconUrl": "https://greeblistown.ar.io/icon-512.png",
   "splashScreenFadeOutDuration": 300,
-  "signingKey": { "path": "./keystore/greeblis-town-release.jks", "alias": "greeblistown" },
-  "appVersion": "4.0.64",
-  "appVersionCode": 133,
+  "signingKey": {
+    "path": "./keystore/greeblis-town-release.jks",
+    "alias": "greeblistown"
+  },
+  "appVersion": "4.0.65",
+  "appVersionCode": 134,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://greeblistown.ar.io/manifest.webmanifest",
   "fallbackType": "customtabs",
-  "features": { "horizonPlatformSDK": { "enabled": true } },
-  "alphaDependencies": { "enabled": false },
+  "features": {
+    "horizonPlatformSDK": {
+      "enabled": true
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
   "enableSiteSettingsShortcut": false,
   "isChromeOSOnly": false,
   "isMetaQuest": true,

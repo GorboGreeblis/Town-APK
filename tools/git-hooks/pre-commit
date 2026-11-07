@@ -4,8 +4,8 @@
 # Bubblewrap web app (B133), which holds no game.
 # Install once per clone:  git config core.hooksPath tools/git-hooks
 # The author's rules: the game has one source, tools/uncompressed.html, edited directly; it ships as index.html at
-# the repository root and as the APK's asset (tools/sync_game.py copies it; --check compares), and the APK at the
-# root is always the latest build.
+# the repository root and as the site's copy, tools/site/index.html (tools/sync_game.py copies it; --check compares);
+# the root APK is the Store's Bubblewrap web app, which holds no game.
 ROOT="$(git rev-parse --show-toplevel)"
 ASSET="$ROOT/tools/site/index.html"
 if git diff --cached --name-only | grep -qE '^(index\.html|GreeblisTown-release\.apk|tools/site/index\.html|tools/uncompressed\.html|index\.compressed\.html|tools/game_version\.txt)$'; then
@@ -15,7 +15,7 @@ if git diff --cached --name-only | grep -qE '^(index\.html|GreeblisTown-release\
     FIN=$(mktemp -d)/final.html
     if ! { node "$ROOT/tools/final_build.js" "$ROOT/tools/uncompressed.html" --out "$FIN" >/dev/null 2>&1 \
            && python3 -I "$ROOT/tools/sync_game.py" --check --src "$FIN" >/dev/null 2>&1; }; then
-      echo "pre-commit: index.html or the APK's asset differs from the game file tools/uncompressed.html" >&2
+      echo "pre-commit: index.html or tools/site/index.html differs from the game file tools/uncompressed.html" >&2
       echo "            (and from its final build, tools/final_build.js)." >&2
       echo "            Run: python3 tools/sync_game.py && git add index.html tools/site/index.html" >&2
       echo "            or, for the final build: tools/build.sh --bump --final" >&2

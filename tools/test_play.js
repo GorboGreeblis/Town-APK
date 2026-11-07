@@ -28,6 +28,7 @@ const RUN_S = Number(process.argv[4] || 20);
 // The page is served with the harness's debug hook (window.__dbg: F, we, ...) so the checks can look at the
 // game's own objects, such as the controllers for the focus-aware check.
 const html = require('./lib/harness').hooked(file);
+const FINAL = require('./lib/harness').finalBuild(file);   // the final build: no debug code (B126)
 const fakexr = fs.readFileSync(path.join(root, 'tools/fakexr.js'), 'utf8');
 const outDir = path.join(root, 'tools', '.runs');
 fs.mkdirSync(outDir, { recursive: true });
@@ -199,6 +200,8 @@ async function scenario(name, srvUrl, browser) {
     if (ctxLoss.skipped) console.log(`  NOTE  context loss check skipped (${ctxLoss.skipped})`);
     // Known limitation (BUGS B19, closed as will-not-fix): XR frames do not resume after a context loss headless, with or without the
     // layers path (the original game behaves the same); reported, not failed, until a Quest reproduction exists.
+    // the final build writes no log lines (RULES.md 34, B126): there only the behaviour, leaving VR, is checked
+    else if (FINAL) expect('a WebGL context loss leaves VR (presenting ends; the final build logs nothing, B126)', ctxLoss.leftVR, JSON.stringify(ctxLoss));
     else expect('a WebGL context loss is logged (B96, R4), leaves VR (presenting ends) and its restore is logged', ctxLoss.lostLogged && ctxLoss.leftVR && ctxLoss.restoredLogged, JSON.stringify(ctxLoss));
     if (!ctxLoss.skipped) console.log(`  ${ctxLoss.resumedFrames >= 5 ? 'PASS' : 'NOTE'}  WebGL context lost and restored: ${ctxLoss.resumedFrames >= 5 ? 'frames resume' : 'frames did not resume (B19, closed: will not fix)'}  [${JSON.stringify(ctxLoss)}]`);
     const errs2 = await page.evaluate(() => window.__play.errors);

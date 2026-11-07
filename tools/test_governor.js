@@ -16,8 +16,10 @@
 //
 //   node tools/test_governor.js [file]
 const path = require('path');
-const { boot, reporter } = require('./lib/harness');
+const { boot, reporter, root, finalBuild } = require('./lib/harness');
 const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : undefined;
+// the final build writes no log lines (RULES.md 34, B129): there the behaviour is checked and the log lines are not
+const FINAL = finalBuild(file || path.join(root, 'tools/site/index.html'));
 (async () => {
   const { expect, note, failures } = reporter();
   global.__pageLog = [];
@@ -30,9 +32,10 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
   const fov = () => page.evaluate(() => { const X = window.__gtXR; return X && X.shim ? X.shim.fixedFoveation : null; });
   const cfg = await page.evaluate(() => { const D = window.__dbg, Ge = D.Ge; return { layers: (window.__gtXR && window.__gtXR.shim && window.__gtXR.shim.scale) || null, fixed: D.t && D.t.xr ? D.t.xr.foveation : undefined, quality: D.t && D.t.xr ? D.t.xr.quality : undefined, level: Ge.level, keys: Object.keys(Ge).sort(), far0: D.B.far, finaleFar: D.t.xr.finaleFar }; });
   cfg.fov = await fov(); note(`start: layer scale ${cfg.layers}, layer foveation ${cfg.fov} (fixed ${cfg.fixed}); governor keys ${cfg.keys.join(',')}; far ${cfg.far0}, finale far ${cfg.finaleFar}`);
-  expect('at VR entry the layer\'s foveation is the fixed value (0) and the entry log says so', cfg.fov === 0 && cfg.fixed === 0 && log().some((m) => /foveation fixed at 0 \(the layer reads 0\)/.test(m)), JSON.stringify({ fov: cfg.fov, fixed: cfg.fixed }));
+  expect('at VR entry the layer\'s foveation is the fixed value (0) and the entry log says so', cfg.fov === 0 && cfg.fixed === 0 && (FINAL || log().some((m) => /foveation fixed at 0 \(the layer reads 0\)/.test(m))), JSON.stringify({ fov: cfg.fov, fixed: cfg.fixed }));
   expect('the governor\'s quality levels are gone (L1): no `quality` tuning, no level, only the frame average and the over-budget flag', cfg.quality === undefined && cfg.level === undefined && cfg.keys.join(',') === 'budget,ema,hard,sos', JSON.stringify({ quality: cfg.quality, level: cfg.level, keys: cfg.keys }));
 
+  if (FINAL) note('the final build: no log lines, so the entry log, the flag\'s log line and layer swaps (read from the log) are not checked (B129); the foveation, the flag and the frames are');
   // town: slow frames for a while
   const n0 = log().length;
   await slow(true);
@@ -42,9 +45,13 @@ const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve
 
   // the frames-over-budget flag: frames far over a tiny budget fire it once; it logs and changes nothing
   const n1 = log().length;
+  // the frames made slow, as in the town part: the final build without its debug code draws fast enough headless that
+  // a 4 ms budget is not passed by 1.6 times on its own (B129)
+  await slow(true);
   const sos = await page.evaluate(async () => { const Ge = window.__dbg.Ge, wait = (ms) => new Promise((r) => setTimeout(r, ms)); Ge.sos = 0; Ge.hard = 0; Ge.budget = 4; const t0 = performance.now(); while (!Ge.sos && performance.now() - t0 < 90000) await wait(100); await wait(1500); Ge.budget = 1000 / 72; return { sos: Ge.sos, waited: Math.round(performance.now() - t0) }; });
+  await slow(false);
   const sosLines = log().slice(n1).filter((m) => /frames over budget for \d+ frames/.test(m));
-  expect('the frames-over-budget flag fires, logs once, swaps no layer and changes no foveation', sos.sos === 1 && sosLines.length === 1 && swaps(n1).length === 0 && (await fov()) === 0, JSON.stringify(sos) + ' lines ' + sosLines.length + ' ' + swaps(n1).join(' | ') + ' fov ' + (await fov()));
+  expect('the frames-over-budget flag fires, logs once, swaps no layer and changes no foveation', sos.sos === 1 && (FINAL || sosLines.length === 1) && swaps(n1).length === 0 && (await fov()) === 0, JSON.stringify(sos) + ' lines ' + sosLines.length + ' ' + swaps(n1).join(' | ') + ' fov ' + (await fov()));
 
   // the planting Event: the far-object safeguard, no swap, however slow
   const n2 = log().length;

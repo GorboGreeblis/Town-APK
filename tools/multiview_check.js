@@ -85,7 +85,7 @@ const outDir = path.join(root, 'tools/.runs/multiview');
   if (gemWarm.skipped) note('Gem warm-up check skipped (a build before 3.15.35)');
   else expect('the Gem\'s shaders are all warmed at load, with and without the light bulb (B27)', gemWarm.plain === 0 && gemWarm.bulb === 0, JSON.stringify(gemWarm));
   const up = await page.evaluate(async () => {
-    const D = window.__dbg, X = window.__gtXR, wait = (ms) => new Promise((r) => setTimeout(r, ms)); const s0 = { ...X.mvStats, inFrameKinds: { ...X.mvStats.inFrameKinds } }; const np0 = D.O.info.programs.length;
+    const D = window.__dbg, X = window.__gtXR, wait = (ms) => new Promise((r) => setTimeout(r, ms)); const st = X.mvStats; const s0 = st ? { ...st, inFrameKinds: { ...st.inFrameKinds } } : null; const np0 = D.O.info.programs.length;
     const b = D.le.list.find((x) => x.visible && !x.userData.taken); if (b) { D.At.position.set(b.position.x, D.At.position.y, b.position.z); await wait(1500); }
     const a = D.ce.list.find((x) => x.visible && !x.userData.taken); if (a) { D.At.position.set(a.position.x, D.At.position.y, a.position.z); await wait(1500); }
     D.qt.open('TEST', '#ffffff', 'Hello there.|Second line.'); await wait(1500); while (D.qt.isOpen) { D.qt.advance(); await wait(300); }
@@ -97,6 +97,8 @@ const outDir = path.join(root, 'tools/.runs/multiview');
       const isGem = () => { let f = false; D.C.traverse((o) => { const m = o.material; if (o.isMesh && m && !Array.isArray(m) && m.flatShading && m.transparent && m.vertexColors && o.position.y > -30 && o.parent && o.parent.position.y > -30) f = true; }); return f; };
       const t0 = performance.now(); while (!(gem = isGem()) && performance.now() - t0 < 90000) await wait(250); await wait(2000); clearInterval(adv); } catch (e) {}
     await wait(500);
+    // the final build has no multiview statistics (debug code, RULES.md 34, B127): there the programs are counted from three.js
+    if (!st) return { nostats: true, pickups: !!(a && b), gem, programs: D.O.info.programs.length - np0, names: D.O.info.programs.slice(np0).map((p) => p.name), why: diffNew(np0) };
     const s1 = X.mvStats; return { pickups: !!(a && b), preUploads: s1.preUploads - s0.preUploads, between: (s1.between || 0) - (s0.between || 0), inFrame: s1.inFrame - s0.inFrame, kinds: s1.inFrameKinds, gem, programs: s1.programsDuringPlay - s0.programsDuringPlay, names: (s1.newPrograms || []).slice((s0.newPrograms || []).length), why: diffNew(np0) };
     // For each program compiled during the sequence: the closest program warmed before it (same shader, fewest
     // differing key fields) and the fields that differ, named from three.js's parameter list where they line up.
@@ -111,8 +113,9 @@ const outDir = path.join(root, 'tools/.runs/multiview');
       });
     }
   });
-  note(`pickups, dialogue, shop: ${up.preUploads} texture uploads moved before the frame, ${up.between} between frames (F-B31), ${up.inFrame} while a frame drew ${JSON.stringify(up.kinds)}, ${up.programs} programs compiled`);
-  expect('nothing saves and reloads a half-drawn frame (uploads before or, since F-B31, between frames; no switch, read or blit while it draws), across pickups, dialogue, shop, battle and the Speech', up.preUploads + up.between > 0 && up.inFrame === 0, JSON.stringify(up));
+  if (up.nostats) note('the final build: no multiview statistics (debug code), so the frame-hazard counts are not read (B127); the pickups, dialogue, shop, battle and Speech still run, and new programs are counted');
+  else note(`pickups, dialogue, shop: ${up.preUploads} texture uploads moved before the frame, ${up.between} between frames (F-B31), ${up.inFrame} while a frame drew ${JSON.stringify(up.kinds)}, ${up.programs} programs compiled`);
+  if (!up.nostats) expect('nothing saves and reloads a half-drawn frame (uploads before or, since F-B31, between frames; no switch, read or blit while it draws), across pickups, dialogue, shop, battle and the Speech', up.preUploads + up.between > 0 && up.inFrame === 0, JSON.stringify(up));
   expect('the Speech assembled the Gem (its shader is part of the play checked)', up.gem === true, JSON.stringify(up.gem));
   expect('no shader compiled during that play', up.programs === 0, `${up.programs} programs: ${(up.names || []).join(' | ')}; differs from the closest warmed program in: ${(up.why || []).join(' | ')}`);
   await run('spawn');
@@ -122,7 +125,8 @@ const outDir = path.join(root, 'tools/.runs/multiview');
   const started = await page.evaluate(async () => { const D = window.__dbg, Kt = D.Kt; const wait = (ms) => new Promise((r) => setTimeout(r, ms)); const adv = setInterval(() => { try { if (D.qt.isOpen) D.qt.advance(); } catch (e) {} }, 250); Kt.rewards.stone = Kt.rewards.seeds = Kt.rewards.snacks = true; D.oe.open(); await wait(200); const yes = (D._t.state && D._t.state.items || []).find((i) => i.label === 'Yes'); if (yes) yes.onClick(); const t0 = performance.now(); while (!D.me.active && performance.now() - t0 < 10000) await wait(200); await wait(25000); clearInterval(adv); return !!D.me.active; });
   if (started) await run('the Event, 25 s in'); else note('the planting Event did not start');
   // no frame hazard over the whole run (the Event included; the comparisons render outside the game's frames)
-  const total = await page.evaluate(() => window.__gtXR.mvStats); expect('no frame hazard over the whole run, the Event included', total.inFrame === 0, JSON.stringify(total.inFrameKinds));
+  const total = await page.evaluate(() => window.__gtXR.mvStats || null);
+  if (total) expect('no frame hazard over the whole run, the Event included', total.inFrame === 0, JSON.stringify(total.inFrameKinds)); else note('the final build: the frame-hazard total not read (no multiview statistics, B127)');
   // the game keeps running in multiview afterwards (no errors, frames advance; software GL is slow after the Event)
   const after = await page.evaluate(async () => { const f0 = window.__fakeXR.frames; await new Promise((r) => setTimeout(r, 6000)); return { frames: window.__fakeXR.frames - f0, active: window.__gtXR.mvActive, err: window.__dbg.O.getContext().getError() }; });
   expect('the game keeps rendering in multiview after the checks', after.frames > 5 && after.active && after.err === 0, JSON.stringify(after));

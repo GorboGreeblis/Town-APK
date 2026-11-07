@@ -13,7 +13,7 @@
 #                                  machine restart cut a pass short; failed and new stages run again
 #
 # Needs: python3, JDK 17+, node with playwright (browser tests), and
-# ANDROID_HOME for the server harness and the APK checker.
+# ANDROID_HOME (or sdk.dir in tools/twa/local.properties) for the APK checker.
 # The whole pass lives in one function (called at the very end), so the shell reads this file completely before
 # running anything: editing it while a pass runs can no longer change or garble the running pass.
 main() {
@@ -70,7 +70,7 @@ GLE="$ROOT/tools/.runs/gl_errors.log"; [ -n "$RESUME" ] || : > "$GLE"   # and ev
 # are not the game file by design, and check_final.sh proves they are its final build instead (4.0.63)
 FINALCOPIES=""; python3 -I "$ROOT/tools/sync_game.py" --check >/dev/null 2>&1 || FINALCOPIES=1
 if [ -z "$FINALCOPIES" ]; then
-run "the shipped copies (index.html, the APK asset) are the game file tools/uncompressed.html (sync_game.py --check)" python3 -I "$ROOT/tools/sync_game.py" --check
+run "the shipped copies (index.html, tools/site/index.html) are the game file tools/uncompressed.html (sync_game.py --check)" python3 -I "$ROOT/tools/sync_game.py" --check
 else
 run "the shipped copies (index.html, the site's copy, index.compressed.html, the hosted game the root APK opens) are the final build of the game file, debug and logging removed, the version tools/game_version.txt's (check_final.sh)" sh "$ROOT/tools/check_final.sh"
 fi
@@ -81,6 +81,7 @@ run "docs consistency (check_docs.py)" python3 -I "$ROOT/tools/check_docs.py"
 run "dialogue spell-check" sh -c "python3 '$ROOT/tools/spellcheck_dialogue.py' '$ROOT/tools/uncompressed.html' >/dev/null"
 run "tentacle bend is bit-identical to the original (P13)" node "$ROOT/tools/test_bend_exact.js" "$ASSET"
 run "no name used but never declared in any game script (a removed helper's leftover call, S34)" node "$ROOT/tools/test_freevars.js" "$ROOT/tools/uncompressed.html"
+run "the headset log readers on a log of the shipped game (VrApi lines only): perf_log.js and fps_estimate.js find the game's process, leave out the system menu, count the dips" node "$ROOT/tools/test_logreaders.js"
 if [ -f "$APK" ]; then run "APK store-rules check" "$ROOT/tools/check_apk.sh" "$APK"; else skip "APK store-rules check" "no APK built"; fi
 
 if [ "$TIER" != quick ]; then

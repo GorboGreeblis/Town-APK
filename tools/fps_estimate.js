@@ -15,6 +15,10 @@
 // a Quest 3 run gives the Quest 3S with the GPU time divided by 1.3 (4.0.63). Seconds while the game is paused (the
 // system menu, the headset off) are left out, a second either side.
 //
+// A log of the shipped final build (the runtime's VrApi lines only, capture_log) has no game lines: the game's process
+// is then the one with the most VrApi lines, the seconds the system shell draws count as pauses, and the whole run is
+// read as one (the Event cannot be told apart; --device names the headset, which the log cannot).
+//
 // Estimates, not measurements: the headset run after a change is the check (TASKS T3).
 //
 //   node tools/fps_estimate.js <headset log> [--town 12] [--event 10] [--sigma 0.49] [--q3gpu 1.3] [--device q3s|q3]
@@ -32,6 +36,16 @@ const ts = (l) => { const m = l.match(/^(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)\.(\d+
 // the game's runtime lines: FPS=a/b with b the refresh; the process that draws the game is the one whose lines sit
 // inside the game's session (between its first and last page line)
 const page = lines.filter((l) => /GreeblisServer: page: m=/.test(l)).map(ts).filter((t) => t !== null);
+// The shipped final build writes no game lines (RULES.md 34; since 4.0.64 the log holds the runtime's VrApi lines only,
+// capture_log): then the game's process is the one with the most VrApi lines (the system shell logs its own while it
+// draws), its session runs from its first line to its last, and the Event and the pauses cannot be told apart.
+const pidOf = (l) => (l.match(/^\d\d-\d\d [\d:.]+\s+(\d+)\s+\d+\s+\w\s+VrApi/) || [])[1];
+let GAME_PID = null;
+if (!page.length) {
+  const n = {}; for (const l of lines) { const p = pidOf(l); if (p && /FPS=/.test(l)) n[p] = (n[p] || 0) + 1; }
+  GAME_PID = Object.keys(n).sort((a, b) => n[b] - n[a])[0] || null;
+  for (const l of lines) if (pidOf(l) === GAME_PID) { const t = ts(l); if (t !== null) page.push(t); }
+}
 const t0 = page[0], t1 = page[page.length - 1];
 // the Event's spans from the game's event trail
 const spans = []; let open = null;
@@ -51,6 +65,9 @@ for (const l of lines) {
   else if (/the game resumes|xr visibility visible$|window focus/.test(l) && pOpen !== null) { pauses.push([pOpen - 1, t + 1]); pOpen = null; }
 }
 if (pOpen !== null) pauses.push([pOpen - 1, t1 + 1]);
+// no game lines: the seconds the system shell draws (another process's VrApi line at 30 fps or more: the system menu,
+// the headset off and on) are the system's, with a second either side
+if (GAME_PID) for (const l of lines) { const p = pidOf(l); if (!p || p === GAME_PID) continue; const m = l.match(/FPS=(\d+)\//); const t = ts(l); if (m && +m[1] >= 30 && t !== null && t >= t0 && t <= t1) pauses.push([t - 1, t + 1]); }
 const paused = (t) => pauses.some(([a, b]) => t >= a && t <= b);
 // the headset the run was on (the perf line's dev=): the estimate is made for the other one too
 const devM = lines.map((l) => (l.match(/ perf fps=.* dev=(\S+)/) || [])[1]).find(Boolean) || 'Quest_3S';
@@ -60,6 +77,7 @@ const DEV = arg('--device', null);
 const BASE_Q3 = DEV ? /^q3$/i.test(DEV) : /^Quest_3$/.test(devM);
 const secs = [];
 for (const l of lines) {
+  if (GAME_PID && pidOf(l) !== GAME_PID) continue;   // no game lines: only the game's process (see above)
   const m = l.match(/VrApi\s*: FPS=(\d+)\/(\d+).*?App=([\d.]+)ms/); if (!m) continue;
   const t = ts(l); if (t === null || t < t0 + 15 || t > t1 || paused(t)) continue;   // after the first 15 s (loading); not while paused
   const f = +m[1], hz = +m[2], gpu = +m[3]; if (hz < 60 || f < 20) continue;
@@ -91,7 +109,8 @@ const runs = (a) => { let cur = 0, best = 0, n3 = 0; for (const f of a) { if (f 
 const fmt = (x, r) => `median ${x.median.toFixed(1)}, lowest 10% ${x.p10.toFixed(1)}, lowest ${x.min.toFixed(1)}, ${x.under60} of ${x.n} s under 60 (${(100 * x.under60 / x.n).toFixed(0)}%)` + (r ? `; longest run under 60: ${r.best} s, runs of 3 s or more: ${r.n3}` : '');
 
 console.log(`fps_estimate: ${file.split('/').pop()} (run on ${DEV ? (BASE_Q3 ? 'Quest 3' : 'Quest 3S') + ', as given' : devM.replace('_', ' ') + ' (the user agent; a Quest 3S reads Quest 3 too: pass --device)'}; ${pauses.length} pauses left out): ${secs.length} s of play (${secs.filter((s) => s.ev).length} in the Event); saving town ${(100 * S_TOWN).toFixed(1)}%, Event ${(100 * S_EV).toFixed(1)}%; spread ${SIGMA}`);
-for (const [label, pick, sv] of [['town', (s) => !s.ev, S_TOWN], ['the Event', (s) => s.ev, S_EV]]) {
+if (GAME_PID) console.log(`  (no game lines: the shipped final build writes none; the game's process ${GAME_PID} read from its first VrApi line to its last, the seconds the system shell drew left out; the Event is not told apart, so the whole run is one, with the town's saving)`);
+for (const [label, pick, sv] of [[GAME_PID ? 'the whole run' : 'town', (s) => !s.ev, S_TOWN], ['the Event', (s) => s.ev, S_EV]]) {
   const sel = secs.filter(pick); if (!sel.length) continue;
   const now = stats(sel.map((s) => s.f));
   // the run's own headset as run; the other with its GPU time scaled (the Quest 3 1.3 times the 3S's), the same CPU

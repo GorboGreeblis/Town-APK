@@ -13,8 +13,11 @@
 //
 //   node tools/test_shaderhold.js [file]
 const path = require('path');
-const { boot, reporter } = require('./lib/harness');
+const { boot, reporter, root, finalBuild } = require('./lib/harness');
 const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
+// the final build logs no 'shader held' line (RULES.md 34, B130): there the hold is shown by what it is for, no compile
+// inside a frame and every object drawn after it
+const FINAL = finalBuild(file || path.join(root, 'tools/site/index.html'));
 
 (async () => {
   const { expect, note, failures } = reporter();
@@ -47,10 +50,11 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : undefined;
   });
   await g.close();
   note(JSON.stringify(r));
+  if (FINAL) note('the final build: the hold\'s log lines are not read (B130); no compile inside a frame and the objects drawn are');
   expect('no shader compiled inside a headset frame', r.inFrame === 0, JSON.stringify(r.first));
-  expect('each new-program object was held and is drawn after its frame', r.held.length >= 1 && r.freshDrawn.every(Boolean), JSON.stringify(r));
+  expect('each new-program object was held and is drawn after its frame', (FINAL || r.held.length >= 1) && r.freshDrawn.every(Boolean), JSON.stringify(r));
   expect('an object sharing an existing program is drawn without a hold', r.sharedDrawn === true);
-  expect('P40: an object drawn before whose material now needs a new program is held, not compiled in a frame', r.changed.inFrame === 0 && r.changed.held >= 1 && r.changed.drawn, JSON.stringify(r.changed));
+  expect('P40: an object drawn before whose material now needs a new program is held, not compiled in a frame', r.changed.inFrame === 0 && (FINAL || r.changed.held >= 1) && r.changed.drawn, JSON.stringify(r.changed));
   expect('P40: the kept answer equals the full check on every call', r.kept.calls > 1000 && r.kept.diff === 0, JSON.stringify(r.kept));
   expect('no page errors', g.errors.length === 0, g.errors.slice(0, 3).join(' | '));
   console.log(failures.length ? `SHADER HOLD TEST FAILED (${failures.length})` : 'SHADER HOLD TEST PASSED'); process.exit(failures.length ? 1 : 0);
