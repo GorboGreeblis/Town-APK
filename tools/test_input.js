@@ -114,7 +114,7 @@ const file = process.argv[2];
     const R = (x) => [{ handedness: 'left', axes: [0, 0, 0, 0], buttons: [{}, {}, {}, {}, {}, {}, {}] }, { handedness: 'right', axes: [0, 0, x, 0], buttons: [{}, {}, {}, {}, {}, {}, {}] }];
     const y0 = D.we.headYaw, n0 = window.__gtSnapN || 0; let dark = 0, framesToTurn = -1; const r0 = X.renders;
     window.__fakeXR.setInputs(R(1));
-    for (let k = 0; k < 40; k++) { await new Promise((res) => requestAnimationFrame(res)); if (HG.mesh.visible) dark++; if (framesToTurn < 0 && (window.__gtSnapN || 0) > n0) framesToTurn = X.renders - r0; }
+    for (let k = 0; k < 40; k++) { await new Promise((res) => requestAnimationFrame(res)); if (HG.mesh.visible) dark++; const snapped = window.__gtSnapN !== undefined ? (window.__gtSnapN || 0) > n0 : Math.abs(Math.atan2(Math.sin(D.we.headYaw - y0), Math.cos(D.we.headYaw - y0))) > 0.3; if (framesToTurn < 0 && snapped) framesToTurn = X.renders - r0; }   // the final build has no snap counter (debug code): there the turn is seen in the view's yaw
     window.__fakeXR.setInputs(R(0)); await wait(400);
     const d = D.we.headYaw - y0;
     return { turned: +Math.abs(Math.atan2(Math.sin(d), Math.cos(d))).toFixed(3), framesToTurn, dark, blink: typeof window.__gtBlink };
@@ -202,6 +202,10 @@ const file = process.argv[2];
   expect(`park bounds: walking outward for 3 s stays inside the park rectangle (ended at ${pb.x},${pb.z}; |x|<=${pb.half}, ${-pb.half}<=z<=${pb.south})`, insidePark && Math.hypot(pb.x, pb.z) >= bnd.r0 - 0.5, JSON.stringify(pb));
 
   mark('menu');
+  // the headset worn (B121, 4.0.61): after the focus check above the game waits, paused, until the headset itself moves (a
+  // headset lying still off the head never resumes it); a worn one always moves a little, so the fake head sways about 1.7
+  // degrees for a second, as a head does, before the pick (the game resumes past 0.25 degrees)
+  await page.evaluate(async () => { const P = window.__fakeXR.pose, y0 = P.yaw; for (let k = 0; k < 30; k++) { P.yaw = y0 + 0.03 * Math.sin(k / 3); await new Promise((r) => setTimeout(r, 33)); } P.yaw = y0; await new Promise((r) => setTimeout(r, 200)); });
   // Controller pick + menu: put a townsperson on the right controller's ray 2.5 m ahead, press select, choose "Talk".
   const menu = await page.evaluate(async () => {
     const D = window.__dbg, At = D.At, O = D.O; const out = {};

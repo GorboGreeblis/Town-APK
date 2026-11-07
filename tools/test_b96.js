@@ -44,7 +44,10 @@ const file = process.argv[2] ? path.resolve(process.argv[2]) : path.join(__dirna
   expect('2. the native census is also logged every 60 s of play (every sixth perf line)', r.every60 >= 1, String(r.every60));
   expect('2. the census flags growth: 50 textures made between two censuses log "(GROWTH)"', /textures 50/.test(r.growthLine) && /\(GROWTH\)$/.test(r.growthLine), r.growthLine);
   // 3. the black box, on the entry script alone (served by a small server whose /log can be turned off)
-  const html = fs.readFileSync(file, 'utf8'), s0 = (html.match(/<script[^>]*>([\s\S]*?)<\/script>/) || [])[1] || '';
+  // the entry script: every script block up to the one that defines the log (since 4.0.63 the page's first script is the
+  // debug switch, var GT_DEBUG=!0, alone; taking that one only left __gtLog undefined)
+  const html = fs.readFileSync(file, 'utf8'), blocks = [...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+  const upto = blocks.findIndex((b) => /__gtLog\s*=/.test(b)), s0 = blocks.slice(0, upto + 1).join(';\n');
   const { chromium } = require('playwright');
   let alive = true; const got = [];
   const srv = http.createServer((q, res) => { if (q.url.startsWith('/log?')) { if (!alive) { q.socket.destroy(); return; } got.push(decodeURIComponent(q.url.slice(7))); res.writeHead(204); return res.end(); }
