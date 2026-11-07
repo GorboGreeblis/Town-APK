@@ -34,7 +34,10 @@ weight of other data), pushed in 520-byte pieces (561 pieces, 3 bytes each to pu
 - Plus ordiscan's own service fee: **not known** (its inscribe page refuses automated reading, HTTP 403). Other
   services charge a flat fee of a few thousand sats or a few percent of the network fee (OrdinalsBot's published
   pricing, for comparison); the page shows its total before paying.
-- **At today's rates: about C$160-400 (US$110-280)** for economy to next-block, plus postage and ordiscan's fee.
+- **The author always inscribes at 1 sat/vB** (2026-11-07): **73,631 sats, about C$79 (US$56)** at today's price, plus
+  postage and ordiscan's fee. At 1 sat/vB the transactions confirm when blocks have room below that rate (the
+  mempool's minimum was 0.1 sat/vB at this reading, so it relays); that can take hours or longer on a busy day.
+- At faster rates today: about C$160-400 (US$110-280) for economy to next-block.
 
 ## Ethereum (EthFS, ethfs.xyz/mainnet)
 
