@@ -285,7 +285,7 @@ blocker (the author) and the game file is unchanged (RULES.md 35):
   `test_input.js` never moved the fake headset, so the game stayed paused after its focus check (B121; bisected: 4.0.60
   passes, 4.0.61 fails); `test_portal_fade.js` stopped watching before the Portal's turn in the staggered fades (P52,
   4.0.62); `test_firstdraw.js` needed something new made in play, and since S12 nothing is. Each passes on both builds.
-- **Logged in BUGS.md, not blockers**: B135, a 0.1 m seam at (16, -28) since 4.0.61 (the one finding in the game);
+- **Logged in BUGS.md, not blockers**: B135, a 0.1 m seam at (16, -28) since 4.0.61 (closed: the author saw no flicker there in the headset; accepted in `seams_baseline.json`);
   B136 and B137, `test_offview.js` and `opt_identity.js`, failing since at least 4.0.57 and matching the author's approved
   options of 4.0.55 (alternate-frame posing, near-identical materials batched together); B138, `test_play_uploads.js` on
   the final build only, with nothing reaching the GPU in play either way.
