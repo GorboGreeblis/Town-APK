@@ -16,7 +16,7 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const { boot, reporter } = require('./lib/harness');
-const file = process.argv[2] ? path.resolve(process.argv[2]) : path.join(__dirname, 'android/app/src/main/assets/index.html');
+const file = process.argv[2] ? path.resolve(process.argv[2]) : path.join(__dirname, 'site/index.html');
 
 (async () => {
   const { expect, failures } = reporter();

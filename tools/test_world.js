@@ -223,7 +223,7 @@ const SAMPLE_S = Number(process.argv[3] || 40);
       for (let i = 0; i < p.count; i += 7) { w.fromBufferAttribute(p, i).applyMatrix4(m.matrixWorld); near = Math.min(near, Math.hypot(w.x - spot[0], w.z - spot[1])); } });
     return { core: [c.x, c.y, c.z].map((x) => +x.toFixed(3)), solidR: z && z.solidR, bodyR: J.ent.bodyR, len: +(b.max.z - b.min.z).toFixed(2), wid: +(b.max.x - b.min.x).toFixed(2), onFloor: +b.min.y.toFixed(2), spotClear: +near.toFixed(2) };
   });
-  const man = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, 'android/app/src/main/assets/tex/manifest.json'), 'utf8'));
+  const man = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, 'site/tex/manifest.json'), 'utf8'));
   const skins = man.filter((m) => /^1024x256_/.test(m.f)).length;
   expect('A52: the Ancient 15% larger (core scale about 1.15 x, 0.71 tall), its solid radius 1.0 m and meeting radius 1.6 m, still on the floor', !anc.error && Math.abs(anc.core[0] - 1.15) < 0.04 && Math.abs(anc.core[2] - 1.15) < 0.04 && Math.abs(anc.core[1] - 0.713) < 0.03 && anc.solidR === 1 && anc.bodyR === 1.6 && anc.onFloor > -0.15 && anc.len > 7, JSON.stringify(anc));
   expect('A52: a visitor\'s spot by the Ancient stays clear of its larger body (over 0.4 m from it)', !anc.error && anc.spotClear > 0.4, JSON.stringify(anc));

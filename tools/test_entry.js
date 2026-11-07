@@ -15,7 +15,7 @@
  *            click, then exactly one request (the original behaviour).
  *
  * Usage: node tools/test_entry.js [file.html] [scenario|all]
- *   default file: tools/android/app/src/main/assets/index.html
+ *   default file: tools/site/index.html
  * Exit code 1 if any expectation fails. The default file is a copy of the game
  * file tools/uncompressed.html (since 3.15.43); the author's original, which
  * dropped the early grant, is in git history only.
@@ -26,7 +26,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const file = path.resolve(process.argv[2] || path.join(root, 'tools/android/app/src/main/assets/index.html'));
+const file = path.resolve(process.argv[2] || path.join(root, 'tools/site/index.html'));
 const which = process.argv[3] || 'all';
 const html = fs.readFileSync(file);
 const BOOT_TIMEOUT_MS = 240000;
@@ -40,7 +40,7 @@ function serve() {
       }
       if (req.url.startsWith('/tex/')) {   // pre-rendered textures, as the APK serves them
         const name = path.basename(req.url.split('?')[0]);
-        const f = path.join(root, 'tools/android/app/src/main/assets/tex', name);
+        const f = path.join(root, 'tools/site/tex', name);
         if (!/^[\w.-]+$/.test(name) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); }
         const data = fs.readFileSync(f);
         res.writeHead(200, { 'Content-Type': name.endsWith('.json') ? 'application/json' : 'image/png', 'Content-Length': data.length });

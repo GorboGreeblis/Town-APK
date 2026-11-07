@@ -25,7 +25,7 @@ stages with shorter soaks.
 **What each tier runs** (`run_tests.sh`, in order; this is the one list, kept to match the runner; `check_docs.py`
 fails when a test the runner runs is missing here). Every tier: the copies are the game file, the game file is
 minified, the compressed version unpacks to it (for the final build, whose copies are the game file without its debug
-code: all three versions at the root are its final build, `check_final.sh`), every experiment applies, the server harness, docs consistency,
+code: all three versions at the root are its final build, `check_final.sh`), every experiment applies, docs consistency,
 spell-check, the bend test (`test_bend_exact.js`), no undeclared names (`test_freevars.js`), the APK check. Every tier but quick: VR entry (`test_entry.js`), runtime play
 (`test_play.js`), multiview (`multiview_check.js`), uniform budget, warm-up coverage, standalone, the compressed
 version as an ordinal (`test_compressed.js`), the final build written without its debug code and played as shipped (`final_build.js`, `test_final.js`), the Event's first start, the texture census, the frame governor and fixed foveation (`test_governor.js`),
@@ -53,9 +53,9 @@ timing checks (the governor, the perf report, the jazz drums) measure the shared
 the contention, not on the game.
 
 What a pass needs: `python3`, a JDK 17+, `node` with `playwright` (the container has Chromium installed, see
-`require('playwright')`), the tools' own packages (`npm install --prefix tools`: terser for `minify_game.js`, acorn), and the Android SDK for the server harness and the APK checker. `ANDROID_HOME` is used
-when set; otherwise the runner takes `sdk.dir` from `tools/android/local.properties`, the SDK the Gradle build
-uses.
+`require('playwright')`), the tools' own packages (`npm install --prefix tools`: terser for `minify_game.js`, acorn), and the Android SDK's build-tools for the APK checker. `ANDROID_HOME` is used
+when set; otherwise the runner takes `sdk.dir` from `tools/twa/local.properties`, the SDK the Store APK's build
+(`build_twa.sh`) uses.
 
 Environment switches for the browser tests:
 
@@ -80,7 +80,7 @@ After a pass (RULES.md 23: every build gets the full tier until the author says 
   `tools/run_tests.sh --full --only='docs consistency'` (the name is matched as a case-insensitive regular
   expression), and record both runs.
 - A fix to the game is a new build (`build.sh --bump`), and a new build gets its own full pass; `--resume` skips
-  nothing then, since every stage's key includes the asset.
+  nothing then, since every stage's key includes the site's copy of the game.
 - A fix to one test or tool only: `--resume` re-runs just the stages whose files changed.
 
 ## 2. When the machine restarts
@@ -89,7 +89,7 @@ The cloud container can restart without warning (three times during one full pas
 kills every process. Files, commits and logs survive; environment variables do not.
 
 - Start long passes with `--resume`. Each stage that passes is written to `tools/.runs/resume_<tier>.txt` with a
-  key made from the files it used: the asset, the APK, the harness and fake headset, and the files its own
+  key made from the files it used: the site's copy of the game (`tools/site/index.html`), the APK, the harness and fake headset, and the files its own
   command names (its test script). Run the same command again after a restart and every stage that already
   passed on those same files is shown as `PASS ... (earlier run)` and skipped; failed and new stages run.
   Editing one test re-runs only that test. Delete the state file to start clean.
@@ -184,7 +184,7 @@ was in a state where it rightly refused or cut it short:
 - Mama Gorbo's heart count stays at 8 between meetings; wait for a meeting's own first goo arc;
 - the courier delivers on its own when it reaches the player; accept that as a delivery.
 
-**Read the game file, not an old copy.** Since 3.15.43 `uncompressed.html` is the release (the asset and the root
+**Read the game file, not an old copy.** Since 3.15.43 `uncompressed.html` is the release (`tools/site/index.html` and the root
 `index.html` are byte-identical copies); the author's original is in git history only, and differs in places
 (its batcher stored four vec4 a part, the release five). Do not rely on a detail read from the original.
 

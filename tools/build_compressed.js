@@ -61,7 +61,7 @@ function fromText(s, n) {   // the loader's own unpacking, as a check
   for (let i = 0; i < s.length; i++) { const o = s.charCodeAt(i); if (o < 128) c(o); else { c(ESC[(o - 128) >> 7]); c((o - 128) & 127); } }
   return out;
 }
-const version = () => (fs.readFileSync(path.join(root, 'tools/android/app/build.gradle'), 'utf8').match(/versionName "([^"]+)"/) || [])[1] || '?';
+const version = () => (fs.existsSync(path.join(root, 'tools/game_version.txt')) && fs.readFileSync(path.join(root, 'tools/game_version.txt'), 'utf8').trim()) || '?';
 
 function build() {
   const game = fs.readFileSync(gameFile);

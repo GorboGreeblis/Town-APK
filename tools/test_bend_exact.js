@@ -13,7 +13,7 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 const crypto = require('crypto');
 const rec = process.argv[2] === '--record' ? path.resolve(process.argv[3]) : null;
-const asset = rec || (process.argv[2] ? path.resolve(process.argv[2]) : path.join(root, 'tools/android/app/src/main/assets/index.html'));
+const asset = rec || (process.argv[2] ? path.resolve(process.argv[2]) : path.join(root, 'tools/site/index.html'));
 const goldenFile = path.join(__dirname, 'test_bend_golden.json');
 const golden = rec ? [] : JSON.parse(fs.readFileSync(goldenFile, 'utf8')).cases;
 const fp = (o) => crypto.createHash('sha256').update(Buffer.from(o.geometry.attributes.position.array.buffer)).update(Buffer.from(o.geometry.attributes.normal.array.buffer)).update(String(o.geometry.attributes.position.needsUpdate) + String(o.frustumCulled)).digest('hex');

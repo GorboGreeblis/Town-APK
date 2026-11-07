@@ -13,7 +13,7 @@
 const path = require('path');
 const { spawnSync } = require('child_process');
 const root = path.resolve(__dirname, '..');
-const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : path.join(root, 'tools/android/app/src/main/assets/index.html');
+const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : path.join(root, 'tools/site/index.html');
 if (!process.env.GT_DEVICE) process.env.GT_DEVICE = 'quest3s';
 if (process.argv.includes('--child')) return child();
 // parent: run the two modes in separate processes (the harness reads GT_MULTIVIEW at boot)

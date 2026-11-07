@@ -8,7 +8,7 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
 
 1. **One game file, edited directly** (2026-10-28: "I want all edits applied to the game file itself. Not applied
    after. Please edit the actual file"; "this also means adding all changes to the actual uncompressed file") [87].
-   The game is `tools/uncompressed.html`. Every change is made in it. Never edit `index.html` or the APK's asset:
+   The game is `tools/uncompressed.html`. Every change is made in it. Never edit `index.html` or the site's copy (`tools/site/index.html`):
    they are copies, written by `python3 tools/sync_game.py` and checked by `sync_game.py --check` (quick tier,
    pre-commit hook). The file is minified (rule 19): edit it in place, keep new code in the same style, and run
    `tools/build.sh --bump`, which minifies again. Names the tests and tools read in the game's scope are never
@@ -98,9 +98,11 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     root").
 12. **The APK and `index.html` at the root are always the latest build** (2026-10-27; restated 2026-10-28: "The .apk
     and index.html file in root must always be the latest build"). Every change to the game is followed by a rebuild
-    and a version bump (`versionCode` only goes up) before it is committed (`tools/build.sh --bump`). Enforced:
-    `sync_game.py --check` (quick tier, pre-commit hook) fails if `index.html` differs from the game file; the
-    pre-commit hook and `check_apk.sh` fail if the root APK does not hold the current game; `test_standalone.js`
+    and a version bump (`tools/game_version.txt` only goes up) before it is committed (`tools/build.sh --bump`).
+    Enforced: `sync_game.py --check` (quick tier, pre-commit hook) fails if `index.html` differs from the game file.
+    Since 4.0.64 (B133) the root APK holds no game: it is the Store's Bubblewrap web app opening the hosted site
+    (`tools/build_twa.sh`), and the site folder `tools/site` is what follows the game (`check_final.sh` compares the
+    hosted game); the pre-commit hook refuses a root APK that carries a game; `test_standalone.js`
     fails if its pre-painted textures are stale. The version shows on the landing page for other browsers and in the
     bottom right of the VR loading box (2026-10-30, A18); `build.sh` step 3b stamps it there (4 places) on every
     build.
@@ -161,10 +163,10 @@ where it applies; this file is the list. Numbers in brackets are NOTES.md entrie
     their debug code; the upload is the same build without it (rule 34, `tools/build.sh --bump --final`).
 
 24. **Every copy of the game file is kept updated at all times** (2026-10-29: "keep all copies of the game file
-    updated at all times"): `index.html` and the APK's asset (byte copies), `index.compressed.html` (the compressed
-    version) and the APK at the root. `sync_game.py` writes all three copies after every edit of the game file
-    (the compressed one is rebuilt, about 20 s) and `--check` checks all three; the APK follows with
-    `tools/build.sh --bump` before any commit (rule 12; the pre-commit hook refuses a stale one).
+    updated at all times"): `index.html` and the site's copy `tools/site/index.html` (byte copies) and `index.compressed.html` (the
+    compressed version). `sync_game.py` writes all three copies after every edit of the game file (the compressed
+    one is rebuilt, about 20 s) and `--check` checks all three; the site folder follows with `tools/build.sh --bump`
+    before any commit (rule 12), and the author uploads it (RELEASE.md section 4).
 25. **Dead code comes out before the final build, with a full test pass after** (2026-10-30: "Dead code can be
     removed before the final build ... the game must be fully tested after its removal"): the census
     found one unused function (`plantShow`, removed in 3.15.63, FIXES R8); the full tier runs on the final build.

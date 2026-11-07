@@ -10,7 +10,7 @@ const os = require('os');
 const http = require('http');
 const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
-const file = path.resolve(process.argv[2] || path.join(root, 'tools/android/app/src/main/assets/index.html'));
+const file = path.resolve(process.argv[2] || path.join(root, 'tools/site/index.html'));
 const fakexr = fs.readFileSync(path.join(__dirname, 'fakexr.js'), 'utf8');
 (async () => {
   let html = fs.readFileSync(file, 'utf8');
@@ -19,7 +19,7 @@ const fakexr = fs.readFileSync(path.join(__dirname, 'fakexr.js'), 'utf8');
   if (!html.includes(anchor) && html.split('gcEB.ready=!0,').length === 2) html = html.replace('gcEB.ready=!0,', anchor);
   if (!html.includes(anchor)) throw new Error('anchor not found (not the game file?)');
   html = html.replace(anchor, anchor + 'window.__readyAt=performance.now();');
-  const texDir = path.join(root, 'tools/android/app/src/main/assets/tex');
+  const texDir = path.join(root, 'tools/site/tex');
   const server = http.createServer((req, res) => {
     if (req.url.startsWith('/log?')) {   // page diagnostics, as the APK's server accepts them (logged to the console here)
       try { const m = decodeURIComponent(req.url.slice(7)); (global.__pageLog = global.__pageLog || []).push(m); if (process.env.PAGE_LOG) console.log('  page: ' + m); } catch (e) {}

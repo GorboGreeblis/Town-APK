@@ -8,7 +8,7 @@ that keep it fast and flash-free, each with the test that enforces it. Details a
 
 | Piece | Where | What it does |
 | --- | --- | --- |
-| Loopback server | `android/.../GameServer` | Serves the one-file game at `http://localhost:17777/` to the Quest Browser's immersive activity; idle after the first transfer. |
+| Store APK | `tools/twa` (Meta's Bubblewrap) | Opens the game hosted at https://greeblistown.ar.io/ in the Quest Browser's immersive activity (B133, 4.0.64); no part in the frame. |
 | Entry script | the head script at the top of the game file (FIXES.md, entry edits) | Requests the session early (`sessiongranted`), shows the loader in compositor layers, hands the session to the game when loading ends. Changes go straight into the main build (RULES.md 22); test them with `test_entry.js` first. |
 | Layers shim | in the head script of the game file [42, 47] | The game's three.js only knows `baseLayer`, which the `layers` feature forbids. The game gets a facade session whose `baseLayer` is a projection layer; every frame callback is wrapped in `begin(frame)` / `end()`. The layer is never swapped since 3.15.43 (F-B31; the swap branch that kept the old layer in front until the new one was drawn was removed in 4.0.14, L1). |
 | Multiview | in the head script, and the multiview edits to the bundled three.js in the game file [65, 67] | Both eyes in one pass into a texture-array projection layer. The release path since 3.15.34. |
@@ -144,8 +144,8 @@ the checks, and an entry in FIXES.md records the change, its ID (B, P, L, D, R, 
 
 ## 6. Reading a headset run
 
-Capture live: `tools/capture_log.ps1` / `.sh`, or `adb logcat -c` then `adb logcat -v threadtime -s GreeblisServer
-VrApi > run.txt` while playing; then `node tools/perf_log.js run.txt` (HEADSET_DIAG.md section 1; a debug build: the final build writes only the runtime's VrApi lines; `adb logcat -d`
+Capture live: `tools/capture_log.ps1` / `.sh`, or `adb logcat -c` then `adb logcat -v threadtime -s VrApi > run.txt`
+while playing; then `node tools/perf_log.js run.txt` (HEADSET_DIAG.md section 1; the shipped final build writes only the runtime's VrApi lines, and the game lines below are in debug logs up to 4.0.63; `adb logcat -d`
 afterwards keeps only the last minutes of a long session). The lines that describe the render path:
 
 - `multiview planned (...)` or `multiview not used (...)`, then `gpu: ...`: the decision, the GPU's real

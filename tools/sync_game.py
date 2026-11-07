@@ -3,7 +3,7 @@
 
 Since 3.15.43 (NOTES 87) the game has one source: `tools/uncompressed.html`, with every fix made in it directly.
 Three copies of it ship: `index.html` at the repository root (the one-file game),
-`tools/android/app/src/main/assets/index.html` (the APK's) and `index.compressed.html` at the root (the compressed
+`tools/site/index.html` (the APK's) and `index.compressed.html` at the root (the compressed
 version, a Bitcoin ordinal; RULES.md 20; built by `build_compressed.js`, which takes about 20 s). The game as it was
 before any of this work is not kept in the repository (git history has it). The APK itself is rebuilt by
 `tools/build.sh --bump`.
@@ -23,7 +23,7 @@ try:
     name = str(src.relative_to(root))
 except ValueError:
     name = str(src)
-copies = [root / "index.html", root / "tools" / "android" / "app" / "src" / "main" / "assets" / "index.html"]
+copies = [root / "index.html", root / "tools" / "site" / "index.html"]
 builder = root / "tools" / "build_compressed.js"
 data = src.read_bytes()
 if "--check" in args:

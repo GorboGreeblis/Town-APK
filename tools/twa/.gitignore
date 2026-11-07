@@ -1,0 +1,11 @@
+# Bubblewrap's outputs and Gradle's caches (tools/build_twa.sh copies the signed APK to the root)
+*.apk
+*.aab
+*.idsig
+.gradle/
+build/
+app/build/
+local.properties
+# the release signing key and its passwords: never committed (BUILD.md)
+keystore/
+keystore.properties

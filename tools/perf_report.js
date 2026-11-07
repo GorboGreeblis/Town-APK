@@ -33,7 +33,7 @@ const path = require('path');
 const fs = require('fs');
 const { boot, reporter, root } = require('./lib/harness');
 
-const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : path.join(root, 'tools/android/app/src/main/assets/index.html');
+const file = process.argv[2] && !process.argv[2].startsWith('--') ? path.resolve(process.argv[2]) : path.join(root, 'tools/site/index.html');
 const updateBaseline = process.argv.includes('--update-baseline');
 const jsonOut = process.argv.find((a, i) => process.argv[i - 1] === '--json') || path.join(root, 'tools/.runs/perf_report.json');
 const baselinePath = path.join(root, 'tools/perf_baseline.json');
