@@ -13,7 +13,7 @@
 #                                  machine restart cut a pass short; failed and new stages run again
 #
 # Needs: python3, JDK 17+, node with playwright (browser tests), and
-# ANDROID_HOME for the server harness and the APK checker.
+# ANDROID_HOME (or sdk.dir in tools/twa/local.properties) for the APK checker.
 # The whole pass lives in one function (called at the very end), so the shell reads this file completely before
 # running anything: editing it while a pass runs can no longer change or garble the running pass.
 main() {
